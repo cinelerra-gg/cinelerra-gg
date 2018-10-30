@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="14"
+   height="14"
+   viewBox="0 0 3.7041666 3.7041668"
+   version="1.1"
+   id="svg833"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="mode_xor.svg"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/mode_xor.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs827" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="43.25"
+     inkscape:cx="-10.595376"
+     inkscape:cy="7"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:showpageshadow="false"
+     units="px" />
+  <metadata
+     id="metadata830">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+        <dc:date>2018-08-13</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Olaf</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:description>2018-08-13: neu
+</dc:description>
+        <dc:relation>mode.svg</dc:relation>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-293.29582)">
+    <g
+       transform="matrix(0.76514982,-0.76514982,0.76514982,0.76514982,-141.29757,154.1007)"
+       id="g2472-0">
+      <ellipse
+         cx="0.75251567"
+         cy="185.71321"
+         id="circle1312-6"
+         style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:0.06206879;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         rx="1.2427284"
+         ry="1.2400248" />
+      <ellipse
+         cx="1.9952441"
+         cy="185.71321"
+         id="circle1316-2"
+         style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:0.06206879;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         rx="1.2427284"
+         ry="1.2400248" />
+      <path
+         inkscape:connector-curvature="0"
+         d="m 1.3738801,184.63932 c 0.3845017,0.22151 0.6213642,0.63088 0.6213642,1.0739 0,0.44302 -0.2368625,0.85238 -0.6213642,1.07389 -0.38450149,-0.22151 -0.62136429,-0.63087 -0.62136429,-1.07389 0,-0.44302 0.2368628,-0.85239 0.62136429,-1.0739"
+         id="path1320-9"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.06206883;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

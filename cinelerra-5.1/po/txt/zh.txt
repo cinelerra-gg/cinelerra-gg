@@ -1,0 +1,2105 @@
+“好”
+“取消”
+“無法連接到X服務器。\ n”
+“未設置”DISPLAY“環境變量。\ n”
+“真的要刪除以下文件？”
+“BC_DisplayInfo :: init_window：無法打開顯示\”“\ n”％s的\
+“BC_DisplayInfo :: init_window：無法連接到X服務器\ n”。
+“更改過濾器”
+“取消操作”
+“提交目錄”
+“降序目錄”
+“提交文件”
+“顯示文本”
+“顯示圖標”
+“新建文件夾”
+“重命名文件”
+“上目錄”
+“刪除文件”
+“刷新”
+“： 新建文件夾”
+“：重命名”
+“：刪除”
+“文件”
+“尺寸”
+“日期”
+“外部”。
+“輸入文件夾的名稱：​​”
+“無題”
+“全屏”
+“彈出”
+“進展”
+“輸入文件的新名稱：”
+“轉化率從％s到％s不可用”
+“主題:: get_image：％s未找到\ n”。
+“BC_Theme :: check_used：圖像不使用\ n”。
+“％S：OpenGL的初始化失敗，失敗\ n”
+“BC_WindowBase ::〜BC_WindowBase窗口中將其刪除，但刪除的OpenGL不\ nimplemented為BC_Pixmap。\ n”
+“瑪麗埃格伯特\ nhad一隻小羊羔”。
+“你好，世界”
+“小時：分鐘：Seconds.xxx”
+“時：分：秒：幀”
+“樣本”
+“六角樣本”
+“框架”
+“大腳幀”
+“時：分：秒”
+“秒”
+“分鐘：秒”
+“（C），％d個亞當姆斯\ n \ nheroinewarrior.com”
+“關於：”
+“執照：”
+“這個程序是自由軟件，您可以重新分配和/或根據條款\ NOF公佈由自由軟件基金會的GNU通用公共許可證修改;許可證的任一版本\ N2，或（由你選擇）任何更新。版本\ n \ n此程序是分佈在希望這將是有用的，但沒有任何擔保; \ nwithout甚至適銷性的暗示的保證或適用於某一特殊\ nPURPOSE詳情請參照GNU通用公共許可證\ ñ\ N“
+“削減到％s完成\ n”
+“設備路徑”
+“位”
+“設備：”
+“停止播放鎖定”。
+“服務器：”
+“端口：”
+“設備路徑”
+“渠道：”
+“嘉慶偏移：”
+“DVB適配器：”
+“開發”
+“按照音頻配置”
+“AModule :: import_samples無法打開％s。\ n”
+“自動化”
+“插件％D”
+“靜音”
+“玩”
+“褪色”
+“泛”
+“泛”
+“：資產信息”
+“：資產路徑”
+“選擇這個資產的文件：”
+“文件格式：”
+“字節”
+“比特率（比特/秒）：”
+“音頻”
+“壓縮：”
+“通道”
+“採樣率：”
+“頭長度”
+“字節順序：”
+“羅喜”
+“高 - 低”
+“值是無符號”
+“價值觀都簽訂了”
+“視頻：”
+“幀率：”
+“寬度：”
+“高度：”
+“實際寬度”
+“實際的高度：”
+“詳情”
+“資產詳細信息”
+“沒有資料可參考”
+“：路徑”
+“選擇文件”
+“信息...”
+“重建索引”
+“項目進行排序”
+“視圖”
+“查看在新窗口”
+“糊”
+“匹配項目規模”
+“匹配幀速率”
+“匹配所有”
+“從項目中刪除”
+“從磁盤刪除”
+“：刪除資產”
+“永久地從磁盤中刪除？”
+“音頻％D”
+“倒帶（家庭）”
+“快退（+）”
+“反向播放（6）”
+“停止（0）”
+“播放（3）”
+“暫停”
+“快進（回車）”
+“跳轉到結束（完）”
+“標題”
+“註釋”
+“刪除插件？”
+“新賓”
+“刪除BIN”
+“重命名BIN”
+“刪除磁盤的資產”
+“刪除從項目資產”
+“編輯資產信息”
+“重繪指數”
+“上錄製的曲目粘貼資產”
+“在新的軌道追加資產”
+“查看資產”
+“畫vicons”
+“打開”
+“完成”
+“好”
+“新文件”
+“存在”
+“不定時”
+“定時”
+“未知”
+“啟用”
+“輸出”
+“EDL”
+“過去”
+“批處理渲染...”
+“SHIFT-B”
+“無法保存：％s的”
+“EDL％S沒有找到。\ n”
+“：錯誤”
+“：批處理渲染”
+“輸出路徑”
+“EDL路徑：”
+“輸入EDL”
+“選擇一個EDL，以負荷”
+“批處理渲染”
+“停止”
+“關閉”
+“新”
+“刪除”
+“使用當前EDL”
+“保存到EDL路徑”
+“開始”
+“BD渲染......”
+“CTRL-D”
+“沒有EDL /會話”
+“沒有的內容：％S”
+“無法創建目錄：％S \ N--％的”
+“無法保存：％S \ N--％的”
+“創建BD”
+“結束設置，開始批渲染”
+“磁盤空間： ”
+“隔行掃描”
+“反向電視電影”
+“規模”
+“調整曲目”
+“直方圖”
+“在章標籤”
+“音頻5.1”
+“縱橫16：9”
+“：創建BD”
+“標題：”
+“TMP的路徑：”
+“布蘭德:: fork_background：無法打開/proc/self/cmdline.\n”
+“布蘭德:: set_video_map稱為設置NOT_SCANNED \ n”
+“布蘭德:: set_video_map”
+“尋找文件”
+“窗”
+“縮小25％”
+“縮小33％”
+“縮小50％”
+“縮小75％”
+“放大10​​0％”
+“放大150％”
+“放大200％”
+“放大300％”
+“放大400％”
+“自動縮放”
+“重置相機”
+“重置投影機”
+“重置翻譯”
+“顯示控件”
+“隱藏控制”
+“關閉源”
+“NTSC_DVB”
+“CATV_DVB”
+“NTSC_BCAST”
+“NTSC_CABLE”
+“NTSC_HRC”
+“NTSC_BCAST_JP”
+“NTSC_CABLE_JP”
+“PAL_AUSTRALIA”
+“PAL_EUROPE”
+“PAL_E_EUROPE”
+“PAL_ITALY”
+“PAL_IRELAND”
+“PAL_NEWZEALAND”
+“錯誤”
+“NTSC”
+“朋友”
+“SECAM”
+“無”
+“選擇”
+“加...”
+“提升”
+“下移”
+“分類”
+“掃描”
+“編輯...”
+“圖片...”
+“設置通道掃描參數”。
+“頻率表”
+“規範：”
+“輸入：”
+“精細：”
+“亮度：”
+“對比：”
+“顏色：”
+“色調：”
+“白度”
+“標題”
+“信息”
+“相符”
+“搜索”
+“文本：”
+“DBL CLK行查找”
+“：ChanSearch”
+“資源”
+“開始時間”
+“找到％d”
+“（％3.3s）”
+“sunmontuewedthufrisat”
+“激活批記錄時，按下OK”
+“關機系統時，批生產記錄做”
+“發現”
+“搜索事件的標題/信息”
+“壞掃描時間：％S \ n”
+“壞標題：％S \ n”
+“壞掃描日期：％S \ n”
+“開始之前結束：％S \ n”
+“結束時間早：％S \ n”
+“開始時間晚：％S \ n”
+“零時間：％S \ n”
+“最終渠道的信息，開始記錄”
+“目錄：”
+“路徑：”
+“開始：”
+“時間：”
+“資源：”
+“：通道信息”
+“開始的Cron”
+“沒電了”
+“正在\ n記錄”
+“捕獲驅動程序不DVB \ n”
+“無法打開DVB視頻設備\ n”
+“轉變”
+“刪除所有短片。”
+“創建新的剪輯。”
+“刪除剪輯。”
+“渠道”
+“編輯圖片”
+“編輯通道”
+“：剪輯信息”
+“註釋：”
+“：”
+“拾色器”
+“色調”
+“飽和”
+“值”
+“紅”
+“綠色”
+“藍色”
+“Α”
+“切割廣告”
+“*** ***靜音\ n”
+“*** *** UNMUTE \ n”
+“切夾％d在編輯@％F％F-％F，夾@％F-％F \ N”
+“廣告：TRK％d個@％S”
+“修訂％d個EDT％d個資產％的”
+“掃描：夾％D％F-％F”
+“掃描”
+“我的”
+“切％F /％F =％d個\ N”
+“DV”
+“JPEG”
+“MJPA”
+“PNG”
+“PNG-阿爾法”
+“RGB”
+“RGB-阿爾法”
+“YUV420”
+“YUV422”
+“：確認退出”
+“（回答\”無\“將摧毀變化）”
+“是”
+“沒有”
+“存在下列文件：\ n”
+“不會覆蓋現有文件。\ n”
+“： 文件已存在”
+“存在以下文件。覆蓋他們嗎？”
+“從保護修改視頻”
+“編輯面具”
+“統治者”
+“放大視圖”
+“調整相機的自動化”
+“調整投影機的自動化”
+“裁剪層或輸出”
+“取色”
+“顯示工具信息”
+“顯示安全區”
+“作物視頻......”
+“：作物”
+“選擇一個區域在視頻輸出窗口裁剪”
+“：合成器”
+“插入資產”
+“面具翻譯”
+“面具調整”
+“面具點”
+“眼藥水”
+“相機”
+“投影機”
+“面具”
+“做吧”
+“X1”
+“W”
+“Y1”
+“H：”
+“：顏色”
+“半徑：”
+“紅：”
+“綠色：”
+“藍色：”
+“：照相機”
+“X：”
+“Y”
+“Z”
+“左對齊”
+“中心橫”
+“右對齊”
+“頂級自圓其說”
+“垂直居中”
+“底對齊”
+“：投影機”
+“乘阿爾法”
+“減阿爾法”
+“蒙版模式”
+“面具刪除”
+“面具羽毛”
+“屏蔽值”
+“：面具”
+“模式：”
+“值：”
+“面具號”
+“羽毛：”
+“按Ctrl動點”
+“按Alt翻譯的面具”
+“按Shift編輯貝塞爾曲線”
+“：標尺”
+“當前：”
+“點1：”
+“要點2：”
+“距離：”
+“角度：”
+“按Ctrl鎖定尺子到\ nnearest 45％C角”。
+“按Alt翻譯的統治者。”
+“％0.01F像素”
+“媒體DB”
+“SHIFT-M”
+“：DbWindow”
+“維康”
+“ID”
+“長度”
+“訪問時間”
+“計數”
+“失敗刪除影片ID％d個\ N”
+“DC偏移”
+“刪除現有索引”
+“刪除所有指標的％s嗎？”
+“：全部刪除索引”
+“**％scarrier，dvb_locked％S \ n”
+“不”
+“鎖”
+“丟失”
+“DeviceMPEGInput :: get_channeldb ::單元％d（ID％d中。％D）有％d /％D視頻/音頻流\ n”
+“只有第一音頻流將用於\ n”
+“只有第一視頻流將被使用\ n”
+“DeviceV4L2Base :: v4l2_open試圖格式％4.4s \ n”
+“DeviceV4L2Base :: v4l2_open JPEG司機和best_format不MJPEG（％4.4s）\ n”
+“DeviceV4L2Base :: v4l2_open MPEG司機和best_format不是MPEG（％4.4s）\ n”
+“DeviceV4L2Base :: v4l2_open配置GEOM％DX％d個！=％DX％d個best_geom \ n”
+“DVD渲染......”
+“SHIFT-D”
+“創建DVD”
+“使用FFMPEG”
+“：創建DVD”
+“：編輯長”
+“秒”
+“在點（[）”
+“出點（]）”
+“下一個標籤（CTRL - >）”
+“以前的標籤（CTRL < - ）”
+“下一步編輯（ALT - >）”
+“前編輯（ALT < - ）”
+“電梯”
+“覆蓋（二）”
+“提取”
+“為了剪輯（I）”
+“熔接（五）”
+“切（X）”
+“商業（移位X）”
+“複製（三）”
+“附加到結束的軌道”
+“軌道開始前插入”
+“粘貼（V）”
+“設置過渡”
+“上演示設置當前位置”
+“撤消（Z）”
+“重做（移位Z）”
+“在當前位置（L）切換標籤”
+“適合的選擇，以顯示（F）”
+“適合汽車，顯示（ALT + F）”
+“拖放編輯模式”
+“剪切和粘貼編輯模式”
+“生成關鍵幀，而twee​​king”
+“附加效應......”
+“：附加效應”
+“調整的軌道......”
+“匹配輸出大小”
+“刪除曲目”
+“添加曲目”
+“用戶稱號......”
+“：設置編輯標題”
+“用戶頭銜”
+“羽編輯...”
+“：羽毛編輯”
+“羽毛由多少個樣本：”
+“羽毛由多少幀”
+“％s的錯誤：％S \ n”
+“FFMPEG :: get_encoder：錯誤：格式/編解碼器找不到％S \ n”
+“FFMPEG :: read_options：寧可讀％S：％d行\ n”
+“VID％D（％D），編號為0x％06X：\ n”
+“AUD％D（％D），編號為0x％06X：\ n”
+“這種格式不支持音頻。”
+“此格式不支持視頻。”
+“羅喜”
+“嗨羅”
+“未知”
+“原始DV格式不支持以下決議：％IX％我幀率：％F \ nAllowed分辨率720×576是25fps的（PAL）和720×480 29.97（NTSC）\ n”
+“建議：適當的幀速率NTSC DV是29.97，而不是30 fps的\ n”
+“：在採樣率％我道：原始DV格式不支持以下音頻配置IHZ％\ n”
+％s \“的同時打開\錯誤”“寫作。\ n％M \ N”
+％s \“的同時打開\錯誤”“閱讀。\ n％M \ N”
+“錯誤：無法分配的內存audio_sample_buffer \ n”
+“錯誤：無法分配內存audio_sample_buffer頻道％d個\ N”
+“錯誤：無法重新分配的audio_sample_buffer頻道％d個\ N個存儲”
+“無法保存樣本”
+“無法設置音頻寫入位置為％紀\ n”
+“無法從音頻緩衝區文件\ n讀取”
+“錯誤：無法編碼音頻幀％d個\ N”
+“錯誤：無法為音頻寫搬遷到吉％\ n”
+“無法寫入音頻音頻緩衝\ n”
+“無法尋求文件％紀\ n”
+“無法寫入視頻數據到視頻緩衝器”
+“錯誤解碼音頻幀％d個\ N”
+“無法尋求文件％辛棄疾”
+“：音頻壓縮”
+“有這種格式沒有音頻選項”
+“：視頻壓縮”
+“有這種格式沒有視頻選項”
+“使用阿爾法”
+“文件路徑：％S \ n”
+“錯誤：％S \ n”
+“JD％字節\ n”
+“信息：\ N”
+“==打開失敗\ n”
+“：音響預設”
+“預設”
+“比特率：”
+“音頻選項”
+“：視頻預設”
+“質量：”
+“視頻選項”
+“創建％s \ n”
+“： 文件格式”
+“假設原始的PCM：”
+“AC3”
+“蘋果/ SGI AIFF”
+“阿恩AVI類型1”
+“AVI AVIFILE”
+“DV AVI類型2”
+“AVI Lavtools”
+“EXR”
+“EXR序列”
+“FFMPEG”
+“後手”
+“JPEG序列”
+“微軟WAV”
+“MPEG音頻”
+“MPEG”
+“MPEG視頻”
+“OGG Theora格式/ Vorbis格式”
+“的Ogg Vorbis”
+“PNG序列”
+“原始DV”
+“原始PCM”
+“孫/ NEXT AU”
+“TGA”
+“TGA序列”
+“TIFF”
+“TIFF序列”
+“未知的聲音”
+“8位線性”
+“16位線性”
+“24位線性”
+“32位線性”
+“U法”
+“IMA 4”
+“ADPCM”
+“浮動”
+“RGB ALPHA”
+“PNG ALPHA”
+“JPEGLIST”
+“TOC路徑：％S \ n”
+“稱號路徑：\ N”
+“文件路徑：％S \ n”
+“大小：％S”
+“節目流\ n”
+“傳輸流\ n”
+“視頻流\ n”
+“音頻流\ n”
+“日期：％S \ n”
+“％d個視頻軌道的\ n”
+“V％D％S％DX％D”
+“（％5.2f），％ld的框架​​”
+“（％0.3f秒）”
+“％d個音軌的\ n”
+“一％D％的”
+“CH％D（％D）”
+“％ld個樣品”
+“％d個字幕的\ n”
+“％d個標題集”
+“％d個交錯\ n”
+“當前程序％D =標題％D，角度％D，交織％d個\ n \ n”
+“細胞時代”
+“％3D％8.3f”
+“\ n系統時間：％S”
+“元素％d個\ N”
+“沒有資料”
+“無法打開％s：目錄版本無效的表\ nRebuilding表的內容。”
+“無法打開％s：目錄過時\ nRebuilding表的內容。”
+“無法打開％s：腐敗目錄\ nRebuilding表的內容。”
+“無法打開％s：重建失敗\ n”。
+“不支持寬高比％F \ N”
+“不支持的幀速率％F \ N”
+“在打開錯誤\”％s \“的寫作\ n％M \ N”
+“編碼：lame_init_params返回％d個\ N”
+“ampeg_derivati​​ve =％d個\ N”
+“傾斜的init TOC指數\ n”
+“著訪問數據庫的廣告”
+“TOC掃描EOF之前停止”
+“twolame糾錯編碼的音頻數：％d \ n”
+“未知駕駛員％d個\ N”
+“寫入失敗：％M”
+“沒有選項MPEG傳輸流。”
+“層：”
+“每秒千位：”
+“II”
+“III”
+“色彩模式：”
+“格式預設”
+“衍生物：”
+“量化”
+“我幀間隔：”
+“P幀間隔：”
+“先底域”
+“漸進幀”
+“降噪”
+“序列開始在每一個GOP編碼”
+“MPEG-1”的
+“MPEG-2”
+“通用的MPEG-1”
+“標準VCD”
+“用戶VCD”
+“通用MPEG-2”
+“標準SVCD”
+“用戶SVCD”
+“VCD還是序列”
+“SVCD還是序列”
+“DVD NAV”
+“DVD”
+“固定比特率”
+“固定量化”
+“YUV 4：2：0”
+“YUV 4：2：2”
+“FileOGG：服用頁出來nonsynced流\ n”！
+“FileOGG：有在文件中沒有更多的數據，我們從\ n閱讀”
+“FileOGG :: OPEN_FILE RDWR”
+“FileOGG：警告：編碼Theora格式時，寬度和高度都沒有可分16次優的是\ n”
+“FileOGG：Theora格式編解碼器的初始化失敗\ n”
+“根據\ n此要求的質量或比特率的Vorbis編碼器不能建立一種模式。\ n \ n”
+“內部奧格庫錯誤。\ n”
+“FileOGG：錯誤解析Theora格式的流頭部;腐敗流\ n”
+“FileOGG：錯誤解析Vorbis格式的流頭部;腐敗流\ n”
+“FileOGG：文件結束，而搜索編解碼器的頭\ n”。
+“FileOGG：在尋找第一個非標頭包\ n不能找到下一個頁面”
+“FileOGG：破碎的OGG文件 - 破頁：ogg_page_packets == 0和granulepos = -1 \ n”！
+“FileOGG：非法尋求超越的樣本結束的\ n”
+“FileOGG：求樣品的頁面失敗\ n”
+“FileOGG：同時尋求\ n不能找到下一個頁面”
+“FileOGG：有什麼問題，而試圖尋求\ n”
+“FileOGG：非法不要僅僅追求幀\ n​​結束”
+“FileOGG：ogg_sync_and_get_next_page失敗\ n”
+“FileOGG：求幀失敗\ n”
+“FileOGG：求關鍵幀失敗\ n”
+“耶，我們有一個OGG文件\ n”
+“FileOGG ::錯誤同時尋求框架的關鍵幀（幀”
+“FileOGG ::錯誤而尋求關鍵幀，關鍵幀錯號（框架”
+“FileOGG：期待關鍵幀，但沒有得到它\ n”
+“FileOGG：theora_decode_YUVout的代碼失敗％I \ N”
+“FileOGG：嘗試解碼多個樣本的\ n找不到下一頁”
+“FileOGG：錯誤在找出從檔案\ n讀什麼”
+“FileOGG ::歷史沒有對準正確的\ n”
+“\ tnext_sample_position：”
+“\ thistory_start：”
+“錯誤寫的音頻頁面\ n”
+“錯誤寫入視頻頁面\ n”
+“FileOGG：theora_encode_YUVin的代碼失敗％I \ N”
+“最小比特率：”
+“平均比特率”
+“最大比特率：”
+“平均比特率”
+“可變比特率”
+“關鍵幀頻率”
+“關鍵幀頻率的力量”
+“銳度”
+“固定質量”
+“sf_seek（）來樣％JD失敗，原因：％S \ n”
+“緩衝=％P \ N”
+“FileSndFile :: read_samples FD =％P = temp_double％P LEN =”
+“抖動”
+“簽”
+“RGB壓縮”
+“RGBA壓縮”
+“RGB未壓縮”
+“RGBA未壓縮”
+“FileVorbis :: OPEN_FILE％S：無效的比特流\ n”
+“連環畫...”
+“您選擇的格式不支持的視頻。”
+“您選擇的格式不支持音頻。”
+“ULAW壓縮只在\ nQuicktime電影和PCM文件可用。”
+“更改文件格式”
+“設置的ffmpeg的文件類型”
+“用戶自定義”
+“1080P / 60”
+“1080P / 24”
+“1080I”
+“720P / 60”
+“576I - DV（D）PAL”
+“480P - DV（D）NTSC”
+“480I - DV（D）NTSC”
+“YouTube”的
+“半D-1 PAL”
+“半D-1 NTSC”
+“互聯網”
+“CD音頻”
+“DAT音頻”
+“預設”
+“自定義”
+“輸出到文件”
+“選擇一個文件寫入到：”
+“文件格式：”
+“MPEG流”
+“配置音頻壓縮”
+“配置的視頻壓縮”
+“錄製的音軌”
+“渲染音軌”
+“錄製視頻軌道”
+“渲染視頻軌道”
+“覆蓋與輸出工程”
+“在每一個標籤創建新文件”
+“： 文件格式”
+“這種音頻格式設置參數：”
+“高住低練”
+“LoHi”
+“這種視頻格式的設置參數：”
+“視頻是不是這種格式的支持。”
+“：覆蓋”
+“資產”
+“標題”
+“過渡”
+“插件汽車”
+“相機X”
+“相機Y”
+“數碼相機Z”
+“投影機X”
+“投影機Y”
+“投影機Z”
+“褪色”
+“模式”
+“面具”
+“速度”
+“write_frame：不完整的幀中收到\ n”。
+“創建％s”。
+“索引文件:: draw_index：指數有0變焦\ n”
+“IndexState :: write_index無法寫入索引文件％s到磁盤上。\ n”
+“IndexState :: write_markers無法寫入標記文件％s磁盤。\ n”
+“IndexState :: read_markers標記文件的版本不匹配\ n％S \ n”
+“將所有以下編輯”
+“僅拖動一個編輯”
+“拖放源只有”
+“沒有效果”
+“時間格式”
+“每英尺框架：”
+“索引文件”
+“索引文件放在這裡：”
+“索引路徑”
+“選擇索引文件目錄”
+“索引文件的大​​小：”
+“索引文件保留數：”
+“編輯”
+“銷：”
+“點擊編輯邊界做了什麼：”
+“按鈕1”
+“按鈕2”
+“按鈕3”
+“閩DB為計：”
+“最大DB：”
+“主題：”
+“使用在資源窗口縮略圖”
+“每日顯示提示”
+“ffmpeg的探頭警告重建indecies”
+“掃描TOC生成過程中的廣告”
+“Android的遠程控制”
+“Shell命令”
+“主菜單Shell命令”
+“參數”
+“文本”
+“：％s的關鍵幀”
+“應用預設”
+“編輯關鍵幀”
+“關鍵幀參數：”
+“編輯值”
+“預置標題：”
+“應用到所有選定的關鍵幀”
+“保存”
+“應用”
+“刪除關鍵幀”
+“刪除關鍵幀”
+“做線性”
+“做線性曲線”
+“讓貝塞爾”
+“讓貝塞爾曲線”
+“隱藏關鍵幀類型”
+“複製”
+“預置...”
+“以前的標籤”
+“下一個標籤”
+“：級別”
+“加載文件...”
+“：加載”
+“選擇文件載：”
+“：找到文件”
+“加載備份”
+“沒有插入”
+“替換當前項目”
+“替換當前項目並連接軌道”
+“在追加新的軌道”
+“並置，以現有的軌道”
+“粘貼在插入點”
+“只有建立新的資源”
+“鳥巢序列”
+“插入策略”
+“程序”
+“：不能區域設置\ n”。
+“％S：-c需要一個文件名\ n”
+“-b可能不會被用戶使用。\ N”
+“”
+“\ n用法：\ n”
+“％S [-f] [-c配置] [-d端口] [-n很好] [-r批處理文件] [文件名] \ n \ n”
+“-D =運行在後台渲染農場客戶端。端口（400）是可選的。\ n”
+“-f =在前台運行的渲染農場客戶端。為替-d。\ n”
+“-n =尼斯值，如果運行的渲染農場客戶端。（20）\ n”
+“-C =配置文件來使用，而不是％s％S。\ n”
+“-r =批次沒有圖形用戶界面渲染的批處理文件的內容（％s％S）。批處理文件是可選的。\ n”
+“文件名=文件加載\ n \ n \ n”
+“：錯誤”
+“出現如下錯誤：”
+“建立索引...”
+“編輯”
+“關鍵幀”
+“音頻”
+“視頻”
+“曲目”
+“設置”
+“窗口”
+“默認位置”
+“按Ctrl + P”
+“瓷磚左”
+“瓷磚權”
+“轉儲CICache”
+“轉儲EDL”
+“轉儲插件”
+“轉儲資產”
+“撤消”
+“撤消％的”
+“重做”
+“Shift + Z”
+“重做％的”
+“切關鍵幀”
+“SHIFT-X”
+“複製關鍵幀”
+“SHIFT-C”
+“粘貼關鍵幀”
+“SHIFT-V”
+“清除關鍵幀”
+“按住Shift鍵刪除”
+“更改為線性”
+“更改為貝塞爾”
+“創建貝塞爾”
+“切默認關鍵幀”
+“ALT-X”
+“複製默認關鍵幀”
+“ALT-C”
+“粘貼默認關鍵幀”
+“ALT-V”
+“清除默認關鍵幀”
+“Alt-Del組合”
+“切”
+“明確”
+“德爾”
+“粘貼沉默”
+“Shift +空”
+“全選”
+“清除標籤”
+“切廣告”
+“分離的過渡”
+“靜音區域”
+“修剪選擇”
+“默認過渡”
+“地圖1：1”
+“地圖5.1：2”
+“SHIFT-T”
+“復位轉換”
+“SHIFT-U”
+“刪除曲目”
+“刪除最後一首曲目”
+“移動跟踪多達”
+“移動追尋”
+“並置曲目”
+“循環播放”
+“SHIFT + L”
+“添加subttl”
+“SHIFT-Y”
+“貼subttl”
+“設置背景渲染”
+“編輯標籤”
+“編輯效果”
+“關鍵幀編輯遵循”
+“對準光標幀”
+“無類型關鍵幀”
+“慢班車”
+“快班車”
+“現在保存設置”
+“保存的設置。”
+“顯示瀏覽器”
+“顯示資源”
+“顯示排字”
+“顯示重疊”
+“顯示級別”
+“分割點¯x窗格”
+“CTRL + 1”
+“拆分ÿ窗格”
+“CTRL + 2”
+“％設置”
+“找到時間表frame_id（％D）失敗\ n”
+“附加效應......”
+“附加效應”
+“附加過渡......”
+“附加過渡”
+“從列表中選擇過渡”
+“編輯長......”
+“洗牌編輯”
+“反向編輯”
+“對齊編輯”
+“渲染效果......”
+“沒有錄製的曲目指定。”
+“沒有可用的插件。”
+“沒有輸出文件中指定。”
+“沒有效果選擇。”
+“沒有選擇的範圍來處理。”
+“：％S”
+“無法打開％s”
+“：渲染效果”
+“選擇一個效果”
+“選擇第一個文件渲染到：”
+“選擇一個文件渲染”
+“設置效果面板和打\”確定\“”
+“：效果提示”
+“過渡長度...”
+“收到消息失敗\ n”
+“發送短信失敗\ n”
+“消息:: write_message”
+“顯示儀表”
+“MWindow :: init_plugins：不能創建插件指數：％S \ n”
+“MWindow :: init_ladspa_index：不能創建插件指數：％S \ n”
+“MWindow :: init_theme：主題者優先％S沒有找到\ n”。
+“MWindow :: init_theme：嘗試默認主題％S \ n”
+“MWindow :: init_theme：theme_plugin沒有找到\ n”。
+“MWindow :: init_theme：無法加載主題％S \ n”
+“多重視頻軌道”
+“穿越編輯”
+“沒有資產”
+“無文件”
+“DB失敗”
+“put_commercial：％S”
+“正在加載％s”
+“％s的分辨率是DX％％d個\有奇數維nImages可能無法正確解碼。”
+“％s的指數是專為程序編號％d個\ nPlayback偏好為％d。\ n使用程序％d個。”
+“無法打開％S”
+“的格式不能確定”。
+“加載”
+“這％s'％s'的文件”％s“不是你的Cinelerra的安裝的一部分。因為它的意思，Cinelerra可能會崩潰\ n該項目將不會被渲染。\ n”
+“MWindow :: init_shm：的/ proc / SYS /內核/ SHMMAX是0X”
+“初始化插件”
+“初始化圖形界面”
+“初始化字體”
+“不能寫打開％s”。
+“刪除資產”
+“用％s”
+“該項目的尺寸不是4這樣\尼特不能由OpenGL的呈現數倍”。
+“選擇資產”
+“添加曲目”
+“資產所有”
+“資產規模”
+“資產率”
+“明確”
+“設置線性”
+“設置貝塞爾”
+“清關鍵幀”
+“清默認關鍵幀”
+“透明標籤”
+“CONCATENATE曲目”
+“作物”
+“切”
+“切關鍵幀”
+“切默認關鍵幀”
+“刪除曲目”
+“刪除曲目”
+“插入效應”
+“拖動手柄”
+“匹配輸出大小”
+“招編輯”
+“動效應”
+“動效果可達”
+“動效應下”
+“移動追踪”
+“移動追尋”
+“動追踪多達”
+“移動跟踪多達”
+“靜音”
+“覆蓋”
+“糊”
+“貼資產”
+“粘貼關鍵幀”
+“貼默認關鍵幀”
+“沉默”
+“分離過渡”
+“分離的過渡”
+“過渡”
+“附加過渡”
+“沒有默認的過渡找到％s。”
+“洗牌編輯”
+“逆向編輯”
+“對齊編輯”
+“編輯長”
+“過渡長度”
+“調整軌跡”
+“在點”
+“出點”
+“拼接”
+“剪輯％D”
+“標籤”
+“修剪選擇”
+“新建文件夾”
+“地圖1：1”
+“砍廣告”
+“：計劃”
+“FFmpeg的早期探測”
+“改變基本的編解碼器，可能需要重建indecies”。
+“Cinelerra：附加效應”
+“Cinelerra：音頻壓縮”
+“Cinelerra：音頻壓縮”
+“Cinelerra：照相機”
+“Cinelerra：更改效應”
+“Cinelerra：頻道資訊”
+“Cinelerra：ChanSearch”
+“Cinelerra：剪輯信息”
+“Cinelerra：色彩”
+“Cinelerra：排字”
+“Cinelerra：確認”
+“Cinelerra：確認退出”
+“Cinelerra：作物”
+“Cinelerra：DbWindow”
+“Cinelerra：全部刪除索引”
+“Cinelerra：編輯長”
+“Cinelerra：錯誤”
+“Cinelerra：錯誤”
+“Cinelerra：文件存在”
+“Cinelerra：文件格式”
+“Cinelerra：級別”
+“Cinelerra：加載”
+“Cinelerra：加載”
+“Cinelerra：找到文件”
+“Cinelerra：面具”
+“Cinelerra：新建文件夾”
+“Cinelerra：重疊”
+“Cinelerra：路徑”
+“Cinelerra：首選項”
+“Cinelerra：計劃”
+“Cinelerra：投影機”
+“Cinelerra：問題”
+“Cinelerra：RemoteWindow”
+“Cinelerra：刪除資產”
+“Cinelerra：調整軌道”
+“Cinelerra：統治者”
+“Cinelerra：％S”
+“Cinelerra：保存”
+“Cinelerra：設置編輯標題”
+“Cinelerra：設置格式”
+“Cinelerra：％s的關鍵幀”
+“Cinelerra：字幕”
+“Cinelerra：每日提示”
+“Cinelerra：過渡長度”
+“Cinelerra：視頻壓縮”
+“Cinelerra：查看器”
+“Cinelerra：警告”
+“Cinelerra：新建項目”
+“Cinelerra：CD開膛手”
+“Cinelerra：正常化”
+“Cinelerra：重新取樣”
+“Cinelerra：時間拉伸”
+“： 新項目”
+“參數為新項目：”
+“曲目”
+“採樣率：”
+“幀率：”
+“畫布的尺寸：”
+“長寬比：”
+“自動寬高比”
+“交換維度”
+“播放曲目”
+“打補丁”
+“手臂曲目”
+“記錄補丁”
+“剛推子”
+“黑幫補丁”
+“畫傳媒”
+“畫補丁”
+“不要發送到輸出”
+“靜音補丁”
+“擴大補丁”
+“曲目標題”
+“微調”
+“微調”
+“高速緩存大小（MB）：”
+“秒到片頭渲染”
+“（必須是root）”
+“背景渲染（僅視頻）”
+“每幀的背景渲染工作：”
+“幀到片頭背景：”
+“輸出為背景渲染”
+“渲染農場”
+“節點”
+“主機名”
+“總的工作創造”
+“（如果覆蓋在每個標籤的新文件被選中）”
+“上”
+“主機名”
+“端口”
+“幀率”
+“使用後台渲染”
+“使用渲染農場”
+“強制單處理器使用”
+“陷阱SIGSEGV”
+“陷阱SIGINT”
+“在文件打開，探頭的ffmpeg早”
+“打造的ffmpeg標記indecies”
+“整合完成對輸出文件”
+“添加節點”
+“應用更改”
+“刪除節點”
+“排序節點”
+“復位率”
+“使用虛擬文件系統”
+“音頻輸出”
+“播放緩衝樣本：”
+“音頻偏移（秒）：”
+“獲得：”
+“音頻驅動程序”
+“視頻輸出”
+“幀率實現：”
+“換算關係：放大/縮小”
+“DVD字幕展示：”
+“TOC項目編號：”
+“視頻驅動程序”
+“查看如下回放”
+“使用軟件的定位信息”
+“音頻播放實時優先級（僅根）”
+“地圖5.1> 2”
+“插值CR2圖像”
+“白平衡CR2圖像”
+“解碼幀異步”
+“播放每幀”
+“啟用字幕/字幕”
+“標籤細胞”
+“快退（+）”
+“正常反向（6）”
+“逐幀後退（4）”
+“正常前進（3）”
+“幀轉發（1）”
+“快進（回車）”
+“作者：％S”
+“許可證：％S”
+“％s的......”
+“％S拿了％的”
+“這個插件定義的任何處理。\ n”
+“tweek”
+“附加效應”
+“插件”
+“共享的效果：”
+“共享曲目：”
+“附加單並且standlone和別人分享”
+“復位”
+“類型”
+“範圍”
+“更改...”
+“：更改效應”
+“分離”
+“分離效應”
+“發送”
+“接收”
+“顯示”
+“插件設置”
+“找全局插件在這裡”
+“環球插件路徑”
+“選擇插件目錄”
+“看個人的插件在這裡”
+“個人插件路徑”
+“優先...”
+“SHIFT + P”
+“*回放”
+“回放”
+“*回放B”
+“回放B”
+“記錄”
+“性能”
+“接口”
+“關於”
+“： 優先”
+“：％s的預設”
+“保存預設”
+“： 題”
+“放棄”
+“無法退出而錄製過程中。”
+“無法退出而渲染正在進行中。”
+“在退出前保存編輯列表嗎？”
+“：確認”
+“刪除此文件，並％s嗎？”
+“沒有剩餘空間在磁盤上。”
+“路徑”
+“新聞”
+“持續時間”
+“開始批次記錄\ n從當前位置”。
+“啟用”
+“做出突出\ nclip活躍。”
+“記錄...”
+“記錄”
+“刪除”
+“暗戰”
+“重來”
+“循環”
+“：錄製”
+“開始時間：”
+“持續時間：”
+“運輸：”
+“：記錄路徑”
+“選擇一個文件記錄到：”
+“格式：”
+“音頻壓縮”
+“削峰樣本”
+“視頻壓縮”
+“框架下降：”
+“框架背後：”
+“位置：”
+“上一個標籤：”
+“文件捕獲”
+“批”
+“克龍”
+“閒”
+“保存記錄和退出。”
+“退出，不粘貼到項目中。”
+“退出並粘貼到項目中。”
+“重來”
+“快退當前文件，並刪除”。
+“滴超限幀”
+“放下輸入幀落後時。”
+“補欠載幀”
+“落後時編寫額外的框架。”
+“完成後關機”
+“當批記錄完成關機系統。”
+“檢查廣告”
+“檢查廣告。”
+“監控錄像”
+“監控音頻”
+“音頻米”
+“停止”
+“標籤”
+“ClrLbls”
+“中斷正在進行的記錄？”
+“倒帶批次和覆蓋嗎？”
+“：視頻在”
+“00：00：00：00”
+“：視頻在％d %%”
+“交換田”
+“音頻輸入”
+“記錄司機：”
+“從樣品設備中讀出：”
+“樣品寫入磁盤：”
+“採樣率錄音：”
+“渠道記載：”
+“視頻在”
+“幀記錄到磁盤在一個時間：”
+“框架在設備緩衝區”
+“定位”
+“捕捉畫面尺寸：”
+“幀率記錄：”
+“記錄實時優先級（只有root）”
+“實時TOC”
+“演示時間戳”
+“軟件定時”
+“設備位置”
+“樣品位置”
+“自動同步驅動器”
+“查看範圍”
+“重新啟用批次，重新啟動？”
+“execvp關機失敗”
+“關機在即！\ n”
+“傾斜的vfork關機過程”
+“中斷”
+“開始錄製\ n從當前位置”
+“RecordTransport單幀”
+“預覽記錄”
+“停止運行”
+“重來”
+“快退”
+“快進”
+“尋求結束錄製的”
+“：記錄”
+“重繪索引”
+“：重繪索引”
+“重繪所有索引當前項目？”
+“：RemoteWindow”
+“渲染......”
+“SHIFT + R”
+“\ r％d %%已ETA：％S”
+“已經呈現”
+“渲染％s的......”
+“渲染......”
+“渲染了％S”
+“啟動渲染農場”
+“無法啟動渲染農場”
+“錯誤渲染數據”。
+“渲染”
+“：渲染”
+“RenderFarmServerThread :: start_loop：插座\ N”
+“RenderFarmServerThread :: open_client：％S：％S \ n”
+“RenderFarmServerThread :: start_loop：插座”
+“RenderFarmServerThread :: open_client：未知主機％S \ n”。
+“RenderFarmServerThread ::運行：未知的請求％02X \ n”
+“RenderFarmClient ::中main_loop：插座”
+“RenderFarmClient ::中main_loop：綁定端口％D：％S”
+“RenderFarmClient ::中main_loop：綁定路徑％S：％S \ n”
+“RenderFarmClient ::中main_loop：聽”
+“RenderFarmClient ::中main_loop：接受”
+“RenderFarmClientThread ::運行：會話結束\ n”。
+“這個軌道的尺寸不是4這樣\尼特不能由OpenGL的呈現數倍”。
+“：調整軌道”
+“尺寸：”
+“X”
+“規模：”
+“調整大小”
+“ResourcePixmap :: draw_audio_source：沒有檢查出來％s的繪製\ n”。
+“保存備份”
+“保存的備份。”
+“\”％s \“的％的直流寫成”
+“另存為...”
+“無法打開％s。”
+“：保存”
+“輸入一個文件名保存為”
+“調整......”
+“：規模”
+“新相機尺寸：”
+“新的投影尺寸：”
+“W比：”
+“H比：”
+“：”
+“約束比例”
+“大規模數據”
+“汽車”
+“格式...”
+“SHIFT-F”
+“定格”
+“：設置格式”
+“通道的位置：”
+“％d個度”
+“殼牌”
+“加”
+“新”
+“：命令”
+“標籤：”
+“命令”
+“殼CMDS”
+“： 加載”
+“加載...”
+“歡迎來到Cinelerra”。
+“取消作業”
+“Subttl％D”
+“加載”
+“文件大小：”
+“條目：”
+“台詞：”
+“文本”
+“：字幕”
+“上一頁”
+“下一個”
+“無法打開：\”％s \“的\ N％的”
+“字幕”
+“ALT-Y”
+“哪裡是％s嗎？”
+“在曲線關鍵幀按住Shift鍵單擊它捕捉到鄰近的價值觀。”
+“當配置減速效果，為軌道禁止播放。它配置後，\ NRE啟用回放處理一幀”。
+“CTRL +任何傳輸命令回放導致的In / Out點定義為僅蓋\ n該地區。”
+“按住Shift點擊一個補丁會導致除\其他所有的補丁nselected一個切換。”
+“點擊補丁，並與其它軌道拖拽導致\ n此補丁等相匹配的第一個。”
+“按住Shift點擊效果邊界上引起拖到影響\ njust的一個效果。”
+“加載多個文件通過點擊一個文件和Shift +點擊\ nanother文件。按Ctrl +單擊切換單個文件。”
+“在時間欄週期提出了時間格式按Ctrl +左鍵點擊。在時間欄週期落後的時間格式\ NCTRL +鼠標中間。”
+“使用+/-鍵在合成器窗口放大和縮小。\ n”
+“按Alt鍵，而在裁剪窗口中單擊導致\ n所有4個點的翻譯。\ n”
+“按Tab鍵在曲目切換的錄製狀態。\ nPressing Shift-Tab鍵在曲目切換所有其他曲目的錄製狀態。\ n”
+“音頻 - >地圖1：6刻錄AC3音軌1映射到2個通道\ N：1的每個記錄的音軌到不​​同的信道映射\ NMAP 5.1。”
+“Alt +左​​鍵移動到前面的編輯手柄。\ NALT +向右移動到下一個編輯手柄。\ n”
+“設置 - >無類型的關鍵幀，可以從任意的軌道關鍵幀中在任\ n音訊或視頻音軌粘貼。\ n”
+“： 每日提示”
+“演出當天的一角。”
+“下一步提示”
+“前面的技巧”
+“關鍵幀”
+“粘貼過渡”
+“過渡”
+“：過渡長度”
+“連接...”
+“長度”
+“VDeviceLML ::的read_buffer：驅動程序崩潰\ n”
+“VDeviceLML ::的read_buffer：重新\ n”
+“按照視頻配置”
+“輸出通道”
+“菲爾茲”
+“顯示：”
+“默認設置A顯示：”
+“默認B顯示：”
+“近鄰”
+“兩次立方/雙立方”
+“兩次立方/雙線性”
+“雙線性/雙線性”
+“蘭克澤斯/蘭克澤斯”
+“：視頻輸出”
+“展資產”
+“顯示標題”
+“顯示過渡”
+“插件關鍵幀”
+“覆蓋模式”
+“模式”
+“正常”
+“加成”
+“減去”
+“乘”
+“劃分”
+“更換”
+“最大”
+“最小”
+“平均”
+“變暗”
+“減輕”
+“DST”
+“DstAtop”
+“DstIn”
+“DstOut”
+“DstOver”
+“源”
+“SrcAtop”
+“SrcIn”
+“SrcOut”
+“SrcOver”
+“要么”
+“XOR”
+“視頻％D”
+“瀏覽器”
+“：查看器”
+“： 警告”
+“不要再顯示此警告。”
+“樣本放大”
+“放大器放大”
+“跟踪變焦”
+“曲線變焦（自動調整Alt鍵F）”
+“奇數場第一”
+“連場第一”
+“1080到480”
+“1080 540”
+“720〜480”
+“AgingTV”
+“糧食”
+“刮”
+“坑”
+“灰塵”
+“XY模式”
+“波形”
+“瑞星觸發器”
+“落觸發器”
+“歷史尺寸：”
+“窗口大小”
+“觸發”
+“樣品：0”
+“級別0：0”
+“1級：0”
+“樣品數：％d”
+“0級：％.2f”
+“1級：％.2f”
+“AudioScope”
+“在”
+“內外兼修”
+“樂隊”
+“方向：”
+“BandSlide”
+“BandWipe”
+“藍色香蕉”
+“內部錯誤;圖案陣列溢出\ n”
+“Bluebanana：無法創建滑塊\ N幀”
+“挑”
+“結束面膜”
+“面具的選擇”
+“未知的ColorModel在BluebananaA2Sel：更新（）\ n”
+“選擇顏色”
+“馬克所選區域”
+“色調”
+“飽和”
+“值”
+“填”
+“紅”
+“綠色”
+“藍色”
+“預蠶食”
+“反向選擇”
+“顏色調節”
+“過濾器活動”
+“模糊”
+“垂直”
+“水平”
+“模糊阿爾法”
+“阿爾法決定半徑”
+“模糊紅”
+“模糊綠色”
+“模糊藍”
+“RadioacTV”
+“亮度/對比度”
+“升壓亮度只有”
+“BurningTV”
+“從EffectTV \ n版權所有BurningTV（C）2001福地太郎”
+“鎖定參數”
+“激活處理”
+“計算negfix值”
+“（取消更快的渲染）”
+“計算negfix值：”
+“最小R：”
+“閩G：”
+“閩B：”
+“光：”
+"Gamma G:"
+"Gamma B:"
+"negfix values to apply:"
+"C41"
+"CD Ripper"
+": CD Ripper"
+"Can't open cdrom drive."
+"Can't get total from table of contents."
+"Can't get table of contents entry."
+"Can't get table of contents leadout."
+"Start track is out of range."
+"End track is out of range."
+"End position is out of range."
+"Select the range to transfer:"
+"Track"
+"Sec"
+"From"
+"To"
+"CD Device:"
+"Slope:"
+"Threshold:"
+"Color..."
+"Use value"
+"Use color picker"
+"Inner color"
+"Chroma key"
+"Key parameters:"
+"Hue Tolerance:"
+"Min. Brightness:"
+"Max. Brightness:"
+"Saturation Offset:"
+"Min Saturation:"
+"Mask tweaking:"
+"In Slope:"
+"Out Slope:"
+"Alpha Offset:"
+"Spill light control:"
+"Spill Threshold:"
+"Spill Compensation:"
+"Show Mask"
+"Chroma key (HSV)"
+"Color 3 Way"
+"Interpolate Pixels"
+"Gamma"
+"Shadows"
+"Midtones"
+"Highlights"
+"Saturation:"
+"Copy to all"
+"White balance"
+"Color Balance"
+"Cyan"
+"Magenta"
+"Yellow"
+"Preserve luminosity"
+"Compressor"
+"Reaction secs:"
+"Decay secs:"
+"Trigger Type:"
+"Trigger:"
+"Point:"
+"Input"
+"Trigger"
+"Maximum"
+"Total"
+"Smooth only"
+"Crossfade"
+"Input frames per second:"
+"Last frame dropped: "
+"Decimate"
+"Select lines to keep"
+"Do nothing"
+"Odd lines"
+"Even lines"
+"Average lines"
+"Swap odd fields"
+"Swap even fields"
+"Average even lines"
+"Average odd lines"
+"Changed rows: %d\n"
+"Deinterlace-CV"
+"Select deinterlacing mode"
+"Keep top field"
+"Keep bottom field"
+"Average top fields"
+"Average bottom fields"
+"Top field first"
+"Threshold"
+"Bob Threshold"
+"Adaptive"
+"Duplicate one field"
+"Average one field"
+"Average both fields"
+"Bob & Weave"
+"Spatial field swap"
+"Temporal field swap"
+"Do Nothing"
+"Delay audio"
+"Delay seconds:"
+"Delay Video"
+"Level:"
+"Denoise power:"
+"Number of samples for reference:"
+"The keyframe is the start of the reference"
+"DenoiseFFT"
+"Progressive"
+"Interlaced"
+"Fast"
+"Search radius:"
+"Pass 1 threshold:"
+"Pass 2 threshold:"
+"Luma contrast:"
+"Chroma contrast:"
+"Delay frames:"
+"Denoise video2"
+"Selective Temporal Averaging"
+"Frames to average"
+"Use Method:"
+"None "
+"Selective Temporal Averaging: "
+"Av. Thres."
+"S.D. Thres."
+"R / Y"
+"G / U"
+"B / V"
+"Standard Deviation"
+"First frame in average:"
+"Fixed offset: "
+"Restart marker system:"
+"Other Options:"
+"Reprocess frame again"
+"Disable subtraction"
+"This Frame is a start of a section"
+"Average changing pixels"
+"Average similar pixels"
+"Frames to accumulate:"
+"Denoise video"
+"Despike"
+"Maximum level:"
+"Maximum rate of change:"
+"Use Value"
+"Difference key"
+"Dissolve"
+"DotTV"
+"DotTV from EffectTV\nCopyright (C) 2001 FUKUCHI Kentarou"
+"Horizontal offset"
+"Vertical offset"
+"Downsample"
+"Level: "
+"Atten: "
+"Offset: "
+"Echo"
+"ON"
+"MAN"
+"OFF"
+"default"
+"Normalize"
+"Gain: "
+"Window size:"
+"History:"
+"X Zoom:"
+"Damp:"
+"Cutoff Hz:"
+"Peaks:"
+"0 Hz"
+"EchoCancel"
+"Edge"
+"Amount:"
+"Fields to frames"
+"Find Object"
+"Algorithm:"
+"Search radius:\n(W/H Percent of image)"
+"Object size:\n(W/H Percent of image)"
+"Block X:"
+"Block Y:"
+"Object layer:"
+"Replacement object layer:"
+"Output/scene layer:"
+"Object blend amount:"
+"Camshift VMIN:"
+"Camshift VMAX:"
+"Camshift SMIN:"
+"Draw border"
+"Draw keypoints"
+"Replace object"
+"Draw object border"
+"Don't Calculate"
+"SURF"
+"CAMSHIFT"
+"Blob"
+"Flash"
+"Flip"
+"Frames to fields"
+"RGB - 601"
+"Freeze"
+"Roomsize:"
+"Wet:"
+"Dry:"
+"Freeverb"
+"Freeze Frame"
+"Gain"
+"Maximum:"
+"Gamma:"
+"Automatic"
+"Plot histogram"
+"Use Color Picker"
+"Shape:"
+"Rate:"
+"Inner radius:"
+"Outer radius:"
+"Center X:"
+"Center Y:"
+"Linear"
+"Radial"
+"Log"
+"Square"
+"Inner color:"
+"Outer color:"
+"Outer color"
+"Gradient"
+"Frequency:"
+"EQ Graphic"
+"GreyCStoration"
+"Amplitude:"
+"Anisotropy:"
+"Noise scale:"
+"RGB Parade on"
+"RGB Parade off"
+"Split output"
+"Input X:"
+"Input Y:"
+"Output min:"
+"Output Max:"
+"Interpolation:"
+"Split picture"
+"Polynominal"
+"Bezier"
+"HolographicTV"
+"Hue saturation"
+"X Offset:"
+"Y Offset:"
+"Interpolate"
+"Interpolate Video"
+"Macroblock size:"
+"Use keyframes as input"
+"Use optic flow"
+"Draw motion vectors"
+"Invert Audio"
+"Invert R"
+"Invert G"
+"Invert B"
+"Invert A"
+"Invert Video"
+"Invert"
+"IrisSquare"
+"A  B  BC  CD  D"
+"AB  BC  CD  DE  EF"
+"Pattern offset:"
+"Pattern:"
+"Automatic IVTC"
+"Sphere Stretch"
+"Sphere Shrink"
+"Rectilinear Stretch"
+"Rectilinear Shrink"
+"Stretch"
+"R Field of View:"
+"G Field of View:"
+"B Field of View:"
+"A Field of View:"
+"Lock"
+"Aspect Ratio:"
+"Draw center"
+"Lens"
+"Duration (seconds):"
+"Max soundlevel (dB):"
+"RMS soundlevel (dB):"
+"SoundLevel"
+"Length:"
+"Steps:"
+"Linear Blur"
+"Live audio"
+"Live Audio"
+"Live Video"
+"Samples to loop:"
+"Loop audio"
+"Frames to loop:"
+"Loop video"
+"Microscopic"
+"Motion"
+"Translation search radius:\n(W/H Percent of image)"
+"Rotation search radius:\n(Degrees)"
+"Translation block size:\n(W/H Percent of image)"
+"Translation search steps:"
+"Rotation search steps:"
+"Translation direction:"
+"Rotation center:"
+"Maximum angle offset:"
+"Rotation settling speed:"
+"Maximum absolute offset:"
+"Motion settling speed:"
+"Frame number:"
+"Master layer:"
+"Action:"
+"Calculation:"
+"Add (loaded) offset from tracked frame"
+"Track translation"
+"Track rotation"
+"Draw vectors"
+"Track single frame"
+"Track previous frame"
+"Previous frame same block"
+"Top"
+"Bottom"
+"Track Subpixel"
+"Track Pixel"
+"Stabilize Subpixel"
+"Stabilize Pixel"
+"Save coords to /tmp"
+"Load coords from /tmp"
+"Recalculate"
+"Horizontal only"
+"Vertical only"
+"Both"
+"Motion 2 Point"
+"Track Point 1"
+"Track Point 2"
+"Translation search offset:\n(X/Y Percent of image)"
+"Search steps:"
+"Search directions:"
+"Settling speed:"
+"Stabilize"
+"Motion Blur"
+"Rotation block size:\n(W/H Percent of image)"
+": Normalize"
+"Enter the DB to overload by:"
+"Treat tracks independantly"
+"Use intensity"
+"Oil painting"
+"Oil Painting"
+"Radius"
+"Use Intensity"
+"Bottom first"
+"Top first"
+"Layer order:"
+"Output layer:"
+"Overlay"
+"Output track:"
+"Lowpass"
+"Highpass"
+"Bandpass"
+"Freq"
+"Qual"
+"Level"
+"Wetness:"
+"Window:"
+"EQ Parametric"
+"Current X:"
+"Perspective"
+"Sheer"
+"Perspective direction:"
+"Forward"
+"Reverse"
+"Output size:"
+"Override camera"
+"Use alpha/black level"
+"Auto Scale"
+"Pianoesizer"
+"Phase"
+"Harmonic"
+"Wave Function"
+"Base Frequency:"
+"DC"
+"Sine"
+"Sawtooth"
+"Triangle"
+"Pulse"
+"Noise"
+"Zero"
+"Slope"
+"Random"
+"Enumerate"
+"Even"
+"Odd"
+"Fibonnacci"
+"Prime"
+"Pitch shift"
+"Depth:"
+"Polar"
+"Depth"
+"Angle"
+"Automate"
+"Quark"
+"Sharpness"
+"Interlace"
+"Luminance only"
+"Radial Blur"
+"Reframe"
+"Scale factor:"
+"Scale by amount:"
+"ReframeRT"
+"Threshold of gap (DB):"
+"Max duration of gap (Seconds):"
+"Remove Gaps"
+"replace Target"
+"Components only"
+"Alpha replace"
+"Target track:"
+"Operation:"
+"Reroute"
+": Resample"
+"Resample"
+"ResampleRT"
+"Reverb"
+"Couldn't save %s."
+"Initial signal level:"
+"ms before reflections:"
+"First reflection level:"
+"Last reflection level:"
+"Number of reflections:"
+"ms of reflections:"
+"Start band for lowpass:"
+"End band for lowpass:"
+"Load..."
+"Save..."
+"Set default"
+"Save reverb"
+"Select the reverb file to save as"
+"Load reverb"
+"Select the reverb file to load from"
+"Reverse audio"
+"Reverse video"
+"RGB -> 601 compression"
+"601 -> RGB expansion"
+"R_dx:"
+"R_dy:"
+"G_dx:"
+"G_dy:"
+"B_dx:"
+"B_dy:"
+"RGBShift"
+"Draw pivot"
+"Rotate"
+"Degrees"
+"Pivot (x,y):"
+"Use fixed scale"
+"Use fixed size"
+"White to Black"
+"Black to White"
+"Anti-aliasing"
+"Preserve shape aspect ratio"
+"Shape Wipe"
+"Shape Wipe: cannot load shape %s\n"
+"Sharpen"
+"Odd offset:"
+"Even offset:"
+"ShiftInterlace"
+"Left"
+"Right"
+"Slide"
+"Freq: 0 Hz"
+"Amplitude: 0 dB"
+"Freq: %d Hz"
+"Amplitude: %.2f dB"
+"Spectrogram"
+"SVG via Inkscape"
+"Running command %s\n"
+"Export of %s to %s failed\n"
+"The file %s that was generated from %s is not in PNG format. Try to delete all *.png files.\n"
+"Access mmap to %s as %s failed.\n"
+"Out X:"
+"Out Y:"
+"New/Open SVG..."
+"Error while creating fifo file"
+"Inkscape has exited\n"
+"Plugin window has closed\n"
+"Running external SVG editor: %s\n"
+"External SVG editor finished\n"
+"SVG Plugin: Pick SVG file"
+"Open an existing SVG file or create a new one"
+"Swap channels"
+"-> Red"
+"-> Green"
+"-> Blue"
+"-> Alpha"
+"Swap 0-1, 2-3, 4-5..."
+"Swap 1-2, 3-4, 5-6..."
+"Swap Frames"
+"Synthesizer"
+"Momentary notes"
+"Ctrl or Shift to select multiple notes."
+"Blond"
+"Blond-cv"
+"Blue Dot"
+"Bright"
+"Hulk"
+"PinkLady"
+"S.U.V."
+"UnFlat"
+"Low Color"
+"Mid Color"
+"High Color"
+"Low color"
+"Mid color"
+"High color"
+"Min:"
+"Max:"
+"Time Average"
+"Frame count:"
+"Border:"
+"Accumulate"
+"Greater"
+"Less"
+"Restart for every frame"
+"Don't buffer frames"
+"Type:"
+"Time range:"
+"As timefront use:"
+"Other track as timefront"
+"Alpha as timefront"
+"Intensity"
+"Alpha mask"
+"Inversion"
+"Show grayscale (for tuning"
+"TimeFront"
+"ERROR: TimeFront plugin - If you are using another track for timefront, you have to have it under shared effects\n"
+"Sizes of master track and timefront track do not match\n"
+"TimeFront plugin error: ALPHA used, but project color model does not have alpha\n"
+"TimeFront plugin error: ALPHA track used, but project color model does not have alpha\n"
+"TimeFront plugin error: unsupported track_usage parameter\n"
+"Use fast fourier transform"
+"Use overlapping windows"
+": Time stretch"
+"Fraction of original speed:"
+"Time stretch"
+"Window size (ms):"
+"Time Stretch RT"
+"GlyphUnit::process_package FT_New_Face failed.\n"
+"GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"
+"TitleMain::load_freetype_face %s failed.\n"
+"No motion"
+"Bottom to top"
+"Top to bottom"
+"Right to left"
+"Left to right"
+"Font:"
+"Pitch:"
+"Style:"
+"Justify:"
+"Motion type:"
+"Drop shadow:"
+"Fade in (sec):"
+"Fade out (sec):"
+"Speed:"
+"Outline:"
+"Encoding:"
+"Bold"
+"Italic"
+"Outline color..."
+"Stamp timecode"
+"Center"
+"Mid"
+"Translate"
+"In X:"
+"In Y:"
+"In W:"
+"In H:"
+"Out W:"
+"Out H:"
+"Unsharp"
+"VideoScope"
+"Carrier Track:"
+"Vocoder"
+"Smear"
+"Blacken"
+"Reflective"
+"Phase:"
+"Wavelength:"
+"Wave"
+"Pinch"
+"Whirl"
+"Wipe"
+"U:"
+"V:"
+"YUV"
+"Y_dx:"
+"Y_dy:"
+"U_dx:"
+"U_dy:"
+"V_dx:"
+"V_dy:"
+"YUVShift"
+"X Magnification:"
+"Y Magnification:"
+"Zoom"
+"Zoom Blur"

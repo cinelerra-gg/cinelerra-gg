@@ -1,0 +1,44 @@
+Shift-klik kurba fotograma baten gainean atxikitzeko aldameneko balioekin.
+
+Desgaitu pista erreproduzitzea efektu motelak konfiguratzean. Konfiguratu ondoren, 
+gaitu berriro erreproduzitzea fotograma bakarra prozesatzeko.
+
+Sakatu Ktrl + garraio-komandoa sarrerako eta irteerako puntuen 
+arteko eskualdeak soilik erreproduzitzeko.
+
+Aukera batean Maius + klik egitean hautatutakoa ezik, beste aukera
+guztiak txandakatuko dira.
+
+Botoi batean klik egitean eta beste pistetan zehar arrastatzean
+beste aukera guztiak aurrenekoarekin bat etortzea eragiten du.
+
+Efektu baten mugetan Maius + klik egitean efektu
+horrengain soilik eragingo du arrastatzeak.
+
+Hainbat fitxategi kargatzeko, egin klik fitxategi batean eta Maius tekla
+sakatuta edukiz egin klik beste fitxategian (tartean dauden fitxategi
+guztiak aukeratuko ditu baita ere). Tarteko fitxategi guztiak aukeratu
+ordez, fitxategi zehatz batzuk aukeratzeko erabili Ktrl tekla.
+
+Denbora-barran Ktrl + saguaren ezkerreko botoiarekin klik eginez 
+denbora-formatua aurreratzen du.
+Ktrl + erdiko botoiarekin klik eginez atzera egiten du.
+
+Konposaketa-leihoan +/- teklak erabili zooma handiagotzeko edo txikiagotzeko.
+
+Mozketa-leihoan Alt tekla sakatuta klik egitean
+4 puntuen translazioa eragiten du.
+
+Pista baten gainean Tabulatzailea tekla sakatzean grabazioaren egoera
+txandakatzen du.
+Pista baten gainean Maius + Tabulatzailea tekla sakatzean beste pista
+guztien grabazioaren egoera txandakatzen du.
+
+Audioa->1:1 erlazioak audioko pista grabagarria beste kanal bati esleitzen dio.
+5.1:1 erlazioak AC3 motako 6 pista grabagarri 2 kanalei esleitzen die.
+
+Alt + ezkerrera teklak aurreko muntai-heldulekura joaten da.
+Alt + eskuinera teklak hurrengo muntai-heldulekura joaten da.
+
+Ezarpenak-> typeless-fotogramak esker, edozein pistatik-fotogramak bai  naudio edo bideo pistetan itsatsiko.
+

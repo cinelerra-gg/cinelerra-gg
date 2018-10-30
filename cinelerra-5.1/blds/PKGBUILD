@@ -1,0 +1,49 @@
+# Maintainer: goodguy <lists.cinelerra-cv.org>
+pkgname=cin
+pkgver=5.1
+pkgrel=20180930
+pkgdesc="Cinelerra git://git.cinelerra-cv.org/goodguy/cinelerra.git ($pkgrel)"
+arch=('x86_64')
+url="http://www.cinelerra-cv.org"
+license=('GPL')
+DEPENDS=( 'alsa-lib' 'atk' 'bzip2' 'cairo' 'expat' 'fftw' 'flac'
+ 'fontconfig' 'freetype2' 'fribidi' 'gcc-libs' 'gdk-pixbuf2'
+ 'glib2' 'glibc' 'glu' 'graphite' 'gtk2' 'harfbuzz' 'libavc1394'
+ 'libdatrie' 'libdv' 'libffi' 'libglvnd' 'libiec61883' 'libjpeg-turbo'
+ 'libogg' 'libpng' 'libraw1394' 'libsndfile' 'libthai'
+ 'libtheora' 'libtiff' 'libutil-linux' 'libvdpau' 'libvorbis'
+ 'libvpx' 'libx11' 'libxau' 'libxcb' 'libxcomposite' 'libxcursor'
+ 'libxdamage' 'libxdmcp' 'libxext' 'libxfixes' 'libxft' 'libxi'
+ 'libxinerama' 'libxrandr' 'libxrender' 'libxv' 'numactl' 'opus'
+ 'pango' 'pcre' 'pixman' 'xz' 'zlib' 'xorg-server' 'libva'
+ 'xorg-fonts-misc' 'ttf-dejavu' 'inkscape' 'dvdauthor' 'udftools' )
+
+makedepends=( 'autoconf' 'automake' 'yasm' 'nasm' 'cmake'
+	 'libxml2' 'perl-xml-libxml' 'perl-xml-parser'
+	 'xorg-mkfontdir' 'xorg-mkfontscale' )
+
+conflicts=()
+source=(https://www.cinelerra-cv.org/five/pkgs/src/cin_$pkgver.$pkgrel-src.tgz)
+md5sums=('00000000000000000000000000000000')
+
+prepare() {
+  cd "$srcdir/cinelerra-$pkgver"
+  sed -i 's/\<python\>/python2.7/' ./guicast/Makefile
+}
+
+build() {
+  cd "$srcdir/cinelerra-$pkgver"
+  ./autogen.sh
+  export FFMPEG_EXTRA_CFG=" --disable-vdpau"
+  ./configure --prefix=/usr --with-exec-name=$pkgname
+CFG_VARS="\
+CFLAGS+=' -Wno-narrowing -O2 -g -fno-omit-frame-pointer' \
+CXXFLAGS+=' -Wno-narrowing -O2 -g -fno-omit-frame-pointer' \
+WERROR_CFLAGS+=' -fpermissive'" \
+  make 2>&1 | tee log
+}
+
+package() {
+  cd "$srcdir/cinelerra-$pkgver"
+  make install DESTDIR="$pkgdir"
+}

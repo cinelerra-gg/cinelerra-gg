@@ -1,0 +1,55 @@
+
+CREATE TABLE video_frame  (
+  frame_mean real,               -- video average data
+  frame_std_dev real,            -- video std dev data
+  frame_cx real, frame_cy real,  -- video centroid
+  frame_moment real,             -- video frame_cx+frame_cy
+  frame_data blob                -- video data
+) ;
+
+CREATE INDEX frame_weight ON video_frame (frame_mean) ;
+CREATE INDEX frame_center ON video_frame (frame_moment) ;
+
+
+CREATE TABLE timeline  (
+  clip_id int unsigned,         -- label
+  sequence_no int unsigned,     -- frame number in sequence
+  frame_id int unsigned,        -- video_frame id
+  group int unsigned,           -- prefix/suffix flags
+  time_offset real              -- seconds
+) ;
+
+CREATE INDEX timelines ON timeline (frame_id) ;
+CREATE UNIQUE INDEX sequences ON timeline (clip_id, sequence_no) ;
+
+
+CREATE TABLE clip_set  (
+  title text NOT NULL default '', -- title
+  asset_path text NOT NULL default '', -- original asset path
+  position real,                -- orignal asset position
+  framerate real,               -- framerate
+  average_weight real,          -- average_weight
+  frames int unsigned,          -- total frames
+  prefix_size int unsigned,     -- prefix frame count
+  suffix_size int unsigned,     -- suffix frame count
+  weights blob,                 -- frame weights[frames]
+  system_time bigint,           -- stream system time
+  creation_time bigint          -- record creation time
+) ;
+
+CREATE INDEX clip_title ON clip_set (title) ;
+CREATE INDEX clip_system_time ON clip_set (system_time) ;
+CREATE INDEX clip_creation_time ON clip_set (creation_time) ;
+CREATE INDEX clip_path_pos ON clip_set (asset_path, position) ;
+
+
+CREATE TABLE clip_views  (
+  access_clip_id int unsigned,  -- label
+  access_time bigint,           -- last view time
+  access_count int unsigned     -- total views
+) ;
+
+CREATE UNIQUE INDEX clip_access ON clip_views (access_clip_id) ;
+CREATE INDEX last_view ON clip_views (access_time) ;
+CREATE INDEX total_views ON clip_views (access_count, access_clip_id) ;
+

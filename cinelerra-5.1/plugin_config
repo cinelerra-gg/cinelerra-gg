@@ -1,0 +1,54 @@
+
+CFLAGS += -I../ -I$(CINELERRA) -I$(GUICAST) -I../colors -fPIC
+
+CFLAGS += $(static_incs)
+LFLAGS += $(static_libs)
+LDLINKER ?= $(CXX) -shared
+$(shell mkdir -p $(OBJDIR))
+
+PLUGIN_DIR := $(BINDIR)/plugins
+OUTPUT_DIR = $(PLUGIN_DIR)/$($(PLUGIN))
+OUTPUT = $(OUTPUT_DIR)/$(PLUGIN).plugin
+OUTPUT_G = $(OBJDIR)/$(PLUGIN).debuginfo
+
+$(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
+$(shell echo $(LFLAGS) > $(OBJDIR)/l_flags)
+
+ifeq ($(OUTPUT_THEME),)
+
+$(OUTPUT): $(OBJS) $(OUTPUT_DIR) $(OUTPUT_BINS)
+	$(LDLINKER) -o $(OUTPUT) $(OBJS) $(OUTPUT_BINS) `cat $(OBJDIR)/l_flags`
+	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
+	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
+
+else
+
+THEME_DATA = $(OBJDIR)/$(PLUGIN)_data.o
+
+$(OUTPUT_THEME): $(OBJS) $(OUTPUT_DIR) $(THEME_DATA)
+	$(LDLINKER) -o $(OUTPUT_THEME) $(OBJS) $(THEME_DATA)
+	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT_THEME) $(OUTPUT_G))
+	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT_THEME))
+
+$(THEME_DATA):
+	cd $(OBJDIR) && \
+	../../../guicast/$(OBJDIR)/bootstrap $(notdir $(THEME_DATA)) ../data/*.png
+
+endif
+
+$(OUTPUT_DIR):
+	mkdir -p $@
+
+clean::
+	rm -f $(OUTPUT)
+	rm -rf $(OBJDIR)
+
+wc:
+	cat *.C *.h | wc
+
+$(OBJDIR)/%.o:          %.C
+	$(CXX) `cat $(OBJDIR)/c_flags` -DMSGQUAL=$* -c $< -o $@
+
+val-%:
+	@echo $($(subst val-,,$@))
+

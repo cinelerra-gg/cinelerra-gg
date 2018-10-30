@@ -1,0 +1,14 @@
+--- encore-5.0/Makefile.orig	2016-04-16 13:00:03.778757000 -0600
++++ encore-5.0/Makefile	2016-04-16 13:00:21.598513000 -0600
+@@ -9,7 +9,10 @@
+   CFLAGS := -O2 -fomit-frame-pointer -I/usr/local/include
+ endif
+ 
+-OBJDIR := $(shell uname --machine)
++OBJDIR := $(shell uname -m)
++ifeq ($(OBJDIR), amd64)
++OBJDIR := x86_64
++endif
+ 
+ ifeq ($(OBJDIR), i686)
+   #USE_MMX = 1

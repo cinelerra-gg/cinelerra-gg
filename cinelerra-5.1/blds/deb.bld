@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#apt install libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev \
+# libavresample-dev libavutil-dev uuid-dev libdv4-dev libmjpegtools-dev \
+# liblilv-dev libsuil-dev libavc1394-dev libraw1394-dev libmp3lame-dev \
+# libopenjp2-7-dev libtwolame-dev libvpx-dev libwebp-dev libwebpmux3 \
+# libx264-dev libx265-dev libopus-dev
+
+( ./autogen.sh
+  CFLAGS=-DFFMPEG3 ./configure --with-single-user \
+    --disable-static-build --without-thirdparty \
+    --without-video4linux2 --without-dvb --with-lv2=auto \
+    --without-libzmpeg --without-commercial
+  make && make install ) 2>&1 | tee log
+mv Makefile Makefile.cfg
+cp Makefile.devel Makefile
+

@@ -1,0 +1,13 @@
+webm libvpx-vp9
+# Pass 2 of 2, you must first render using pass1of2...
+cin_stats_filename /tmp/cin_video_vp9_webm
+flags +pass2
+bitrate=1024k
+minrate=512k
+maxrate=1485k
+tile-columns=2
+g=240
+threads=8
+quality=good
+crf=32
+speed=4

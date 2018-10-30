@@ -1,0 +1,40 @@
+Shift-click on a curve keyframe to snap it to the neighboring values.
+
+When configuring slow effects, disable playback for the track.  After configuring it,
+re-enable playback to process a single frame.
+
+Ctrl + any transport command causes playback to only cover
+the region defined by the in/out points.
+
+Shift + clicking a patch causes all other patches except the
+selected one to toggle.
+
+Clicking on a patch and dragging across other tracks causes
+the other patches to match the first one.
+
+Shift + clicking on an effect boundary causes dragging to affect
+just the one effect.
+
+Load multiple files by clicking on one file and shift + clicking on
+another file.  Ctrl + clicking toggles individual files.
+
+Ctrl + left clicking on the time bar cycles forward a time format.
+Ctrl + middle clicking on the time bar cycles backward a time format.
+
+Use the +/- keys in the Compositor window to zoom in and out.
+
+Pressing Alt while clicking in the cropping window causes translation of
+all 4 points.
+
+Pressing Tab over a track toggles the Record status.
+Pressing Shift-Tab over a track toggles the Record status of all the other tracks.
+
+Audio->Map 1:1 maps each recordable audio track to a different channel.
+Map 5.1:2 maps 6 recordable AC3 tracks to 2 channels.
+
+Alt + left moves to the previous edit handle.
+Alt + right moves to the next edit handle.
+
+Settings->typeless keyframes allows keyframes from any track to be pasted on either
+audio or video tracks.
+

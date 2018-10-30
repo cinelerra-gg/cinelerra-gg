@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="29"
+   height="24"
+   viewBox="0 0 7.6729166 6.3500001"
+   version="1.1"
+   id="svg1601"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="loadmode_paste.svg"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/loadmode_paste.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs1595" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="14.588163"
+     inkscape:cx="54.80315"
+     inkscape:cy="30.607007"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:showpageshadow="false"
+     units="px" />
+  <metadata
+     id="metadata1598">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+        <dc:relation>loadmode_all</dc:relation>
+        <dc:date>2018-08-14</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Olaf</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:description>2018-08-14</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-290.65)">
+    <g
+       id="g1538"
+       transform="matrix(0.95966894,0,0,0.95966894,305.50641,220.36971)">
+      <rect
+         y="74.623405"
+         x="-316.12558"
+         height="3.8378265"
+         width="3.5552905"
+         id="rect1493"
+         style="opacity:1;fill:#efede3;fill-opacity:1;fill-rule:evenodd;stroke:#d4d2d0;stroke-width:0.13229167;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <g
+         transform="translate(-0.14074242)"
+         id="g1522">
+        <rect
+           style="opacity:1;fill:#bfbfbf;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.13229167;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect1495"
+           width="1.3773637"
+           height="0.75931585"
+           x="-314.89587"
+           y="74.557259" />
+        <circle
+           style="opacity:1;fill:#808080;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.13229166;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="path1497"
+           cx="-314.64429"
+           cy="74.93692"
+           r="0.10337167" />
+        <circle
+           style="opacity:1;fill:#808080;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.13229166;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="path1497-2"
+           cx="-313.77014"
+           cy="74.93692"
+           r="0.10337167" />
+      </g>
+      <path
+         inkscape:connector-curvature="0"
+         id="path1524"
+         d="M -315.0026,75.245176 V 74.557259"
+         style="fill:none;stroke:#000000;stroke-width:0.01527424px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <use
+         height="100%"
+         width="100%"
+         transform="translate(1.3094142)"
+         id="use1526"
+         xlink:href="#path1524"
+         y="0"
+         x="0" />
+      <use
+         height="100%"
+         width="100%"
+         transform="matrix(0,1,-1.9034479,0,-171.77732,390.24778)"
+         id="use1528"
+         xlink:href="#path1524"
+         y="0"
+         x="0" />
+    </g>
+  </g>
+</svg>

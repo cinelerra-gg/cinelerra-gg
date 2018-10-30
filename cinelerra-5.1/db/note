@@ -1,0 +1,50 @@
+  during toc scan,
+    acquire video thumbnail for each position
+    transform video_thumbnail to media frame_key
+    mark frames which exist in video_frames
+  foreach frame in toc,
+    find next marked frame
+    acquire video thumbnail for mark position
+    transform video_thumbnail to media frame_key
+    find frame_key in video_frames giving video_frame_id
+    best = bad -- for every commercial using this frame
+    foreach clip_set in timelines matching (video_frame_id)
+      score = 0 -- for every frame in the commercial
+      foreach timeline_sequence matching (clip_set_id, seq_no++)
+        acquire video frame (now-offset)
+        transform video_thumbnail to media frame_key
+        access video_frame(video_frame_id);
+        compute error frame_key against video_frame(frame_key)
+        add error to score
+        if score > best then break
+      done
+      if score < best score then best = score
+    done
+    if best is bad then exit
+    perform action for best match
+    reset position past match
+  done
+
+  during playback,
+    while normal playback
+      acquire video thumbnail for current position
+      transform video_thumbnail to media frame_key
+      find frame_key in video_frames giving video_frame_id
+      if found, playback = commercial
+    save clip_set,seq_no and start_offset of timelines matching (video_frame_id)
+      perform highest priority action for matching clip_set
+    playtime = 0
+    while commercial playback
+      acquire video thumbnail for next position
+      transform video_thumbnail to media frame_key
+      find frame_key in video_frames giving video_frame_id
+      playback = normal
+      if not found : break
+      foreach timelines matching video_frame_id
+        search saved clip_set for time_line clip_set_id
+        if not found : continue
+        if( time_line sequence_no != saved ++seq_no )
+          delete saved clip_set, empty save set : break
+          continue
+        access timeline_sequence(clip_set(i),++seq_no(i)) giving next_time_line
+        if( next_time_line.offset-start_offset(i) == playtime ) playback = commerial, break

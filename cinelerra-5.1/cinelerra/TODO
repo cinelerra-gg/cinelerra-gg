@@ -1,0 +1,146 @@
+BIG BUGS
+----------------
+Nested EDLs with different colormodels crash.
+Effects not getting rendered if multiple effects have random starting times.
+Drag effect before timeline is finished drawing after a load -> lockup
+Load a sound file.  Change the file on the disk.  Crash on exit.
+Change asset path, CPlayback never returns to redraw the frame.
+
+
+
+
+
+
+WISH LIST
+----------------
+
+Private plugin data storage in the track.
+ - save_private(position) & load_private(position) calls
+ - the problem is the playback thread doesn't have access to the timeline EDL
+ - would need a call to send data back to the timeline EDL
+Double click -> select edit -> drag to expand selection by edit
+Remove unused files from project and disk.
+clear button in error dialog
+Option to display full path for assets
+custom button bar
+ - preferences window with possible buttons and current buttons for the 3 main windows
+ - buttons need different implementations for each window because of locking
+ - order is fixed
+ - drag from possible buttons to current buttons to add
+ - drag from current buttons to possible buttons to remove
+ - remove icons after dragging out of possible buttons
+ - prev/next edit
+ - save
+ - open
+ - record
+ - new
+ - keyframe straight or curved
+ - modify labels
+ - modify effects
+ - align on frames
+undo menu showing previous 20 steps to undo
+ - or page in resources window
+Page in resources window for overlays
+Common service for audio and video drivers.
+
+
+time stretch rubber band
+ - before or after effects
+
+Music synthesis
+ - all roads lead to having just audio & video tracks
+ - asset or effect
+
+Image synthesis
+ - asset or effect
+ - particle system
+ - track motion of every pixel, determine Z for every pixel
+ - track motion for successively smaller macroblocks
+ - synthesize picture using cubes and compare
+
+
+
+
+rendering, playback, record settings bound to EDL.
+histogram parade - either toggle, different plugin, or plugin replacement
+editing in place
+Apply motion tracking to another effect or mask.
+ - currently involves matchmoving an alpha multiply track
+Denoise from mjpeg tools.
+ - yuvdeinterlace
+Check for output asset being used in project before rendering.
+Extended MPEG video support
+ - need accurate beginning and ending frames
+ - 1: direct copy of MPEG video frames
+ - 2: multiplexer settings under audio
+ - 3: support program stream using mplex and fifos
+ - support transport stream using makets and fifos for mplex when it supports it
+ - encode AC3 audio only with video.  6 channel support
+
+Time average with median.
+Remove unused resources function.
+Session management
+Signal handling for non interactive rendering.
+Sound level using readahead buffer.
+Asset searches.
+Asset organization in subfolders.
+Field based reverse video.
+Zoomblur transition
+Zoom transition
+
+
+
+
+
+
+
+
+
+
+NOT GOING TO HAPPEN
+---------------------
+Hide controls in Record Monitor
+Quicktime mp3 needs standards check
+ - no need for mp3 anymore
+Dissolve doesn't work in YUVA OpenGL
+ - not reproducible
+Batch filename not saved from recording dialog if cancelled.
+ - not reproducible
+
+
+
+
+
+
+
+Not reproducible
+----------------------
+Quit freezes when background rendering is on.
+ - No quit during slow effect with background rendering.
+ - Not reproducible.
+
+
+
+
+
+
+
+
+
+
+
+B
+-----------
+Doesn't support window managers with user placement of windows.
+Remember Asset list position.
+
+
+
+
+
+
+
+
+On hold
+--------------
+Paste non realtime plugins leading to a dialog box.

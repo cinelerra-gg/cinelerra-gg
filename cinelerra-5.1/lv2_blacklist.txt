@@ -1,0 +1,51 @@
+# last updated 2018/06/13 gg/pys
+http:*midi*
+http:*MIDI*
+
+http://bjones.it/psi-plugins/sidechain_gate
+http://dsheeler.org/plugins/tremelo
+http://lsp-plug.in/plugins/lv2/comp_delay_x2_stereo
+http://lsp-plug.in/plugins/lv2/graph_equalizer_x16_lr
+http://lsp-plug.in/plugins/lv2/graph_equalizer_x16_ms
+http://lsp-plug.in/plugins/lv2/graph_equalizer_x16_stereo
+http://lsp-plug.in/plugins/lv2/graph_equalizer_x32_lr
+http://lsp-plug.in/plugins/lv2/graph_equalizer_x32_ms
+http://lsp-plug.in/plugins/lv2/graph_equalizer_x32_stereo
+http://lsp-plug.in/plugins/lv2/para_equalizer_x16_lr
+http://lsp-plug.in/plugins/lv2/para_equalizer_x16_mono
+http://lsp-plug.in/plugins/lv2/para_equalizer_x16_ms
+http://lsp-plug.in/plugins/lv2/para_equalizer_x16_stereo
+http://lsp-plug.in/plugins/lv2/para_equalizer_x32_lr
+http://lsp-plug.in/plugins/lv2/para_equalizer_x32_mono
+http://lsp-plug.in/plugins/lv2/para_equalizer_x32_ms
+http://lsp-plug.in/plugins/lv2/para_equalizer_x32_stereo
+http://lsp-plug.in/plugins/lv2/sc_compressor_lr
+http://lsp-plug.in/plugins/lv2/sc_dyna_processor_lr
+http://lsp-plug.in/plugins/lv2/sc_dyna_processor_mono
+http://lsp-plug.in/plugins/lv2/sc_dyna_processor_ms
+http://lsp-plug.in/plugins/lv2/sc_dyna_processor_stereo
+http://plugin.org.uk/swh-plugins/bandpass_a_iir
+http://plugin.org.uk/swh-plugins/bandpass_iir
+http://plugin.org.uk/swh-plugins/butthigh_iir
+http://plugin.org.uk/swh-plugins/buttlow_iir
+http://plugin.org.uk/swh-plugins/bwxover_iir
+http://plugin.org.uk/swh-plugins/highpass_iir
+http://plugin.org.uk/swh-plugins/lowpass_iir
+#
+# Rakarrack takes special handling to get these lv2 plugins to work;
+# the library needs to be linked using  -Bsymbolic-functions ;
+# and there are places where there exist uninitialized data objects.
+# 
+http://rakarrack.sourceforge.net/effects.html#DistBand
+http://rakarrack.sourceforge.net/effects.html#Reverbtron
+http://rakarrack.sourceforge.net/effects.html#Sequence
+http://rakarrack.sourceforge.net/effects.html#StereoHarm_no_mid
+http://rakarrack.sourceforge.net/effects.html#StompBox
+http://rakarrack.sourceforge.net/effects.html#StompBox_fuzz
+http://rakarrack.sourceforge.net/effects.html#Vocoder
+http://rakarrack.sourceforge.net/effects.html#dere
+http://rakarrack.sourceforge.net/effects.html#dist
+http://rakarrack.sourceforge.net/effects.html#har_no_mid
+http://yoshimi.sourceforge.net/lv2_plugin
+http://yoshimi.sourceforge.net/lv2_plugin_multi
+urn:juced:DrumSynth

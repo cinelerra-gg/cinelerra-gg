@@ -1,0 +1,49 @@
+#!/usr/bin/make -f
+# from topdir ./debian/rules binary
+package=cin
+
+# Enable hardening flags
+CFLAGS += $(shell dpkg-buildflags --get CFLAGS)
+CXXFLAGS += $(shell dpkg-buildflags --get CXXFLAGS)
+LDFLAGS += $(shell dpkg-buildflags --get LDFLAGS)
+
+build build-arch build-indep: build-stamp
+
+build-stamp:
+	dh_testdir
+	@if [ ! -e configure ] ; then ./autogen.sh; fi
+	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		./configure --enable-opengl --prefix=/usr $(CONFFLAGS)
+	$(MAKE) $(MAKEFLAGS)
+	touch $@
+
+clean:
+	dh_testdir
+	dh_testroot
+	[ ! -f Makefile ] || $(MAKE) clean
+	dh_clean -a
+	-rm -f build-stamp
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/cin
+	install -D -m644 debian/sysctl.d debian/cin/etc/sysctl.d/50-cin.conf
+
+binary-indep: build install
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_install
+	dh_link -a
+	dh_icons -a
+	dh_fixperms -a
+	dh_installdeb -a
+	dh_gencontrol 
+	dh_builddeb -p cin
+
+binary: binary-indep binary-arch
+

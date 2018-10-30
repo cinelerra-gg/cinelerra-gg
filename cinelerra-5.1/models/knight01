@@ -1,0 +1,19 @@
+width: 1782
+height: 2600
+scale: 0.3
+
+body: knight01_body.png 0 834
+head: knight01_head.png 561 54
+
+mouth: knight01_mouth1.png 788 745
+mouth: knight01_mouth2.png 788 745
+mouth: knight01_mouth3.png 788 745
+
+eyes: knight01_eyes2.png 708 511
+eyes: knight01_eyes1.png 708 511
+
+# the model faces left instead of right
+faces_left
+
+
+

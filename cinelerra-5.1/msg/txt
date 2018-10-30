@@ -1,0 +1,117 @@
+Cinelerra Unify (GG) continuously merged/enriched from the
+  original Heroine Virtual of Adam Williams which does not
+  support many modern formats, and now contains CV mods
+  provided over prior years from the Community Version.
+Email cinelerra@lists.cinelerra-cv.org 4 help.
+For usage help, refer to the following:
+  https://cinelerra-cv.org/docs/cinelerra_cv_manual_en.html
+  https://cinelerra-cv.org/five/Features5.pdf
+  http://g-raffa.eu/Cinelerra/HOWTO/basics.html
+Cinfinity icons selected in Preferences Sam (CC BY 3.0,
+  https://creativecommons.org/licenses/by/3.0/)
+Neophyte theme selected in Preferences by Olaf Wolff (CC BY 4.0,
+  https://creativecommons.org/licenses/by/4.0/)
+.
+Oct 2018 New features of note:
+  Title plugin has unlimited number of characters allowed.
+  Histogram Bezier bug fixes and some improvements applied.
+  Trim Feature enhancement with drag handle and split look.
+  Additional ffmpeg plugins available (FF icon for now).
+  Dynamic keyframes implemented so can use large numbers.
+  Color correction+others highlighted with expand subtrees.
+  Autos, like fade, allow for textbox input & tooltip values.
+.
+Sept 2018 New Features of note:
+  Motion plugins now have more visible stippled lines.
+  New Export Project option; h26x_mp3 audio format available,
+  Overlays Winow toggle on/off XYZ for Camera/Projector.
+  Patchbay Expander icon moved up to allow for better usage.
+.
+July/Aug 2018 New Features of note:
+  Neophyte theme and German translations compliments of Olaf.
+  Bins/Folders added for organizing media.
+  Preview capability with Mouse Over and vicon tweaks.
+  Numbers on the keypad can be used in dialog boxes.
+  OpenGL driver rework for fixes and/or improvement.
+  Proxy switcher added to ease going back and forth.
+  Single image proxy of scalar and non-scalar both work.
+  Find in Resources, User title, and Show edit options added.
+  Added Display packed icons and Display icon list in Resources.
+.
+June/May 2018 New Features of note:
+  Proxy usage with multicams has been corrected.
+  LV2 Audio plugins have been hooked in to include Calf, X42, +.
+  Jpeg, libx265, and Dcraw have been upgraded.
+  Unbundled build scripts are now available and tested a few.
+  FFmpeg plugins have had a slider bar added for easier use.
+.
+April 2018 New Features of note:
+  FFmpeg has been updated to V 4.0. Libx265 to 2.7.
+  OpenCV FindObj updated and StyleObj, PuzzleObj added.
+  Shortcuts F11-F12 in compositor / b for load backup.
+  Drag widget designed/added for future versatility.
+.
+March 2018 New Features of note:
+  Audio now is associated when in the Proxy folder.
+  Perpetual Session preference and 1 extra backup.
+  Speed automation will now update the track duration.
+  Locking tracks in patchbay, highlites that scenario.
+  Can now Paste Silence a single frame at hairline cursor.
+  Load files from the Resources window now via "o".
+  SVG with Inkscape rewritten to not use Shell command.
+  Hyperlinks for the Table of Contents added to Features5.
+.
+February 2018 New Features of note:
+  Pulldown menus now stay until window or mouse change.
+  Audio waveform partial image will show in the Viewer.
+  Adding a matched set of tracks is now available.
+  Loop play added in Viewer and Compositor.
+  Mouse play action implemented in Viewer/Compositor.
+  Nested EDLs are now available and automatically render.
+  Audio plays the first few bars in the Resources window.
+  Third-party programs have been upgraded.
+  File size indicator in File Load has numeric options.
+  Shortcuts.html updated for some new or missing actions.
+  Clips in the Resources window show a png thumbnail.
+.
+January 2018 New Features of note:
+  Plugin names in EDL now all english & not translated.
+  Raw Video (yuv/rgb) and raw audio available.
+  Audio waveform icons, color coded, in Resources Media.
+  Allowance for piped file usage has been added.
+  Render Farm minor enhancements and bug fixes.
+  Pixels for Render Video and Samples/Quality for Audio.
+  2 Pass option for VP9/webm added.
+.
+2017 New Features of note:
+  Many plugin icons and other new icons modernized by Sam.
+  Mixer Viewer for multiple media/cameras was added.
+  Blade cut and hard edges are now available.
+  Snap/Cut editing and snap while dragging stickiness.
+  New plugins of CriKey, Motion51 and HistEq added.
+  Perspective/BlueBanana/C41 plugins were fixed/improved.
+  Grabshot/Snapshot new options for screen grab/shot.
+  Colorspace & Color range improvements for BT601/709/2020.
+  HV7 mods merged in to include X11 Direct playback.
+  Alternative shortcut keys for computers without numpad.
+  Search box in the Resources window to narrow choices.
+  Proxy Editing added to Settings pulldown.
+  OpenCV optional compile with 4 plugins now available.
+  Shortcuts.html added to shell cmds icon for easy view.
+  Faststart option added for Mp4 and QT ffmpeg format.
+  Probe Order preference added for flexibility.
+  Dcraw program updated to latest Coffin version.
+  Zoom bar in compositor handles any size.
+  Upgraded FFMPEG to 3.3 + other 3rd party libraries.
+  Title plugin major changes to include:
+   ColorPicker added, fast Font selection,
+   Stroker for fonts added, BC_FONT_PATH.
+   Drag with 9 different handles, Background
+     video, individual character attributes of
+     Color, Size, Font, Underline, Bold, Italic,
+     Caps, Blink, Alpha, Nudge, Sup(erscript,
+     subscript), and PNG inclusion + Rt. Click.
+   Now handles 3071 characters and a count provided.
+  Bluray creation improved & allows for non-root usage.
+  Unicode characters can be put into textbox.
+  Smooth Lines create near-perfect circles/curves.

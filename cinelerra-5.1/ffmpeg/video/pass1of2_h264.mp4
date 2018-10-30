@@ -1,0 +1,8 @@
+mp4 libx264
+# pass 1 of 2, you must render the 2nd pass using pass2of2...
+flags +pass1
+passlogfile /tmp/2passes_h264.log
+b=2600k
+# use framerate for 1 keyframe/sec, needed for seeks
+keyint_min=25
+x264opts keyint=25

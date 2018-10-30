@@ -1,0 +1,12 @@
+fmp4 libx264
+crf=28
+maxrate=20000000
+bufsize=20000000
+preset=veryslow
+profile=high
+cin_pix_fmt yuv420p
+level=41
+bf=8
+refs=4
+# use framerate for 1 keyframe/sec, needed for seeks
+x264opts cabac=1:me_range=24:bframes=8:keyint=60:keyint_min=25:qpmin=0:qpmax=69:qpstep=4

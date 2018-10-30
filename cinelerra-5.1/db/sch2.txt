@@ -1,0 +1,22 @@
+
+CREATE TABLE  clip (
+  name text NOT NULL default '',    -- title
+  width int unsigned,
+  height int unsigned,
+  duration real,
+  prefix_id_count int unsigned,
+  prefix_ids blob,                  -- media id list
+  suffix_id_count int unsigned,
+  suffix_ids blob,                  -- media id list
+  media_type int unsigned,          -- video, audio
+  action int unsigned               -- delete, mute, none
+)  ;
+
+CREATE TABLE video_data (
+  clip_id int unsigned,
+  time_offset real,
+  key_data media
+)  ;
+
+CREATE INDEX video_key ON video_data (key_data) ;
+

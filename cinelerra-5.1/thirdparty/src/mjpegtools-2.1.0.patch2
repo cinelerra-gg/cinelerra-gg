@@ -1,0 +1,22 @@
+diff -ur a/configure.ac b/configure.ac
+--- a/configure.ac	2016-12-24 08:32:29.025598527 -0700
++++ b/configure.ac	2016-12-24 08:33:15.857611555 -0700
+@@ -382,6 +382,7 @@
+ dnl programs such as yuvdenoise and y4mspatialfilter can use this flag by
+ dnl simply adding programname_CFLAGS=@PROGRAM_NOPIC@ to the Makefile.am
+ 
++PROGRAM_NOPIC=""
+ AC_SUBST(PROGRAM_NOPIC)
+ 
+ if test "$enable_simd_accel" != "false" -a "$enable_simd_accel" != "no"
+diff -ur a/configure b/configure
+--- a/configure	2016-12-24 08:59:51.019865977 -0700
++++ b/configure	2016-12-24 08:59:28.814032493 -0700
+@@ -19069,6 +19069,7 @@
+ esac
+ 
+ 
++PROGRAM_NOPIC=""
+ 
+ if test "$enable_simd_accel" != "false" -a "$enable_simd_accel" != "no"
+ then

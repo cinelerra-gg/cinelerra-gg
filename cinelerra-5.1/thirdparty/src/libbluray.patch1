@@ -1,0 +1,11 @@
+--- a/player_wrappers/xine/input_bluray.c	2016-05-09 14:34:35.934918227 -0600
++++ b/player_wrappers/xine/input_bluray.c	2016-05-09 14:27:59.880028563 -0600
+@@ -1423,7 +1423,7 @@
+ 
+   /* load title list */
+ 
+-  this->num_title_idx = bd_get_titles(this->bdh, TITLES_RELEVANT, 0);
++  this->num_title_idx = bd_get_titles(this->bdh, TITLES_RELEVANT, MIN_TITLE_LENGTH);
+   LOGMSG("%d titles\n", this->num_title_idx);
+ 
+   if (this->num_title_idx < 1)

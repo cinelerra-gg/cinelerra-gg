@@ -1,0 +1,4 @@
+mpegts libx264
+cin_bitrate=0
+cin_quality=0
+qp=0

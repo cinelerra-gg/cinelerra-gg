@@ -1,0 +1,5 @@
+mov huffyuv
+#probesize=100M
+#thread_queue_size=512
+#pix_fmt=bgra
+pixel_format=bgra

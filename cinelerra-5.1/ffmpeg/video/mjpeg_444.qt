@@ -1,0 +1,4 @@
+mov mjpeg
+qmax=4
+pixel_format=yuvj444p
+threads=3

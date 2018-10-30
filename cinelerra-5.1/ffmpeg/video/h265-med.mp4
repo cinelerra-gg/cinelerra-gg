@@ -1,0 +1,7 @@
+mp4 libx265
+# visually lossless
+crf=18
+cin_quality=-1
+# use framerate for 1 keyframe/sec, needed for seeks
+keyint_min=30
+x265-params=keyint=30

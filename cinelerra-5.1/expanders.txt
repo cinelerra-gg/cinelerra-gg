@@ -1,0 +1,186 @@
+Video Effects
+	- Color_Correction
+		Blue Banana
+		Brightness/Contrast
+		Color 3 Way
+		Color Balance
+		Gamma
+		HistEq
+		Histogram
+		Histogram Bezier
+		Hue saturation
+		Interpolate Bayer
+		RGB - 601
+		Reroute
+		Swap channels
+		Threshold
+		VideoScope
+		YUV411
+	- FF_Color_Correction
+		F_ciescope
+		F_colorbalance
+		F_colorchannelmixer
+		F_colorkey
+		F_colorlevels
+		F_colormatrix
+		F_curves
+		F_elbg
+		F_eq
+		F_floodfill
+		F_histeq
+		F_histogram
+		F_lut
+		F_lut3d
+		F_lutrgb
+		F_lutyuv
+		F_normalize
+		F_pixscope
+		F_pseudocolor
+		F_setrange
+		F_shuffleplanes
+		F_swapuv
+		F_tlut2
+		F_vectorscope
+		F_vignette
+	- Motion
+		Motion
+		Motion 2 Point
+		Motion51
+		MotionCV
+		MotionHV
+		F_deshake
+		F_mestimate
+	- Blur
+		Blur
+		Edge
+		Linear Blur
+		Motion Blur
+		Radial Blur
+		Sharpen
+		Unsharp
+		Zoom Blur
+		F_avgblur
+		F_boxblur
+		F_edgedetect
+		F_gblur
+		F_sab
+		F_smartblur
+		F_unsharp
+	- Denoise
+		DeScratch
+		Denoise video
+		DotTV
+		Selective Temporal Averaging
+		Time Average
+		F_atadenoise
+		F_bitplanenoise
+		F_dctdnoiz
+		F_hqdn3d
+		F_nlmeans
+		F_noise
+		F_owdenoise
+		F_removegrain
+		F_vaguedenoiser
+	- Extract Keys
+		Chroma key
+		Chroma key (HSV)
+		CriKey
+		Difference key
+		F_chromakey
+		F_despill
+		F_lumakey
+	- Geometry
+		Auto Scale
+		Flip
+		Lens
+		Perspective
+		Polar
+		Rotate
+		Scale
+		Scale Ratio
+		Sphere Cam
+		Translate
+		Whirl
+		Wave
+		F_cropdetect
+		F_crop
+		F_cover_rect
+		F_drawbox
+		F_drawgraph
+		F_drawgrid
+		F_hflip
+		F_lenscorrection
+		F_perspective
+		F_rotate
+		F_scale
+		F_super2xsai
+		F_transpose
+		F_vflip
+	- Scale
+		Auto Scale
+		F_hqx
+		F_scale
+		F_super2xsai
+		F_xbr
+		Scale
+		Scale Ratio
+Audio Effects
+	- Calf
+		- Instruments / Generators
+			L2_Calf Organ
+			L2_Calf Monosynth
+			L2_Calf Fluidsynth
+			L2_Calf Wavetable
+		- Modulation Effects
+			L2_Calf Multi Chorus
+			L2_Calf Phaser
+			L2_Calf Flanger
+			L2_Calf Rotary Speaker
+			L2_Calf Pulsator
+			L2_Calf Ring Modulator
+		- Delay Effects
+			L2_Calf Reverb
+			L2_Calf Vintage Delay
+			L2_Calf Compensation Delay Line
+			L2_Calf Reverse Delay
+		- Dynamic Processors
+			L2_Calf Compressor
+			L2_Calf Sidechain Compressor
+			L2_Calf Multiband Compressor
+			L2_Calf Mono Compressor
+			L2_Calf Deeser
+			L2_Calf Gate
+			L2_Calf Sidechain Gate
+			L2_Calf Multiband Gate
+			L2_Calf Limiter
+			L2_Calf Multiband Limiter
+			L2_Calf Sidechain Limiter
+			L2_Calf Transient Designer
+		- Filters and Equalizers
+			L2_Calf Filter
+			L2_Calf Filterclavier
+			L2_Calf Envelope Filter
+			L2_Calf Emphasis
+			L2_Calf Vocoder
+			L2_Calf 5-Band Equalizer
+			L2_Calf 8-Band Equalizer
+			L2_Calf 12-Band Equalizer
+			L2_Calf 30-Band Equalizer
+		- Distortion Effects
+			L2_Calf Saturator
+			L2_Calf Exciter
+			L2_Calf Bass Enhancer
+			L2_Calf Tape Simulator
+			L2_Calf Vinyl
+			L2_Calf Crusher
+		- Tools
+			L2_Calf Mono Input
+			L2_Calf Pitch Tools
+			L2_Calf Stereo Tools
+			L2_Calf Haas Stereo Enhancer
+			L2_Calf Multi Spread
+			L2_Calf Multiband Enhancer
+			L2_Calf X-Over 2 Band
+			L2_Calf X-Over 3 Band
+			L2_Calf X-Over 4 Band
+			L2_Calf Analyzer

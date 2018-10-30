@@ -1,0 +1,7 @@
+mp4 libx265
+# Pass 2 of 2, you must first render using pass1of2...
+cin_quality=-1
+b=2600k
+# use framerate for 1 keyframe/sec, needed for seeks
+keyint_min=30
+x265-params=keyint=30:pass=2:stats=/tmp/2passes_h265.log

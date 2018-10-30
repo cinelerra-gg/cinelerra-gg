@@ -1,0 +1,18 @@
+width: 1320
+height: 950
+scale: 0.6
+
+# ordering determines what is drawn 1st
+body: lion01_body.png 0 0
+head: lion01_head.png 703 0
+
+mouth: lion01_mouth1.png 1091 417
+mouth: lion01_mouth2.png 1091 417
+mouth: lion01_mouth3.png 1091 417
+
+eyes: lion01_eyes2.png 1091 248
+eyes: lion01_eyes1.png 1091 248
+
+
+
+

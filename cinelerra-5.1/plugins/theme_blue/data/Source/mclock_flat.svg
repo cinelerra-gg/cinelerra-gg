@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.47pre4 r22446"
+   width="160"
+   height="25"
+   sodipodi:docname="mclock_flat.svg">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       id="perspective10" />
+    <radialGradient
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.489853,0.56713565,-0.32403337,0.85122865,-121.94527,-127.60307)"
+       r="16.78125"
+       fy="-19.041546"
+       fx="245.54919"
+       cy="-19.041546"
+       cx="245.54919"
+       id="radialGradient3621"
+       xlink:href="#linearGradient3605"
+       inkscape:collect="always" />
+    <inkscape:perspective
+       id="perspective10-0"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <linearGradient
+       id="linearGradient3605"
+       inkscape:collect="always">
+      <stop
+         id="stop3607"
+         offset="0"
+         style="stop-color:#ffffff;stop-opacity:1;" />
+      <stop
+         id="stop3609"
+         offset="1"
+         style="stop-color:#ffffff;stop-opacity:0;" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#092340"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1280"
+     inkscape:window-height="773"
+     id="namedview4"
+     showgrid="false"
+     inkscape:zoom="7.38125"
+     inkscape:cx="142.31661"
+     inkscape:cy="1.5"
+     inkscape:window-x="0"
+     inkscape:window-y="1"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <rect
+     style="fill:#000000;fill-opacity:1;stroke:none"
+     id="rect3594"
+     width="160"
+     height="25"
+     x="0"
+     y="0"
+     ry="0.6919921" />
+  <path
+     id="path2932"
+     d="m 148.75451,0 c 0.37791,1.505956 0.59375,3.0420442 0.59375,4.59375 0,7.455359 -4.50167,14.420164 -12.3125,20.40625 l 21.09375,0 c 0.38336,0 0.6875,-0.304136 0.6875,-0.6875 l 0,-23.625 C 158.81701,0.30413637 158.51287,0 158.12951,0 l -9.375,0 z"
+     style="fill:#092340;fill-opacity:1;stroke:none" />
+  <path
+     style="fill:#939ed4;fill-opacity:1;stroke:none"
+     d="M 149.9375 0 C 150.31541 1.505956 150.53125 3.0420442 150.53125 4.59375 C 150.53125 12.049109 146.02958 19.013914 138.21875 25 L 159.3125 25 C 159.69586 25 160 24.695864 160 24.3125 L 160 0.6875 C 160 0.30413637 159.69586 0 159.3125 0 L 149.9375 0 z "
+     id="rect2926" />
+  <rect
+     style="fill:#092340;fill-opacity:1;stroke:none"
+     id="rect2818"
+     width="160"
+     height="1"
+     x="0"
+     y="24" />
+  <rect
+     y="24"
+     x="138"
+     height="1"
+     width="22"
+     id="rect2934"
+     style="fill:#1a1447;fill-opacity:1;stroke:none" />
+  <rect
+     style="fill:#092340;fill-opacity:1;stroke:none"
+     id="rect3645"
+     width="10.0779"
+     height="1"
+     x="149.92209"
+     y="0" />
+</svg>

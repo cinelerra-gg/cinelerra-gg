@@ -1,0 +1,4 @@
+# apply at init decode
+loglevel=fatal
+formatprobesize=5000000
+scan_all_pmts=1

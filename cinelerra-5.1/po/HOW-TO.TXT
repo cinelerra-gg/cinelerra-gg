@@ -1,0 +1,33 @@
+using google translate:
+
+1) cd <path>/cinelerra-x.x.x
+2) run xgettext:  ./po/xlat.sh > po/cin.po
+3) compile xlat.C:  cd ./po ; c++ -ggdb -Wall xlat.C
+4) get keys: ./a.out key < cin.po > cin.txt
+5) list output on console: cat cin.txt
+6) start browser url = https://translate.google.com/
+7) drag select and copy/paste cin.txt output to translator input box
+8) start gnome-terminal run: cat > xxx.txt    xxx = locale name
+9) scroll to the bottom of the browser translation window
+10) click select all, then rt mouse->copy
+12) paste into gnome-terminal window, <cr> to term last line, <ctl>-d to end
+13) run ./a.out xlat cin.po cin.txt,xxx.txt > xx.po.new     xx = locale id
+14) test msgfmt: msgfmt -c -o xx.mo.new xx.po.new
+15) fix problems identified in xlat msgs and msgfmt msgs
+16) rerun 13-15 until happy
+17) save output:  mv xx.mo.new xx.mo; mv xx.po.new xx.po
+
+input for xlat is either
+  1) a pair of files:  keys.txt xlat.txt
+  2) a csv file of "key","xlat" data pairs
+
+successive translation overrides can be appended to the xlat cmd line:
+as:  ./a.out xlat cin.po cin.txt,xxx.txt > xx.po.new
+or:  ./a.out xlat cin.po xxx.csv > xx.po.new
+or:  ./a.out xlat cin.po cin.txt,xxx.txt xxx.csv > xx.po.new
+last input=xxx.csv overlays previous def by input=cin.txt,xxx.txt
+or:  ./a.out xlat cin.po cin.txt,xxx.txt xxx.csv fix.txt,xfix.txt > xx.po.new
+etc...
+
+make sure that source files are in the utf-8 charset encoding.
+chrset.c can be used to convert the encoding of a file to utf-8

@@ -1,0 +1,29 @@
+Shift-klikk på en kurve keyframe å knipse det til nabo verdier.
+
+Når du konfigurerer langsomme effekter, deaktiverer avspilling for sporet. Når du har konfigurert den,  NRE aktivere avspilling for å behandle en enkelt ramme.
+
+Ctrl + eventuell transport kommandoen begynner avspillingen bare dekke  nDen region definert av inn / ut-punkter.
+
+Shift + klikke på en lapp fører til at alle andre oppdateringer unntatt  nselected en for å bytte.
+
+Ved å klikke på en lapp og dra over andre spor fører  nDe andre oppdateringer for å matche den første.
+
+Shift + klikke på en effekt grense fører dra å påvirke  njust den en effekt.
+
+Load flere filer ved å klikke på en fil, og Shift + klikke på  nanother filen. Ctrl + klikke bytter individuelle filer.
+
+Ctrl + venstreklikke på tidslinjen sykluser termin en tidsformat.  NCtrl + midten klikke på tidslinjen sykluser bakover en gang format.
+
+Bruk +/- tastene i Compositor vinduet for å zoome inn og ut.
+
+Ved å trykke Alt mens du klikker i beskjæring vinduet fører oversettelse av  nall 4 poeng.
+
+Ved å trykke Tab over et spor veksler Record status.  NPressing Shift-Tab over et spor veksler Record status for alle de andre sporene.
+
+Audio->Map 1:1 maps each recordable audio track to a different channel.
+Map 5.1:2 maps 6 recordable AC3 tracks to 2 channels.
+
+Alt + venstre flytter til forrige redigeringshåndtak.  nAlt + Høyre flytter til neste redigeringshåndtak.
+
+Innstillinger> typeless nøkkel tillater keyframes fra et spor som skal limes inn på enten  naudio eller videospor.
+

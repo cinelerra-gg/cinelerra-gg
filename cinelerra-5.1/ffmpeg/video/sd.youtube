@@ -1,0 +1,14 @@
+webm libvpx-vp9
+# YOUTUBE & good for many web/mobile devices
+# More VP9 options if choose format of webm
+# Refer to section 3.4 in Features5.pdf
+# 640x480 (Medium Quality, 24/25/30 frames per second)
+bitrate=750k
+minrate=375k
+maxrate=1088k
+tile-columns=1
+g=240
+threads=4
+quality=good
+crf=33
+speed=4

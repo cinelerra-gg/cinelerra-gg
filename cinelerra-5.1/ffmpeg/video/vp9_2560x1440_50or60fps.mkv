@@ -1,0 +1,14 @@
+matroska libvpx-vp9
+# 20171119-2100
+# based on https://developers.google.com/media/vp9/settings/vod/
+# for explanations see Feature5.pdf section 3
+# 2560x1440 (50 or 60 frames per second)
+bitrate=9000k
+minrate=4500k
+maxrate=13050k
+tile-columns=3
+g=240
+threads=16
+quality=good
+crf=24
+speed=4

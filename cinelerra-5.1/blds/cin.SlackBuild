@@ -1,0 +1,123 @@
+#!/bin/bash -x
+
+# Slackware build script for cin 5.1
+
+# Copyright 2017 by WP Morrow (aka goodguy) <lists@cinelerra-cv.org>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=cin
+VERSION="$( date +%Y%m%d )"
+BUILD=${BUILD:-1}
+TAG=${TAG:-_cin}
+GITURL="git://git.cinelerra-cv.org/goodguy/cinelerra.git"
+SLKBLD=`realpath "$0"`
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  export CFG_VARS='ac_cv_header_xmmintrin_h=no'
+  SLKCFLAGS="-march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS=""
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS=""
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+git clone --depth 1 $GITURL $PRGNAM-$VERSION
+#rsh host tar -C /mnt0 -cf - cinelerra5 | tar -xf -
+#mv cinelerra5 $PRGNAM-$VERSION
+cd $PRGNAM-$VERSION/cinelerra-5.1
+chown -R root:root .
+
+# disable vdpau or ffmpeg won't build on Slackware 14.2
+export FFMPEG_EXTRA_CFG=" --disable-vdpau"
+
+# configure the build
+./autogen.sh
+
+# Use ccache for faster rebuilding
+# TODO: Let ffmpeg compile with ccache
+export CC="ccache gcc"
+
+./configure \
+    --prefix=/usr \
+    --with-exec-name=$PRGNAM \
+    --build=$ARCH-slackware-linux
+
+make
+make install DESTDIR=$PKG
+
+find $PKG -type f | while read f ; do
+  if ! ( file "$f" | grep ELF | grep -q -e "executable" -e "shared object" ); then
+    continue
+  fi
+  echo == "$f"
+  strip --strip-unneeded "$f"
+done 2> /dev/null || true
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cat $SLKBLD > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat > $PKG/install/slack-desc <<<"
+       |-----handy-ruler------------------------------------------------------|
+$PRGNAM: $PRGNAM (GNU/Linux Video/Audio Studio)
+$PRGNAM: 5.x variant of Cinelerra by WP Morrow (aka goodguy)
+$PRGNAM:
+$PRGNAM: Cinelerra is the most  advanced non-linear video editor
+$PRGNAM: and compositor for Linux.  It does primarily three main
+$PRGNAM: things:  capturing, compositing, and  editing audio and
+$PRGNAM: video with sample level accuracy.
+$PRGNAM:
+$PRGNAM: Homepage: http://cinelerra-cv.org/"
+cat > $PKG/install/doinst.sh <<<"
+if [ -x /usr/bin/update-desktop-database ]; then
+   /usr/bin/update-desktop-database -q usr/share/applications >/dev/null 2>&1
+fi"
+
+# desktop icon data path
+sed -e "s;^Icon=.*;Icon=/usr/share/pixmaps/$PRGNAM.xpm;" \
+ < image/cin.desktop > $PKG/usr/share/applications/$PRGNAM.desktop
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}

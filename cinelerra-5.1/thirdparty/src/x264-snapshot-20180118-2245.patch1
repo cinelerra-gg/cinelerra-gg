@@ -1,0 +1,19 @@
+diff -ur a/encoder/encoder.c b/encoder/encoder.c
+--- a/encoder/encoder.c	2016-02-20 14:45:07.000000000 -0700
++++ b/encoder/encoder.c	2016-12-29 07:08:32.247434972 -0700
+@@ -614,6 +614,7 @@
+         return -1;
+     }
+ 
++#if 0
+     /* Detect default ffmpeg settings and terminate with an error. */
+     if( b_open )
+     {
+@@ -637,6 +638,7 @@
+             return -1;
+         }
+     }
++#endif
+ 
+     if( h->param.rc.i_rc_method < 0 || h->param.rc.i_rc_method > 2 )
+     {

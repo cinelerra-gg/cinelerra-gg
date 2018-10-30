@@ -1,0 +1,5 @@
+webm libopus
+# YOUTUBE - use Settings->Format to adjust your audio -
+# legal sample rates: 8000/12000/16000/24000H/48000Hz
+# Stereo is 384k; change to 128k for mono, 512k for 5.1
+b=384k

@@ -1,0 +1,69 @@
+TEXT2MOVIE
+
+
+# set
+background: tree01.png
+
+
+# characters
+LION
+
+# voice directory in festival/lib/voices/us/
+voice: cmu_us_slt_arctic_hts
+# path to model file
+model: lion01
+
+HEROINE
+
+voice: nitech_us_slt_arctic_hts
+model: warrior01
+
+
+HEROINE
+
+Why do you want to fall in love with me?
+
+LION
+
+Warrior princesses are the highest form of life.
+
+HEROINE
+
+Some humans would say lions are the highest form of life.  If you fall
+in love with a lion, she'll hunt food.
+
+LION
+
+I'm a military commander lion.  I see you in my eyes and your pose in my
+pose.  All other heroines are mere mortals.
+
+HEROINE
+
+Ever wait in long security lines, get full body scans, sit in
+overcrowded steel tubes, and survive on peanuts for hours at a time,
+waiting for a light to turn on to use the restroom?
+
+LION
+
+What does that have to do with loving a warrior princess?
+
+HEROINE
+
+It's a large part of the life of a warrior princess.
+
+LION
+
+Because we live in the baby boomer nation and I can only run 100 feet, I
+get a huge thrill out of running into someone with hair, who can run 1.5
+miles.
+
+
+
+
+
+
+
+
+
+
+

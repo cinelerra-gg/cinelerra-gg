@@ -1,0 +1,14 @@
+webm libvpx-vp9
+# 20171119-2100
+# based on https://developers.google.com/media/vp9/settings/vod/
+# for explanations see Feature5.pdf section 3
+# 1920x1080 (50 or 60 frames per second)
+bitrate=3000k
+minrate=1500k
+maxrate=4350k
+tile-columns=2
+g=240
+threads=8
+quality=good
+crf=31
+speed=4

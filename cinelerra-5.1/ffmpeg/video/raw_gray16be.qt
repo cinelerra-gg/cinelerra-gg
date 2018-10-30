@@ -1,0 +1,2 @@
+mov rawvideo
+pixel_format gray16be

@@ -1,0 +1,4 @@
+#!/bin/bash -e
+exec > /dev/null 2>&1
+if [ ! /proc/self/root -ef /proc/1/root ]; then exit; fi
+sysctl -p /etc/sysctl.d/50-cin.conf

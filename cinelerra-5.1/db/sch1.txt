@@ -1,0 +1,29 @@
+
+CREATE TABLE  clip (
+  clip_id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  name varchar(255) binary NOT NULL default '',
+  width int unsigned,
+  height int unsigned,
+  length int unsigned,
+  media_type int unsigned
+)  ;
+
+CREATE TABLE prefix (
+  clip_id int unsigned,
+  prefix_seq_no int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  time_offset real,
+  key_data media
+)  ;
+
+CREATE UNIQUE INDEX prefix_key_data ON prefix (key_data)  ;
+
+
+CREATE TABLE suffix (
+  clip_id int unsigned,
+  suffix_seq_no int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  time_offset real,
+  key_data media
+)  ;
+
+CREATE UNIQUE INDEX suffix_key_data ON suffix (key_data)  ;
+

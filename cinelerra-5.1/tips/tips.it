@@ -1,0 +1,39 @@
+Shift-clic su un fotogramma chiave curva per scattare ai valori vicini.
+
+Quando stai configurando un effetto lento, disabilita la riproduzione della traccia.  
+Dopo averlo configurato riabilita la riproduzione per elaborare il singolo frame.
+
+Ctrl + qualsiasi comando di trasporto riproduce
+la sola zona definita dai punti ingresso/uscita.
+
+Shift + Click su una correzione applicherà
+i cambiamenti a tutto tranne la selezione.
+
+Seleziona una correzione e trascinala sulle altre tracce
+tutte le precedenti correzioni si uniformeranno a questa.
+
+Shift + Click sulla cornice di un effetto sarà come
+aver spostato l'effetto.
+
+Carica più file cliccando sul primo file e selezionandone un'altro 
+tenendo premuto shift. Tenendo premuto Ctrl puoi selezionarli individualmente.
+
+Ctrl + click sinistro sulla barra del tempo effettuerà l'avanzamento del tempo.
+Ctrl + click centrale sulla barra del tempo effettuerà il riavvolgimento del tempo.
+
+Utilizza i tasti +/- nella finestra del Compositore per lo zoom.
+
+Premendo Alt + click sulla finestra di taglio provocherà
+la traslazione dei 4 punti.
+
+Premendo Teb sulla traccia metterà in stato di registrazione la traccia.
+Premedo shift-tab sulla traccia metterà in stato di Registrazione tutte le altre tracce.
+
+Audio->Map 1:1 mappa ogni traccia audio registrabile in un canale diverso.
+Mappa 5.1:2 mappa 6 tracce registrabili AC3 in 2 canali.
+
+Alt + sinistro edita il titolo precedente.
+Alt + desto edita il titolo successivo.
+
+Impostazioni-> senza tipo fotogrammi chiave permette fotogrammi chiave da qualsiasi traccia da incollare su entrambi i binari  NAudio o video.
+

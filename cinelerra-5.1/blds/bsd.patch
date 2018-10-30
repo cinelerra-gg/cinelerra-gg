@@ -1,0 +1,489 @@
+diff --git a/cinelerra-5.1/Makefile.devel b/cinelerra-5.1/Makefile.devel
+index a12d8f2b..9aac014a 100644
+--- a/cinelerra-5.1/Makefile.devel
++++ b/cinelerra-5.1/Makefile.devel
+@@ -4,7 +4,7 @@ TOPDIR := $(CURDIR)
+ CFLAGS ?= -ggdb
+ export CFLAGS_ := $(CFLAGS)
+ 
+-cpus:=$(shell grep -c "^proc" /proc/cpuinfo)
++cpus:=$(shell sysctl -n hw.ncpu)
+ jobs:=-j$(shell echo $$(($(cpus) + $(cpus)/2 +2)))
+ MAKEJ := $(MAKE) $(jobs)
+ 
+diff --git a/cinelerra-5.1/cinelerra/Makefile b/cinelerra-5.1/cinelerra/Makefile
+index 18590e3a..5eead290 100644
+--- a/cinelerra-5.1/cinelerra/Makefile
++++ b/cinelerra-5.1/cinelerra/Makefile
+@@ -395,6 +395,7 @@ LIBS += -lfontconfig -lfreetype
+ LIBS += -lavcodec -lavdevice -lavfilter -lavformat -lavresample -lavutil
+ LIBS += -lswresample -lswscale
+ LIBS += -lvpx -lwebp -lwebpmux
++LIBS += -lintl -liconv -lexecinfo
+ 
+ LIBS += $(if $(filter fftw,$(static_pkgs)), -lfftw3)
+ LIBS += $(if $(filter flac,$(static_pkgs)), -lFLAC)
+@@ -414,7 +415,7 @@ LIBS += $(if $(filter x265,$(static_pkgs)), -lx265)
+ LIBS += $(if $(filter libvpx,$(static_pkgs)), -lvpx)
+ 
+ ifneq ($(WANT_GL),no)
+-LIBS += -lGL -lGLU -lGLX
++LIBS += -lGL -lGLU
+ endif
+ ifneq ($(WANT_XFT),no)
+ LIBS += -lXft
+@@ -476,6 +477,7 @@ LV2OBJS = \
+ endif
+ 
+ CFLAGS := \
++	-I/usr/local/include \
+ 	-I$(GUICAST) \
+ 	-I$(LIBZMPEG3) \
+ 	$(static_incs) \
+@@ -523,15 +525,15 @@ all:	$(OUTPUT) $(CUTADS) $(BDWRITE) $(LV2UI)
+ $(OUTPUT): $(OBJS) $(THEME_DATA) $(DCRAW) $(LIBRARIES)
+ 	$(LINKER) `cat $(OBJDIR)/objs`
+ 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
+-	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
++	#$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
+ 	ln -f -s ../bin/$(WANT_CIN) ci
+ 
+ ifneq ($(WANT_COMMERCIAL),no)
+ $(CUTADS):	$(CUTOBJS) $(CUTLIBS) $(LIBRARIES)
+-	@echo g++ -o $@ $(CUTOBJS)
+-	@g++ $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS) $(LIBS)
++	@echo $(CXX) -o $@ $(CUTOBJS)
++	@$(CXX) $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS) $(LIBS)
+ 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(CUTADS) $(CUTADS).debuginfo)
+-	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(CUTADS))
++	#$(if $(findstring -ggdb,$(CFLAGS)),,strip $(CUTADS))
+ 
+ install-cutads:
+ 	cp -av $(OBJDIR)/cutads $(BINDIR)/.
+@@ -540,18 +542,18 @@ install:	install-cutads
+ endif
+ 
+ $(BDWRITE):	$(BDWOBJS) $(LIBRARIES)
+-	@echo g++ -o $@ $(BDWOBJS)
+-	@g++ $(CFLAGS) -pthread -o $@ $(BDWOBJS) $(LIBS)
++	@echo $(CXX) -o $@ $(BDWOBJS)
++	@$(CXX) $(CFLAGS) -pthread -o $@ $(BDWOBJS) $(LIBS)
+ 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(BDWRITE) $(BDWRITE).debuginfo)
+-	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(BDWRITE))
++	#$(if $(findstring -ggdb,$(CFLAGS)),,strip $(BDWRITE))
+ 
+ install-bdwrite:
+ 	cp -av $(OBJDIR)/bdwrite $(BINDIR)/.
+ install:	install-bdwrite
+ 
+ ydiff:	ydiff.C $(LIBRARIES)
+-	@echo g++ -o $@ ydiff.C
+-	@g++ $(CFLAGS) ydiff.C -o $@ $(LIBS)
++	@echo $(CXX) -o $@ ydiff.C
++	@$(CXX) $(CFLAGS) ydiff.C -o $@ $(LIBS)
+ 
+ clean:
+ 	rm -rf $(OBJDIR)
+@@ -585,7 +587,7 @@ $(OBJDIR)/lv2ui: $(LV2OBJS)
+ 	@echo $(CXX) \`cat $(OBJDIR)/c_flags\` $^ -o $@
+ 	@$(CXX) `cat $(OBJDIR)/c_flags` $^ -o $@ $(LIBS) $(GTK2_LIBS)
+ 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(LV2UI) $(LV2UI).debuginfo)
+-	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(LV2UI))
++	#$(if $(findstring -ggdb,$(CFLAGS)),,strip $(LV2UI))
+ 
+ .PHONY:	lv2ui
+ lv2ui:	$(LV2UI)
+diff --git a/cinelerra-5.1/cinelerra/bdcreate.C b/cinelerra-5.1/cinelerra/bdcreate.C
+index 27f728ad..9215090d 100644
+--- a/cinelerra-5.1/cinelerra/bdcreate.C
++++ b/cinelerra-5.1/cinelerra/bdcreate.C
+@@ -25,8 +25,8 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <errno.h>
+-#include <sys/stat.h>
+-#include <sys/statfs.h>
++#include <sys/param.h>
++#include <sys/mount.h>
+ 
+ // BD Creation
+ 
+diff --git a/cinelerra-5.1/cinelerra/bdwrite.C b/cinelerra-5.1/cinelerra/bdwrite.C
+index 6a2b4ca3..78cf9bef 100644
+--- a/cinelerra-5.1/cinelerra/bdwrite.C
++++ b/cinelerra-5.1/cinelerra/bdwrite.C
+@@ -38,7 +38,7 @@
+ #include <stdint.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#include <endian.h>
++#include <sys/endian.h>
+ #include <limits.h>
+ #include <sys/stat.h>
+ // work arounds (centos)
+diff --git a/cinelerra-5.1/cinelerra/cutads.C b/cinelerra-5.1/cinelerra/cutads.C
+index ac58d56a..f6690cf2 100644
+--- a/cinelerra-5.1/cinelerra/cutads.C
++++ b/cinelerra-5.1/cinelerra/cutads.C
+@@ -23,14 +23,6 @@
+ using namespace std;
+ #define fail(s) do { printf("fail %s%s:%d\n",__func__,#s,__LINE__); return 1; } while(0)
+ 
+-/* missing from system headers, no /usr/include <linux/ioprio.h>
+- *   IOPRIO_WHO_PROCESS, IOPRIO_CLASS_SHIFT, IOPRIO_CLASS_IDLE */
+-enum { IOPRIO_CLASS_NONE, IOPRIO_CLASS_RT, IOPRIO_CLASS_BE, IOPRIO_CLASS_IDLE, };
+-#define IO_CLASS(n) (((int)(n)) << 13)
+-#define IO_WHO_PROCESS  1
+-#include <sys/syscall.h>
+-#include <asm/unistd.h>
+-
+ // commercial edge detection:
+ // must have audio < min_audio
+ //   and within +- check_margin seconds of low audio
+@@ -55,11 +47,6 @@ class Video;
+ class Audio;
+ class Scan;
+ 
+-static int ioprio_set(int which, int who, int ioprio)
+-{
+-	return syscall(SYS_ioprio_set, which, who, ioprio);
+-}
+-
+ static inline int clip(int v, int mn, int mx)
+ {
+   return v<mn ? mn : v>mx ? mx : v;
+@@ -617,7 +604,6 @@ class Scan
+ 	const char *asset_path;
+ 	static void set_priority(int pr, int io) {
+ 		setpriority(PRIO_PROCESS, 0, pr);  // lowest cpu priority
+-		ioprio_set(IO_WHO_PROCESS, 0, IO_CLASS(io));
+ 	}
+ 	class low_priority { public:
+ 		low_priority() { set_priority(19, IOPRIO_CLASS_IDLE); }
+diff --git a/cinelerra-5.1/cinelerra/dvdcreate.C b/cinelerra-5.1/cinelerra/dvdcreate.C
+index 1014baf5..f38094e9 100644
+--- a/cinelerra-5.1/cinelerra/dvdcreate.C
++++ b/cinelerra-5.1/cinelerra/dvdcreate.C
+@@ -24,8 +24,8 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <errno.h>
+-#include <sys/stat.h>
+-#include <sys/statfs.h>
++#include <sys/param.h>
++#include <sys/mount.h>
+ 
+ 
+ #define DVD_PAL_4x3	0
+diff --git a/cinelerra-5.1/cinelerra/file.C b/cinelerra-5.1/cinelerra/file.C
+index 13e1b457..9cc2f116 100644
+--- a/cinelerra-5.1/cinelerra/file.C
++++ b/cinelerra-5.1/cinelerra/file.C
+@@ -1594,7 +1594,10 @@ int File::record_fd()
+ void File::get_exe_path(char *result, char *bnp)
+ {
+ // Get executable path, basename
+-	int len = readlink("/proc/self/exe", result, BCTEXTLEN-1);
++	char exe_path[BCTEXTLEN];
++	sprintf(exe_path,"/proc/%d/file",getpid());
++	int len = readlink(exe_path, result, BCTEXTLEN-1);
++
+ 	if( len >= 0 ) {
+ 		result[len] = 0;
+ 		char *ptr = strrchr(result, '/');
+diff --git a/cinelerra-5.1/cinelerra/indexfile.C b/cinelerra-5.1/cinelerra/indexfile.C
+index 3d21d2af..f3064199 100644
+--- a/cinelerra-5.1/cinelerra/indexfile.C
++++ b/cinelerra-5.1/cinelerra/indexfile.C
+@@ -70,7 +70,7 @@
+ 
+ #include <sys/types.h>
+ #include <sys/stat.h>
+-#include <linux/iso_fs.h>
++#include <isofs/cd9660/iso.h>
+ 
+ // check for isofs volume_id for dvd/cdrom
+ 
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 1157b0a3..8c5ba61a 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -16,8 +16,18 @@ CFG_CFLAGS+=" -Wno-unused-result"
+ CFG_CFLAGS+=" -Wno-stringop-overflow"
+ CFG_CFLAGS+=" -Wno-format-truncation"
+ CFG_CFLAGS+=" -Wno-format-overflow"
++CFG_CFLAGS+=" -Wno-unknown-warning-option"
+ CFG_CFLAGS+=" -Wno-parentheses"
+ CFG_CFLAGS+=" -Wno-stringop-truncation"
++CFG_CFLAGS+=" -Wno-gnu-designator"
++CFG_CFLAGS+=" -Wno-missing-braces"
++CFG_CFLAGS+=" -Wno-overloaded-virtual"
++CFG_CFLAGS+=" -Wno-self-assign-field"
++CFG_CFLAGS+=" -Wno-sometimes-uninitialized"
++CFG_CFLAGS+=" -Wno-tautological-pointer-compare"
++CFG_CFLAGS+=" -Wno-unused-function"
++CFG_CFLAGS+=" -Wno-unused-private-field"
++CFG_CFLAGS+=" -Wno-infinite-recursion"
+ CFG_CFLAGS+=" -D__STDC_CONSTANT_MACROS"
+ CFG_CFLAGS+=" -D__STDC_LIMIT_MACROS"
+ CFG_CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"
+@@ -127,7 +137,7 @@ AC_SUBST(MAK_INSTALLS)
+ AC_SUBST(MAK_UNINSTALLS)
+ 
+ if test "x$WANT_JOBS" = "xauto"; then
+-  CPUS=`grep -c "^proc" /proc/cpuinfo`
++  CPUS=`sysctl -n hw.ncpu`
+   WANT_JOBS=`expr $CPUS + $CPUS / 2 + 2`
+ fi
+ 
+diff --git a/cinelerra-5.1/db/tdb.h b/cinelerra-5.1/db/tdb.h
+index 8ee88002..9a17091e 100644
+--- a/cinelerra-5.1/db/tdb.h
++++ b/cinelerra-5.1/db/tdb.h
+@@ -32,7 +32,7 @@ inline void operator delete[](void *t,size_t n) { free(t); }
+ #endif
+ 
+ #define ZMEDIA
+-#define ZFUTEX
++//#define ZFUTEX
+ #ifdef ZFUTEX
+ #include <unistd.h>
+ #include <endian.h>
+diff --git a/cinelerra-5.1/guicast/bclistbox.h b/cinelerra-5.1/guicast/bclistbox.h
+index f5994d53..c73169bb 100644
+--- a/cinelerra-5.1/guicast/bclistbox.h
++++ b/cinelerra-5.1/guicast/bclistbox.h
+@@ -185,7 +185,9 @@ public:
+ 
+ // take_focus - used by the suggestion box to keep it from taking focus from the
+ // textbox
+-	int activate(int take_focus = 1);
++	int activate() {  return activate(1); }
++	int activate(int take_focus);
++
+ 	int activate(int x, int y, int w=-1, int h=-1);
+ 	int deactivate();
+ 	int is_active();
+diff --git a/cinelerra-5.1/guicast/bcpan.h b/cinelerra-5.1/guicast/bcpan.h
+index 40f5971f..73d47586 100644
+--- a/cinelerra-5.1/guicast/bcpan.h
++++ b/cinelerra-5.1/guicast/bcpan.h
+@@ -93,7 +93,8 @@ public:
+ 		int &stick_x,
+ 		int &stick_y);
+ 	static int rdtoxy(int &x, int &y, int a, int virtual_r);
+-	int activate(int popup_x = -1, int popup_y = -1);
++	int activate(int popup_x, int popup_y);
++	int activate() { return activate(-1,-1); }
+ 	int deactivate();
+ 	float* get_values();
+ 
+diff --git a/cinelerra-5.1/guicast/bcresources.C b/cinelerra-5.1/guicast/bcresources.C
+index 1e927303..165883de 100644
+--- a/cinelerra-5.1/guicast/bcresources.C
++++ b/cinelerra-5.1/guicast/bcresources.C
+@@ -38,6 +38,7 @@
+ #include <iconv.h>
+ #include <sys/ipc.h>
+ #include <sys/shm.h>
++#include <sys/sysctl.h>
+ #include <X11/extensions/XShm.h>
+ #include <fontconfig/fontconfig.h>
+ #include <fontconfig/fcfreetype.h>
+@@ -297,23 +298,12 @@ int BC_Resources::machine_cpus = 1;
+ 
+ int BC_Resources::get_machine_cpus()
+ {
+-	int cpus = 1;
+-	FILE *proc = fopen("/proc/cpuinfo", "r");
+-	if( proc ) {
+-		char string[BCTEXTLEN], *cp;
+-		while(!feof(proc) && fgets(string, sizeof(string), proc) ) {
+-			if( !strncasecmp(string, "processor", 9) &&
+-			    (cp = strchr(string, ':')) != 0 ) {
+-				int n = atol(cp+1) + 1;
+-				if( n > cpus ) cpus = n;
+-			}
+-			else if( !strncasecmp(string, "cpus detected", 13) &&
+-			    (cp = strchr(string, ':')) != 0 )
+-				cpus = atol(cp+1);
+-		}
+-		fclose(proc);
+-	}
+-	return cpus;
++	int mib[2], ncpu;
++	size_t len = sizeof(ncpu);
++	mib[0] = CTL_HW;
++	mib[1] = HW_NCPU;
++	if( sysctl(mib, 2, &ncpu, &len, 0, 0) ) ncpu = 1;
++	return ncpu;
+ }
+ 
+ void BC_Resources::new_vframes(int n, VFrame *vframes[], ...)
+@@ -695,7 +685,7 @@ new_vframes(20,default_medium_7segment,
+ 	generic_button_margin = 15;
+ 	draw_clock_background=1;
+ 
+-	use_shm = -1;
++	use_shm = 0;
+ 	shm_reply = 1;
+ 
+ // Initialize
+diff --git a/cinelerra-5.1/guicast/bcsignals.C b/cinelerra-5.1/guicast/bcsignals.C
+index ed50cfb1..f1b894ba 100644
+--- a/cinelerra-5.1/guicast/bcsignals.C
++++ b/cinelerra-5.1/guicast/bcsignals.C
+@@ -37,9 +37,11 @@
+ #include <sys/stat.h>
+ #include <unistd.h>
+ #include <sys/ioctl.h>
+-#include <sys/prctl.h>
+ #include <sys/types.h>
+ 
++#define dirent64 dirent
++#define readdir64 readdir
++
+ BC_Signals* BC_Signals::global_signals = 0;
+ static int signal_done = 0;
+ 
+@@ -279,18 +281,6 @@ static void handle_exit(int signum)
+ 
+ void BC_Signals::set_sighup_exit(int enable)
+ {
+-	if( enable ) {
+-// causes SIGHUP to be generated when parent dies
+-		signal(SIGHUP, handle_exit);
+-		prctl(PR_SET_PDEATHSIG, SIGHUP, 0,0,0);
+-// prevents ^C from signalling child when attached to gdb
+-		setpgid(0, 0);
+-		if( isatty(0) ) ioctl(0, TIOCNOTTY, 0);
+-	}
+-	else {
+-		signal(SIGHUP, signal_entry);
+-		prctl(PR_SET_PDEATHSIG, 0,0,0,0);
+-	}
+ }
+ 
+ BC_Signals::BC_Signals()
+@@ -383,11 +373,13 @@ const char* BC_Signals::sig_to_str(int number)
+ #include <sys/wait.h>
+ #include "thread.h"
+ 
++#define SC_(r)sc_##r
++
+ #if __i386__
+-#define IP eip
++#define IP SC_(eip)
+ #endif
+ #if __x86_64__
+-#define IP rip
++#define IP SC_(rip)
+ #endif
+ #ifndef IP
+ #error gotta have IP
+@@ -473,26 +465,5 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
+ 
+ 	fprintf(fp,"\n\n");
+ 	if( fp != stdout ) fclose(fp);
+-	char cmd[1024], *cp = cmd;
+-	cp += sprintf(cp, "exec gdb /proc/%d/exe -p %d --batch --quiet "
+-		"-ex \"thread apply all info registers\" "
+-		"-ex \"thread apply all bt full\" "
+-		"-ex \"quit\"", pid, pid);
+-	if( fp != stdout )
+-		cp += sprintf(cp," >> \"%s\"", fn);
+-	cp += sprintf(cp," 2>&1");
+-//printf("handle_dump:: pid=%d, cmd='%s'  fn='%s'\n",pid,cmd,fn);
+-        pid = vfork();
+-        if( pid < 0 ) {
+-		fprintf(stderr,"** can't start gdb, dump abondoned\n");
+-		return;
+-	}
+-	if( pid > 0 ) {
+-		waitpid(pid,0,0);
+-		fprintf(stderr,"** dump complete\n");
+-		return;
+-	}
+-        char *const argv[4] = { (char*) "/bin/sh", (char*) "-c", cmd, 0 };
+-        execvp(argv[0], &argv[0]);
+ }
+ 
+diff --git a/cinelerra-5.1/guicast/filesystem.C b/cinelerra-5.1/guicast/filesystem.C
+index ebc2007d..9d6452cb 100644
+--- a/cinelerra-5.1/guicast/filesystem.C
++++ b/cinelerra-5.1/guicast/filesystem.C
+@@ -33,6 +33,8 @@
+ #include <unistd.h>
+ #include <utime.h>
+ 
++#define dirent64 dirent
++#define readdir64 readdir
+ 
+ #include "filesystem.h"
+ 
+diff --git a/cinelerra-5.1/guicast/thread.C b/cinelerra-5.1/guicast/thread.C
+index dff53e61..321ab4fc 100644
+--- a/cinelerra-5.1/guicast/thread.C
++++ b/cinelerra-5.1/guicast/thread.C
+@@ -55,13 +55,6 @@ void* Thread::entrypoint(void *parameters)
+ 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+ 	thread->cancel_enabled = false;
+ 
+-// Set realtime here seince it doesn't work in start
+-	if( thread->realtime && getuid() == 0 ) {
+-		struct sched_param param = { sched_priority : 1 };
+-		if(pthread_setschedparam(thread->tid, SCHED_RR, &param) < 0)
+-			perror("Thread::entrypoint pthread_attr_setschedpolicy");
+-	}
+-
+ 	thread->run();
+ 	thread->finished = true;
+ 	if( !thread->synchronous ) {
+diff --git a/cinelerra-5.1/guicast/thread.h b/cinelerra-5.1/guicast/thread.h
+index 216ecd2b..8ebec237 100644
+--- a/cinelerra-5.1/guicast/thread.h
++++ b/cinelerra-5.1/guicast/thread.h
+@@ -27,7 +27,7 @@
+ #include <unistd.h>
+ #include <sys/syscall.h>
+ 
+-static inline int gettid() { return syscall(SYS_gettid, 0, 0, 0); }
++static inline long gettid() { return (long)pthread_self(); }
+ 
+ // The thread does not autodelete by default.
+ // If autodelete is 1 the thread autodeletes.
+diff --git a/cinelerra-5.1/plugins/Makefile b/cinelerra-5.1/plugins/Makefile
+index 6ed357c7..56081181 100644
+--- a/cinelerra-5.1/plugins/Makefile
++++ b/cinelerra-5.1/plugins/Makefile
+@@ -31,7 +31,6 @@ DIRS = $(OPENCV_OBJS) \
+ 	brightness \
+ 	burn \
+ 	C41 \
+-	cdripper \
+ 	chromakey \
+ 	chromakeyhsv \
+ 	color3way \
+@@ -161,6 +160,8 @@ DIRS = $(OPENCV_OBJS) \
+ #	denoisemjpeg \
+ # duplicate
+ #	vocoder \
++# not in bsd
++#	cdripper \
+ 
+ PLUGIN_DIR = $(BINDIR)/plugins
+ DATA = $(PLUGIN_DIR)/fonts $(PLUGIN_DIR)/shapes
+diff --git a/cinelerra-5.1/plugins/titler/titler.C b/cinelerra-5.1/plugins/titler/titler.C
+index fefbbdb1..045e96d4 100644
+--- a/cinelerra-5.1/plugins/titler/titler.C
++++ b/cinelerra-5.1/plugins/titler/titler.C
+@@ -57,8 +57,7 @@
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <string.h>
+-#include <endian.h>
+-#include <byteswap.h>
++#include <sys/endian.h>
+ #include <iconv.h>
+ #include <sys/stat.h>
+ #include <fontconfig/fontconfig.h>

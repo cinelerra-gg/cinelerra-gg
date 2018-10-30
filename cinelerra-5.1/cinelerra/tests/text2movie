@@ -1,0 +1,127 @@
+TEXT2MOVIE
+
+
+
+# set
+background: tree01.png
+
+# characters
+KNIGHT
+
+# voice directory in festival/lib/voices/us/
+voice: cmu_us_slt_arctic_hts
+# path to model file
+model: knight01
+#model: warrior01
+#model: amazon01
+#model: lion01
+
+AIRFORCE
+
+#voice: nitech_us_clb_arctic_hts
+voice: nitech_us_slt_arctic_hts
+#model: knight01
+model: warrior01
+#model: amazon01
+#model: lion01
+
+
+
+
+
+KNIGHT
+
+I knew you'd come, but my strength has left me.
+
+AIRFORCE
+
+Who are you?
+
+KNIGHT
+
+The last of 3 sisters who swore an oath to find a marcy a and to guard it.
+
+AIRFORCE
+
+That was 700 years ago.
+
+KNIGHT
+
+A long time to wait.
+
+[pause]
+
+You are strangely dressed for a knight
+
+AIRFORCE
+
+I'm not exactly a knight.  What do you mean?
+
+KNIGHT
+
+# misspelling to get the voice synthesis to work
+
+I was chosen because I was the bravest and the most worthy. The honor
+was  mine until another came to challenge me to single combat. I pass a
+marcy a to you who vanquished me.
+
+
+
+AIRFORCE
+
+What's a marcy a?
+
+KNIGHT
+
+Welcome to a marcy a, what america used to be called before someone
+botched the marcy part.
+
+
+[pause]
+
+But beware, a marcy a can not pass the great seal.  That is the price of
+heroine warriorhood.
+
+
+
+AIRFORCE
+
+Did you win a marcy a from the british?
+
+KNIGHT
+
+A marcy a came from the concatenation of adam and marcy.
+
+# test delay between 2 consecutive chunks
+KNIGHT
+
+But don't tell the air force that.
+
+# split dialog into shorter blocks to reduce rendering delays
+KNIGHT
+
+I once dreamed Major Marcy was in a cramped room with an elevator in the
+middle, a kitchen on the left and a bed on the right. She was in a group
+coming off the elevator, in the middle.
+
+I was trying to find some kind of light next to the bed.  She wasn't in
+the group anymore after I returned to the elevator.
+
+AIRFORCE
+
+You dream about Major Marcy too much.
+
+KNIGHT
+
+Major Marcy is all you need to dream about.
+
+
+
+
+
+
+
+
+
+
+

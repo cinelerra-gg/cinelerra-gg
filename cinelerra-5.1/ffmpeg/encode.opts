@@ -1,0 +1,4 @@
+# apply at init encode
+loglevel=error
+threads=auto
+side_data_only_packets=1

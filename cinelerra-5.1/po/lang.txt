@@ -1,0 +1,31 @@
+
+These are the existing translation file (unknown quality):
+de.po 	= de:     "German",
+es.po 	= es:     "Spanish",
+eu.po 	= eu:     "Basque",
+fr.po 	= fr:     "French",
+it.po 	= it:     "Italian",
+nb.po 	= nb:     "Norwegian Bokmål",
+pt_BR.po = pt_BR: "Portuguese (Brazil)",
+sl.po 	= sl:     "Slovenian",
+
+recently created:
+
+german		de
+spanish		es
+basque		eu
+french		fr
+italian		it
+norwegian	nb
+portuguese	pt
+slovenian	sl
+
+hindi		hi
+korean		ko
+russian		ru
+vietnamese	vi
+chinese		zh
+greek		el
+japanese	ja
+ukranain	uk
+

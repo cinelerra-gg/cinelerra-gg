@@ -1,0 +1,40 @@
+Shift + clique em um quadro-chave curva para encaixá-lo aos valores vizinhos.
+
+Ao configurar efeitos lentos, desabilite a reprodução da trilha. Depois de configurá-los,
+re-habilite a reprodução para processar um único quadro.
+
+Ctrl + qualquer comando de transporte faz com que a repodução só atue
+na região definida pelos pontos de entrada/saída.
+
+Ao clicar em um grupo segurando-se a tecla shift pressionada, todos os
+outros grupos, exceto o corrente, serão ligados ou desligados. 
+
+Clicar num grupo e arrastá-lo por outras trilhas faz
+com que as outras trilhas se tornem equivalentes à  primeira. 
+
+Clicar com shift pressionado no limite de um efeito faz com que
+o arrasto só afete esse efeito.
+
+Abra vários arquivos clicando em um arquivo e usando shift + click 
+para extender a seleção. Use ctrl + click para escolher arquivos individuais.
+
+Ctrl + botão esquerdo na barra de tempo avança o formato de tempo.
+Ctrl + botão do meio na barra de tempo retorna um formato de tempo.
+
+Use as teclas + e - na janela do Compositor para fazer zoom.
+
+Pressionar Alt ao clicar na janela de corte faz com que todos os
+quatro pontos sejam transladados.
+
+Pressionar Tab sobre uma trilha liga ou desliga o estado de Gravação.
+Pressionar Shift + Tab sobre uma trilha liga ou desliga o estado de gravação
+de todas as outras trilhas.
+
+Áudio->Mapear 1:1 mapeia cada trilha gravável de áudio para um canal diferente.
+Mapear 5.1:2 mapeia 6 trilhas graváveis em AC3 para 2 canais.
+
+Alt + seta-à-esquerda vai para a alavanca de edição anterior.
+Alt + seta-à-direita vai para a alavanca de edição seguinte.
+
+Configurações> typeless keyframes permite keyframes de qualquer faixa para ser colado em ambos  faixas NAudio ou vídeo.
+

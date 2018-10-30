@@ -1,0 +1,42 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+inline int clip(int v, int mn, int mx) { return v<mn ? mn : v>mx ? mx : v; }
+
+void hist_eq(unsigned char *dp, int len)
+{
+  int hist[256], map[256];
+  for( int i=0; i<256; ++i ) hist[i] = 0, map[i] = -1;
+  unsigned char *bp = dp;
+  for( int i=len; --i>=0; ++bp ) ++hist[*bp];
+  double v = 0, dv = len/256.;
+  for( int i=0,j=0,t=0; i<256; ++i ) {
+    int k = v;  v += dv;
+    while( t < k ) { map[j] = i;  t += hist[j++]; }
+  }
+//for( int i=0; i<256; ++i ) fprintf(stderr,"%d\n",map[i]);
+  for( int i=len; --i>=0; ++dp ) *dp = map[*dp];
+}
+
+int main(int ac, char **av)
+{
+  FILE *ifp = !strcmp(av[1],"-") ? stdin : fopen(av[1],"r");
+  FILE *ofp = !strcmp(av[2],"-") ? stdout : fopen(av[2],"w");
+  char line[120];
+  fgets(line,sizeof(line),ifp);  fputs(line,ofp);
+  fgets(line,sizeof(line),ifp);  fputs(line,ofp);
+  int w, h;  if( sscanf(line,"%d %d\n",&w,&h) != 2 ) exit(1);
+  fgets(line,sizeof(line),ifp);  fputs(line,ofp);
+  int len = w*h;
+  unsigned char data[len], *bp = data;
+  for( int ch, i=len; --i>=0 && (ch=getc(ifp)) >= 0; ++bp ) *bp = ch;
+  for( int i=1; --i>=0; ) hist_eq(data,len);
+  bp = data;
+  for( int i=len; --i>=0; ++bp ) putc(*bp,ofp);
+
+  if( ifp != stdin ) fclose(ifp);
+  if( ofp != stdout ) fclose(ofp);
+  return 0;
+}
+

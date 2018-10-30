@@ -1,0 +1,8 @@
+#!/bin/bash
+# This is a little utility that make all pngs that this theme needs
+var="$@"
+if [ -z "$var" ]; then
+for i in `ls Source| grep \\\.svg`; do inkscape -e $(basename $i .svg).png Source/$i; done
+else
+for i in $@; do inkscape -e $(basename $i .svg).png Source/$i; done
+fi

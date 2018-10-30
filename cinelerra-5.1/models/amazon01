@@ -1,0 +1,17 @@
+width: 2361
+height: 2574
+scale: 0.3
+
+body: amazon01_body.png 0 984
+head: amazon01_head.png 360 66
+
+mouth: amazon01_mouth1.png 954 771
+mouth: amazon01_mouth2.png 954 771
+mouth: amazon01_mouth3.png 954 771
+
+eyes: amazon01_eyes2.png 849 516
+eyes: amazon01_eyes1.png 849 516
+
+
+
+

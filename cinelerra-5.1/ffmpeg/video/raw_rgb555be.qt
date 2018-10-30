@@ -1,0 +1,2 @@
+mov rawvideo
+pixel_format rgb555be

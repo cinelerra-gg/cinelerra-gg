@@ -1,0 +1,12 @@
+diff -u djbfft-0.76.orig/error.h djbfft-0.76/error.h
+--- djbfft-0.76.orig/error.h	2014-07-20 12:25:48.000000000 -0600
++++ djbfft-0.76/error.h	2016-07-01 13:37:59.303921704 -0600
+@@ -1,7 +1,7 @@
+ #ifndef ERROR_H
+ #define ERROR_H
+ 
+-extern int errno;
++#include <errno.h>
+ 
+ extern int error_intr;
+ extern int error_nomem;

@@ -1,0 +1,8 @@
+mpegts libx265
+id=0x1011
+#preset=ultrafast,superfast,veryfast,faster,fast,
+#preset=medium,slow,slower,veryslow,placebo
+preset=medium
+#tune=psnr,ssim,grain,zerolatency,fastdecode
+pixel_format=yuv422p10
+x265_opts=profile=main10:output-depth=10

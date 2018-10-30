@@ -1,0 +1,130 @@
+# builds opencv using want_var to create bld from src
+# want_var set as: "" (empty) or "bld=typ" or "bld=typ,src=typ"
+#   empty: defaults to bld=sys
+#   bld=typ   sta,dyn,sys: sta=static, dyn=shared, sys=system libraries
+#   src=typ   git,tar,git=url,tar=url: git (default git_url), tar (default: tar_url)
+# once thirdparty/opencv is built, it will be reused.
+# use target "mrclean" to remove thirdparty/opencv*
+#
+ifeq (no,$(shell [ -d $(THIRDPARTY) ] && echo yes || echo no))
+$(error THIRDPARTY is not a directory: '$(THIRDPARTY)')
+endif
+
+blddir:=$(shell cd $(THIRDPARTY) && pwd)
+srcdir:=$(blddir)/src
+opencv:=$(blddir)/opencv
+opencv_prefix:=$(opencv)/build/usr/local
+
+# if previous build stamped, use that bld
+ifneq (,$(wildcard $(opencv).sta))
+bld:=sta
+else ifneq (,$(wildcard $(opencv).dyn))
+bld:=dyn
+else ifneq (,$(wildcard $(opencv).sys))
+bld:=sys
+endif
+
+comma=,
+params:=$(subst $(comma), ,$(want_var))
+
+# code: src=tar/tar=tar_url;git/git=git_url, build: bld=sta/dyn/sys
+$(foreach p,$(params),\
+ $(if $(bld),,$(eval var:=$(filter sta dyn sys,$(p)))\
+  $(if $(var),$(eval bld:=$(var))))\
+ $(if $(src),,$(eval var:=$(filter git tar,$(p)))\
+  $(if $(var),$(eval src:=$(var)),\
+   $(if $(filter git=%,$(p)),$(eval src:=git)$(eval git_url=$(patsubst git=%,%,$(p))),\
+    $(if $(filter tar=%,$(p)),$(eval src:=tar)$(eval tar_url=$(patsubst tar=%,%,$(p))))))))
+
+# defaults: src=git, bld=sys
+src?=git
+bld?=sys
+git_url?=https://github.com/opencv
+tar_url?=https://cinelerra-cv.org/five/src/opencv-20170916.tgz
+opencv_tar:=$(notdir $(tar_url))
+
+cpus:=$(shell grep -c "^proc" /proc/cpuinfo)
+jobs:=-j$(shell echo $$(($(cpus) + $(cpus)/2 +2)))
+
+CFLAGS += -I$(opencv_prefix)/include
+
+ifeq ($(src),git)
+$(opencv).src:
+	cd $(blddir) && rm -rf opencv opencv_contrib opencv.*
+	git -C $(blddir) clone --depth 1 $(git_url)/opencv.git
+	git -C $(blddir) clone --depth 1 $(git_url)/opencv_contrib.git
+	touch $@
+else ifeq ($(src),tar)
+$(srcdir)/$(opencv_tar):
+	cd $(srcdir) && rm -f $(opencv_tar)
+	wget -P $(srcdir) "$(tar_url)"
+
+$(opencv).src: $(srcdir)/$(opencv_tar)
+	cd $(blddir) && rm -rf opencv opencv_contrib opencv.*
+	tar -C $(blddir) -xzf $(srcdir)/$(opencv_tar);
+	touch $@
+else
+$(error src not git/tar)
+endif
+
+ifeq ($(bld),sta)
+$(opencv)/build: $(opencv).src
+	mkdir -p $@
+	cd $@ && cmake \
+  -DCMAKE_BUILD_TYPE=RELEASE \
+  -DWITH_IPP=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DINSTALL_C_EXAMPLES=OFF \
+  -DINSTALL_PYTHON_EXAMPLES=OFF \
+  -DBUILD_EXAMPLES=OFF .. \
+  -DCMAKE_INSTALL_PREFIX=/usr/local \
+  -DOPENCV_EXTRA_MODULES_PATH="$(opencv)_contrib/modules/"
+
+LFLAGS += -Wl,--start-group
+LFLAGS += $(shell find $(opencv_prefix)/lib* -name "libopencv_*.a" 2> /dev/null)
+LFLAGS += $(shell find $(opencv_prefix)/share/OpenCV/3rdparty/lib* -name "lib*.a" 2> /dev/null)
+LFLAGS += -Wl,--end-group
+else ifeq ($(bld),dyn)
+$(opencv)/build: $(opencv).src
+	mkdir -p $@
+	cd $@ && cmake \
+  -DCMAKE_BUILD_TYPE=RELEASE \
+  -DWITH_IPP=OFF \
+  -DBUILD_SHARED_LIBS=ON \
+  -DINSTALL_C_EXAMPLES=ON \
+  -DINSTALL_PYTHON_EXAMPLES=ON \
+  -DBUILD_EXAMPLES=ON .. \
+  -DCMAKE_INSTALL_PREFIX=/usr/local \
+  -DOPENCV_EXTRA_MODULES_PATH="$(opencv)_contrib/modules/"
+
+SYSLIB := $(lastword $(wildcard /usr/lib /usrlib32 /usr/lib64))
+CVLIBS := $(dir (shell find $(opencv_prefix) -name libopencv_core.a))
+LFLAGS += -L$(CVLIBS) $(patsubst $(CVLIBS)/lib%.so,-l%,$(wildcard $(CVLIBS)/libopencv_*.so))
+LFLAGS += $(patsubst $(SYSLIB)/lib%.so,-l%,$(wildcard $(SYSLIB)/lib{Half,Imath,Ilm,Iex}*.so))
+static_libs :=
+static_incs :=
+else ifeq ($(bld),sys)
+$(opencv)/build:
+
+SYSLIB := $(lastword $(wildcard /usr/lib /usrlib32 /usr/lib64))
+LFLAGS += $(patsubst $(SYSLIB)/lib%.so,-l%,$(wildcard $(SYSLIB)/libopencv_*.so))
+LFLAGS += $(patsubst $(SYSLIB)/lib%.so,-l%,$(wildcard $(SYSLIB)/lib{Half,Imath,Ilm,Iex}*.so))
+static_libs :=
+static_incs :=
+else
+$(error bld not sta/dyn/sys)
+endif
+
+$(opencv).sta $(opencv).dyn: $(opencv)/build
+	cd $(opencv)/build && make $(jobs) 2>&1 | tee log
+	cd $(opencv)/build && make install DESTDIR=`pwd`
+	touch $@
+
+$(opencv).sys:
+	touch $@
+
+mrclean:	clean
+	rm -rf $(blddir)/opencv* $(srcdir)/$(opencv_tar)
+
+opencv:	$(opencv).$(bld)
+

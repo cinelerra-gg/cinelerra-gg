@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#pacman -S openexr libdv flac
+
+( ./autogen.sh
+  ./configure --with-single-user --disable-static-build --without-lv2 \
+ --without-firewire --without-dv --without-dvb --without-video4linux2 \
+ --without-libzmpeg --without-commercial --without-thirdparty
+  make && make install ) 2>&1 | tee log
+mv Makefile Makefile.cfg
+cp Makefile.devel Makefile

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   width="16"
+   height="16"
+   sodipodi:docname="camerakeyframe.svg"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/camerakeyframe.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <title
+     id="title1033">camerakeyframe</title>
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>camerakeyframe</dc:title>
+        <dc:date>2018-10-05</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Olaf</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:description>2018-10-05: Icon novated. – Never seen this icon in Cin before.
+2018-08-01: Icon adapted. 
+Inkonsistenzen vermeiden.
+</dc:description>
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient842">
+      <stop
+         style="stop-color:#999999;stop-opacity:1;"
+         offset="0"
+         id="stop838" />
+      <stop
+         style="stop-color:#999999;stop-opacity:0;"
+         offset="1"
+         id="stop840" />
+    </linearGradient>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       id="perspective10" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient842"
+       id="linearGradient844"
+       x1="7.936482"
+       y1="7.6810398"
+       x2="0.44599611"
+       y2="15.748858"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2494"
+     inkscape:window-height="1407"
+     id="namedview4"
+     showgrid="false"
+     inkscape:zoom="13.324543"
+     inkscape:cx="13.853859"
+     inkscape:cy="14.003958"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer2"
+     inkscape:showpageshadow="false" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2 video cam"
+     style="display:inline"
+     sodipodi:insensitive="true">
+    <g
+       id="g833"
+       transform="translate(-55.663032,-29.236168)">
+      <rect
+         y="34.469242"
+         x="55.815987"
+         height="4.9641423"
+         width="8.8251419"
+         id="rect834-0"
+         style="opacity:1;fill:#217844;fill-opacity:1;fill-rule:evenodd;stroke:#16502d;stroke-width:0.27578568;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="rect836-6"
+         d="m 68.325878,32.347295 a 3.0728233,2.7461165 0 0 0 -3.072901,2.746577 3.0728233,2.7461165 0 0 0 0.001,0.01346 c -9.24e-4,0.01002 -0.007,0.01849 -0.007,0.02873 v 6.62267 c 0,0.202762 0.182644,0.36633 0.409052,0.36633 h 5.342735 c 0.226408,0 0.408049,-0.163568 0.408049,-0.36633 v -6.622661 c 0,-0.01306 -0.0065,-0.02412 -0.008,-0.03682 a 3.0728233,2.7461165 0 0 0 0,-0.0054 3.0728233,2.7461165 0 0 0 -3.072899,-2.746577 z"
+         style="opacity:1;fill:#217844;fill-opacity:1;fill-rule:evenodd;stroke:#16502d;stroke-width:0.48231593;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <rect
+         y="35.093872"
+         x="64.774582"
+         height="0.90800226"
+         width="0.24011409"
+         id="rect831"
+         style="opacity:1;fill:#16502d;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.11988268;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Kameraanschluss"
+     style="display:none">
+    <circle
+       style="opacity:1;fill:url(#linearGradient844);fill-opacity:1;stroke:none;stroke-width:1.60567009;stroke-opacity:1"
+       id="path821"
+       cx="8"
+       cy="8"
+       r="8" />
+    <circle
+       style="opacity:1;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1.00354385;stroke-opacity:1"
+       id="path821-0"
+       cx="8"
+       cy="8"
+       r="5" />
+    <circle
+       style="opacity:1;fill:#808080;fill-opacity:1;stroke:none;stroke-width:3.09007359;stroke-opacity:1"
+       id="path846"
+       cx="3.5141575"
+       cy="3.311044"
+       r="1"
+       inkscape:tile-cx="4.2271276"
+       inkscape:tile-cy="2.748173"
+       inkscape:tile-w="2"
+       inkscape:tile-h="2"
+       inkscape:tile-x0="3.2271276"
+       inkscape:tile-y0="1.748173" />
+    <use
+       x="0"
+       y="0"
+       inkscape:tiled-clone-of="#path846"
+       xlink:href="#path846"
+       id="use857"
+       transform="translate(14.296925,10.394352)"
+       width="100%"
+       height="100%" />
+    <use
+       x="0"
+       y="0"
+       inkscape:tiled-clone-of="#path846"
+       xlink:href="#path846"
+       transform="translate(-1.4710383,7.1109378)"
+       id="use859"
+       width="100%"
+       height="100%" />
+    <use
+       x="0"
+       y="0"
+       inkscape:tiled-clone-of="#path846"
+       xlink:href="#path846"
+       transform="translate(10.379205,7.2797991)"
+       id="use861"
+       width="100%"
+       height="100%" />
+    <use
+       x="0"
+       y="0"
+       inkscape:tiled-clone-of="#path846"
+       xlink:href="#path846"
+       transform="translate(9.1145533,0.01876236)"
+       id="use863"
+       width="100%"
+       height="100%" />
+    <circle
+       style="opacity:1;fill:#ff5555;fill-opacity:1;stroke:none;stroke-width:2.31755567;stroke-opacity:1"
+       id="path846-4"
+       cx="1.9076713"
+       cy="5.9306979"
+       r="0.74999994"
+       inkscape:tile-cx="4.2271276"
+       inkscape:tile-cy="2.748173"
+       inkscape:tile-w="2"
+       inkscape:tile-h="2"
+       inkscape:tile-x0="3.2271276"
+       inkscape:tile-y0="1.748173" />
+  </g>
+</svg>

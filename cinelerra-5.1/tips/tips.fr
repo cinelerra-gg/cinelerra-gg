@@ -1,0 +1,41 @@
+Maj-clic sur une courbe image clé pour enclencher des valeurs voisines.
+
+Lors de la configuration d'effets lents, désactivez la reproduction de la piste après
+l'avoir configuré, réactivez la reproduction pour traiter une seule image.
+
+Ctrl + n'importe quelle commande de transport va permettre à la reproduction
+de ne couvrir que la région définie par les points d'entrée/sortie.
+
+Majusc + clic sur un bouton fera changer d'état tous les boutons
+sauf celui qui est sélectionné.
+
+Cliquer un bouton et glisser sur les autres pistes fait correspondre
+l'état des autres bouton à celui sélectionné.
+
+Majusc + clic sur la limite d'un effet fera que le glisser n'affectera
+que cet effet.
+
+Vous pouvez charger plusieurs fichiers en cliquant sur l'un d'entre-eux
+et en utilisant Majusc + clic sur un autre fichier.
+Ctrl + clic permet de sélectionner ou désélectionner fichier par fichier.
+
+Ctrl + clic gauche sur la barre temporelle passe en revue les différents formats de temps.
+Ctrl + clic milieu sur la barre de temps fait défiler les formats d'heures dans l'ordre inverse.
+
+Utilisez les touches +/- dans la fenêtre de composition pour effectuer des zooms
+
+Presser la touche Alt en cliquant dans la fenêtre de recadrage permettra
+un déplacement de l'ensemble des 4 points.
+
+Presser la touche de tabulation sur une piste basculera l'état de l'enregistrement.
+Majusc + Tab sur une piste modifiera l'état de l'enregistrement pour toutes
+les autres pistes.
+
+Audio->Map 1:1 fait correspondre chaque piste audio enregistrable à un canal différent.
+Map 5.1:2 fait correspondre 6 pistes AC3 enregistrables à deux canaux.
+
+Alt + flèche gauche déplace à la poignée du plan précédent.
+Alt + flèche droite déplace à la poignée du plan suivant.
+
+Paramètres> sans type images clés permet des images clés de toute la bonne voie pour être collés soit sur pistes NAudio ou vidéo .
+

@@ -1,0 +1,714 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
+#include "autoconf.h"
+#include "bchash.h"
+#include "bcsignals.h"
+#include "clip.h"
+#include "condition.h"
+#include "edl.h"
+#include "edlsession.h"
+#include "gwindowgui.h"
+#include "keys.h"
+#include "language.h"
+#include "localsession.h"
+#include "mainmenu.h"
+#include "mainsession.h"
+#include "mwindow.h"
+#include "mwindowgui.h"
+#include "theme.h"
+#include "tracks.h"
+#include "trackcanvas.h"
+#include "zoombar.h"
+
+#include <math.h>
+
+
+
+GWindowGUI::GWindowGUI(MWindow *mwindow, int w, int h)
+ : BC_Window(_(PROGRAM_NAME ": Overlays"),
+	mwindow->session->gwindow_x, mwindow->session->gwindow_y,
+	w, h, w, h, 0, 0, 1)
+{
+	this->mwindow = mwindow;
+	color_thread = 0;
+	camera_xyz = 0;
+	projector_xyz = 0;
+}
+
+GWindowGUI::~GWindowGUI()
+{
+	delete color_thread;
+}
+
+void GWindowGUI::start_color_thread(GWindowColorButton *color_button)
+{
+	unlock_window();
+	delete color_thread;
+	color_thread = new GWindowColorThread(this, color_button);
+	int color = auto_colors[color_button->auto_toggle->info->ref];
+	color_thread->start(color);
+	lock_window("GWindowGUI::start_color_thread");
+}
+
+const char *GWindowGUI::non_auto_text[NON_AUTOMATION_TOTAL] =
+{
+	N_("Assets"),
+	N_("Titles"),
+	N_("Transitions"),
+	N_("Plugin Keyframes"),
+};
+
+const char *GWindowGUI::auto_text[AUTOMATION_TOTAL] =
+{
+	N_("Mute"),
+	N_("Camera X"),
+	N_("Camera Y"),
+	N_("Camera Z"),
+	N_("Projector X"),
+	N_("Projector Y"),
+	N_("Projector Z"),
+	N_("Fade"),
+	N_("Pan"),
+	N_("Mode"),
+	N_("Mask"),
+	N_("Speed")
+};
+
+int GWindowGUI::auto_colors[AUTOMATION_TOTAL] =
+{
+	PINK,
+	RED,
+	GREEN,
+	BLUE,
+	LTPINK,
+	LTGREEN,
+	LTBLUE,
+	LTPURPLE,
+	0,
+	0,
+	0,
+	ORANGE,
+};
+
+void GWindowGUI::load_defaults()
+{
+	BC_Hash *defaults = mwindow->defaults;
+	auto_colors[AUTOMATION_MUTE] = defaults->get("AUTO_COLOR_MUTE", auto_colors[AUTOMATION_MUTE]);
+	auto_colors[AUTOMATION_CAMERA_X] = defaults->get("AUTO_COLOR_CAMERA_X", auto_colors[AUTOMATION_CAMERA_X]);
+	auto_colors[AUTOMATION_CAMERA_Y] = defaults->get("AUTO_COLOR_CAMERA_Y", auto_colors[AUTOMATION_CAMERA_Y]);
+	auto_colors[AUTOMATION_CAMERA_Z] = defaults->get("AUTO_COLOR_CAMERA_Z", auto_colors[AUTOMATION_CAMERA_Z]);
+	auto_colors[AUTOMATION_PROJECTOR_X] = defaults->get("AUTO_COLOR_PROJECTOR_X", auto_colors[AUTOMATION_PROJECTOR_X]);
+	auto_colors[AUTOMATION_PROJECTOR_Y] = defaults->get("AUTO_COLOR_PROJECTOR_Y", auto_colors[AUTOMATION_PROJECTOR_Y]);
+	auto_colors[AUTOMATION_PROJECTOR_Z] = defaults->get("AUTO_COLOR_PROJECTOR_Z", auto_colors[AUTOMATION_PROJECTOR_Z]);
+	auto_colors[AUTOMATION_FADE] = defaults->get("AUTO_COLOR_FADE", auto_colors[AUTOMATION_FADE]);
+	auto_colors[AUTOMATION_SPEED] = defaults->get("AUTO_COLOR_SPEED", auto_colors[AUTOMATION_SPEED]);
+}
+
+void GWindowGUI::save_defaults()
+{
+	BC_Hash *defaults = mwindow->defaults;
+	defaults->update("AUTO_COLOR_MUTE", auto_colors[AUTOMATION_MUTE]);
+	defaults->update("AUTO_COLOR_CAMERA_X", auto_colors[AUTOMATION_CAMERA_X]);
+	defaults->update("AUTO_COLOR_CAMERA_Y", auto_colors[AUTOMATION_CAMERA_Y]);
+	defaults->update("AUTO_COLOR_CAMERA_Z", auto_colors[AUTOMATION_CAMERA_Z]);
+	defaults->update("AUTO_COLOR_PROJECTOR_X", auto_colors[AUTOMATION_PROJECTOR_X]);
+	defaults->update("AUTO_COLOR_PROJECTOR_Y", auto_colors[AUTOMATION_PROJECTOR_Y]);
+	defaults->update("AUTO_COLOR_PROJECTOR_Z", auto_colors[AUTOMATION_PROJECTOR_Z]);
+	defaults->update("AUTO_COLOR_FADE", auto_colors[AUTOMATION_FADE]);
+	defaults->update("AUTO_COLOR_SPEED", auto_colors[AUTOMATION_SPEED]);
+}
+
+static toggleinfo toggle_order[] =
+{
+	{0, NON_AUTOMATION_ASSETS},
+	{0, NON_AUTOMATION_TITLES},
+	{0, NON_AUTOMATION_TRANSITIONS},
+	{0, NON_AUTOMATION_PLUGIN_AUTOS},
+	{0, -1}, // bar
+	{1, AUTOMATION_FADE},
+	{1, AUTOMATION_MUTE},
+	{1, AUTOMATION_SPEED},
+	{1, AUTOMATION_MODE},
+	{1, AUTOMATION_PAN},
+	{1, AUTOMATION_MASK},
+	{0, -1}, // bar
+	{1, AUTOMATION_CAMERA_X},
+	{1, AUTOMATION_CAMERA_Y},
+	{1, AUTOMATION_CAMERA_Z},
+	{-1, NONAUTOTOGGLES_CAMERA_XYZ},
+	{0, -1}, // bar
+	{1, AUTOMATION_PROJECTOR_X},
+	{1, AUTOMATION_PROJECTOR_Y},
+	{1, AUTOMATION_PROJECTOR_Z},
+	{-1, NONAUTOTOGGLES_PROJECTOR_XYZ},
+};
+
+const char *GWindowGUI::toggle_text(toggleinfo *tp)
+{
+	if( tp->isauto > 0 ) return _(auto_text[tp->ref]);
+	if( !tp->isauto ) return _(non_auto_text[tp->ref]);
+	return _("XYZ");
+}
+
+void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
+{
+	int temp1, temp2, temp3, temp4, temp5, temp6, temp7;
+	int current_w, current_h;
+	*w = 10;
+	*h = 10;
+
+	for( int i=0; i<(int)(sizeof(toggle_order)/sizeof(toggle_order[0])); ++i ) {
+		toggleinfo *tp = &toggle_order[i];
+		int ref = tp->ref;
+		if( ref < 0 ) {
+			*h += get_resources()->bar_data->get_h() + 5;
+			continue;
+		}
+		BC_Toggle::calculate_extents(gui,
+			BC_WindowBase::get_resources()->checkbox_images,
+			0, &temp1, &current_w, &current_h,
+			&temp2, &temp3, &temp4, &temp5, &temp6, &temp7,
+			toggle_text(tp), MEDIUMFONT);
+		current_w += current_h;
+		*w = MAX(current_w, *w);
+		*h += current_h + 5;
+	}
+
+	*h += 10;
+	*w += 20;
+}
+
+GWindowColorButton::GWindowColorButton(GWindowToggle *auto_toggle, int x, int y, int w)
+ : BC_Button(x, y, w, vframes)
+{
+	this->auto_toggle = auto_toggle;
+	this->color = 0;
+	for( int i=0; i<3; ++i ) {
+		vframes[i] = new VFrame(w, w, BC_RGBA8888);
+		vframes[i]->clear_frame();
+	}
+}
+
+GWindowColorButton::~GWindowColorButton()
+{
+	for( int i=0; i<3; ++i )
+		delete vframes[i];
+}
+
+void GWindowColorButton::set_color(int color)
+{
+	this->color = color;
+	int r = (color>>16) & 0xff;
+	int g = (color>>8) & 0xff;
+	int b = (color>>0) & 0xff;
+	for( int i=0; i<3; ++i ) {
+		VFrame *vframe = vframes[i];
+		int ww = vframe->get_w(), hh = vframe->get_h();
+		int cx = (ww+1)/2, cy = hh/2;
+		double cc = (cx*cx + cy*cy) / 4.;
+		uint8_t *bp = vframe->get_data(), *dp = bp;
+		uint8_t *ep = dp + vframe->get_data_size();
+		int rr = r, gg = g, bb = b;
+		int bpl = vframe->get_bytes_per_line();
+		switch( i ) {
+		case BUTTON_UP:
+			break;
+		case BUTTON_UPHI:
+			if( (rr+=48) > 0xff ) rr = 0xff;
+			if( (gg+=48) > 0xff ) gg = 0xff;
+			if( (bb+=48) > 0xff ) bb = 0xff;
+			break;
+		case BUTTON_DOWNHI:
+			if( (rr-=48) < 0x00 ) rr = 0x00;
+			if( (gg-=48) < 0x00 ) gg = 0x00;
+			if( (bb-=48) < 0x00 ) bb = 0x00;
+			break;
+		}
+		while( dp < ep ) {
+			int yy = (dp-bp) / bpl, xx = ((dp-bp) % bpl) >> 2;
+			int dy = cy - yy, dx = cx - xx;
+			double s = dx*dx + dy*dy - cc;
+			double ss = s < 0 ? 1 : s >= cc ? 0 : 1 - s/cc;
+			int aa = ss * 0xff;
+			*dp++ = rr; *dp++ = gg; *dp++ = bb; *dp++ = aa;
+		}
+	}
+	set_images(vframes);
+}
+
+void GWindowColorButton::update_gui(int color)
+{
+	set_color(color);
+	draw_face();
+}
+
+GWindowColorThread::GWindowColorThread(GWindowGUI *gui, GWindowColorButton *color_button)
+ : ColorPicker(0, color_button->auto_toggle->caption)
+{
+	this->gui = gui;
+	this->color_button = color_button;
+	this->color = 0;
+	color_update = new GWindowColorUpdate(this);
+}
+
+GWindowColorThread::~GWindowColorThread()
+{
+	delete color_update;
+}
+
+void GWindowColorThread::start(int color)
+{
+	start_window(color, 0, 1);
+	color_update->start();
+}
+
+void GWindowColorThread::handle_done_event(int result)
+{
+	color_update->stop();
+	int ref = color_button->auto_toggle->info->ref;
+	gui->lock_window("GWindowColorThread::handle_done_event");
+	if( !result ) {
+		GWindowGUI::auto_colors[ref] = color;
+		color_button->auto_toggle->update_gui(color);
+		gui->save_defaults();
+	}
+	else {
+		color = GWindowGUI::auto_colors[ref];
+		color_button->update_gui(color);
+	}
+	gui->unlock_window();
+	MWindowGUI *mwindow_gui = gui->mwindow->gui;
+	mwindow_gui->lock_window("GWindowColorUpdate::run");
+	mwindow_gui->draw_overlays(1);
+	mwindow_gui->unlock_window();
+}
+
+int GWindowColorThread::handle_new_color(int color, int alpha)
+{
+	this->color = color;
+	color_update->update_lock->unlock();
+	return 1;
+}
+
+void GWindowColorThread::update_gui()
+{
+	gui->lock_window("GWindowColorThread::update_gui");
+	color_button->update_gui(color);
+	gui->unlock_window();
+}
+
+GWindowColorUpdate::GWindowColorUpdate(GWindowColorThread *color_thread)
+ : Thread(1, 0, 0)
+{
+	this->color_thread = color_thread;
+	this->update_lock = new Condition(0,"GWindowColorUpdate::update_lock");
+	done = 1;
+}
+
+GWindowColorUpdate::~GWindowColorUpdate()
+{
+	stop();
+	delete update_lock;
+}
+
+void GWindowColorUpdate::start()
+{
+	if( done ) {
+		done = 0;
+		Thread::start();
+	}
+}
+
+void GWindowColorUpdate::stop()
+{
+	if( !done ) {
+		done = 1;
+		update_lock->unlock();
+		join();
+	}
+}
+
+void GWindowColorUpdate::run()
+{
+	while( !done ) {
+		update_lock->lock("GWindowColorUpdate::run");
+		if( done ) break;
+		color_thread->update_gui();
+	}
+}
+
+
+int GWindowColorButton::handle_event()
+{
+	GWindowGUI *gui = auto_toggle->gui;
+	gui->start_color_thread(this);
+	return 1;
+}
+
+void GWindowGUI::create_objects()
+{
+	int x = 10, y = 10;
+	lock_window("GWindowGUI::create_objects");
+
+	for( int i=0; i<(int)(sizeof(toggle_order)/sizeof(toggle_order[0])); ++i ) {
+		toggleinfo *tp = &toggle_order[i];
+		int ref = tp->ref;
+		if( ref < 0 ) {
+			BC_Bar *bar = new BC_Bar(x,y,get_w()-x-10);
+			add_tool(bar);
+			toggles[i] = 0;
+			y += bar->get_h() + 5;
+			continue;
+		}
+		const char *label = toggle_text(tp);
+		int color = tp->isauto > 0 ? auto_colors[tp->ref] : WHITE;
+		GWindowToggle *toggle = new GWindowToggle(this, x, y, label, color, tp);
+		add_tool(toggles[i] = toggle);
+		if( tp->isauto > 0 ) {
+			VFrame *vframe = 0;
+			switch( ref ) {
+			case AUTOMATION_MODE: vframe = mwindow->theme->modekeyframe_data;  break;
+			case AUTOMATION_PAN:  vframe = mwindow->theme->pankeyframe_data;   break;
+			case AUTOMATION_MASK: vframe = mwindow->theme->maskkeyframe_data;  break;
+			}
+			if( !vframe ) {
+				int wh = toggle->get_h() - 4;
+				GWindowColorButton *color_button =
+					new GWindowColorButton(toggle, get_w()-wh-10, y+2, wh);
+				add_tool(color_button);
+				color_button->set_color(color);
+				color_button->draw_face();
+			}
+			else
+				draw_vframe(vframe, get_w()-vframe->get_w()-10, y);
+		}
+		else if( tp->isauto < 0 ) {
+			const char *accel = 0;
+			switch( ref ) {
+			case NONAUTOTOGGLES_CAMERA_XYZ:
+				camera_xyz = toggle;
+				accel = _("Shift-F1");
+				break;
+			case NONAUTOTOGGLES_PROJECTOR_XYZ:
+				projector_xyz = toggle;
+				accel = _("Shift-F2");
+				break;
+			}
+			 if( accel ) {
+				int x1 = get_w() - BC_Title::calculate_w(this, accel) - 10;
+				add_subwindow(new BC_Title(x1, y, accel));
+			}
+		}
+		y += toggles[i]->get_h() + 5;
+	}
+	update_toggles(0);
+	unlock_window();
+}
+
+void GWindowGUI::update_mwindow(int toggles, int overlays)
+{
+	unlock_window();
+	mwindow->gui->lock_window("GWindowGUI::update_mwindow");
+	if( toggles )
+		mwindow->gui->mainmenu->update_toggles(0);
+	if( overlays )
+		mwindow->gui->draw_overlays(1);
+	mwindow->gui->unlock_window();
+	lock_window("GWindowGUI::update_mwindow");
+}
+
+void GWindowGUI::update_toggles(int use_lock)
+{
+	if(use_lock) {
+		lock_window("GWindowGUI::update_toggles");
+		set_cool(0);
+	}
+
+	for( int i=0; i<(int)(sizeof(toggle_order)/sizeof(toggle_order[0])); ++i ) {
+		if( toggles[i] ) toggles[i]->update();
+	}
+
+	camera_xyz->set_value(check_xyz(AUTOMATION_CAMERA_X) > 0 ? 1 : 0);
+	projector_xyz->set_value(check_xyz(AUTOMATION_PROJECTOR_X) > 0 ? 1 : 0);
+
+	if(use_lock) unlock_window();
+}
+
+void GWindowGUI::toggle_camera_xyz()
+{
+	int v = camera_xyz->get_value() ? 0 : 1;
+	camera_xyz->set_value(v);
+	xyz_check(AUTOMATION_CAMERA_X, v);
+	update_toggles(0);
+	update_mwindow(1, 1);
+}
+
+void GWindowGUI::toggle_projector_xyz()
+{
+	int v = projector_xyz->get_value() ? 0 : 1;
+	projector_xyz->set_value(v);
+	xyz_check(AUTOMATION_PROJECTOR_X, v);
+	update_toggles(0);
+	update_mwindow(1, 1);
+}
+
+int GWindowGUI::translation_event()
+{
+	mwindow->session->gwindow_x = get_x();
+	mwindow->session->gwindow_y = get_y();
+	return 0;
+}
+
+int GWindowGUI::close_event()
+{
+	delete color_thread;  color_thread = 0;
+	hide_window();
+	mwindow->session->show_gwindow = 0;
+	unlock_window();
+
+	mwindow->gui->lock_window("GWindowGUI::close_event");
+	mwindow->gui->mainmenu->show_gwindow->set_checked(0);
+	mwindow->gui->unlock_window();
+
+	lock_window("GWindowGUI::close_event");
+	mwindow->save_defaults();
+	return 1;
+}
+
+int GWindowGUI::keypress_event()
+{
+	switch(get_keypress()) {
+	case KEY_F1:
+		if( shift_down() )
+			toggle_camera_xyz();
+		break;
+	case KEY_F2:
+		if( shift_down() )
+			toggle_projector_xyz();
+		break;
+	case 'w':
+	case 'W':
+	case '0':
+		if( ctrl_down() ) {
+			close_event();
+			return 1;
+		}
+		break;
+	}
+	return 0;
+}
+
+int GWindowGUI::check_xyz(int group)
+{
+// returns 1=all set, -1=all clear, 0=mixed
+	int *autos = mwindow->edl->session->auto_conf->autos;
+	int v = autos[group], ret = v ? 1 : -1;
+	if( autos[group+1] != v || autos[group+2] != v ) ret = 0;
+	return ret;
+}
+void GWindowGUI::xyz_check(int group, int v)
+{
+	int *autos = mwindow->edl->session->auto_conf->autos;
+	autos[group+0] = v;
+	autos[group+1] = v;
+	autos[group+2] = v;
+}
+
+int* GWindowGUI::get_main_value(toggleinfo *info)
+{
+	if( info->isauto > 0 )
+		return &mwindow->edl->session->auto_conf->autos[info->ref];
+	if( !info->isauto ) {
+		switch( info->ref ) {
+		case NON_AUTOMATION_ASSETS: return &mwindow->edl->session->show_assets;
+		case NON_AUTOMATION_TITLES: return &mwindow->edl->session->show_titles;
+		case NON_AUTOMATION_TRANSITIONS: return &mwindow->edl->session->auto_conf->transitions;
+		case NON_AUTOMATION_PLUGIN_AUTOS: return &mwindow->edl->session->auto_conf->plugins;
+		}
+	}
+	return 0;
+}
+
+
+GWindowToggle::GWindowToggle(GWindowGUI *gui, int x, int y,
+	const char *text, int color, toggleinfo *info)
+ : BC_CheckBox(x, y, 0, text, MEDIUMFONT, color)
+{
+	this->gui = gui;
+	this->info = info;
+	this->color = color;
+	this->color_button = 0;
+	hot = hot_value = 0;
+}
+
+GWindowToggle::~GWindowToggle()
+{
+	delete color_button;
+}
+
+int GWindowToggle::handle_event()
+{
+	int value = get_value();
+	if( shift_down() ) {
+		if( !hot ) {
+			gui->set_hot(this);
+			value = 1;
+		}
+		else {
+			gui->set_cool(1);
+			value = hot_value;
+		}
+	}
+	else
+		gui->set_cool(0);
+	if( info->isauto >= 0 ) {
+		*gui->get_main_value(info) = value;
+		switch( info->ref ) {
+		case AUTOMATION_CAMERA_X:
+		case AUTOMATION_CAMERA_Y:
+		case AUTOMATION_CAMERA_Z: {
+			int v = gui->check_xyz(AUTOMATION_CAMERA_X);
+			gui->camera_xyz->set_value(v > 0 ? 1 : 0);
+			break; }
+		case AUTOMATION_PROJECTOR_X:
+		case AUTOMATION_PROJECTOR_Y:
+		case AUTOMATION_PROJECTOR_Z: {
+			int v = gui->check_xyz(AUTOMATION_PROJECTOR_X);
+			gui->projector_xyz->set_value(v > 0 ? 1 : 0);
+			break; }
+		}
+	}
+	else {
+		int group = -1;
+		switch( info->ref ) {
+		case NONAUTOTOGGLES_CAMERA_XYZ:     group = AUTOMATION_CAMERA_X;     break;
+		case NONAUTOTOGGLES_PROJECTOR_XYZ:  group = AUTOMATION_PROJECTOR_X;  break;
+		}
+		if( group >= 0 ) {
+			gui->xyz_check(group, value);
+			gui->update_toggles(0);
+		}
+	}
+	gui->update_mwindow(1, 0);
+
+// Update stuff in MWindow
+	unlock_window();
+	MWindow *mwindow = gui->mwindow;
+	mwindow->gui->lock_window("GWindowToggle::handle_event");
+
+	mwindow->gui->update(1, 1, 0, 0, 1, 0, 0);
+	mwindow->gui->draw_overlays(1);
+
+	if( value && info->isauto > 0 ) {
+		int autogroup_type = -1;
+		switch( info->ref ) {
+		case AUTOMATION_FADE:
+			autogroup_type = mwindow->edl->tracks->recordable_video_tracks() ?
+				AUTOGROUPTYPE_VIDEO_FADE : AUTOGROUPTYPE_AUDIO_FADE ;
+			break;
+		case AUTOMATION_SPEED:
+			autogroup_type = AUTOGROUPTYPE_SPEED;
+			break;
+		case AUTOMATION_CAMERA_X:
+		case AUTOMATION_PROJECTOR_X:
+			autogroup_type = AUTOGROUPTYPE_X;
+			break;
+		case AUTOMATION_CAMERA_Y:
+		case AUTOMATION_PROJECTOR_Y:
+			autogroup_type = AUTOGROUPTYPE_Y;
+			break;
+		case AUTOMATION_CAMERA_Z:
+		case AUTOMATION_PROJECTOR_Z:
+			autogroup_type = AUTOGROUPTYPE_ZOOM;
+			break;
+		}
+		if( autogroup_type >= 0 ) {
+			mwindow->edl->local_session->zoombar_showautotype = autogroup_type;
+			mwindow->gui->zoombar->update_autozoom();
+		}
+	}
+
+	mwindow->gui->unlock_window();
+	lock_window("GWindowToggle::handle_event");
+
+	return 1;
+}
+
+void GWindowToggle::update()
+{
+	int *vp = gui->get_main_value(info);
+	if( vp ) set_value(*vp);
+}
+
+void GWindowToggle::update_gui(int color)
+{
+	BC_Toggle::color = color;
+	draw_face(1,0);
+}
+
+int GWindowToggle::draw_face(int flash, int flush)
+{
+	int ret = BC_Toggle::draw_face(flash, flush);
+	if( hot ) {
+		set_color(color);
+		set_opaque();
+		draw_rectangle(text_x-1, text_y-1, text_w+1, text_h+1);
+		if( flash ) this->flash(0);
+		if( flush ) this->flush();
+	}
+	return ret;
+}
+
+void GWindowGUI::set_cool(int reset, int all)
+{
+	for( int i=0; i<(int)(sizeof(toggles)/sizeof(toggles[0])); ++i ) {
+		GWindowToggle* toggle = toggles[i];
+		if( !toggle ) continue;
+		int *vp = get_main_value(toggle->info);
+		if( !vp ) continue;
+		if( toggle->hot ) {
+			toggle->hot = 0;
+			toggle->draw_face(1, 0);
+		}
+		if( reset > 0 )
+			*vp = toggle->hot_value;
+		else {
+			toggle->hot_value = *vp;
+			if( reset < 0 ) {
+				if ( all || toggle->info->isauto > 0 )
+					*vp = 0;
+			}
+		}
+	}
+	if( reset )
+		update_toggles(0);
+}
+
+void GWindowGUI::set_hot(GWindowToggle *toggle)
+{
+	int *vp = get_main_value(toggle->info);
+	if( !vp ) return;
+	set_cool(-1, !toggle->info->isauto ? 1 : 0);
+	toggle->hot = 1;
+	toggle->set_value(*vp = 1);
+}
+

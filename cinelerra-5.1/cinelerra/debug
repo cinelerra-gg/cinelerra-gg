@@ -1,0 +1,98 @@
+SceneGraph::render 372
+SceneGraph::dump 416 cameras=1
+  SceneCamera::dump 469 this=0x4905da0
+    at_x=0.000000 at_y=0.000000 at_z=0.000000 scale=1.000000
+SceneGraph::dump 419 nodes=3
+  SceneNode::dump 313 this=0x4906240 title=background
+    image=0x48cf790 private_image=0 hidden=0 flip=0
+    x=0.000000 y=0.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+    nodes=0
+  SceneNode::dump 313 this=0x4912650 title=HEROINE 1
+    image=(nil) private_image=0 hidden=0 flip=1
+    x=758.750000 y=0.000000 z=0.000000 sz=1.000000 sy=0.750000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+    nodes=2
+      SceneNode::dump 313 this=0x4912ad0 title=head
+        image=0x4908290 private_image=0 hidden=0 flip=0
+        x=173.000000 y=0.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+        nodes=2
+          SceneNode::dump 313 this=0x49133d0 title=eyes
+            image=0x49115c0 private_image=0 hidden=0 flip=0
+            x=31.000000 y=164.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+            nodes=0
+          SceneNode::dump 313 this=0x4913850 title=mouth
+            image=0x490e900 private_image=0 hidden=0 flip=0
+            x=70.000000 y=278.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+            nodes=0
+      SceneNode::dump 313 this=0x4912f50 title=body
+        image=0x4909e90 private_image=0 hidden=0 flip=0
+        x=0.000000 y=331.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+        nodes=0
+  SceneNode::dump 313 this=0x491d1f0 title=HEROINE 2
+    image=(nil) private_image=0 hidden=0 flip=0
+    x=758.000000 y=0.000000 z=0.000000 sz=1.000000 sy=0.750000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+    nodes=2
+      SceneNode::dump 313 this=0x491d670 title=head
+        image=0x4910630 private_image=0 hidden=0 flip=0
+        x=173.000000 y=0.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+        nodes=2
+          SceneNode::dump 313 this=0x491aaf0 title=eyes
+            image=0x4918450 private_image=0 hidden=0 flip=0
+            x=31.000000 y=164.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+            nodes=0
+          SceneNode::dump 313 this=0x491af70 title=mouth
+            image=0x490b7e0 private_image=0 hidden=0 flip=0
+            x=70.000000 y=278.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+            nodes=0
+      SceneNode::dump 313 this=0x491a670 title=body
+        image=0x4919010 private_image=0 hidden=0 flip=0
+        x=0.000000 y=331.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+        nodes=0
+SceneGraph::render 372
+SceneGraph::dump 416 cameras=1
+  SceneCamera::dump 469 this=0x4905e00
+    at_x=0.000000 at_y=0.000000 at_z=0.000000 scale=1.000000
+SceneGraph::dump 419 nodes=3
+  SceneNode::dump 313 this=0x49062a0 title=background
+    image=0x48cf7f0 private_image=0 hidden=0 flip=0
+    x=0.000000 y=0.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+    nodes=0
+  SceneNode::dump 313 this=0x49126b0 title=HEROINE 1
+    image=(nil) private_image=0 hidden=0 flip=1
+    x=758.750000 y=0.000000 z=0.000000 sz=1.000000 sy=0.750000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+    nodes=2
+      SceneNode::dump 313 this=0x4912b30 title=head
+        image=0x49082f0 private_image=0 hidden=0 flip=0
+        x=173.000000 y=0.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+        nodes=2
+          SceneNode::dump 313 this=0x4913430 title=eyes
+            image=0x4911620 private_image=0 hidden=0 flip=0
+            x=31.000000 y=164.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+            nodes=0
+          SceneNode::dump 313 this=0x49138b0 title=mouth
+            image=0x490e960 private_image=0 hidden=0 flip=0
+            x=70.000000 y=278.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+            nodes=0
+      SceneNode::dump 313 this=0x4912fb0 title=body
+        image=0x4909ef0 private_image=0 hidden=0 flip=0
+        x=0.000000 y=331.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+        nodes=0
+  SceneNode::dump 313 this=0x491d250 title=HEROINE 2
+    image=(nil) private_image=0 hidden=0 flip=0
+    x=758.000000 y=0.000000 z=0.000000 sz=1.000000 sy=0.750000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+    nodes=2
+      SceneNode::dump 313 this=0x491d6d0 title=head
+        image=0x4910690 private_image=0 hidden=0 flip=0
+        x=173.000000 y=0.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+        nodes=2
+          SceneNode::dump 313 this=0x491ab50 title=eyes
+            image=0x49184b0 private_image=0 hidden=0 flip=0
+            x=31.000000 y=164.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+            nodes=0
+          SceneNode::dump 313 this=0x491afd0 title=mouth
+            image=0x490b840 private_image=0 hidden=0 flip=0
+            x=70.000000 y=278.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+            nodes=0
+      SceneNode::dump 313 this=0x491a6d0 title=body
+        image=0x4919070 private_image=0 hidden=0 flip=0
+        x=0.000000 y=331.000000 z=0.000000 sz=1.000000 sy=1.000000 sz=1.000000 rx=0.000000 ry=0.000000 rz=0.000000
+        nodes=0

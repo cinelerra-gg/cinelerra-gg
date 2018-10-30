@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="5"
+   height="184"
+   viewBox="0 0 1.3229166 48.683335"
+   version="1.1"
+   id="svg1343"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="xpane_up.svg"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/ypane_up.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <title
+     id="title1918">ypane_up</title>
+  <defs
+     id="defs1337" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.7351017"
+     inkscape:cx="-138.93266"
+     inkscape:cy="-79.339583"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:showpageshadow="false" />
+  <metadata
+     id="metadata1340">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>ypane_up</dc:title>
+        <dc:date>2018-08-16</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Olaf</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:description>2018-08-16: new. </dc:description>
+        <dc:relation>x/ypane_up</dc:relation>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-248.31665)">
+    <rect
+       style="opacity:1;fill:#00ffff;fill-opacity:1;fill-rule:evenodd;stroke:#808080;stroke-width:0.16086666;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect1920"
+       width="63.185898"
+       height="9.0573645"
+       x="-29.011703"
+       y="234.47119" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;line-height:6.61458302px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-6.9613357"
+       y="239.5929"
+       id="text1924"><tspan
+         sodipodi:role="line"
+         id="tspan1922"
+         x="-6.9613357"
+         y="239.5929"
+         style="stroke-width:0.26458332">Unknown use.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458302px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-21.500896"
+       y="312.24887"
+       id="text841"><tspan
+         sodipodi:role="line"
+         id="tspan839"
+         x="-21.500896"
+         y="312.24887"
+         style="stroke-width:0.26458332">xpane_dn</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458302px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-50.473732"
+       y="313.16379"
+       id="text845"><tspan
+         sodipodi:role="line"
+         id="tspan843"
+         x="-50.473732"
+         y="313.16379"
+         style="stroke-width:0.26458332">xpane_hi</tspan></text>
+    <image
+       y="317.19385"
+       x="-42.979809"
+       id="image831"
+       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAC4CAIAAACkWbEZAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAP
+iAAAD4gBFsilhgAAAAd0SU1FB94FGQQNLIFu+ugAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRo
+IEdJTVBXgQ4XAAAAOklEQVRIx+3IwQ3AIAzAQBe6fnbJBpko6gp9gcSPAezf+akqVhHxApm51+BM
+a6211lprfe/Z3d8K+AEEIRKV56svJQAAAABJRU5ErkJggg==
+"
+       style="image-rendering:optimizeQuality"
+       preserveAspectRatio="none"
+       height="49.477081"
+       width="1.3229166" />
+    <image
+       y="316.46271"
+       x="-10.347237"
+       id="image842"
+       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAC4CAIAAACkWbEZAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAP
+iAAAD4gBFsilhgAAAAd0SU1FB94FGQQPDxE/6RgAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRo
+IEdJTVBXgQ4XAAAANklEQVRIx+3IsREAIAzDQIdjkPTZL6N4Xio46BhA6l6Rmdp195RUVWcNvWGM
+McYYY4z/HbZvL2S5BXbTgGAwAAAAAElFTkSuQmCC
+"
+       style="image-rendering:optimizeQuality"
+       preserveAspectRatio="none"
+       height="48.683334"
+       width="1.3229166" />
+    <image
+       y="248.31665"
+       x="1.4524009e-08"
+       id="image853"
+       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAC4CAIAAACkWbEZAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAP
+iAAAD4gBFsilhgAAAAd0SU1FB94FGQQKGZicqAwAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRo
+IEdJTVBXgQ4XAAAAN0lEQVRIx+3IQREAIAzEwCuDkOqtgAo5hbxg4IeA5LeJ7tauqqYk22cNvWGM
+McYYY4z/HZl5ewH2tAdHW6KcsgAAAABJRU5ErkJggg==
+"
+       style="image-rendering:optimizeQuality"
+       preserveAspectRatio="none"
+       height="48.683334"
+       width="1.3229166" />
+  </g>
+</svg>

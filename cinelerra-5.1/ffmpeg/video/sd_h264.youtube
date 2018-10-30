@@ -1,0 +1,8 @@
+mp4 libx264
+# YOUTUBE Standard Definition; for resolution of 640×480;
+#  24/25/30 fps. Change audio to: stereo_with_h264.
+b=2500k
+profile=high
+# use framerate for 1 keyframe/sec, needed for seeks
+keyint_min=24
+x264opts keyint=24

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="29"
+   height="24"
+   viewBox="0 0 7.6729166 6.3500001"
+   version="1.1"
+   id="svg1601"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="loadmode_nested.svg"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/loadmode_nested.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs1595" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="14.588163"
+     inkscape:cx="54.80315"
+     inkscape:cy="27.865058"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:showpageshadow="false"
+     units="px" />
+  <metadata
+     id="metadata1598">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+        <dc:relation>loadmode_all</dc:relation>
+        <dc:date>2018-08-14</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Olaf</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:description>2018-08-14</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-290.65)">
+    <g
+       id="g1143"
+       transform="translate(314.21593,172.83335)">
+      <rect
+         y="118.72094"
+         x="-313.84293"
+         height="4.5414195"
+         width="6.926908"
+         id="rect3597-9-4-3"
+         style="fill:none;fill-opacity:1;stroke:#efede3;stroke-width:0.22108038;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <rect
+         y="119.99946"
+         x="-313.0253"
+         height="1.984375"
+         width="5.2916665"
+         id="rect1011"
+         style="opacity:1;fill:#d40000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.57102871;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <g
+         transform="translate(12.210029,0.09165246)"
+         style="stroke:#efede3;stroke-opacity:1"
+         id="g1022">
+        <rect
+           style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#efede3;stroke-width:0.12482122;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect1013"
+           width="1.7272621"
+           height="1.9141577"
+           x="-325.18039"
+           y="119.94292" />
+        <use
+           style="stroke:#efede3;stroke-opacity:1"
+           x="0"
+           y="0"
+           xlink:href="#rect1013"
+           id="use1015"
+           transform="translate(1.7272644)"
+           width="100%"
+           height="100%" />
+        <use
+           style="stroke:#efede3;stroke-opacity:1"
+           x="0"
+           y="0"
+           xlink:href="#rect1013"
+           id="use1017"
+           transform="translate(3.4545288)"
+           width="100%"
+           height="100%" />
+      </g>
+    </g>
+  </g>
+</svg>

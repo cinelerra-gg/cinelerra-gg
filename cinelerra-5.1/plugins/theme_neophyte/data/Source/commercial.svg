@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   width="24"
+   height="24"
+   sodipodi:docname="commercial.svg"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/commercial.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <title
+     id="title883">The commercial DB</title>
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>The commercial DB</dc:title>
+        <dc:date>2018-08-17</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Olaf</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:description>2018-08-17: new. </dc:description>
+        <dc:subject>
+          <rdf:Bag />
+        </dc:subject>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       id="perspective10" />
+    <linearGradient
+       id="linearGradient1817">
+      <stop
+         id="stop1852"
+         offset="0"
+         style="stop-color:#404040;stop-opacity:1" />
+      <stop
+         id="stop1854"
+         offset="1"
+         style="stop-color:#151515;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1280"
+     inkscape:window-height="773"
+     id="namedview4"
+     showgrid="false"
+     inkscape:zoom="28.047314"
+     inkscape:cx="12.021816"
+     inkscape:cy="9.0780929"
+     inkscape:window-x="0"
+     inkscape:window-y="1"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer6"
+     inkscape:showpageshadow="false" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Layer 1"
+     sodipodi:insensitive="true"
+     style="display:none">
+    <g
+       id="g3607"
+       transform="matrix(1.0315542,0,0,1.0064209,-0.157771,0.42871625)">
+      <path
+         sodipodi:nodetypes="cccccz"
+         id="rect2818"
+         d="m 10.403929,10.54929 c 0.0085,1.323717 1.154559,2.640853 1.859622,2.659292 l 5.49637,0.006 V 7.8585308 H 12.27542 c -0.955557,0.037504 -1.879996,1.3673915 -1.871491,2.6907602 z"
+         style="fill:none;stroke:#cccccc;stroke-width:1.64394927;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         inkscape:connector-curvature="0" />
+      <path
+         id="rect2825"
+         d="m 5.96875,10 v 1 3 H 5 L 7.0625,15.96875 9,14 H 8 v -3 h 2.25 V 10 H 8 Z"
+         style="fill:#cccccc;fill-opacity:1;stroke:none"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="Layer 2">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:36.75471115px;line-height:49.22506714px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;opacity:0.98999999;fill:#e6e4dd;fill-opacity:1;stroke:none;stroke-width:1.96900344;"
+       x="-1.7049263"
+       y="27.239872"
+       id="text1706-9"
+       transform="scale(1.1782356,0.84872668)"
+       inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/Privat/Logos.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"><tspan
+         sodipodi:role="line"
+         id="tspan1704-0"
+         x="-1.7049263"
+         y="27.239872"
+         style="fill:#e6e4dd;stroke-width:1.96900344;fill-opacity:1;">C</tspan></text>
+    <image
+       y="0.39288646"
+       x="-26.588333"
+       id="image828"
+       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A
+/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9wCARUmOnRrefwAAAAddEVYdENv
+bW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAP1JREFUSMftVTsOgkAQfUtILGjhFhzA
+dk5g5TE8gT3aGi9hYodQcwlu4R4BMza6IcvsB6XkJRQMs28+b2YBViyBruuykE9dV4lkVwIZALDg
+w/ZZIgomlwo2HhGzg/xrU217BgAMwwu73TEqgF0Ze1rHX9/nsxd9EsdZFtpkHiKaJFAUJW63S1gD
+WwciUp93A6175HlpfLTu1X5/QJTIgtDKoyFb1US3yBBrLfdW6x4h8lAAAICrdJd9TgAGgPv96vka
+xt8ahBYuccw2+3L9EE6W8PGoZi+auMnW2JoxlpYt9ZXu6y0RqaY5Icu246qWuexixvPXa3uz/rxW
+TPAGP7FjesPmpB0AAAAASUVORK5CYII=
+"
+       style="image-rendering:optimizeQuality"
+       preserveAspectRatio="none"
+       height="24"
+       width="24" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:condensed;font-size:19.23809242px;line-height:25.76530457px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Semi-Bold Condensed';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#e6e4dd;fill-opacity:1;stroke:none;stroke-width:1.03061247"
+       x="6.2279081"
+       y="18.008963"
+       id="text881"><tspan
+         sodipodi:role="line"
+         id="tspan879"
+         x="6.2279081"
+         y="18.008963"
+         style="stroke-width:1.03061247">db</tspan></text>
+  </g>
+</svg>

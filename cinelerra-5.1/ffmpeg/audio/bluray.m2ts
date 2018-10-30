@@ -1,0 +1,5 @@
+bluray ac3
+id 0x1100
+maxrate 9000000
+minrate 0
+bufsize 1835008

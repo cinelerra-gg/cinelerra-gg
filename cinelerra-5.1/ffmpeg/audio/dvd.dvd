@@ -1,0 +1,4 @@
+dvd ac3
+maxrate 9000000
+minrate 0
+bufsize 1835008

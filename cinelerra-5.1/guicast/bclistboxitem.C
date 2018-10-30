@@ -1,0 +1,171 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
+#include "bclistboxitem.h"
+#include "bcpixmap.h"
+#include "bcresources.h"
+#include "bcwindowbase.h"
+
+#include <string.h>
+
+
+// ====================================================== item
+
+BC_ListBoxItem::BC_ListBoxItem()
+{
+	initialize();
+
+	color = BC_WindowBase::get_resources()->listbox_text;
+	this->text = new char[1];
+	text[0] = 0;
+	selectable = 1;
+}
+
+BC_ListBoxItem::BC_ListBoxItem(const char *text,
+	BC_Pixmap *icon,
+	int color)
+{
+	initialize();
+
+	if(color == -1) color = BC_WindowBase::get_resources()->listbox_text;
+	this->text = new char[strlen(text) + 1];
+	this->icon = icon;
+
+	strcpy(this->text, text);
+	this->color = color;
+	selectable = 1;
+}
+
+BC_ListBoxItem::BC_ListBoxItem(const char *text, int color)
+{
+	initialize();
+
+	if(color == -1) color = BC_WindowBase::get_resources()->listbox_text;
+	this->text = new char[strlen(text) + 1];
+	strcpy(this->text, text);
+	this->color = color;
+	selectable = 1;
+}
+
+BC_ListBoxItem::~BC_ListBoxItem()
+{
+	if(text) delete [] text;
+	if(sublist)
+	{
+		for(int i = 0; i < columns; i++)
+			sublist[i].remove_all_objects();
+		delete [] sublist;
+	}
+}
+
+int BC_ListBoxItem::initialize()
+{
+	autoplace_icon = 1;
+	autoplace_text = 1;
+	text = 0;
+	color = BLACK;
+	selected = 0;
+	icon = 0;
+	icon_vframe = 0;
+	text_x = text_y = -1;
+	text_w = text_h = -1;
+	baseline = -1;
+	icon_x = -1;
+	icon_y = -1;
+	searchable = 1;
+	in_view = -1;
+	sublist = 0;
+	columns = 0;
+	expand = 0;
+	return 0;
+}
+
+int BC_ListBoxItem::get_icon_w() { return !icon ? 0 : icon->get_w(); }
+int BC_ListBoxItem::get_icon_h() { return !icon ? 0 : icon->get_h(); }
+
+BC_Pixmap* BC_ListBoxItem::get_icon()
+{
+	return icon;
+}
+
+
+void BC_ListBoxItem::set_text(const char *new_text)
+{
+	if(this->text) delete [] this->text;
+
+	if(new_text) {
+		text = new char[strlen(new_text) + 1];
+		strcpy(this->text, new_text);
+	}
+	else
+		text = 0;
+	text_w = text_h = -1;
+	baseline = -1;
+}
+
+void BC_ListBoxItem::copy_from(BC_ListBoxItem *item)
+{
+	if(item->text) set_text(item->text);
+	color = item->color;
+	text_x = item->text_x;  text_y = item->text_y;
+	text_w = item->text_w;  text_h = item->text_h;
+	baseline = item->baseline;  in_view = -1;
+	icon_x = item->icon_x;
+	icon_y = item->icon_y;
+	selectable = item->selectable;
+	columns = item->columns;
+	if(item->sublist)
+	{
+		sublist = new ArrayList<BC_ListBoxItem*>[columns];
+		for(int i = 0; i < columns; i++)
+		{
+			ArrayList<BC_ListBoxItem*> *list = &item->get_sublist()[i];
+
+			for(int j = 0; j < list->total; j++)
+			{
+				BC_ListBoxItem *new_item = new BC_ListBoxItem;
+				BC_ListBoxItem *old_item = list->values[j];
+				sublist[i].append(new_item);
+				new_item->copy_from(old_item);
+			}
+		}
+	}
+}
+
+ArrayList<BC_ListBoxItem*>* BC_ListBoxItem::new_sublist(int columns)
+{
+	sublist = new ArrayList<BC_ListBoxItem*>[columns];
+	this->columns = columns;
+	return sublist;
+}
+
+int BC_ListBoxItem::compare_item_text(const void *a, const void *b)
+{
+	BC_ListBoxItem *ap = *(BC_ListBoxItem**)a, *bp = *(BC_ListBoxItem**)b;
+	return strcmp(ap->text, bp->text);
+}
+
+void BC_ListBoxItem::sort_items(ArrayList<BC_ListBoxItem*> &items)
+{
+	qsort(&items[0], items.size(), sizeof(items[0]), compare_item_text);
+}
+
+

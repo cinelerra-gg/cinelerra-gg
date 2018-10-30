@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="25"
+   height="25"
+   viewBox="0 0 6.6145831 6.6145834"
+   version="1.1"
+   id="svg1554"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="file_size_capb_dn.svg"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/file_size_capb_dn.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs1548">
+    <linearGradient
+       id="linearGradient1861">
+      <stop
+         id="stop1857"
+         offset="0"
+         style="stop-color:#252525;stop-opacity:1" />
+      <stop
+         id="stop1859"
+         offset="1"
+         style="stop-color:#151515;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1817">
+      <stop
+         id="stop1852"
+         offset="0"
+         style="stop-color:#404040;stop-opacity:1" />
+      <stop
+         id="stop1854"
+         offset="1"
+         style="stop-color:#151515;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient1861"
+       id="linearGradient1811-8-43-2-3"
+       x1="44.737286"
+       y1="1.0084742"
+       x2="44.737286"
+       y2="18.728813"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.24402056,0,0,0.37320791,-14.319246,-297.34907)" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="6.5923912"
+     inkscape:cx="25.671207"
+     inkscape:cy="35.051937"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:showpageshadow="false"
+     inkscape:window-width="2494"
+     inkscape:window-height="1407"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata1551">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+        <dc:date>2018-08-10</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Olaf</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:description>2018-08-10: neu.</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-290.38541)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82225776px;line-height:6.61466646px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458663"
+       x="-21.686598"
+       y="282.6077"
+       id="text2266"><tspan
+         sodipodi:role="line"
+         id="tspan2264"
+         x="-21.686598"
+         y="282.6077"
+         style="stroke-width:0.26458663">see: file_size_capb_up</tspan></text>
+    <rect
+       style="fill:url(#linearGradient1811-8-43-2-3);fill-opacity:1;stroke:#141414;stroke-width:0.27012515;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3597-9-1-6-0"
+       width="6.3445396"
+       height="6.3445396"
+       x="-6.4795613"
+       y="-296.86496"
+       transform="scale(-1)" />
+    <g
+       id="g1712"
+       transform="matrix(1.0000126,0,0,1.0000126,-0.25791109,-0.00368099)">
+      <text
+         id="text3360-1"
+         y="295.91122"
+         x="0.92263246"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.22406578px;line-height:7.78008318px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke:none;stroke-width:0.3112033"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.22406578px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke-width:0.3112033"
+           y="295.91122"
+           x="0.92263246"
+           id="tspan3358-9"
+           sodipodi:role="line">I</tspan></text>
+      <text
+         id="text3360-1-0"
+         y="293.49518"
+         x="4.1374927"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.9985733px;line-height:7.78008318px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke:none;stroke-width:0.3112033"
+         xml:space="preserve"><tspan
+           rotate="0 0"
+           id="tspan1145"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.9985733px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke-width:0.3112033"
+           y="293.49518"
+           x="4.1374927"
+           sodipodi:role="line"><tspan
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.9985733px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke-width:0.3112033"
+             id="tspan1147"
+             rotate="0 0"
+             dy="0"
+             dx="0">E</tspan></tspan></text>
+      <text
+         id="text3360-1-0-9"
+         y="295.88123"
+         x="4.0760217"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.82218671px;line-height:7.78008318px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke:none;stroke-width:0.3112033"
+         xml:space="preserve"><tspan
+           rotate="0 0"
+           id="tspan1145-0"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.9985733px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke-width:0.3112033"
+           y="295.88123"
+           x="4.0760217"
+           sodipodi:role="line"><tspan
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.9985733px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke-width:0.3112033"
+             id="tspan1147-8"
+             rotate="0 0"
+             dy="0"
+             dx="0">C</tspan></tspan></text>
+    </g>
+  </g>
+</svg>

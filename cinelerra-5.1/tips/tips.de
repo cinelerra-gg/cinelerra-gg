@@ -1,0 +1,41 @@
+Shift-Klick auf einen Kurven-Keyframe um ihn auf die Nachbarwerte einzurasten.
+
+Wenn Sie langsame Effekte einstellen, schalten Sie das Playback für die Spur ab. Nach
+der Einstellung können Sie es wieder aktivieren, um einen einzelnen Frame anzuzeigen.
+
+Strg + ein Transportkommando bewirkt das Abspielen nur des
+Abschnitts, der durch durch die Ein/Aus-Punkte definiert ist.
+
+Umschalt + Klicken eines Patches bewirkt die Umschaltung aller
+anderen Patches außer den ausgewählten.
+
+Klicken auf einen Patch und Ziehen über andere Spuren
+bewirkt, dass die anderen Patches dem ersten entsprechen.
+
+Shift + Klicken auf einen Effektrand bewirkt, dass Ziehen sich
+nur auf einen Effekt auswirkt.
+
+Laden Sie mehrere Dateien durch Klicken auf eine Datei sowie
+Shift + Klicken auf eine andere Datei. Strg + Klicken schaltet
+zwischen individuellen Dateien um.
+
+Strg + Linksklick auf der Zeitleiste schaltet zum nächsten Zeitformat um.
+Strg + mittlere Maustaste auf die Zeitleiste schaltet zum vorigen Zeitformat um.
+
+Verwenden Sie die Tasten +/- im Compositor-Fenster zum Hinein- und Hinauszoomen.
+
+Halten von Alt beim Klicken in das Schneidefenster bewirkt eine Verschiebung
+aller vier Punkte.
+
+Drücken von Tab über einer Spur wechselt den Aufnahmestatus.
+Drücken v. Shift-Tab über einer Spur wechselt den Aufnahmestatus aller anderen Spuren.
+
+Audio->Abbildung 1:1 bildet jede aufnahmefähige Audio-Spur auf einen anderen Kanal ab.
+Abbildung 5.1:2 bildet sechs aufnahmefähige AC3-Spuren auf zwei Kanäle ab.
+
+Alt + Links wechselt zur vorherigen Bearbeitungsmarke.
+Alt + Rechts wechselt zur nächsten Bearbeitungsmarke.
+
+Durch Einstellung->typenlose Keyframes können Keyframes von jedem Track auf
+entweder Audio- oder Videospuren eingefügt werden.
+

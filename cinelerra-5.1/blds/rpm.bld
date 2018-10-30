@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#zypper install ffmpeg \
+# libavc1394-devel libavcodec-devel libavdevice-devel libavfilter-devel \
+# libavformat-devel libavresample-devel libavutil-devel libmp3lame-devel \
+# libopus-devel libossp-uuid++16 libossp-uuid16 libossp-uuid_dce16 \
+# libtwolame-devel libvpx-devel libwebp-devel libwebpdecoder2 libwebpextras0 \
+# uuid-devel liblilv-0-devel suil-devel libmjpegutils-devel \
+# libogg-devel libvorbis-devel libtheora-devel libXdmcp-devel
+
+( ./autogen.sh
+  CFLAGS="-DFFMPEG3 -I/usr/include/ffmpeg" ./configure \
+    --with-single-user --disable-static-build --without-thirdparty \
+    --without-video4linux2 --without-dvb --with-lv2=auto \
+    --without-libzmpeg --without-commercial \
+    --disable-x264 --disable-x265 --disable-openjpeg
+  make && make install ) 2>&1 | tee log
+mv Makefile Makefile.cfg
+cp Makefile.devel Makefile
+

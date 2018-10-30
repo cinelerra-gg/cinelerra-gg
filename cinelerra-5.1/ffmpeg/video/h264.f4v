@@ -1,0 +1,6 @@
+f4v libx264
+profile=baseline
+level=3.0
+preset=medium
+keyint_min=25
+x264opts keyint=25:min-keyint=4:qpmin=3:qpmax=33:qp_step=4:merange=8

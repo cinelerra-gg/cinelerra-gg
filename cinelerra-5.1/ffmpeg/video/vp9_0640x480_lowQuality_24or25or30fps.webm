@@ -1,0 +1,14 @@
+webm libvpx-vp9
+# 20171119-2100
+# based on https://developers.google.com/media/vp9/settings/vod/
+# for explanations see Feature5.pdf section 3
+# 640x480 (Low Quality, 24, 25 or 30 frames per second)
+bitrate=512k
+minrate=256k
+maxrate=742k
+tile-columns=1
+g=240
+threads=4
+quality=good
+crf=34
+speed=4

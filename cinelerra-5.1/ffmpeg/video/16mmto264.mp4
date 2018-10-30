@@ -1,0 +1,22 @@
+mp4 libx264
+#From Edouard's script:
+# x264 --tune grain --preset medium --level 4.1 --sar 1:1 --slices 4 --b-pyramid strict\
+# --aud --bframes 3 --keyint 24 --bitrate 25000 --vbv-maxrate 40000 --vbv-bufsize 30000\
+# --aq-mode 2 --colorprim undef --transfer bt709 --colormatrix bt709 -o outputfile pipefile.y4m &
+bluray-compat=0
+id=0x1011
+level=41
+preset=medium
+sar=1:1
+color_primaries=unspecified
+colorspace=bt709
+color_trc=bt709
+cin_bitrate=25000000
+tune=grain
+aq-mode=autovariance
+slices=4
+b-pyramid=strict
+bufsize=30000000
+maxrate=40000000
+refs=3
+x264opts cabac=1:keyint=24

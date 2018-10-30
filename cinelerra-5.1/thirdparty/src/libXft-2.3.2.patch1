@@ -1,0 +1,61 @@
+diff -ur libXft-2.3.2.orig/src/xftdpy.c libXft-2.3.2/src/xftdpy.c
+--- libXft-2.3.2.orig/src/xftdpy.c	2014-06-06 00:05:07.000000000 -0600
++++ libXft-2.3.2/src/xftdpy.c	2017-10-17 08:55:30.227746279 -0600
+@@ -22,6 +22,11 @@
+ 
+ #include "xftint.h"
+ 
++#include <pthread.h>
++static pthread_mutex_t info_mutex = PTHREAD_MUTEX_INITIALIZER;
++static inline void info_lock() { pthread_mutex_lock(&info_mutex); }
++static inline void info_unlock() { pthread_mutex_unlock(&info_mutex); }
++
+ _X_HIDDEN XftDisplayInfo	*_XftDisplayInfo;
+ 
+ static int
+@@ -48,10 +53,12 @@
+     /*
+      * Unhook from the global list
+      */
++    info_lock();
+     for (prev = &_XftDisplayInfo; (info = *prev); prev = &(*prev)->next)
+ 	if (info->display == dpy)
+ 	    break;
+     *prev = info->next;
++    info_unlock();
+ 
+     free (info);
+     return 0;
+@@ -66,6 +73,7 @@
+     int			i;
+     int			event_base, error_base;
+ 
++    info_lock();
+     for (prev = &_XftDisplayInfo; (info = *prev); prev = &(*prev)->next)
+     {
+ 	if (info->display == dpy)
+@@ -79,9 +87,12 @@
+ 		info->next = _XftDisplayInfo;
+ 		_XftDisplayInfo = info;
+ 	    }
++	    info_unlock();
+ 	    return info;
+ 	}
+     }
++    info_unlock();
++
+     if (!createIfNecessary)
+ 	return NULL;
+ 
+@@ -157,8 +168,10 @@
+     }
+     info->fonts = NULL;
+ 
++    info_lock();
+     info->next = _XftDisplayInfo;
+     _XftDisplayInfo = info;
++    info_unlock();
+ 
+     info->glyph_memory = 0;
+     info->max_glyph_memory = XftDefaultGetInteger (dpy,
+Only in libXft-2.3.2: tags

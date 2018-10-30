@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32"
+   height="22"
+   viewBox="0 0 8.4666665 5.8208335"
+   version="1.1"
+   id="svg1913"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="proxy_s_up.svg"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/proxy_s_up.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <title
+     id="title2477">proxy_up</title>
+  <defs
+     id="defs1907">
+    <linearGradient
+       id="linearGradient1817">
+      <stop
+         id="stop1852"
+         offset="0"
+         style="stop-color:#404040;stop-opacity:1" />
+      <stop
+         id="stop1854"
+         offset="1"
+         style="stop-color:#151515;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient51055-6">
+      <stop
+         style="stop-color:#27ae60;stop-opacity:1"
+         offset="0"
+         id="stop51051" />
+      <stop
+         id="stop51053"
+         offset="1"
+         style="stop-color:#196634;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient1817"
+       id="linearGradient1811-87-3-0"
+       x1="44.737286"
+       y1="1.0084742"
+       x2="44.737286"
+       y2="18.728813"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.24357506,0,0,0.32583546,4.8477178,289.98083)" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.4666667"
+     inkscape:cx="-56.116071"
+     inkscape:cy="14.466243"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:showpageshadow="false"
+     borderlayer="true" />
+  <metadata
+     id="metadata1910">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>proxy_up</dc:title>
+        <dc:date>2018-08-14</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Olaf</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:description>2018-08-14: new.</dc:description>
+        <dc:relation>proxy_*</dc:relation>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-291.17915)">
+    <g
+       id="g3767"
+       transform="translate(-12.532273,0.91658399)">
+      <rect
+         y="290.40338"
+         x="12.673088"
+         height="5.5392027"
+         width="6.332953"
+         id="rect3597-00-5-3"
+         style="fill:url(#linearGradient1811-87-3-0);fill-opacity:1;stroke:#141414;stroke-width:0.28163034;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <rect
+         style="fill:none;fill-opacity:1;stroke:#ffcc00;stroke-width:0.127;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect3597-5-7-9-4-8-9-8-0-5-1-7-9"
+         width="6.0214157"
+         height="5.1752453"
+         x="12.828853"
+         y="290.58536" />
+      <text
+         id="text2605-0"
+         y="295.42938"
+         x="13.477416"
+         style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:6.61458349px;line-height:15.93560314px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Semi-Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#2ca05a;fill-opacity:1;stroke:none;stroke-width:0.63742411"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:6.61458349px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Semi-Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#2ca05a;fill-opacity:1;stroke-width:0.63742411"
+           y="295.42938"
+           x="13.477416"
+           id="tspan2603-8"
+           sodipodi:role="line">P</tspan></text>
+      <text
+         id="text2605-2-3-3"
+         y="295.41315"
+         x="16.955982"
+         style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:2.42661333px;line-height:5.84610415px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Semi-Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke:none;stroke-width:0.23384416"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:2.42661333px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Semi-Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke-width:0.23384416"
+           y="295.41315"
+           x="16.955982"
+           id="tspan2603-1-0-8"
+           sodipodi:role="line">S</tspan></text>
+    </g>
+  </g>
+</svg>

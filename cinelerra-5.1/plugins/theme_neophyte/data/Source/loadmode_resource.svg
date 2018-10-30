@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="29"
+   height="24"
+   viewBox="0 0 7.6729166 6.3500001"
+   version="1.1"
+   id="svg1601"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="loadmode_resource.svg"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/loadmode_resource.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs1595" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="13.784091"
+     inkscape:cx="14.5"
+     inkscape:cy="11"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:showpageshadow="false"
+     units="px" />
+  <metadata
+     id="metadata1598">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+        <dc:relation>loadmode_all</dc:relation>
+        <dc:date>2018-08-14</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Olaf</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:description>2018-08-14</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-290.65)">
+    <g
+       transform="translate(308.95322,229.0376)"
+       id="g1583-2">
+      <text
+         id="text1548-0"
+         y="65.859474"
+         x="-307.17981"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:condensed;font-size:3.18123627px;line-height:7.45602226px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Bold Condensed';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke:none;stroke-width:0.2982409"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:condensed;font-size:3.18123627px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Bold Condensed';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#efede3;fill-opacity:1;stroke-width:0.2982409"
+           y="65.859474"
+           x="-307.17981"
+           id="tspan1546-6"
+           sodipodi:role="line">RES</tspan></text>
+      <rect
+         y="63.299358"
+         x="-306.9953"
+         height="0.39687499"
+         width="3.7570834"
+         id="rect1550-1"
+         style="opacity:1;fill:#efede3;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.10385826;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <rect
+         y="65.878563"
+         x="-306.9953"
+         height="0.39687499"
+         width="3.7570834"
+         id="rect1550-0-5"
+         style="opacity:1;fill:#efede3;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.10385826;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

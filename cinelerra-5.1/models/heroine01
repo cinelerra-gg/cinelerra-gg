@@ -1,0 +1,27 @@
+# Model file for a character
+# All models point right & are flipped in software for multiple characters
+
+
+# Largest box the model takes up
+width: 426
+height: 744
+scale: 1
+
+
+
+# RGBA png image of the body.
+# path x y relative to width & height
+body: heroine01_body.png 0 198
+# RGBA png image of the head.
+head: heroine01_head.png 102 0
+
+
+# Different mouth sizes for speech
+# 1st is smallest
+# path x y relative to width & height
+mouth: heroine01_mouth1.png 261 143
+mouth: heroine01_mouth2.png 261 143
+mouth: heroine01_mouth3.png 261 143
+
+
+

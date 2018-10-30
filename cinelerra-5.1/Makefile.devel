@@ -1,0 +1,53 @@
+# developer makefile, replaces automake Makefile
+
+TOPDIR := $(CURDIR)
+CFLAGS ?= -ggdb
+export CFLAGS_ := $(CFLAGS)
+
+cpus:=$(shell grep -c "^proc" /proc/cpuinfo)
+jobs:=-j$(shell echo $$(($(cpus) + $(cpus)/2 +2)))
+MAKEJ := $(MAKE) $(jobs)
+
+SUBDIRS = thirdparty libzmpeg3 mpeg2enc mplexlo \
+	db guicast cinelerra plugins doc po
+
+all:
+	mkdir -p bin bin/lv2
+	+for dir in $(SUBDIRS); do $(MAKEJ) -C $$dir all; done
+
+clean:
+	for dir in $(SUBDIRS); do $(MAKE) -C $$dir clean; done
+	rm -rf thirdparty/opencv*
+	rm -rf bin
+	./autogen.sh clean
+
+install:
+	for dir in $(SUBDIRS); do $(MAKE) -C $$dir install; done
+	cp -a COPYING README models Cinelerra_factory ffmpeg msg info tips bin/.
+	cp -a lv2_blacklist.txt bin/.
+	mkdir -p bin/plugins/picon/cinfinity; for d in picon/*; do \
+	  if [ $$d = picon/cinfinity ]; then continue; fi; \
+	  cp -a $$d bin/plugins/picon/.; \
+	done
+
+rebuild:
+	$(MAKE) -C guicast clean
+	$(MAKE) -C cinelerra clean
+	$(MAKE) -C plugins clean
+	+$(MAKEJ) -C guicast
+	+$(MAKEJ) -C cinelerra
+	+$(MAKEJ) -C plugins
+	$(MAKE) install
+
+rebuild_all:
+	$(MAKE) -C libzmpeg3 clean
+	+$(MAKEJ) -C libzmpeg3
+	$(MAKE) -C db clean
+	+$(MAKEJ) -C db all
+	$(MAKE) rebuild
+	+$(MAKEJ) -C db utils
+
+rebuild_install:
+	$(MAKE) -C cinelerra install
+	$(MAKE) -C plugins install
+

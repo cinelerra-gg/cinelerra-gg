@@ -1,0 +1,8 @@
+mp4 libx264
+# YOUTUBE Ultra High Definition; for resolution 3840x2160;
+#  50 or 60 fps. Change audio to: stereo_with_h264.
+b=80000k
+profile=high
+# use framerate for 1 keyframe/sec, needed for seeks
+keyint_min=24
+x264opts keyint=24

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   width="17"
+   height="17"
+   sodipodi:docname="in_dn.svg"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/in_dn.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+        <dc:date>2018-08-01</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Olaf</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:description>2018-08-01: adapted</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       id="perspective10" />
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1280"
+     inkscape:window-height="773"
+     id="namedview4"
+     showgrid="false"
+     inkscape:zoom="21.448276"
+     inkscape:cx="-8.7403536"
+     inkscape:cy="9"
+     inkscape:window-x="0"
+     inkscape:window-y="1"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer98" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer14"
+     inkscape:label="Layer 1"
+     style="display:none"
+     sodipodi:insensitive="true"
+     transform="translate(0,-1)">
+    <path
+       style="fill:#005500;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 3.0554324,2 C 2.4665433,2 2,2.4250728 2,2.9616162 V 3.5838384 4.2626263 14.416162 15.038384 C 2,15.574928 2.4665433,16 3.0554324,16 H 14.944568 C 15.533457,16 16,15.574928 16,15.038384 v -1.30101 C 16,13.20083 15.533457,12.747475 14.944568,12.747475 H 5.5388027 V 5.2242424 H 14.944568 C 15.533457,5.2242424 16,4.7991696 16,4.2626263 V 2.9616162 C 16,2.4250728 15.533457,2 14.944568,2 Z"
+       id="rect2818"
+       inkscape:connector-curvature="0" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer15"
+     inkscape:label="Layer 2"
+     style="display:none"
+     sodipodi:insensitive="true"
+     transform="translate(0,-1)">
+    <path
+       inkscape:connector-curvature="0"
+       style="fill:#2c5aa0;fill-opacity:1;stroke:#2b2200;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 3.055432,2.0000001 C 2.466543,2.0000001 2,2.4250729 2,2.9616163 V 3.5838385 4.2626264 14.416162 15.038384 C 2,15.574928 2.466543,16 3.055432,16 H 14.944568 C 15.533457,16 16,15.574928 16,15.038384 v -1.30101 C 16,13.20083 15.533457,12.747475 14.944568,12.747475 H 5.538803 V 5.2242425 h 9.405765 C 15.533457,5.2242425 16,4.7991697 16,4.2626264 V 2.9616163 C 16,2.4250729 15.533457,2.0000001 14.944568,2.0000001 Z"
+       id="rect2818-5" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer98"
+     inkscape:label="Layer 3"
+     transform="translate(0,-1)">
+    <path
+       style="opacity:1;fill:#2c5aa0;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.68163037;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 5,1.0000004 V 3.8333337 15.166667 18 h 3 5 V 15.166667 H 8 V 3.8333337 h 5 V 1.0000004 H 8 Z"
+       id="rect175300"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

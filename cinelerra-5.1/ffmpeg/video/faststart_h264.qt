@@ -1,0 +1,4 @@
+fqt libx264
+# use framerate for 1 keyframe/sec, needed for seeks
+keyint_min=25
+x264opts keyint=25

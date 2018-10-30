@@ -1,0 +1,194 @@
+#ifdef DEBUG_SUMMARY
+static const char *desc_name1[] = {
+/* 00 */  0,
+/* 01 */  0,
+/* 02 */  "video_stream_descr",
+/* 03 */  "audio_stream_descr",
+/* 04 */  "hierarchy_descr",
+/* 05 */  "registration_descr",
+/* 06 */  "data_stream_align_descr",
+/* 07 */  "target_background_grid_descr",
+/* 08 */  "video_window_descr",
+/* 09 */  "CA_descr",
+/* 0a */  "ISO_639_lang_descr",
+/* 0b */  "syst_clk_descr",
+/* 0c */  "multiplex_buf_utilization_descr",
+/* 0d */  "copyright_descr",
+/* 0e */  "max_bitrate_descr",
+/* 0f */  "private_data_indicator_descr",
+/* 10 */  "smoothing_buf_descr",
+/* 11 */  "STD_descr",
+/* 12 */  "IBP_descr",
+/* 13 */ 0,
+/* 14 */ "assoc_tag_descr",
+};
+
+static const char *desc_name2[] = {
+/* 80 */  "stuffing_descr",
+/* 81 */ 0, 0, 0, 0, 0, /* - 85 */
+/* 86 */ "caption_serv_descr",
+/* 87 */ "content_advisory_descr",
+/* 88 */ 0, 0, 0, 0, 0, 0, 0, 0, /* - 8f */
+/* 90 */ 0, 0, 0, 0, 0, 0, 0, 0, /* - 97 */
+/* 98 */ 0, 0, 0, 0, 0, 0, 0, 0, /* - 9f */
+/* a0 */ "extended_ch_name_descr",
+/* a1 */ "serv_location_descr",
+/* a2 */ "time_shifted_serv_descr",
+/* a3 */ "component_name_descr",
+/* a4 */ "data_service_descr",
+/* a5 */ "PID_count_descr",
+/* a6 */ "Download_descr",
+/* a7 */ "multiprotocol_encapsulate_descr",
+/* a8 */ "DCC_departing_event_descr",
+/* a9 */ "DCC_arriving_event_descr",
+/* aa */ "Content_Protect_Copy_Mngt_descr",
+/* ab */ 0, 0, 0, 0, 0, 0, 0, 0, 0, /* - b3 */
+/* b4 */ "Module_Link_descr",
+/* b5 */ "CRC32_descr",
+/* b6 */ 0, 0, /* - b7 */
+/* b8 */ "Group_Link_descr",
+};
+
+/* print descr tag info */
+
+static uint32_t prt_descr(uint8_t *descr)
+{
+  int i, n;
+  uint8_t *bp, *cp;
+  const char *nm = 0;
+  uint32_t tag = descr[0];
+  int len = descr[1];
+
+  printf("    tag/len=0x%02x/%u (", tag,len);
+  if( tag < lengthof(desc_name1) )
+    nm = desc_name1[tag];
+  else if( (n=tag-0x80) >= 0 && n<=lengthof(desc_name2) )
+    nm = desc_name2[n];
+  if( nm == 0 ) nm = "n/a";
+  printf("%s)\n",nm);
+
+  bp = cp = &descr[2];
+  for( i=0; i<len; ) {
+    if( (i&0x0f) == 0 ) printf("%04x: ",i);
+    printf("%02x ", *bp++);
+    if( (++i & 0x0f) == 0 ) {
+      printf("  | ");
+      while( cp < bp ) {
+        printf("%c", *cp>=0x20 && *cp<0x80 ? *cp : '.');
+        ++cp;
+      }
+      printf("\n");
+    }
+  }
+  if( (i&0x0f) != 0 ) {
+    while( (i++ & 0xf) ) printf("   ");
+    printf("  | ");
+    while( cp < bp ) {
+      printf("%c", *cp>=0x20 && *cp<0x80 ? *cp : '.');
+      ++cp;
+    }
+    printf("\n");
+  }
+  switch ( tag ) {
+  case 0xa1:       /* serv_location_descr */
+    n = (descr[2]<<8) | descr[3];
+    printf("            pcr_pid=0x%04x\n",n);
+    n  = descr[4];
+    bp = &descr[5];
+    cp = &descr[len+2];
+    for( i=0; i<n && bp+6<=cp; ++i ) {
+      uint32_t st = bp[0];
+      printf("         %2d.", i);
+      printf(" stream=0x%02x", st);
+      printf(" (%s)", ( (st==0x02) ? "video" :
+                       ((st==0x81) ? "AC3-audio" :
+                       ((st==0x03) ? "MPEG1-audio" :
+                       ((st==0x04) ? "MPEG1-audio" :
+                          "n/a"))) ));
+      printf(" pid=0x%04x", (bp[1]<<8) | bp[2]);
+      printf(" lang_code=%c", bp[3]);
+      printf("%c", bp[4]>=0x20 && bp[4]<0x80 ? bp[4] : '.');
+      printf("%c", bp[5]>=0x20 && bp[5]<0x80 ? bp[5] : '.');
+      printf("\n");
+      bp += 6;
+    }
+  }
+  return len+2;
+}
+
+/* print the list of descr info */
+
+static void prt_all_descr(uint8_t *descr,int len)
+{
+  while ( len > 0 ) {
+    int n = prt_descr(descr);
+    descr += n;
+    len -= n;
+  }
+}
+
+static void prt_vct(zvct_t *vct)
+{
+  printf("VCT table -");
+  printf(" ver=0x%04x", vct->version_number);
+  printf(" items=0x%04x", vct->items);
+  printf(" ts_stream_id=0x%04x\n", vct->transport_stream_id);
+  prt_all_descr(vct->descr, vct->descr_length);
+  for( int i=0; i<vct->items; ++i ) {
+    zvitem_t *item = vct->vct_tbl[i];
+    printf(" %2d. name= ", i);
+    for( int j=0; j<7; ++j ) {
+      int ch = item->short_name[j];
+      printf("%c", ch>=0x20 && ch<0x80 ? ch : '.');
+    }
+    printf(" maj =0x%04x", item->major_channel_number);
+    printf(" min =0x%04x", item->minor_channel_number);
+    printf(" mod =0x%04x", item->modulation_mode     );
+    printf(" freq=0x%04x", item->carrier_frequency   );
+    printf(" TSid=0x%04x", item->channel_TSID        );
+    printf(" prog=0x%04x", item->program_number      );
+    printf(" etm =0x%04x", item->etm_location        );
+    printf(" acc =0x%04x", item->access_controlled   );
+    printf(" hide=0x%04x", item->hidden              );
+    printf(" serv=0x%04x", item->service_type        );
+    printf(" s_id=0x%04x", item->source_id           );
+    printf(" pcr =0x%04x", item->pcr_pid             );
+    for( int k=0; k<item->num_ch_elts; ++k ) {
+      printf("         %2d.", k);
+      printf(" stream=0x%04x",item->elts[k].stream_id  );
+      printf(" pid=0x%04x",item->elts[k].pes_pid    );
+      int ch0 = item->elts[k].code_639[0];
+      int ch1 = item->elts[k].code_639[1];
+      int ch2 = item->elts[k].code_639[2];
+      printf(" lang_code=%c",ch0>=0x20 && ch0<0x80 ? ch0 : '.');
+      printf("%c",ch1>=0x20 && ch1<0x80 ? ch1 : '.');
+      printf("%c",ch2>=0x20 && ch2<0x80 ? ch2 : '.');
+    }
+    printf(" descr_len=0x%04x\n", item->descr_length );
+    prt_all_descr(item->descr, item->descr_length);
+  }
+}
+
+static void prt_mgt(zmgt_t *mgt)
+{
+  printf("\nMGT table -");
+  printf(" items=0x%x", mgt->items);
+  printf(" descr_len=0x%x\n", mgt->descr_len);
+  prt_all_descr(mgt->descr, mgt->descr_len);
+  zmitem_t *item = mgt->mgt_tbl;
+  for( int i=0; i<mgt->items; ++i,++item ) {
+    printf(" %2d ", i);
+    printf(" typ=0x%x", item->type);
+    printf(" pid=0x%x", item->pid);
+    printf(" ver=0x%x", item->version);
+    printf(" size=0x%x", item->size);
+    printf(" descr_len=0x%x\n", item->descr_len);
+    prt_all_descr(item->descr, item->descr_len);
+  }
+}
+
+#else
+#define prt_vct(s) do {} while(0)
+#define prt_mgt(s) do {} while(0)
+#endif
+

@@ -1,0 +1,4 @@
+mp4 aac
+# Recommended sample rates: 48000Hz or 96000Hz
+# Stereo is 384k; change to 128k for mono, 512k for 5.1
+b=384k
