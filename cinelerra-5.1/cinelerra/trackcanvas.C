@@ -2092,6 +2092,12 @@ int TrackCanvas::do_keyframes(int cursor_x,
 // auto_operations[i]);
 					if(buttonpress)
 					{
+						if (buttonpress == 2 && auto_keyframe )
+						{
+							double position = track->from_units(auto_keyframe->position);
+							mwindow->edl->local_session->set_selectionstart(position);
+							mwindow->edl->local_session->set_selectionend(position);
+						}
 						if (buttonpress != 3)
 						{
 							if(i == AUTOMATION_FADE || i == AUTOMATION_SPEED)
@@ -2744,7 +2750,7 @@ void TrackCanvas::fill_ganged_autos(int all, float change, Track *skip, FloatAut
 				CLAMP(new_value, auto_min, auto_max);
 				keyframe->adjust_to_new_coordinates(current_position, new_value);
 			}
-			else if( mwindow->edl->session->auto_keyframes ) {
+			else {
 // create keyframe on neighbouring track at the point in time given by fauto
 				FloatAuto *previous = 0, *next = 0;
 				float value = fade_autos->get_value(current_position, PLAY_FORWARD, previous, next);
@@ -2753,8 +2759,6 @@ void TrackCanvas::fill_ganged_autos(int all, float change, Track *skip, FloatAut
 				keyframe = (FloatAuto*)fade_autos->insert_auto(current_position);
 				keyframe->set_value(new_value);
 			}
-			else
-				continue;
 			mwindow->session->drag_auto_gang->append((Auto *)keyframe);
 		}
 	}
