@@ -48,6 +48,9 @@
 #define AUDIO_REFILL_THRESH 0x1000
 #define AUDIO_MIN_FRAME_SZ 128
 
+#define FF_ESTM_TIMES 0x0001
+#define FF_BAD_TIMES  0x0002
+
 Mutex FFMPEG::fflock("FFMPEG::fflock");
 
 static void ff_err(int ret, const char *fmt, ...)
@@ -1325,6 +1328,7 @@ FFMPEG::FFMPEG(FileBase *file_base)
 	opt_duration = -1;
 	opt_video_filter = 0;
 	opt_audio_filter = 0;
+	fflags = 0;
 	char option_path[BCTEXTLEN];
 	set_option_path(option_path, "%s", "ffmpeg.opts");
 	read_options(option_path, opts);
@@ -1999,10 +2003,10 @@ int FFMPEG::open_decoder()
 			estimated = 1;
 		}
 	}
-	static int notified = 0;
-	if( !notified && estimated ) {
-		notified = 1;
-		printf("FFMPEG::open_decoder: some stream times estimated\n");
+	if( estimated && !(fflags & FF_ESTM_TIMES) ) {
+		fflags |= FF_ESTM_TIMES;
+		printf("FFMPEG::open_decoder: some stream times estimated: %s\n",
+			fmt_ctx->url);
 	}
 
 	ff_lock("FFMPEG::open_decoder");
@@ -2058,8 +2062,11 @@ int FFMPEG::open_decoder()
 		default: break;
 		}
 	}
-	if( bad_time )
-		printf("FFMPEG::open_decoder: some stream have bad times\n");
+	if( bad_time && !(fflags & FF_BAD_TIMES) ) {
+		fflags |= FF_BAD_TIMES;
+		printf("FFMPEG::open_decoder: some stream have bad times: %s\n",
+			fmt_ctx->url);
+	}
 	ff_unlock();
 	return ret < 0 ? -1 : 0;
 }

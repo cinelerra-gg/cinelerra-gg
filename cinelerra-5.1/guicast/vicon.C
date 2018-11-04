@@ -222,13 +222,12 @@ void VIconThread::add_vicon(VIcon *vip)
 	t_heap[i] = vip;
 }
 
-int VIconThread::del_vicon(VIcon *&vicon)
+int VIconThread::del_vicon(VIcon *vicon)
 {
 	int i = t_heap.size();
 	while( --i >= 0 && t_heap[i] != vicon );
 	if( i < 0 ) return 0;
 	remove_vicon(i);
-	delete vicon;  vicon = 0;
 	return 1;
 }
 

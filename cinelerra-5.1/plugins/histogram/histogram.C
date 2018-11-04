@@ -321,11 +321,13 @@ float HistogramMain::calculate_level(float input,
 
 void HistogramMain::calculate_histogram(VFrame *data, int do_value)
 {
-
-	if(!engine) engine = new HistogramEngine(this,
-		get_project_smp() + 1,
-		get_project_smp() + 1);
-
+	if( !engine )
+	{
+		int cpus = data->get_w() * data->get_h() / 0x80000 + 2;
+		int smps = get_project_smp();
+		if( cpus > smps ) cpus = smps;
+		engine = new HistogramEngine(this, cpus, cpus);
+	}
 	if(!accum[0])
 	{
 		for(int i = 0; i < HISTOGRAM_MODES; i++)
@@ -446,11 +448,15 @@ int HistogramMain::process_buffer(VFrame *frame,
 // Apply histogram in hardware
 	if(use_opengl) return run_opengl();
 
-	if(!engine) engine = new HistogramEngine(this,
-		get_project_smp() + 1,
-		get_project_smp() + 1);
 	this->input = frame;
 	this->output = frame;
+	if( !engine )
+	{
+		int cpus = input->get_w() * input->get_h() / 0x80000 + 2;
+		int smps = get_project_smp();
+		if( cpus > smps ) cpus = smps;
+		engine = new HistogramEngine(this, cpus, cpus);
+	}
 // Always plot to set the curves if automatic
 	if(config.plot || config.automatic) send_render_gui(frame);
 

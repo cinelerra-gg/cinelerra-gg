@@ -92,7 +92,7 @@ const char *AWindowGUI::folder_names[] =
 
 
 AssetVIcon::AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_t length)
- : VIcon(w, h, framerate)
+ : VIcon(w, h, framerate), Garbage("AssetVIcon")
 {
 	this->picon = picon;
 	this->length = length;
@@ -101,6 +101,7 @@ AssetVIcon::AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_
 
 AssetVIcon::~AssetVIcon()
 {
+	picon->gui->vicon_thread->del_vicon(this);
 	delete temp;
 }
 
@@ -415,8 +416,7 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 
 AssetPicon::~AssetPicon()
 {
-	if( vicon )
-		gui->vicon_thread->del_vicon(vicon);
+	if( vicon ) vicon->remove_user();
 	delete vicon_frame;
 	if( indexable ) indexable->remove_user();
 	if( edl ) edl->remove_user();
@@ -596,6 +596,24 @@ void AssetPicon::create_objects()
 							gui->lock_window("AssetPicon::create_objects 1");
 						}
 						gui->vicon_thread->add_vicon(vicon);
+					}
+					else if( asset->folder_no == AW_PROXY_FOLDER ) {
+						char unproxy_path[BCTEXTLEN];
+						int proxy_scale = mwindow->edl->session->proxy_scale;
+						if( !ProxyRender::from_proxy_path(unproxy_path, asset, proxy_scale) ) {
+							Asset *unproxy = mwindow->edl->assets->get_asset(unproxy_path);
+							if( unproxy ) {
+								int i = gui->assets.total;
+								while( --i >= 0 ) {
+									AssetPicon *picon = (AssetPicon*)gui->assets[i];
+									if( picon->id == unproxy->id ) {
+										vicon = picon->vicon;
+										if( vicon ) vicon->add_user();
+										break;
+									}
+								}
+							}
+						}
 					}
 
 				}
@@ -1250,6 +1268,7 @@ void AWindowGUI::start_vicon_drawing()
 {
 	if( !vicon_drawing || !vicon_thread->interrupted ) return;
 	if( mwindow->edl->session->awindow_folder == AW_MEDIA_FOLDER ||
+	    mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ||
 	    mwindow->edl->session->awindow_folder >= AWINDOW_USER_FOLDERS ) {
 		switch( mwindow->edl->session->assetlist_format ) {
 		case ASSETS_ICONS:
@@ -1836,8 +1855,8 @@ void AWindowGUI::copy_picons(AssetPicon *picon, ArrayList<BC_ListBoxItem*> *src)
 			if( text && text[0] )
 				visible = bstrcasestr(picon->get_text(), text) ? 1 : 0;
 		}
-		if( picon->vicon )
-			picon->vicon->hidden = !visible ? 1 : 0;
+		if( visible && picon->vicon && picon->vicon->hidden )
+			picon->vicon->hidden = 0;
 		if( visible ) {
 			BC_ListBoxItem *item2, *item1;
 			dst[0].append(item1 = picon);
@@ -2372,6 +2391,7 @@ int AWindowAssets::selection_changed()
 	}
 	else if( gui->vicon_drawing && get_button_down() && get_buttonpress() == 1 &&
 		 ( mwindow->edl->session->awindow_folder == AW_MEDIA_FOLDER ||
+		   mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ||
 		   mwindow->edl->session->awindow_folder >= AWINDOW_USER_FOLDERS ) &&
 		   (item = (AssetPicon*)get_selection(0, 0)) != 0 ) {
 		VIcon *vicon = 0;

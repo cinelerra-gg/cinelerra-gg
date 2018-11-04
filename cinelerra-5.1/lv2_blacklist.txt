@@ -1,4 +1,4 @@
-# last updated 2018/06/13 gg/pys
+# last updated 2018/11/03 gg/pys/andrea
 http:*midi*
 http:*MIDI*
 
@@ -24,6 +24,17 @@ http://lsp-plug.in/plugins/lv2/sc_dyna_processor_lr
 http://lsp-plug.in/plugins/lv2/sc_dyna_processor_mono
 http://lsp-plug.in/plugins/lv2/sc_dyna_processor_ms
 http://lsp-plug.in/plugins/lv2/sc_dyna_processor_stereo
+#
+# Andrea Paz tested and bad for at least Arch
+#
+http://lsp-plug.in/plugins/lv2/mb_compressor_lr
+http://lsp-plug.in/plugins/lv2/mb_compressor_ms
+http://lsp-plug.in/plugins/lv2/mb_compressor_stereo
+http://lsp-plug.in/plugins/lv2/sc_mb_compressor_lr
+http://lsp-plug.in/plugins/lv2/sc_mb_compressor_mono
+http://lsp-plug.in/plugins/lv2/sc_mb_compressor_ms
+http://lsp-plug.in/plugins/lv2/sc_mb_compressor_stereo
+#
 http://plugin.org.uk/swh-plugins/bandpass_a_iir
 http://plugin.org.uk/swh-plugins/bandpass_iir
 http://plugin.org.uk/swh-plugins/butthigh_iir

@@ -84,7 +84,7 @@ public:
 	ArrayList<VIcon *>t_heap;
 	VIcon *low_vicon();
 	void add_vicon(VIcon *vicon);
-	int del_vicon(VIcon *&vicon);
+	int del_vicon(VIcon *vicon);
 	void run();
 	void flash();
 	int draw(VIcon *vicon);

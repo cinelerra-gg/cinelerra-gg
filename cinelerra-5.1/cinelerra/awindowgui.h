@@ -35,6 +35,7 @@
 #include "edl.inc"
 #include "effectlist.inc"
 #include "folderlistmenu.inc"
+#include "garbage.h"
 #include "guicast.h"
 #include "labeledit.inc"
 #include "labelpopup.inc"
@@ -107,7 +108,7 @@ public:
 	double sort_key;
 	PluginServer *plugin;
 	Label *label;
-	VIcon *vicon;
+	AssetVIcon *vicon;
 	RenderEngine *render_engine;
 };
 
@@ -130,7 +131,7 @@ public:
 	int audio_pos;
 };
 
-class AssetVIcon : public VIcon {
+class AssetVIcon : public VIcon, public Garbage {
 public:
 	AssetPicon *picon;
 	VFrame *temp;

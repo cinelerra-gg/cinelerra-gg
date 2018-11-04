@@ -315,6 +315,7 @@ public:
 	char *opt_video_filter;
 	char *opt_audio_filter;
 	char file_format[BCTEXTLEN];
+	int fflags;
 
 	class ffidx {
 	public:
