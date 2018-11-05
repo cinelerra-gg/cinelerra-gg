@@ -34,6 +34,7 @@
 
 class KeyFrame : public Auto
 {
+	KeyFrame &operator =(KeyFrame &k) { return k; } //illegal
 public:
 	KeyFrame();
 	KeyFrame(EDL *edl, KeyFrames *autos);

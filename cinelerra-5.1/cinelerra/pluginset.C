@@ -517,7 +517,7 @@ int PluginSet::optimize()
 					source;
 					source = (KeyFrame*)source->next) {
 					KeyFrame *dest = new KeyFrame(edl, current_edit->keyframes);
-					*dest = *source;
+					dest->copy_from(source);
 					current_edit->keyframes->append(dest);
 				}
 				remove(next_edit);
