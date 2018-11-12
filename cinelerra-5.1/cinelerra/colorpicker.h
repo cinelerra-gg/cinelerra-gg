@@ -69,6 +69,7 @@ public:
 	void update_gui(int output, int alpha);
 	BC_Window* new_gui();
 
+	int orig_color, orig_alpha;
 	int output, alpha;
 	int do_alpha, do_okcancel;
 	const char *title;

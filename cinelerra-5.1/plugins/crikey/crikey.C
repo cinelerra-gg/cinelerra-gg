@@ -334,11 +334,12 @@ void CriKey::read_data(KeyFrame *keyframe)
 void CriKey::update_gui()
 {
 	if( !thread ) return;
-	if( !load_configuration() ) return;
 	thread->window->lock_window("CriKey::update_gui");
 	CriKeyWindow *window = (CriKeyWindow*)thread->window;
-	window->update_gui();
-	window->flush();
+	if( load_configuration() ) {
+		window->update_gui();
+		window->flush();
+	}
 	thread->window->unlock_window();
 }
 

@@ -2686,12 +2686,8 @@ int BC_TumbleTextBoxText::button_press_event()
 
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
-		int64_t default_value,
-		int64_t min,
-		int64_t max,
-		int x,
-		int y,
-		int text_w)
+		int64_t default_value, int64_t min, int64_t max,
+		int x, int y, int text_w)
 {
 	reset();
 	this->x = x;
@@ -2707,12 +2703,8 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 }
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
-		int default_value,
-		int min,
-		int max,
-		int x,
-		int y,
-		int text_w)
+		int default_value, int min, int max,
+		int x, int y, int text_w)
 {
 	reset();
 	this->x = x;
@@ -2728,12 +2720,8 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 }
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
-		float default_value_f,
-		float min_f,
-		float max_f,
-		int x,
-		int y,
-		int text_w)
+		float default_value_f, float min_f, float max_f,
+		int x, int y, int text_w, int precision)
 {
 	reset();
 	this->x = x;
@@ -2742,9 +2730,9 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	this->max_f = max_f;
 	this->default_value_f = default_value_f;
 	this->text_w = text_w;
+	this->precision = precision;
 	this->parent_window = parent_window;
 	use_float = 1;
-	precision = 4;
 	increment = 1;
 }
 

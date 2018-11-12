@@ -27,6 +27,7 @@
 #include <limits.h>
 
 #include "arraylist.h"
+#include "mutex.h"
 #include "keyframe.inc"
 #include "filexml.inc"
 #include "sizes.h"
@@ -38,9 +39,11 @@ class XMLBuffer
 	long bsz, isz;
 	unsigned char *inp, *outp, *bfr, *lmt;
 	int destroy;
+	Mutex *share_lock;
 
 	int demand(long len);
 	friend class KeyFrame;
+	friend class FileXML;
 public:
 	XMLBuffer(long buf_size=0x1000, long max_size=LONG_MAX, int del=1);
 	XMLBuffer(long buf_size, char *buf, int del=0); // writing

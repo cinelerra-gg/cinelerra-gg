@@ -129,6 +129,8 @@ CriKeyWindow::CriKeyWindow(CriKey *plugin)
 
 CriKeyWindow::~CriKeyWindow()
 {
+	delete point_x;
+	delete point_y;
 }
 
 void CriKeyWindow::create_objects()
@@ -192,21 +194,23 @@ void CriKeyWindow::send_configure_change()
 	pending_config = 0;
 	plugin->send_configure_change();
 }
-int CriKeyWindow::check_configure_change(int ret)
+
+int CriKeyWindow::grab_event(XEvent *event)
 {
+	int ret = do_grab_event(event);
 	if( pending_config && !grab_event_count() )
 		send_configure_change();
 	return ret;
 }
 
-int CriKeyWindow::grab_event(XEvent *event)
+int CriKeyWindow::do_grab_event(XEvent *event)
 {
 	switch( event->type ) {
 	case ButtonPress: break;
 	case ButtonRelease: break;
 	case MotionNotify: break;
 	default:
-		return check_configure_change(0);
+		return 0;
 	}
 
 	MWindow *mwindow = plugin->server->mwindow;
@@ -219,25 +223,25 @@ int CriKeyWindow::grab_event(XEvent *event)
 	if( !dragging ) {
 		if( cx < 0 || cx >= mwindow->theme->ccanvas_w ||
 		    cy < 0 || cy >= mwindow->theme->ccanvas_h )
-			return check_configure_change(0);
+			return 0;
 	}
 
 	switch( event->type ) {
 	case ButtonPress:
-		if( dragging ) return check_configure_change(0);
+		if( dragging ) return 0;
 		if( event->xbutton.button == WHEEL_UP )  return threshold->wheel_event(1);
 		if( event->xbutton.button == WHEEL_DOWN ) return threshold->wheel_event(-1);
 		dragging = event->xbutton.state & ShiftMask ? -1 : 1;
 		break;
 	case ButtonRelease:
-		if( !dragging ) return check_configure_change(0);
+		if( !dragging ) return 0;
 		dragging = 0;
 		return 1;
 	case MotionNotify:
-		if( !dragging ) return check_configure_change(0);
+		if( !dragging ) return 0;
 		break;
 	default:
-		return check_configure_change(0);
+		return 0;
 	}
 
 	float cursor_x = cx, cursor_y = cy;
@@ -288,6 +292,7 @@ int CriKeyWindow::grab_event(XEvent *event)
 			if( hot_point >= 0 && sz > 0 ) {
 				CriKeyPoint *pt = points[hot_point];
 				point_list->set_point(hot_point, PT_X, pt->x = output_x);
+				point_list->set_point(hot_point, PT_Y, pt->y = output_y);
 				for( int i=0; i<sz; ++i ) {
 					pt = points[i];
 					pt->e = i==hot_point ? !pt->e : 0;
@@ -332,10 +337,7 @@ int CriKeyWindow::grab_event(XEvent *event)
 	}
 
 	last_x = output_x;  last_y = output_y;
-	if( !grab_event_count() ) 
-		send_configure_change();
-	else
-		pending_config = 1;
+	pending_config = 1;
 	return 1;
 }
 

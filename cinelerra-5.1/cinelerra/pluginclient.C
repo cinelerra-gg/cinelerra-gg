@@ -43,13 +43,13 @@
 #include "track.h"
 #include "transportque.inc"
 
-
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include <string.h>
-
-
-
 
 
 PluginClientThread::PluginClientThread(PluginClient *client)
@@ -551,38 +551,38 @@ void PluginClient::load_defaults_xml()
 	using_defaults = 1;
 //printf("PluginClient::load_defaults_xml %d %s\n", __LINE__, path);
 
-	KeyFrame temp_keyframe;
-	FILE *fp = fopen(path, "r");
-	if( fp ) {
-		struct stat st;  int fd = fileno(fp);
-		int64_t sz = !fstat(fd, &st) ? st.st_size : BCTEXTLEN;
-		char *data = temp_keyframe.get_data(sz+1);
-		int data_size = fread(data, 1, sz, fp);
-		if( data_size < 0 ) data_size = 0;
-		if( data_size > 0 ) {
-			data[data_size] = 0;
-			temp_keyframe.xbuf->oseek(data_size);
-// Get window extents
-			int i = 0;
-			for( int state=0; i<(data_size-8) && state>=0; ++i ) {
-				if( !data[i] || data[i] == '<' ) break;
-				if( !isdigit(data[i]) ) continue;
-				if( !state ) {
-					window_x = atoi(data + i);
-					state = 1;
-				}
-				else {
-					window_y = atoi(data + i);
-					state = -1;
-				}
-				while( i<data_size && isdigit(data[i]) ) ++i;
-			}
-			temp_keyframe.xbuf->iseek(i);
-			read_data(&temp_keyframe);
-		}
-
-		fclose(fp);
+	char *data = 0;
+	int64_t len = -1;
+	struct stat st;
+	int fd = open(path, O_RDONLY);
+	if( fd >= 0 && !fstat(fd, &st) ) {
+		int64_t sz = st.st_size;
+		data = new char[sz+1];
+		len = read(fd, data, sz);
+		close(fd);
 	}
+	if( data && len >= 0 ) {
+		data[len] = 0;
+// Get window extents
+		int i = 0;
+		for( int state=0; i<len && state>=0; ++i ) {
+			if( !data[i] || data[i] == '<' ) break;
+			if( !isdigit(data[i]) ) continue;
+			if( !state ) {
+				window_x = atoi(data+i);
+				state = 1;
+			}
+			else {
+				window_y = atoi(data+i);
+				state = -1;
+			}
+			while( i<len && isdigit(data[i]) ) ++i;
+		}
+		KeyFrame keyframe(data+i, len-i);
+		read_data(&keyframe);
+	}
+	delete [] data;
+
 	using_defaults = 0;
 //printf("PluginClient::load_defaults_xml %d %s\n", __LINE__, path);
 }

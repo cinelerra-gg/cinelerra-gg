@@ -37,6 +37,12 @@ KeyFrame::KeyFrame()
 	xbuf = new XMLBuffer();
 }
 
+KeyFrame::KeyFrame(const char *buf, long len)
+ : Auto()
+{
+	xbuf = new XMLBuffer(buf, len, 0);
+}
+
 KeyFrame::KeyFrame(EDL *edl, KeyFrames *autos)
  : Auto(edl, (Autos*)autos)
 {

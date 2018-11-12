@@ -45,7 +45,10 @@ all:	$(TARGETS)
 dbtv:	dbtv.C
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) dbtv.C $(LDLIBS) -lX11 -o $@
 
-XTV_MEDIA_OBJS := $(TOPDIR)/cinelerra/$(OBJDIR)/mediadb.o $(TOPDIR)/cinelerra/$(OBJDIR)/filexml.o
+XTV_MEDIA_OBJS := $(TOPDIR)/cinelerra/$(OBJDIR)/mediadb.o
+XTV_MEDIA_OBJS += $(TOPDIR)/cinelerra/$(OBJDIR)/filexml.o
+XTV_MEDIA_OBJS += $(TOPDIR)/guicast/$(OBJDIR)/mutex.o
+XTV_MEDIA_OBJS += $(TOPDIR)/guicast/$(OBJDIR)/bctrace.o
 
 XTV_LIBS := $(TOPDIR)/libzmpeg3/$(OBJDIR)/libzmpeg3.a
 XTV_LIBS += $(TOPDIR)/db/$(OBJDIR)/db.a

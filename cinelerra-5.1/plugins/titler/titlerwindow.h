@@ -503,6 +503,7 @@ class TitleColorThread : public ColorPicker
 public:
 	TitleColorThread(TitleMain *client, TitleWindow *window, int is_outline);
 	virtual int handle_new_color(int output, int alpha);
+	void handle_done_event(int result);
 	TitleMain *client;
 	TitleWindow *window;
 	int is_outline;

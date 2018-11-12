@@ -92,6 +92,7 @@ video := \
 	rumbler \
 	scale \
 	scaleratio \
+	sketcher \
 	seltempavg \
 	shapewipe \
 	sharpen \

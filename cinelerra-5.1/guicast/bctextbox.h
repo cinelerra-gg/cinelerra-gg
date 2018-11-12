@@ -403,26 +403,14 @@ class BC_TumbleTextBox
 {
 public:
 	BC_TumbleTextBox(BC_WindowBase *parent_window,
-		int64_t default_value,
-		int64_t min,
-		int64_t max,
-		int x,
-		int y,
-		int text_w);
+		int64_t default_value, int64_t min, int64_t max,
+		int x, int y, int text_w);
 	BC_TumbleTextBox(BC_WindowBase *parent_window,
-		int default_value,
-		int min,
-		int max,
-		int x,
-		int y,
-		int text_w);
+		int default_value, int min, int max,
+		int x, int y, int text_w);
 	BC_TumbleTextBox(BC_WindowBase *parent_window,
-		float default_value,
-		float min,
-		float max,
-		int x,
-		int y,
-		int text_w);
+		float default_value, float min, float max,
+		int x, int y, int text_w, int precision=4);
 	virtual ~BC_TumbleTextBox();
 
 	int create_objects();

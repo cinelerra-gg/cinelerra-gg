@@ -46,6 +46,7 @@ XMLBuffer::XMLBuffer(long buf_size, long max_size, int del)
 	lmt = bfr + bsz;
 	isz = max_size;
 	destroy = del;
+	share_lock = new Mutex("XMLBuffer::share_lock");
 }
 
 XMLBuffer::XMLBuffer(const char *buf, long buf_size, int del)
@@ -56,6 +57,7 @@ XMLBuffer::XMLBuffer(const char *buf, long buf_size, int del)
 	lmt = inp = bfr+bsz;
 	isz = bsz;
 	destroy = del;
+	share_lock = new Mutex("XMLBuffer::share_lock");
 }
 
 XMLBuffer::XMLBuffer(long buf_size, char *buf, int del)
@@ -66,11 +68,13 @@ XMLBuffer::XMLBuffer(long buf_size, char *buf, int del)
 	lmt = outp = bfr+bsz;
 	isz = bsz;
 	destroy = del;
+	share_lock = new Mutex("XMLBuffer::share_lock");
 }
 
 XMLBuffer::~XMLBuffer()
 {
 	if( destroy ) delete [] bfr;
+	delete share_lock;
 }
 
 int XMLBuffer::demand(long len)
@@ -111,15 +115,13 @@ int XMLBuffer::read(char *bp, int len)
 
 void XMLBuffer::copy_from(XMLBuffer *xbuf)
 {
-	if( bsz != xbuf->bsz ) { delete [] bfr;  bfr = 0; }
-	if( !bfr ) bfr = new unsigned char[bsz = xbuf->bsz];
-	lmt = bfr + bsz;
-	long ilen = xbuf->otell(), olen = xbuf->itell();
-	inp = pos(ilen);
-	outp = pos(olen);
-	if( ilen > 0 )
-		memmove(bfr, xbuf->bfr, ilen);
-	destroy = xbuf->destroy;
+	xbuf->share_lock->lock("XMLBuffer::copy_from");
+	share_lock->lock("XMLBuffer::copy_from");
+	oseek(0);
+	write((const char*)xbuf->pos(0), xbuf->otell());
+	iseek(xbuf->itell());
+	xbuf->share_lock->unlock();
+	share_lock->unlock();
 }
 
 
@@ -382,6 +384,7 @@ FileXML::FileXML(int coded)
 FileXML::~FileXML()
 {
 	if( !shared ) delete buffer;
+	else buffer->share_lock->unlock();
 	delete [] output;
 }
 
@@ -633,9 +636,10 @@ int FileXML::set_shared_input(XMLBuffer *xbuf)
 	strcpy(this->filename, "");
 	delete buffer;
 	buffer = xbuf;
+	xbuf->share_lock->lock("FileXML::set_shared_input");
 	xbuf->iseek(0);
-	set_coding(coded);
 	shared = 1;
+	set_coding(coded);
 	return 0;
 }
 
@@ -644,9 +648,10 @@ int FileXML::set_shared_output(XMLBuffer *xbuf)
 	strcpy(this->filename, "");
 	delete buffer;
 	buffer = xbuf;
+	xbuf->share_lock->lock("FileXML::set_shared_output");
 	xbuf->oseek(0);
-	set_coding(coded);
 	shared = 1;
+	set_coding(coded);
 	return 0;
 }
 

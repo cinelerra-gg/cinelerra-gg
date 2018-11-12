@@ -310,6 +310,7 @@ public:
 	int get_dragging();
 	wchar_t* get_wkeystring(int *length = 0);
 	int get_keypress();
+	int get_keysym() { return keysym; }
 #ifdef X_HAVE_UTF8_STRING
 	char* get_keypress_utf8();
 #endif

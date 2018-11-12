@@ -117,6 +117,7 @@ DIRS = $(OPENCV_OBJS) \
 	rotate \
 	rumbler \
 	scale \
+	sketcher \
 	shapewipe \
 	sharpen \
 	shiftinterlace \

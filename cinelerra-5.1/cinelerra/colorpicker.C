@@ -43,8 +43,8 @@ ColorPicker::ColorPicker(int do_alpha, const char *title)
 	this->title = title;
 	this->do_alpha = do_alpha;
 	this->do_okcancel = 0;
-	this->output = BLACK;
-	this->alpha = 255;
+	this->output = this->orig_color = BLACK;
+	this->alpha = this->orig_alpha = 255;
 }
 
 ColorPicker::~ColorPicker()
@@ -63,6 +63,8 @@ void ColorPicker::start_window(int output, int alpha, int do_okcancel)
 		}
 		return;
 	}
+	this->orig_color = output;
+	this->orig_alpha = alpha;
 	this->output = output;
 	this->alpha = alpha;
 	this->do_okcancel = do_okcancel;

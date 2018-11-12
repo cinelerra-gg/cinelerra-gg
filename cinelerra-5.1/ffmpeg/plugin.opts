@@ -320,7 +320,6 @@ tlut2
 ; new in 4.0
 #acontrast Contrast=33
 #afir
-aiir
 #convolve
 #deconvolve
 drmeter
@@ -334,3 +333,34 @@ normalize
 setrange
 #unpremultiply
 vfrdet
+; new in 4.1
+acue
+#adeclick
+#adeclip
+aderivative
+afftdn
+aintegral
+amplify
+chromahold
+cue
+deblock
+fttdnoiz
+#graphmonitor
+greyedge
+#highshelf
+#lowshelf
+lut1d
+pal75bars
+pal100bars
+setparams
+#sinc
+tmix
+vibrance
+; broken in 4.1
+#acrossover
+#aiir
+#amultiply
+#bm3d
+#sr
+#xstack
+#agraphmonitor

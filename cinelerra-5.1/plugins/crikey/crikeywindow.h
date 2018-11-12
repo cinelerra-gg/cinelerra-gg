@@ -203,8 +203,8 @@ public:
 	void update_gui();
 	void start_color_thread();
 	int grab_event(XEvent *event);
+	int do_grab_event(XEvent *event);
 	void done_event(int result);
-	int check_configure_change(int ret);
 	void send_configure_change();
 
 	CriKey *plugin;

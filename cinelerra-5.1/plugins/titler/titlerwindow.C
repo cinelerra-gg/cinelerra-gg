@@ -785,7 +785,7 @@ TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x
 int TitleColorButton::handle_event()
 {
 	window->color_thread->start_window(client->config.color,
-		client->config.alpha);
+		client->config.alpha, 1);
 	return 1;
 }
 TitleOutlineColorButton::TitleOutlineColorButton(TitleMain *client, TitleWindow *window, int x, int y)
@@ -797,7 +797,7 @@ TitleOutlineColorButton::TitleOutlineColorButton(TitleMain *client, TitleWindow 
 int TitleOutlineColorButton::handle_event()
 {
 	window->outline_color_thread->start_window(client->config.outline_color,
-		client->config.outline_alpha);
+		client->config.outline_alpha, 1);
 	return 1;
 }
 
@@ -1234,6 +1234,17 @@ int TitleColorThread::handle_new_color(int output, int alpha)
 	return 1;
 }
 
+void TitleColorThread::handle_done_event(int result)
+{
+	if( result ) {
+		client->config.color = orig_color;
+		client->config.alpha = orig_alpha;
+		handle_new_color(orig_color, orig_alpha);
+		window->update_color();
+		window->send_configure_change();
+	}
+}
+
 TitleDrag::TitleDrag(TitleMain *client, TitleWindow *window, int x, int y)
  : DragCheckBox(client->server->mwindow, x, y, _("Drag"), &client->config.drag,
 		client->config.title_x, client->config.title_y,
@@ -1528,9 +1539,10 @@ int TitleColorPopup::activate()
 }
 void TitleColorPopup::handle_done_event(int result)
 {
-	if( result ) return;
-	char txt[BCSTRLEN];  sprintf(txt, "<%s #%06x>", _(KW_COLOR), color_value);
-	window->insert_ibeam(txt);
+	if( !result ) {
+		char txt[BCSTRLEN];  sprintf(txt, "<%s #%06x>", _(KW_COLOR), color_value);
+		window->insert_ibeam(txt);
+	}
 }
 
 TitlePngPopup::TitlePngPopup(TitleMain *client, TitleWindow *window)
