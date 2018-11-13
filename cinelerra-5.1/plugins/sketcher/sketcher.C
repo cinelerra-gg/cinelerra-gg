@@ -495,8 +495,8 @@ static void smooth_sxy(
 	if( fabsf(d) < 1 ) d = 1;
 	sx = (acdx*bddx*by - acdx*bddx*cy + acdx*bddy*cx - acdy*bddx*bx) / d;
 	sy = (acdx*bddy*by - acdy*bddx*cy - acdy*bddy*bx + acdy*bddy*cx) / d;
-	bclamp(sx, -32767.f, 32767.f);
-	bclamp(sy, -32767.f, 32767.f);
+	bclamp(sx, -4095.f, 4095.f);
+	bclamp(sy, -4095.f, 4095.f);
 }
 
 static void smooth_pxy(
@@ -513,8 +513,8 @@ static void smooth_pxy(
 		acdx*bx*cddy - acdx*by*cddx + acdx*cddx*cy - acdx*cddy*cx + 2*acdy*bx*cddx) / d;
 	py = (abdx*acdy*by + abdx*acdy*cy - 2*abdy*acdx*by + abdy*acdy*bx - abdy*acdy*cx -
 		 2*acdx*by*cddy + acdy*bx*cddy + acdy*by*cddx + acdy*cddx*cy - acdy*cddy*cx) / d;
-	bclamp(px, -32767.f, 32767.f);
-	bclamp(py, -32767.f, 32767.f);
+	bclamp(px, -4095.f, 4095.f);
+	bclamp(py, -4095.f, 4095.f);
 }
 static void smooth_qxy(
 	float ax, float ay, float bx, float by,
@@ -530,8 +530,8 @@ static void smooth_qxy(
 		bddx*bx*cddy + bddx*by*cddx - bddx*cddx*cy - bddx*cddy*cx + 2*bddy*cddx*cx) / d;
 	qy = (abdx*bddy*by + abdx*bddy*cy - 2*abdy*bddx*cy - abdy*bddy*bx + abdy*bddy*cx -
 		2*bddx*cddy*cy - bddy*bx*cddy + bddy*by*cddx + bddy*cddx*cy + bddy*cddy*cx) / d;
-	bclamp(qx, -32767.f, 32767.f);
-	bclamp(qy, -32767.f, 32767.f);
+	bclamp(qx, -4095.f, 4095.f);
+	bclamp(qy, -4095.f, 4095.f);
 }
 
 

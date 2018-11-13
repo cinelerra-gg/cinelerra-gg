@@ -46,7 +46,7 @@ XMLBuffer::XMLBuffer(long buf_size, long max_size, int del)
 	lmt = bfr + bsz;
 	isz = max_size;
 	destroy = del;
-	share_lock = new Mutex("XMLBuffer::share_lock");
+	share_lock = new Mutex("XMLBuffer::share_lock", 1);
 }
 
 XMLBuffer::XMLBuffer(const char *buf, long buf_size, int del)
