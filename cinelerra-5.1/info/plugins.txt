@@ -214,6 +214,7 @@ Zoom Blur:	Blur the video and use a zoom effect.
 #
 #  Description of FFmpeg Video Plugins
 #
+F_amplify:	Amplify changes between successive video frames.
 F_atadenoise:	Apply an Adaptive Temporal Averaging Denoiser.
 F_avgblur:	Apply average blur filter.
 F_bbox:		Compute bounding box for each frame.
@@ -226,6 +227,7 @@ F_boxblur:	Blurs the input video.
 		able to change the power and the
 		radius of the boxblur applied to luma, chroma and alpha.
 F_bwdif:	Deinterlaces the input image.
+F_chromahold:	Turns a certain color range into gray.
 F_chromakey:	Turns a certain color into
 		transparency.  Operates on YUV colors.
 F_ciescope:	Video CIE scope.
@@ -243,6 +245,7 @@ F_curves:	Adjust components curves.
 F_datascope:	Video data analysis.
 F_dctdnoiz:	Denoise frames using 2D DCT.
 F_deband:	Debands video.
+F_deblock:	Deblock video.
 F_deflate:	Applies deflate effect.
 F_deflicker:	Remove temporal frame luminance variations.
 F_dejudder:	Removes judder produced by pullup.
@@ -276,6 +279,7 @@ F_eq:		Adjusts brightness, contrast, gamma and saturation.
 F_entropy:	Measure video frames entropy.
 F_erosion:	Applies erosion effect.
 F_fade:		Fade in/out input video.
+F_fftdnoiz:	Denoise rames using 3D FFT.
 F_fftfilt:	Apply arbitrary expressions to pixels in frequency domain.
 F_field:	Extract a field from the input video.
 F_fieldorder:	Set the field order.
@@ -284,9 +288,13 @@ F_floodfill:	Fill area of the same color with another color.
 F_format:	Convert the input video to one of the specified pixel formats.
 F_framerate:	Upsamples or downsamples progressive
 		source between specified frame rates.
+F_framestep:	Select one frame every N frames.
 F_fspp:		Applies Fast Simple Post-processing filter.
 F_gblur:	Apply Gaussian Blur filter.
 F_gradfun:	Debands video quickly using gradients.
+F_graphmonitor:	Show various filtergraph stats.
+F_greyedge:	Estimates scene illumination by grey edge assumption.
+F_haldclutsrc:	Provide an identity Hald CLUT.
 F_hflip:	Horizontally flips the input video.
 F_histeq:	Applies global color histogram equalization.
 F_histogram:	Computes and draws a histogram.
@@ -300,18 +308,20 @@ F_inflate:	Applies inflate effect.
 F_interlace:	Convert progressive video into interlaced.
 F_kerndeint:	Applies kernel deinterlacing to the input.
 F_lenscorrection: Rectifies the image by correcting for lens distortion.
-F_Life:		Generate a life pattern.
+F_life:		Generate a life pattern.
 F_limiter:	Limit pixels components to the specified range.
 F_loop:		Loops video frames.
 F_lumakey:	Turns a certain luma into transparency.
 F_lut:		Compute and apply a lookup
 		table to the RGB/YUV input video.
+F_lut1d:	Adjust colors using a 1D LUT.
 F_lut3d:	Apply a 3D LUT (look up table) to an input video.
 F_lutrgb:	Compute and apply a lookup table to the RGB input video.
 F_lutyuv:	Combine and apply a lookup table to the YUV input video.
 F_mandelbrot:	Render a Mandelbrot fractal.
 F_mcdeint:	Applies motion compensating deinterlacing.
 F_mestimate:	Generate motion vectors.
+F_metadata:	Manipulate video frame metadata.
 F_mpdecimate:	Remove near-duplicate frames.
 F_mptestsrc:	Generate various test pattern.
 F_negate:	Negates input video.
@@ -326,8 +336,10 @@ F_owdenoise:	Denoises using wavelets.
 F_oscilloscope:	2D video oscilloscope.  Useful to measure spatial impulse,
 		step responses, and chroma delays.
 F_owndenoise:	Denoises using wavelets.
-F_Pad:		Add paddings to the input image, and place the original
+F_pad:		Add paddings to the input image, and place the original
 		input at the provided x, y coordinates.
+F_pal100bars:	Generate PAL 100% color bars.
+F_pal75bars:	Generate PAL 75% color bars.
 F_perms:	Set permissions for the output video frame.
 F_perspective:	Corrects the perspective of video.
 F_phase:	Phases shift fields.
@@ -353,6 +365,7 @@ F_rotate:	Rotates the input image.
 F_sab:		Applies shape adaptive blur.
 F_scale:	Scale the input video size and/or convert the image format.
 F_separatefields: Split input video frames into fields.
+F_setparams:	Force field, or color property for the output video frame.
 F_setrange:	Force color range for the output video frame.
 F_showinfo:	Show textual information for each video frame.
 F_showpalette:	Display frame palette.
@@ -363,6 +376,8 @@ F_smartblur:	Blurs the input video without impacting
 		the outlines. Through the settings you can
 		select the radius,
 		the strength and the threshold of luma and chroma.
+F_smptebars:	Generate SMPTE color bars.
+F_smptehdbars:	Generate SMPTE HD color bars.
 F_sobel:	Applies sobel operator.
 F_spp:		Applies a simple post processing filter.
 F_stereo3d:	Converts video stereoscopic 3D view.
@@ -376,6 +391,7 @@ F_testsrc2:	Generate another test pattern.
 F_tile:		Tile several successive frames together.
 F_tinterlace:	Performs temporal field interlacing.
 F_tlut2:	Compute and apply a lookup table from 2 successive frames.
+F_tmix:		Mix successive video frames.
 F_transpose:	Transposes input video.
 F_unsharp:	Sharpen or blur the input video.
 F_uspp:		Applies Ultra Simple/Slow Post-processing filter.
@@ -383,6 +399,7 @@ F_vaguedenoiser: Applies a Wavelet based Denoiser.
 F_vectorscope:	Video vectorscope.
 F_vflip:	Flips the input video vertically.
 F_vfrdet:	Variable frame rate detect filter.
+F_vibrance:	Boost or alter saturation.
 F_vignette:	Makes or reverses a vignette effect.
 		Through the settings you can set the circle center
 		position on a X-Y axis,choose the angle,
@@ -401,7 +418,9 @@ F_abench:	Benchmark part of a filtergraph.
 F_acompressor:	Audio compressor.
 F_acontrast:	Simple audio dynamic range compression/expansion filter.
 F_acrusher:	Reduces audio bit resolution.
+F_acue:		Delay filtering to match a cue.
 F_adelay:	Delays one or more audio channels.
+F_aderivative:	Compute derivative of input audio.
 F_aecho:	Adds echoing to the audio.
 F_aemphasis:	Audio emphasis.
 F_aeval:	Filters audio signal according to a specific expression.
@@ -410,8 +429,10 @@ F_aformat:	Convert the input audio to one of the specified formats.
 F_agate:	Audio gate.
 F_aiir:		Apply infinite Impulse Response filter with supplied
 		coefficients.
+F_aintegral:	Compute integral of input audio.
 F_allpass:	Applies a two-pole all-pass filter.
 F_aloop:	Loops audio samples.
+F_ametadata:	Manipulate audio frame metadata.
 F_anoisesrc:	Generates a noise audio signal.
 F_aperms:	Set permissions for the output audio frame.
 F_aphaser:	Adds a phasing effect to the audio.
@@ -466,6 +487,7 @@ F_lowpass:	Applies a low-pass filter with 3dB point frequency.
 F_mcompand:	Multiband compress or expand audiodynamic range. The input audio
 		is divided into bands which is like the crossover of a loudspeaker,
 		resulting in flat frequency response when absent compander action.
+F_pan:		Remix channels with coefficients (panning).
 F_silenceremove: Removes silence.
 F_sine:		Generate sine wave audio signal.
 F_stereotools:	Applies various stereo tools.  When using this plugin,

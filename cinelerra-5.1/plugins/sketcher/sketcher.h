@@ -27,10 +27,14 @@
 
 class Sketcher;
 
-enum { PT_ID, PT_X, PT_Y, PT_SZ };
-enum { CV_ID, CV_TY, CV_RAD, CV_PEN, CV_CLR, CV_SZ };
-enum { TYP_OFF, TYP_SKETCHER, TYP_SMOOTH, TYP_SZ };
-enum { PEN_SQUARE, PEN_PLUS, PEN_SLANT, PEN_XLANT, PEN_SZ };
+#define pt_type SketcherPoint::types
+#define cv_pen SketcherCurve::pens
+#define CV_COLOR WHITE
+
+enum { PT_ID, PT_TY, PT_X, PT_Y, PT_SZ };
+enum { CV_ID, CV_RAD, CV_PEN, CV_CLR, CV_SZ };
+enum { PTY_OFF, PTY_LINE, PTY_CURVE, PTY_SZ };
+enum { PEN_OFF, PEN_SQUARE, PEN_PLUS, PEN_SLANT, PEN_XLANT, PEN_SZ };
 
 class SketcherVPen : public VFrame
 {
@@ -76,11 +80,11 @@ public:
 class SketcherPoint
 {
 public:
-	int id;
+	int id, pty;
 	int x, y;
 
-	void init(int id, int x, int y);
-	SketcherPoint(int id, int x, int y);
+	void init(int id, int pty, int x, int y);
+	SketcherPoint(int id, int pty, int x, int y);
 	SketcherPoint(int id=-1);
 	SketcherPoint(SketcherPoint &pt);
 	~SketcherPoint();
@@ -88,6 +92,7 @@ public:
 	void copy_from(SketcherPoint &that);
 	void save_data(FileXML &output);
 	void read_data(FileXML &input);
+	static const char *types[PTY_SZ];
 };
 class SketcherPoints : public ArrayList<SketcherPoint *>
 {
@@ -97,20 +102,17 @@ public:
 	void dump();
 };
 
-#define cv_type SketcherCurve::types
-#define cv_pen SketcherCurve::pens
 
 class SketcherCurve
 {
 public:
-	int id, ty, radius, pen, color;
-	static const char *types[TYP_SZ];
+	int id, pen, radius, color;
 	static const char *pens[PEN_SZ];
 
 	SketcherPoints points;
 
-	void init(int id, int ty, int radius, int pen, int color);
-	SketcherCurve(int id, int ty, int radius, int pen, int color);
+	void init(int id, int pen, int radius, int color);
+	SketcherCurve(int id, int pen, int radius, int color);
 	SketcherCurve(int id=-1);
 	~SketcherCurve();
 	SketcherCurve(SketcherCurve &cv);
@@ -119,8 +121,7 @@ public:
 	void save_data(FileXML &output);
 	void read_data(FileXML &input);
 	VFrame *new_vpen(VFrame *out);
-	void draw_line(VFrame *out);
-	void draw_smooth(VFrame *out);
+	void draw(VFrame *out);
 };
 class SketcherCurves : public ArrayList<SketcherCurve *>
 {
@@ -152,16 +153,15 @@ class Sketcher : public PluginVClient
 public:
 	Sketcher(PluginServer *server);
 	~Sketcher();
-// required for all realtime plugins
 	PLUGIN_CLASS_MEMBERS2(SketcherConfig)
 	int is_realtime();
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int new_curve(int ty, int radius, int pen, int color);
+	int new_curve(int pen, int radius, int color);
 	int new_curve();
-	int new_point(SketcherCurve *cv, int x, int y);
-	int new_point();
+	int new_point(SketcherCurve *cv, int pty, int x, int y, int idx=-1);
+	int new_point(int idx=-1);
 	int process_realtime(VFrame *input, VFrame *output);
 	static void draw_point(VFrame *vfrm, SketcherPoint *pt, int color, int d);
 	void draw_point(VFrame *vfrm, SketcherPoint *pt, int color);

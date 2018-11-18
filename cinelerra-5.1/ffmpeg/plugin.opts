@@ -13,7 +13,7 @@ aeval exprs=(sin(2*PI*t*440)+sin(2*PI*t*350))/2*mod(floor(2*t),2):channel_layout
 #aevalsrc 0
 afade
 #afftfilt 1-clip((b/nb)*b,0,1)
-#afifo
+#afifo  ###will not work within cin
 aformat sample_fmts=u8|s16:channel_layouts=stereo
 agate
 #ahistogram dmode=single:r=25:s=hd720:scale=log:ascale=log:slide=replace
@@ -26,7 +26,7 @@ aloop
 #alphaextract
 #alphamerge
 #amerge
-#ametadata mode=print:file=ametadata.txt
+ametadata mode=print:file=/tmp/ametadata.txt
 #amix
 #amovie
 #anequalizer c0 f=200 w=100 g=-10 t=1|c1 f=200 w=100 g=-10 t=1
@@ -34,7 +34,7 @@ anoisesrc d=60:c=pink:r=48000:a=0.5
 #anull
 #anullsink
 #anullsrc
-#apad pad_len=1024
+#apad   ###not part of frame data
 aperms
 #aphasemeter r=25:s=800x400:rc=2:gc=7:bc=1
 aphaser
@@ -45,10 +45,10 @@ aresample sample_rate=48000
 #aselect
 #asendcmd
 #asetnsamples
-#asetpts PTS-STARTPTS
+#asetpts   ###not part of frame data
 asetrate r=48000
 #asettb
-#ashowinfo
+#ashowinfo ###not part of frame data
 #asidedata
 #asplit
 astats
@@ -125,7 +125,7 @@ field
 #fieldhint
 #fieldmatch
 fieldorder
-#fifo
+#fifo   ###will not work within cin
 fillborders
 #find_rect
 #firequalizer delay=0.1:fixed=on:zero_phase=on
@@ -139,8 +139,8 @@ fspp
 gblur
 #geq
 gradfun
-#haldclut
-#haldclutsrc
+#haldclut ###not working due to need for multiple video streams
+haldclutsrc
 #hdcd
 hflip
 highpass
@@ -177,7 +177,7 @@ mandelbrot
 mcdeint
 #mergeplanes 0x03010200:yuva444p
 mestimate
-#metadata mode=print:file=metadata.txt
+metadata mode=print:file=/tmp/metadata.txt
 #midequalizer
 #minterpolate
 #movie
@@ -186,7 +186,7 @@ mptestsrc t=dc_luma
 negate
 nlmeans r=15:p=7:s=2
 #nnedi
-#noformat pix_fmts=yuv420p
+#noformat ###not part of frame data
 noise
 #null
 #nullsink
@@ -196,7 +196,7 @@ owdenoise
 pad
 #palettegen
 #paletteuse
-#pan 1c|c0=0.9*c0+0.1*c1
+pan 1c|c0=0.9*c0+0.1*c1
 perms
 perspective
 phase
@@ -207,7 +207,7 @@ pp7
 prewitt
 #psnr PSNR=10*log10(MAX^2/MSE)
 #pullup
-#qp 2+2*sin(PI*qp)
+#qp     ###not part of frame data
 #random seed=-1
 readeia608
 readvitc
@@ -227,14 +227,14 @@ scale 200:100
 #selectivecolor greens=.5 0 -.33 0:blues=0 .27
 #sendcmd
 separatefields
-#setdar dar=16/9
-#setfield mode=auto
-#setpts PTS-STARTPTS
-#setsar sar=10/11
+#setdar   ###will not work because Format already set
+#setfield ###not part of frame data
+#setpts   ###not part of frame data
+#setsar   ###will not work because Format already set
 #settb
 #showcqt
 #showfreqs
-showinfo
+#showinfo ###not part of frame data
 showpalette s=30
 #showspectrum s=1280x480:scale=log
 #showspectrumpic
@@ -245,15 +245,15 @@ shuffleframes
 shuffleplanes
 #sidechaincompress
 #sidechaingate
-#sidedata mode=delete
+#sidedata mode=add
 signalstats
 #signature
-#silencedetect n=0.001
+#silencedetect n=0.001  ###does not appear to work
 silenceremove
 sine
 smartblur
-#smptebars
-#smptehdbars
+smptebars
+smptehdbars
 sobel
 #spectrumsynth
 #split
@@ -318,7 +318,7 @@ tlut2
 #tonemap
 #vmafmotion
 ; new in 4.0
-#acontrast Contrast=33
+acontrast
 #afir
 #convolve
 #deconvolve
@@ -338,14 +338,14 @@ acue
 #adeclick
 #adeclip
 aderivative
-afftdn
+#afftdn
 aintegral
 amplify
 chromahold
-cue
+#cue    ###freeze
 deblock
 fttdnoiz
-#graphmonitor
+graphmonitor
 greyedge
 #highshelf
 #lowshelf
@@ -353,14 +353,14 @@ lut1d
 pal75bars
 pal100bars
 setparams
-#sinc
+#sinc   ###freeze
 tmix
 vibrance
 ; broken in 4.1
 #acrossover
 #aiir
 #amultiply
-#bm3d
+#bm3d sigma=3:block=4:bstep=2:group=1:estim=basic
 #sr
 #xstack
 #agraphmonitor

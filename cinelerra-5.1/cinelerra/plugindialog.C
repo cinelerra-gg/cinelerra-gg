@@ -258,18 +258,19 @@ void PluginDialog::create_objects()
 		thread->data_type);
 
 // Construct listbox items
-	for(int i = 0; i < plugin_locations.total; i++)
+	for(int i = 0; i < plugin_locations.total; )
 	{
 		Track *track = mwindow->edl->tracks->number(plugin_locations.values[i]->module);
 		char *track_title = track->title;
 		int number = plugin_locations.values[i]->plugin;
 		double start = mwindow->edl->local_session->get_selectionstart(1);
 		Plugin *plugin = track->get_current_plugin(start, number, PLAY_FORWARD, 1, 0);
-		if( !plugin ) continue;
+		if( !plugin ) { plugin_locations.remove_object_number(i);  continue; }
 		char string[BCTEXTLEN];
 		const char *plugin_title = _(plugin->title);
 		snprintf(string, sizeof(string), "%s: %s", track_title, plugin_title);
 		shared_data.append(new BC_ListBoxItem(string));
+		++i;
 	}
 	for(int i = 0; i < module_locations.total; i++)
 	{

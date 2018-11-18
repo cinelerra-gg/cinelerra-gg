@@ -1643,6 +1643,7 @@ int BC_ListBox::center_selection(int selection,
 					yposition = item->text_y - top_item->text_y - view_h / 2;
 				}
 			}
+			if( yposition < 0 ) yposition = 0;
 			return 1;
 		}
 
@@ -2645,11 +2646,9 @@ int BC_ListBox::button_press_event()
 			}
 // Select single item
 			else {
-				if( !current_item->selected ) {
+				if( !current_item->selected || !new_value ) {
 					set_all_selected(data, 0);
-					set_selected(data,
-						selection_number,
-						1);
+					set_selected(data, selection_number, 1);
 				}
 				new_value = 1;
 			}
@@ -3033,9 +3032,6 @@ int BC_ListBox::cursor_motion_event()
 			if( (display_format == LISTBOX_TEXT ||
 			     display_format == LISTBOX_ICON_LIST) &&
 				shift_down() ) {
-// Deselect everything.
-				set_all_selected(data, 0);
-
 // Select just the items
 				redraw = expand_selection(0, selection_number);
 			}

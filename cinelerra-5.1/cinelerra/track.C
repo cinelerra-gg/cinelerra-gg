@@ -517,7 +517,7 @@ Plugin* Track::insert_effect(const char *title,
 		if(source_track)
 		{
 			Plugin *source_plugin = source_track->get_current_plugin(
-				edl->local_session->get_selectionstart(),
+				edl->local_session->get_selectionstart(1),
 				shared_location->plugin,
 				PLAY_FORWARD,
 				1,

@@ -42,6 +42,7 @@ Video Effects
 		F_tlut2
 		F_vectorscope
 		F_vignette
+		F_vibrance
 	- Motion
 		Motion
 		Motion 2 Point
@@ -75,6 +76,7 @@ Video Effects
 		F_atadenoise
 		F_bitplanenoise
 		F_dctdnoiz
+		F_fftdnoiz
 		F_hqdn3d
 		F_nlmeans
 		F_noise

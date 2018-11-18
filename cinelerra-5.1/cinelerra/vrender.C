@@ -61,7 +61,7 @@ VRender::VRender(RenderEngine *renderengine)
 {
 	data_type = TRACK_VIDEO;
 	transition_temp = 0;
-	overlayer = new OverlayFrame(renderengine->preferences->processors);
+	overlayer = new OverlayFrame(renderengine->preferences->project_smp);
 	input_temp = 0;
 	vmodule_render_fragment = 0;
 	playback_buffer = 0;
