@@ -102,52 +102,40 @@ BC_Window* LoadFileThread::new_gui()
 
 void LoadFileThread::handle_done_event(int result)
 {
-	ArrayList<char*> path_list;
-	path_list.set_array_delete();
+	window->lock_window("LoadFileThread::handle_done_event");
+	window->hide_window();
+	window->unlock_window();
 
-// Collect all selected files
-	if(!result)
-	{
-		char *in_path, *out_path;
-		int i = 0;
-		window->lock_window("LoadFileThread::handle_done_event");
-		window->hide_window();
-		window->unlock_window();
+	if( !result ) load_apply();
+}
 
-		while((in_path = window->get_path(i)))
-		{
-			int j;
-			for(j = 0; j < path_list.total; j++)
-			{
-				if(!strcmp(in_path, path_list.values[j])) break;
-			}
-
-			if(j == path_list.total)
-			{
-				path_list.append(out_path = new char[strlen(in_path) + 1]);
-				strcpy(out_path, in_path);
-			}
-			i++;
-		}
-	}
-
+void LoadFileThread::load_apply()
+{
 	mwindow->defaults->update("DEFAULT_LOADPATH",
 		window->get_submitted_path());
 	mwindow->defaults->update("LOAD_MODE",
 		load_mode);
 
-// No file selected
-	if(path_list.total == 0 || result == 1)
-	{
-		return;
+	ArrayList<char*> path_list;
+	path_list.set_array_delete();
+
+// Collect all selected files
+	char *in_path;
+	for( int i=0; (in_path = window->get_path(i))!=0; ++i ) {
+		int k = path_list.size();
+		while( --k >= 0 && strcmp(in_path, path_list.values[k]) );
+		if( k < 0 ) path_list.append(cstrdup(in_path));
 	}
+
+// No file selected
+	if( !path_list.size() ) return;
 
 	if( load_mode == LOADMODE_REPLACE )
 		mwindow->set_filename(path_list[0]);
 
 	mwindow->interrupt_indexes();
 	mwindow->gui->lock_window("LoadFileThread::run");
-	result = mwindow->load_filenames(&path_list, load_mode, 0);
+	mwindow->load_filenames(&path_list, load_mode, 0);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	mwindow->gui->unlock_window();
 	path_list.remove_all_objects();
@@ -161,7 +149,6 @@ void LoadFileThread::handle_done_event(int result)
 	else
 		mwindow->session->changes_made = 1;
 }
-
 
 
 LoadFileWindow::LoadFileWindow(MWindow *mwindow,
@@ -200,6 +187,7 @@ void LoadFileWindow::create_objects()
 		LoadMode::calculate_h(this, mwindow->theme);
 	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0);
 	loadmode->create_objects();
+	add_subwindow(load_file_apply = new LoadFileApply(this));
 
 	show_window(1);
 	unlock_window();
@@ -208,26 +196,34 @@ void LoadFileWindow::create_objects()
 
 int LoadFileWindow::resize_event(int w, int h)
 {
+	draw_background(0, 0, w, h);
 	int x = w / 2 - 200;
 	int y = get_cancel_button()->get_y() -
 		LoadMode::calculate_h(this, mwindow->theme);
-	draw_background(0, 0, w, h);
-
 	loadmode->reposition_window(x, y);
+
+	x = (get_w() - BC_GenericButton::calculate_w(this, _("Apply")))/2;
+	y = get_h() - BC_GenericButton::calculate_h() - 15;
+	load_file_apply->reposition_window(x, y);
 
 	return BC_FileBox::resize_event(w, h);
 }
 
 
+LoadFileApply::LoadFileApply(LoadFileWindow *load_file_window)
+ : BC_GenericButton( (load_file_window->get_w() -
+		BC_GenericButton::calculate_w(load_file_window, _("Apply")))/2,
+	load_file_window->get_h() - BC_GenericButton::calculate_h() - 15,
+	_("Apply"))
+{
+	this->load_file_window = load_file_window;
+}
 
-
-
-
-
-
-
-
-
+int LoadFileApply::handle_event()
+{
+	load_file_window->thread->load_apply();
+	return 1;
+}
 
 
 LocateFileWindow::LocateFileWindow(MWindow *mwindow,

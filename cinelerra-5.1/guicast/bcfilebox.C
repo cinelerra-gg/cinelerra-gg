@@ -748,8 +748,7 @@ int BC_FileBox::resize_event(int w, int h)
 	recent_popup->reposition_window(
 		directory_title->get_x() + directory_title->get_w() + 8,
 		directory_title->get_y(),
-		directory_title->get_w() + recent_popup->get_w(),
-		recent_popup->get_h());
+		directory_title->get_w() + recent_popup->get_w(), 200);
 	search_text->reposition_window(
 		search_text->get_x(),
 		search_text->get_y(),

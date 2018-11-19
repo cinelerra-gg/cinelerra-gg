@@ -183,7 +183,7 @@ void SketcherCurveColorPicker::handle_done_event(int result)
 {
 	color_update->stop();
 	gui->lock_window("SketcherCurveColorPicker::handle_done_event");
-	if( result ) color = orig_color;
+	if( result ) { color = orig_color | (~orig_alpha<<24); }
 	color_button->update_gui(color);
 	gui->unlock_window();
 	SketcherConfig &config = gui->plugin->config;

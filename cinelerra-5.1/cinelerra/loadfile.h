@@ -28,8 +28,13 @@
 #include "mainmenu.inc"
 #include "mwindow.inc"
 
+class Load;
 class LoadFileThread;
 class LoadFileWindow;
+class LocateFileWindow;
+class LoadPrevious;
+class LoadBackup;
+class LoadFileApply;
 
 class Load : public BC_MenuItem
 {
@@ -54,6 +59,7 @@ public:
 
 	BC_Window* new_gui();
 	void handle_done_event(int result);
+	void load_apply();
 
 	MWindow *mwindow;
 	Load *load;
@@ -74,6 +80,7 @@ public:
 
 	LoadFileThread *thread;
 	LoadMode *loadmode;
+	LoadFileApply *load_file_apply;
 	MWindow *mwindow;
 };
 
@@ -105,6 +112,14 @@ public:
 	LoadBackup(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
+};
+
+class LoadFileApply : public BC_GenericButton
+{
+public:
+	LoadFileApply(LoadFileWindow *load_file_window);
+	int handle_event();
+	LoadFileWindow *load_file_window;
 };
 
 #endif
