@@ -24,6 +24,8 @@
 #define __SKETCHERS_H__
 
 #include "pluginvclient.h"
+#include "overlayframe.inc"
+#include "vframe.h"
 
 class Sketcher;
 
@@ -33,22 +35,28 @@ class Sketcher;
 
 enum { PT_ID, PT_TY, PT_X, PT_Y, PT_SZ };
 enum { CV_ID, CV_RAD, CV_PEN, CV_CLR, CV_SZ };
-enum { PTY_OFF, PTY_LINE, PTY_CURVE, PTY_SZ };
+enum { PTY_OFF, PTY_LINE, PTY_CURVE, PTY_FILL, PTY_SZ };
 enum { PEN_OFF, PEN_SQUARE, PEN_PLUS, PEN_SLANT, PEN_XLANT, PEN_SZ };
 
 class SketcherVPen : public VFrame
 {
 public:
+	VFrame *vfrm;
+	int n;
+	uint8_t *msk;
+
 	SketcherVPen(VFrame *vfrm, int n)
 	 : VFrame(vfrm->get_data(), -1, vfrm->get_y()-vfrm->get_data(),
 	    vfrm->get_u()-vfrm->get_data(), vfrm->get_v()-vfrm->get_data(),
 	    vfrm->get_w(), vfrm->get_h(), vfrm->get_color_model(),
 	    vfrm->get_bytes_per_line()) {
 		this->vfrm = vfrm;  this->n = n;
+		int sz = vfrm->get_w()*vfrm->get_h();
+		this->msk = (uint8_t*)memset(new uint8_t[sz],0,sz);
 	}
+	~SketcherVPen() { delete [] msk; }
+
 	virtual int draw_pixel(int x, int y) = 0;
-	VFrame *vfrm;
-	int n;
 };
 
 class SketcherPenSquare : public SketcherVPen
@@ -120,8 +128,10 @@ public:
 	void copy_from(SketcherCurve &that);
 	void save_data(FileXML &output);
 	void read_data(FileXML &input);
-	VFrame *new_vpen(VFrame *out);
-	void draw(VFrame *out);
+	double nearest_point(int &pi, float x, float y);
+
+	SketcherVPen *new_vpen(VFrame *out);
+	void draw(VFrame *img);
 };
 class SketcherCurves : public ArrayList<SketcherCurve *>
 {
@@ -142,7 +152,9 @@ public:
 	void copy_from(SketcherConfig &that);
 	void interpolate(SketcherConfig &prev, SketcherConfig &next,
 		long prev_frame, long next_frame, long current_frame);
+	double nearest_point(int &ci, int &pi, float x, float y);
 	void limits();
+	void dump();
 
 	int drag;
 	int cv_selected, pt_selected;
@@ -167,6 +179,8 @@ public:
 	void draw_point(VFrame *vfrm, SketcherPoint *pt, int color);
 
 	VFrame *input, *output;
+	VFrame *img, *out;
+	OverlayFrame *overlay_frame;
 	int w, h, color_model, bpp, comp;
 	int is_yuv, is_float;
 };

@@ -29,6 +29,9 @@
 #include "clip.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "overlayframe.h"
+#include "pluginserver.h"
+#include "preferences.h"
 #include "sketcher.h"
 #include "sketcherwindow.h"
 #include "language.h"
@@ -205,6 +208,35 @@ int Sketcher::new_point(int idx)
 	return new_point(cv, PTY_LINE, x, y, idx);
 }
 
+double SketcherCurve::nearest_point(int &pi, float x, float y)
+{
+	pi = -1;
+	double dist = DBL_MAX;
+	for( int i=0; i<points.size(); ++i ) {
+		SketcherPoint *p = points[i];
+		double d = DISTANCE(x,y, p->x,p->y);
+		if( d < dist ) { dist = d;  pi = i;  }
+	}
+	return pi >= 0 ? dist : -1.;
+}
+
+double SketcherConfig::nearest_point(int &ci, int &pi, float x, float y)
+{
+	double dist = DBL_MAX;
+	ci = -1;  pi = -1;
+	for( int i=0; i<curves.size(); ++i ) {
+		SketcherCurve *crv = curves[i];
+		SketcherPoints &points = crv->points;
+		for( int k=0; k<points.size(); ++k ) {
+			SketcherPoint *p = points[k];
+			double d = DISTANCE(x,y, p->x,p->y);
+			if( d < dist ) {  dist = d; ci = i;  pi = k; }
+		}
+	}
+	return pi >= 0 ? dist : -1.;
+}
+
+
 REGISTER_PLUGIN(Sketcher)
 
 SketcherConfig::SketcherConfig()
@@ -289,10 +321,16 @@ void SketcherConfig::limits()
 Sketcher::Sketcher(PluginServer *server)
  : PluginVClient(server)
 {
+	img = 0;
+	out = 0;
+	overlay_frame = 0;
 }
 
 Sketcher::~Sketcher()
 {
+	delete img;
+	delete out;
+	delete overlay_frame;
 }
 
 const char* Sketcher::plugin_title() { return N_("Sketcher"); }
@@ -374,7 +412,7 @@ void Sketcher::update_gui()
 void Sketcher::draw_point(VFrame *vfrm, SketcherPoint *pt, int color, int d)
 {
 	int r = d/2+1, x = pt->x, y = pt->y;
-	vfrm->set_pixel_color(color);
+	vfrm->set_pixel_color(color, 0xff);
 	vfrm->draw_smooth(x-r,y+0, x-r, y-r, x+0,y-r);
 	vfrm->draw_smooth(x+0,y-r, x+r, y-r, x+r,y+0);
 	vfrm->draw_smooth(x+r,y+0, x+r, y+r, x+0,y+r);
@@ -387,12 +425,20 @@ void Sketcher::draw_point(VFrame *vfrm, SketcherPoint *pt, int color)
 }
 
 
+int SketcherVPen::draw_pixel(int x, int y)
+{
+	if( x >= 0 && x < vfrm->get_w() &&
+	    y >= 0 && y < vfrm->get_h() )
+		msk[vfrm->get_w()*y + x] = 0xff;
+	return 0;
+}
+
 int SketcherPenSquare::draw_pixel(int x, int y)
 {
 	vfrm->draw_line(x-n, y, x+n, y);
 	for( int i=-n; i<n; ++i )
 		vfrm->draw_line(x-n, y+i, x+n, y+i);
-	return 0;
+	return SketcherVPen::draw_pixel(x, y);
 }
 int SketcherPenPlus::draw_pixel(int x, int y)
 {
@@ -402,14 +448,14 @@ int SketcherPenPlus::draw_pixel(int x, int y)
 	}
 	else
 		vfrm->draw_pixel(x, y);
-	return 0;
+	return SketcherVPen::draw_pixel(x, y);
 }
 int SketcherPenSlant::draw_pixel(int x, int y)
 {
 	vfrm->draw_line(x-n,   y+n,   x+n,   y-n);
 	vfrm->draw_line(x-n+1, y+n,   x+n+1, y-n);
 	vfrm->draw_line(x-n,   y+n+1, x+n,   y-n+1);
-	return 0;
+	return SketcherVPen::draw_pixel(x, y);
 }
 int SketcherPenXlant::draw_pixel(int x, int y)
 {
@@ -419,11 +465,11 @@ int SketcherPenXlant::draw_pixel(int x, int y)
 	vfrm->draw_line(x-n,   y-n,   x+n,   y+n);
 	vfrm->draw_line(x-n+1, y-n,   x+n+1, y+n);
 	vfrm->draw_line(x-n,   y-n+1, x+n,   y-n+1);
-	return 0;
+	return SketcherVPen::draw_pixel(x, y);
 }
 
 
-VFrame *SketcherCurve::new_vpen(VFrame *out)
+SketcherVPen *SketcherCurve::new_vpen(VFrame *out)
 {
 	switch( pen ) {
 	case PEN_SQUARE: return new SketcherPenSquare(out, radius);
@@ -454,7 +500,7 @@ static void smooth_axy(float &ax, float &ay,
 	float bx, float by, float cx, float cy, float dx, float dy)
 {
 //middle of bd reflected around ctr
-// point ctr = b+d/2, dv=c-ctr, a=ctr-dv;
+// point ctr = (b+d)/2, dv=c-ctr, a=ctr-dv;
 	float xc = (bx+dx)*.5f, yc = (by+dy)*.5f;
 	float xd = cx - xc, yd = cy - yc;
 	ax = xc - xd;  ay = yc - yd;
@@ -463,7 +509,7 @@ static void smooth_dxy(float &dx, float &dy,
 	float ax, float ay, float bx, float by, float cx, float cy)
 {
 //middle of ac reflected around ctr
-// point ctr = a+c/2, dv=c-ctr, d=ctr-dv;
+// point ctr = (a+c)/2, dv=c-ctr, d=ctr-dv;
 	float xc = (ax+cx)*.5f, yc = (ay+cy)*.5f;
 	float xd = bx - xc, yd = by - yc;
 	dx = xc - xd;  dy = yc - yd;
@@ -484,27 +530,115 @@ static int convex(float ax,float ay, float bx,float by,
 }
 #endif
 
-void SketcherCurve::draw(VFrame *out)
+
+class FillRegion
 {
+	class segment { public: int y, lt, rt; };
+	ArrayList<segment> stack;
+
+	void push(int y, int lt, int rt) {
+		segment &seg = stack.append();
+		seg.y = y;  seg.lt = lt;  seg.rt = rt;
+	}
+	void pop(int &y, int &lt, int &rt) {
+		segment &seg = stack.last();
+		y = seg.y;  lt = seg.lt;  rt = seg.rt;
+		stack.remove();
+	}
+ 
+	VFrame *img;
+	uint8_t *msk;
+	int w, h, nxt;
+	SketcherPoints &points;
+public:
+	SketcherPoint *next();
+	bool exists() { return stack.size() > 0; }
+	void start_at(int x, int y);
+	void run();
+	FillRegion(SketcherPoints &pts, SketcherVPen *vpen);
+	~FillRegion();
+};
+
+FillRegion::FillRegion(SketcherPoints &pts, SketcherVPen *vpen)
+ : points(pts)
+{
+	this->img = vpen->vfrm;
+	this->msk = vpen->msk;
+	this->w = img->get_w();
+	this->h = img->get_h();
+	nxt = 0;
+}
+FillRegion::~FillRegion()
+{
+}
+
+void FillRegion::start_at(int x, int y)
+{
+	bclamp(x, 0, w-1);
+	bclamp(y, 0, h-1);
+	push(y, x, x);
+}
+
+void FillRegion::run()
+{
+	while( stack.size() > 0 ) {
+		int y, ilt, irt;
+		pop(y, ilt, irt);
+		int ofs = y*w + ilt;
+		for( int x=ilt; x<=irt; ++x,++ofs ) {
+			if( msk[ofs] ) continue;
+			msk[ofs] = 0xff;
+			img->draw_pixel(x, y);
+			int lt = x, rt = x;
+			int lofs = ofs;
+			for( int i=lt; --i>=0; ) {
+				if( msk[--lofs] ) break;
+				img->draw_pixel(i, y);
+				msk[lofs] = 0xff;  lt = i;
+			}
+			int rofs = ofs;
+			for( int i=rt; ++i< w; ) {
+				if( msk[++rofs] ) break;
+				img->draw_pixel(i, y);
+				msk[rofs] = 0xff;  rt = i;
+			}
+			if( y+1 <  h ) push(y+1, lt, rt);
+			if( y-1 >= 0 ) push(y-1, lt, rt);
+		}
+	}
+}
+
+SketcherPoint *FillRegion::next()
+{
+	while( nxt < points.size() ) {
+		SketcherPoint *pt = points[nxt];
+		if( pt->pty != PTY_FILL ) break;
+		start_at(pt->x, pt->y);
+		++nxt;
+	}
+	return nxt < points.size() ? points[nxt++] : 0;
+}
+
+
+void SketcherCurve::draw(VFrame *img)
+{
+	if( !points.size() ) return;
 	const float fmx = 16383;
-	VFrame *vpen = new_vpen(out);
-	out->set_pixel_color(color);
-	int n = points.size();
-	if( !n ) return;
-	if( n > 2 ) {
-		int n2 = n - 2;
-		SketcherPoint *pt0 = points[0];
-		SketcherPoint *pt1 = points[1];
-		SketcherPoint *pt2 = points[2];
+	SketcherVPen *vpen = new_vpen(img);
+	FillRegion fill(points, vpen);
+	SketcherPoint *pnt0 = fill.next();
+	SketcherPoint *pnt1 = pnt0 ? fill.next() : 0;
+	SketcherPoint *pnt2 = pnt1 ? fill.next() : 0;
+	if( pnt0 && pnt1 && pnt2 ) {
+		SketcherPoint *pt0 = pnt0, *pt1 = pnt1, *pt2 = pnt2;
 		float ax,ay, bx,by, cx,cy, dx,dy, sx,sy;
 		bx = pt0->x;  by = pt0->y;
 		cx = pt1->x;  cy = pt1->y;
 		dx = pt2->x;  dy = pt2->y;
 		smooth_axy(ax,ay, bx,by, cx,cy, dx,dy);
-		for( int pi=0; pi<n2; ++pi ) {
-			int pty = points[pi]->pty;
-			dx = points[pi+2]->x;  dy = points[pi+2]->y;
-			switch( pty ) {
+		while( pt2 ) {
+			dx = pt2->x;  dy = pt2->y;
+			switch( pt0->pty ) {
 			case PTY_LINE:
 				vpen->draw_line(bx, by, cx, cy);
 				break;
@@ -514,28 +648,41 @@ void SketcherCurve::draw(VFrame *out)
 				vpen->draw_smooth(bx,by, sx,sy, cx,cy);
 				break; }
 			}
-			ax = bx;  ay = by;
-			bx = cx;  by = cy;
-			cx = dx;  cy = dy;
+			ax = bx;  ay = by;  pt0 = pt1;
+			bx = cx;  by = cy;  pt1 = pt2;
+			cx = dx;  cy = dy;  pt2 = fill.next();
 		}
-		switch( points[n2]->pty ) {
+		switch( pt1->pty ) {
 		case PTY_LINE:
 			vpen->draw_line(bx, by, cx, cy);
+			if( fill.exists() ) {
+				dx = pnt0->x;  dy = pnt0->y;
+				vpen->draw_line(cx,cy, dx,dy);
+			}
 			break;
 		case PTY_CURVE: {
-			smooth_dxy(dx,dy, ax,ay, bx,by, cx,cy);
+			if( fill.exists() ) {
+				dx = pnt0->x;  dy = pnt0->y;
+				intersects_at(sx,sy, ax,ay,cx,cy,bx,by, bx,by,dx,dy,cx,cy,fmx);
+				vpen->draw_smooth(bx,by, sx,sy, cx,cy);
+				ax = bx;  ay = by;
+				bx = cx;  by = cy;
+				cx = dx;  cy = dy;
+				dx = pnt1->x;  dy = pnt1->y;
+			}
+			else
+				smooth_dxy(dx,dy, ax,ay, bx,by, cx,cy);
 			intersects_at(sx,sy, ax,ay,cx,cy,bx,by, bx,by,dx,dy,cx,cy,fmx);
 			vpen->draw_smooth(bx,by, sx,sy, cx,cy);
 			break; }
 		}
+		fill.run();
 	}
-	else if( n == 2 ) {
-		SketcherPoint *pt0 = points[0], *pt1 = points[1];
-		vpen->draw_line(pt0->x, pt0->y, pt1->x, pt1->y);
+	else if( pnt0 && pnt1 ) {
+		vpen->draw_line(pnt0->x, pnt0->y, pnt1->x, pnt1->y);
 	}
-	else if( n > 0 ) {
-		SketcherPoint *pt0 = points[0];
-		vpen->draw_pixel(pt0->x, pt0->y);
+	else if( pnt0 ) {
+		vpen->draw_pixel(pnt0->x, pnt0->y);
 	}
 	delete vpen;
 }
@@ -544,41 +691,67 @@ int Sketcher::process_realtime(VFrame *input, VFrame *output)
 {
 	this->input = input;  this->output = output;
 	w = output->get_w();  h = output->get_h();
-	if( input != output ) output->transfer_from(input);
 
 	load_configuration();
+
+	int out_color_model = output->get_color_model();
+	int color_model = out_color_model;
+	switch( color_model ) { // add alpha if needed
+	case BC_RGB888:		color_model = BC_RGBA8888;	break;
+	case BC_YUV888:		color_model = BC_YUVA8888;	break;
+	case BC_RGB161616:	color_model = BC_RGBA16161616;	break;
+	case BC_YUV161616:	color_model = BC_YUVA16161616;	break;
+	case BC_RGB_FLOAT:	color_model = BC_RGBA_FLOAT;	break;
+	case BC_RGB_FLOATP:	color_model = BC_RGBA_FLOATP;	break;
+	}
+	if( color_model == out_color_model ) {
+		delete out;  out = output;
+		if( output != input )
+			output->transfer_from(input);
+	}
+	else {
+		VFrame::get_temp(out, w, h, color_model);
+		out->transfer_from(input);
+	}
+	VFrame::get_temp(img, w, h, color_model);
+	
+	if( !overlay_frame ) {
+		int cpus = server->preferences->project_smp;
+		int max = (w*h)/0x80000 + 2;
+		if( cpus > max ) cpus = max;
+		overlay_frame = new OverlayFrame(cpus);
+	}
 
 	for( int ci=0, n=config.curves.size(); ci<n; ++ci ) {
 		SketcherCurve *cv = config.curves[ci];
 		int m = cv->points.size();
 		if( !m || cv->pen == PTY_OFF ) continue;
-		cv->draw(output);
+		img->clear_frame();
+		img->set_pixel_color(cv->color);
+		cv->draw(img);
+		overlay_frame->overlay(out, img, 0,0,w,h, 0,0,w,h,
+				1.f, TRANSFER_NORMAL, NEAREST_NEIGHBOR);
 	}
 
 	if( config.drag ) {
 		for( int ci=0, n=config.curves.size(); ci<n; ++ci ) {
 			SketcherCurve *cv = config.curves[ci];
 			for( int pi=0,m=cv->points.size(); pi<m; ++pi ) {
-				int color = ci==config.cv_selected && pi==config.pt_selected ?
+				int color = pi==config.pt_selected && ci==config.cv_selected ?
 					RED : cv->color ; 
-				draw_point(output, cv->points[pi], color);
+				draw_point(out, cv->points[pi], color);
 			}
 		}
 	}
 
+	if( output != out )
+		output->transfer_from(out);
+	else
+		out = 0;
+
 	return 0;
 }
 
-void SketcherCurves::dump()
-{
-	for( int i=0; i<size(); ++i ) {
-		SketcherCurve *cv = get(i);
-		printf("Curve %d, id=%d, pen=%s, r=%d, color=%02x%02x%02x\n",
-			i, cv->id, cv_pen[cv->pen], cv->radius,
-			(cv->color>>16)&0xff, (cv->color>>8)&0xff, (cv->color>>0)&0xff);
-		cv->points.dump();
-	}
-}
 void SketcherPoints::dump()
 {
 	for( int i=0; i<size(); ++i ) {
@@ -586,5 +759,22 @@ void SketcherPoints::dump()
 		printf("  Pt %d, id=%d, pty=%s, x=%d, y=%d\n",
 			i, pt->id, pt_type[pt->pty], pt->x, pt->y);
 	}
+}
+void SketcherCurves::dump()
+{
+	for( int i=0; i<size(); ++i ) {
+		SketcherCurve *cv = get(i);
+		printf("Curve %d, id=%d, pen=%s, r=%d, color=%02x%02x%02x, %d points\n",
+			i, cv->id, cv_pen[cv->pen], cv->radius,
+			(cv->color>>16)&0xff, (cv->color>>8)&0xff, (cv->color>>0)&0xff,
+			cv->points.size());
+		cv->points.dump();
+	}
+}
+void SketcherConfig::dump()
+{
+	printf("Config drag=%d, cv_selected=%d, pt_selected=%d %d curves\n",
+			drag, cv_selected, pt_selected, curves.size());
+	curves.dump();
 }
 

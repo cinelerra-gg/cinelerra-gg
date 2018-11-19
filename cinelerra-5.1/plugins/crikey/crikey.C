@@ -212,7 +212,7 @@ void FillRegion::run()
 				if( edge_pixel(lofs) ) break;
 			}
 			int rofs = ofs;
-			for( int i=rt; ++i< w; rt=i,msk[rofs]=0 ) {
+			for( int i=rt; ++i< w; ) {
 				if( !msk[++rofs] ) break;
 				msk[rofs] = 0;  rt = i;
 				if( edge_pixel(rofs) ) break;
@@ -570,14 +570,6 @@ void CriKey::draw_point(VFrame *src, CriKeyPoint *pt)
 }
 
 
-static void get_vframe(VFrame *&vfrm, int w, int h, int color_model)
-{
-	if( vfrm && ( vfrm->get_w() != w || vfrm->get_h() != h ) ) {
-		delete vfrm;  vfrm = 0;
-	}
-	if( !vfrm ) vfrm = new VFrame(w, h, color_model, 0);
-}
-
 static void fill_edge(VFrame *vfrm, int w, int h)
 {
 	int w1 = w-1, h1 = h-1;
@@ -599,14 +591,14 @@ int CriKey::process_buffer(VFrame *frame, int64_t start_position, double frame_r
 	if( comp > 3 ) comp = 3;
 
 	read_frame(src, 0, start_position, frame_rate, 0);
-	get_vframe(edg, w, h, BC_A_FLOAT);
+	VFrame::get_temp(edg, w, h, BC_A_FLOAT);
 
 	if( !engine )
 		engine = new CriKeyEngine(this,
 			PluginClient::get_project_smp() + 1,
 			PluginClient::get_project_smp() + 1);
 
-	get_vframe(msk, w, h, BC_A8);
+	VFrame::get_temp(msk, w, h, BC_A8);
 	memset(msk->get_data(), 0xff, msk->get_data_size());
 
 	for( int i=0, n=config.points.size(); i<n; ++i ) {

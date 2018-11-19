@@ -180,14 +180,14 @@ public:
 	long get_bytes_per_line();
 	int get_memory_type();
 
-
-
 	static int calculate_bytes_per_pixel(int colormodel);
 // Get size + 4 for assembly language
 	static long calculate_data_size(int w, int h,
 		int bytes_per_line = -1, int color_model = BC_RGB888);
 // Get size of uncompressed frame buffer without extra 4 bytes
 	long get_data_size();
+// alloc/reset temp vframe to spec
+	static void get_temp(VFrame *&vfrm, int w, int h, int color_model);
 
 	void rotate270();
 	void rotate90();
@@ -347,6 +347,7 @@ public:
 	int pixel_rgb, pixel_yuv, stipple;
 
 	void set_pixel_color(int rgb);
+	void set_pixel_color(int rgb, int a) { set_pixel_color((rgb&0xffffff)|((~a&0xff)<<24)); }
 	void set_stiple(int mask);
 	void draw_line(int x1, int y1, int x2, int y2);
 	void draw_smooth(int x1, int y1, int x2, int y2, int x3, int y3);

@@ -388,6 +388,15 @@ int VFrame::get_keyframe()
 	return is_keyframe;
 }
 
+void VFrame::get_temp(VFrame *&vfrm, int w, int h, int color_model)
+{
+        if( vfrm && ( vfrm->get_w() != w || vfrm->get_h() != h ) ) {
+                delete vfrm;  vfrm = 0;
+        }
+        if( !vfrm ) vfrm = new VFrame(w, h, color_model, 0);
+}
+
+
 
 VFrameScene* VFrame::get_scene()
 {
@@ -1341,14 +1350,17 @@ int VFrame::get_memory_usage()
 	return get_h() * get_bytes_per_line();
 }
 
-void VFrame::set_pixel_color(int rgb)
+// rgb component colors (eg. from colors.h)
+// a (~alpha) transparency, 0x00==solid .. 0xff==transparent
+void VFrame::set_pixel_color(int argb)
 {
-	pixel_rgb = rgb;
+	pixel_rgb = argb;
+	int ia = 0xff & (pixel_rgb >> 24);
 	int ir = 0xff & (pixel_rgb >> 16);
 	int ig = 0xff & (pixel_rgb >> 8);
 	int ib = 0xff & (pixel_rgb >> 0);
 	YUV::yuv.rgb_to_yuv_8(ir, ig, ib);
-	pixel_yuv =  (ir<<16) | (ig<<8) | (ib<<0);
+	pixel_yuv =  (ia<<24) | (ir<<16) | (ig<<8) | (ib<<0);
 }
 
 void VFrame::set_stiple(int mask)
@@ -1360,49 +1372,51 @@ int VFrame::draw_pixel(int x, int y)
 {
 	if( x < 0 || y < 0 || x >= get_w() || y >= get_h() ) return 1;
 
-#define DRAW_PIXEL(type, r, g, b) { \
+#define DRAW_PIXEL(type, r, g, b, comps, a) { \
 	type **rows = (type**)get_rows(); \
-	rows[y][x * components + 0] = r; \
-	rows[y][x * components + 1] = g; \
-	rows[y][x * components + 2] = b; \
-	if( components == 4 ) \
-		rows[y][x * components + 3] = mx; \
+	type *rp = rows[y], *bp = rp + x*comps; \
+	bp[0] = r; \
+	if( comps > 1 ) { bp[1] = g; bp[2] = b; } \
+	if( comps == 4 )  bp[3] = a; \
 }
-	int components = BC_CModels::components(color_model);
-	int bch = BC_CModels::calculate_pixelsize(color_model) / components;
-	int sz = 8*bch, mx = BC_CModels::is_float(color_model) ? 1 : (1<<sz)-1;
-	int is_yuv = BC_CModels::is_yuv(color_model);
-	int pixel_color = is_yuv ? pixel_yuv : pixel_rgb;
-	int ir = 0xff & (pixel_color >> 16);  float fr = 0;
-	int ig = 0xff & (pixel_color >> 8);   float fg = 0;
-	int ib = 0xff & (pixel_color >> 0);   float fb = 0;
+	float fr = 0, fg = 0, fb = 0, fa = 0;
+	int pixel_color = BC_CModels::is_yuv(color_model) ? pixel_yuv : pixel_rgb;
+	int ir = (0xff & (pixel_color >> 16));
+	int ig = (0xff & (pixel_color >> 8));
+	int ib = (0xff & (pixel_color >> 0));
+	int ia = (0xff & (pixel_color >> 24)) ^ 0xff;  // transparency, not opacity
 	if( (x+y) & stipple ) {
 		ir = 255 - ir;  ig = 255 - ig;  ib = 255 - ib;
 	}
+	int rr = (ir<<8) | ir, gg = (ig<<8) | ig, bb = (ib<<8) | ib, aa = (ia<<8) | ia;
 	if( BC_CModels::is_float(color_model) ) {
-		fr = ir / 255.;  fg = ig / 255.;  fb = ib / 255.;
-		mx = 1;
-	}
-	else if( (sz-=8) > 0 ) {
-		ir <<= sz;  ig <<= sz;  ib <<= sz;
+		fr = rr/65535.f;  fg = gg/65535.f;  fb = bb/65535.f;  fa = aa/65535.f;
 	}
 
 	switch(get_color_model()) {
-	case BC_RGB888:
+	case BC_A8:
+		DRAW_PIXEL(uint8_t, ib, 0, 0, 1, 0);
+		break;
 	case BC_YUV888:
+		DRAW_PIXEL(uint8_t, ir, ig, ib, 3, 0);
+		break;
 	case BC_RGBA8888:
 	case BC_YUVA8888:
-		DRAW_PIXEL(uint8_t, ir, ig, ib);
+		DRAW_PIXEL(uint8_t, ir, ig, ib, 4, ia);
 		break;
 	case BC_RGB161616:
 	case BC_YUV161616:
+		DRAW_PIXEL(uint16_t, rr, gg, bb, 3, 0);
+		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
-		DRAW_PIXEL(uint16_t, ir, ig, ib);
+		DRAW_PIXEL(uint16_t, rr, gg, bb, 4, aa);
 		break;
 	case BC_RGB_FLOAT:
+		DRAW_PIXEL(float, fr, fg, fb, 3, 0);
+		break;
 	case BC_RGBA_FLOAT:
-		DRAW_PIXEL(float, fr, fg, fb);
+		DRAW_PIXEL(float, fr, fg, fb, 4, fa);
 		break;
 	}
 	return 0;
