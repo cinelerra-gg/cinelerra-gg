@@ -412,7 +412,7 @@ void Sketcher::update_gui()
 void Sketcher::draw_point(VFrame *vfrm, SketcherPoint *pt, int color, int d)
 {
 	int r = d/2+1, x = pt->x, y = pt->y;
-	vfrm->set_pixel_color(color, 0xff);
+	vfrm->set_pixel_color(color);
 	vfrm->draw_smooth(x-r,y+0, x-r, y-r, x+0,y-r);
 	vfrm->draw_smooth(x+0,y-r, x+r, y-r, x+r,y+0);
 	vfrm->draw_smooth(x+r,y+0, x+r, y+r, x+0,y+r);
@@ -727,7 +727,7 @@ int Sketcher::process_realtime(VFrame *input, VFrame *output)
 		int m = cv->points.size();
 		if( !m || cv->pen == PTY_OFF ) continue;
 		img->clear_frame();
-		img->set_pixel_color(cv->color);
+		img->set_pixel_color(cv->color, (~cv->color>>24)&0xff);
 		cv->draw(img);
 		overlay_frame->overlay(out, img, 0,0,w,h, 0,0,w,h,
 				1.f, TRANSFER_NORMAL, NEAREST_NEIGHBOR);

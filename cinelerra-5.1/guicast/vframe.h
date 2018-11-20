@@ -346,8 +346,7 @@ public:
 	virtual int draw_pixel(int x, int y);
 	int pixel_rgb, pixel_yuv, stipple;
 
-	void set_pixel_color(int rgb);
-	void set_pixel_color(int rgb, int a) { set_pixel_color((rgb&0xffffff)|((~a&0xff)<<24)); }
+	void set_pixel_color(int rgb, int a=0xff);
 	void set_stiple(int mask);
 	void draw_line(int x1, int y1, int x2, int y2);
 	void draw_smooth(int x1, int y1, int x2, int y2, int x3, int y3);

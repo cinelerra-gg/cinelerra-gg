@@ -2646,7 +2646,7 @@ int BC_ListBox::button_press_event()
 			}
 // Select single item
 			else {
-				if( !current_item->selected || !new_value ) {
+				if( !current_item->selected || (get_buttonpress() == 1 && !new_value) ) {
 					set_all_selected(data, 0);
 					set_selected(data, selection_number, 1);
 				}

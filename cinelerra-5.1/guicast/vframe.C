@@ -44,7 +44,7 @@ class PngReadFunction
 {
 public:
 	static void png_read_function(png_structp png_ptr,
-            	   png_bytep data, png_size_t length)
+			png_bytep data, png_size_t length)
 	{
 		VFrame *frame = (VFrame*)png_get_io_ptr(png_ptr);
 		if(frame->image_size - frame->image_offset < (long)length)
@@ -390,10 +390,10 @@ int VFrame::get_keyframe()
 
 void VFrame::get_temp(VFrame *&vfrm, int w, int h, int color_model)
 {
-        if( vfrm && ( vfrm->get_w() != w || vfrm->get_h() != h ) ) {
-                delete vfrm;  vfrm = 0;
-        }
-        if( !vfrm ) vfrm = new VFrame(w, h, color_model, 0);
+	if( vfrm && ( vfrm->get_w() != w || vfrm->get_h() != h ) ) {
+		delete vfrm;  vfrm = 0;
+	}
+	if( !vfrm ) vfrm = new VFrame(w, h, color_model, 0);
 }
 
 
@@ -828,7 +828,7 @@ int VFramePng::read_png(const unsigned char *data, long sz, double xscale, doubl
 	int ww = w * xscale, hh = h * yscale;
 	if( ww != w || hh != h ) {
 		VFrame vframe(*this);
-                reallocate(NULL, -1, 0, 0, 0, ww, hh, color_model, -1);
+		reallocate(NULL, -1, 0, 0, 0, ww, hh, color_model, -1);
 		transfer_from(&vframe);
 	}
 	return 0;
@@ -1352,15 +1352,14 @@ int VFrame::get_memory_usage()
 
 // rgb component colors (eg. from colors.h)
 // a (~alpha) transparency, 0x00==solid .. 0xff==transparent
-void VFrame::set_pixel_color(int argb)
+void VFrame::set_pixel_color(int rgb, int a)
 {
-	pixel_rgb = argb;
-	int ia = 0xff & (pixel_rgb >> 24);
+	pixel_rgb = (rgb&0xffffff) | ~a<<24;
 	int ir = 0xff & (pixel_rgb >> 16);
 	int ig = 0xff & (pixel_rgb >> 8);
 	int ib = 0xff & (pixel_rgb >> 0);
 	YUV::yuv.rgb_to_yuv_8(ir, ig, ib);
-	pixel_yuv =  (ia<<24) | (ir<<16) | (ig<<8) | (ib<<0);
+	pixel_yuv =  (a<<24) | (ir<<16) | (ig<<8) | (ib<<0);
 }
 
 void VFrame::set_stiple(int mask)
@@ -1397,6 +1396,7 @@ int VFrame::draw_pixel(int x, int y)
 	case BC_A8:
 		DRAW_PIXEL(uint8_t, ib, 0, 0, 1, 0);
 		break;
+	case BC_RGB888:
 	case BC_YUV888:
 		DRAW_PIXEL(uint8_t, ir, ig, ib, 3, 0);
 		break;
