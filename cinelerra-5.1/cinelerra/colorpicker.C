@@ -302,8 +302,10 @@ void ColorWindow::update_display()
 	yuv_v->update(yuv.v);
 	hex_box->update();
 
-	if( thread->do_alpha )
+	if( thread->do_alpha ) {
+		alpha->update(aph);
 		aph_a->update(aph);
+	}
 }
 
 int ColorWindow::handle_event()
@@ -803,6 +805,7 @@ PaletteAlpha::~PaletteAlpha()
 int PaletteAlpha::handle_event()
 {
 	window->aph = get_value();
+	window->aph_a->update(window->aph);
 	window->handle_event();
 	return 1;
 }

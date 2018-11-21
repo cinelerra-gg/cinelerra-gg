@@ -23,10 +23,11 @@
 #include "asset.h"
 #include "assetedit.h"
 #include "assetpopup.h"
+#include "assetremove.h"
 #include "assets.h"
 #include "audiodevice.h"
-#include "awindowgui.h"
 #include "awindow.h"
+#include "awindowgui.h"
 #include "bccmodels.h"
 #include "bcsignals.h"
 #include "bchash.h"
@@ -1467,14 +1468,26 @@ int AWindowGUI::keypress_event()
 	case 'v':
 		return cycle_assetlist_format();
 	case DELETE:
-		if( shift_down() ) {
+		if( shift_down() && ctrl_down() ) {
 			PluginServer* plugin = selected_plugin();
 			if( !plugin ) break;
 			remove_plugin = new AWindowRemovePlugin(awindow, plugin);
 			unlock_window();
 			remove_plugin->start();
-			lock_window();
+			lock_window("AWindowGUI::keypress_event 1");
+			return 1;
 		}
+		collect_assets();
+		if( shift_down() ) {
+			mwindow->awindow->asset_remove->start();
+			return 1;
+		}
+		unlock_window();
+		mwindow->remove_assets_from_project(1, 1,
+			mwindow->session->drag_assets,
+			mwindow->session->drag_clips);
+		lock_window("AWindowGUI::keypress_event 2");
+		return 1;
 	}
 	return 0;
 }

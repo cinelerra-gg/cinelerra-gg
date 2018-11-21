@@ -34,9 +34,10 @@ class Sketcher;
 #define CV_COLOR WHITE
 
 enum { PT_ID, PT_TY, PT_X, PT_Y, PT_SZ };
-enum { CV_ID, CV_RAD, CV_PEN, CV_CLR, CV_SZ };
+enum { CV_ID, CV_RAD, CV_PEN, CV_CLR, CV_ALP, CV_SZ };
 enum { PTY_OFF, PTY_LINE, PTY_CURVE, PTY_FILL, PTY_SZ };
 enum { PEN_OFF, PEN_SQUARE, PEN_PLUS, PEN_SLANT, PEN_XLANT, PEN_SZ };
+typedef float coord;
 
 class SketcherVPen : public VFrame
 {
@@ -55,6 +56,14 @@ public:
 		this->msk = (uint8_t*)memset(new uint8_t[sz],0,sz);
 	}
 	~SketcherVPen() { delete [] msk; }
+
+	void draw_line(float x1, float y1, float x2, float y2) {
+		VFrame::draw_line(int(x1+.5f),int(y1+.5f), int(x2+.5f),int(y2+.5f));
+	}
+	void draw_smooth(float x1, float y1, float x2, float y2, float x3, float y3) {
+		VFrame::draw_smooth(int(x1+.5f),int(y1+.5f),
+			int(x2+.5f),int(y2+.5f), int(x3+.5f),int(y3+.5f));
+	}
 
 	virtual int draw_pixel(int x, int y) = 0;
 };
@@ -89,10 +98,10 @@ class SketcherPoint
 {
 public:
 	int id, pty;
-	int x, y;
+	coord x, y;
 
-	void init(int id, int pty, int x, int y);
-	SketcherPoint(int id, int pty, int x, int y);
+	void init(int id, int pty, coord x, coord y);
+	SketcherPoint(int id, int pty, coord x, coord y);
 	SketcherPoint(int id=-1);
 	SketcherPoint(SketcherPoint &pt);
 	~SketcherPoint();
@@ -114,13 +123,13 @@ public:
 class SketcherCurve
 {
 public:
-	int id, pen, radius, color;
+	int id, pen, width, color;
 	static const char *pens[PEN_SZ];
 
 	SketcherPoints points;
 
-	void init(int id, int pen, int radius, int color);
-	SketcherCurve(int id, int pen, int radius, int color);
+	void init(int id, int pen, int width, int color);
+	SketcherCurve(int id, int pen, int width, int color);
 	SketcherCurve(int id=-1);
 	~SketcherCurve();
 	SketcherCurve(SketcherCurve &cv);
@@ -128,7 +137,7 @@ public:
 	void copy_from(SketcherCurve &that);
 	void save_data(FileXML &output);
 	void read_data(FileXML &input);
-	double nearest_point(int &pi, float x, float y);
+	double nearest_point(int &pi, coord x, coord y);
 
 	SketcherVPen *new_vpen(VFrame *out);
 	void draw(VFrame *img);
@@ -152,7 +161,7 @@ public:
 	void copy_from(SketcherConfig &that);
 	void interpolate(SketcherConfig &prev, SketcherConfig &next,
 		long prev_frame, long next_frame, long current_frame);
-	double nearest_point(int &ci, int &pi, float x, float y);
+	double nearest_point(int &ci, int &pi, coord x, coord y);
 	void limits();
 	void dump();
 
@@ -170,9 +179,9 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int new_curve(int pen, int radius, int color);
+	int new_curve(int pen, int width, int color);
 	int new_curve();
-	int new_point(SketcherCurve *cv, int pty, int x, int y, int idx=-1);
+	int new_point(SketcherCurve *cv, int pty, coord x, coord y, int idx=-1);
 	int new_point(int idx=-1);
 	int process_realtime(VFrame *input, VFrame *output);
 	static void draw_point(VFrame *vfrm, SketcherPoint *pt, int color, int d);

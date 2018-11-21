@@ -21,10 +21,12 @@
 #ifndef __CRIKEYWINDOW_H__
 #define __CRIKEYWINDOW_H__
 
+#include "sketcher.h"
 #include "guicast.h"
 #include "colorpicker.h"
 
 class Sketcher;
+class SketcherCoord;
 class SketcherNum;
 class SketcherCurveTypeItem;
 class SketcherCurveType;
@@ -37,10 +39,11 @@ class SketcherNewCurve;
 class SketcherDelCurve;
 class SketcherCurveUp;
 class SketcherCurveDn;
-class SketcherCurveRadius;
+class SketcherCurveWidth;
 class SketcherCurveList;
 class SketcherPointX;
 class SketcherPointY;
+class SketcherPointId;
 class SketcherDrag;
 class SketcherPointTypeItem;
 class SketcherPointType;
@@ -53,6 +56,17 @@ class SketcherResetCurves;
 class SketcherResetPoints;
 class SketcherWindow;
 
+
+class SketcherCoord : public BC_TumbleTextBox
+{
+public:
+	SketcherWindow *gui;
+
+	SketcherCoord(SketcherWindow *gui, int x, int y, coord output,
+		coord mn=-32767, coord mx=32767);
+	~SketcherCoord();
+	int update(coord v) { return BC_TumbleTextBox::update((coord)v); }
+};
 
 class SketcherNum : public BC_TumbleTextBox
 {
@@ -175,12 +189,12 @@ public:
 	SketcherWindow *gui;
 };
 
-class SketcherCurveRadius : public SketcherNum
+class SketcherCurveWidth : public SketcherNum
 {
 public:
-	SketcherCurveRadius(SketcherWindow *gui, int x, int y, float output)
+	SketcherCurveWidth(SketcherWindow *gui, int x, int y, float output)
 	 : SketcherNum(gui, x, y, output, 0, 255) {}
-	~SketcherCurveRadius() {}
+	~SketcherCurveWidth() {}
 
 	int handle_event();
 };
@@ -197,35 +211,44 @@ public:
 	ArrayList<BC_ListBoxItem*> cols[CV_SZ];
 	void clear();
 	void add_curve(const char *id, const char *pen,
-		const char *radius, const char *color);
+		const char *width, const char *color, const char *alpha);
 	void del_curve(int i);
-	void set_curve(int i, int c, const char *cp);
 	void set_selected(int k);
 	void update(int k);
 	void update_list(int k);
 
 	SketcherWindow *gui;
 	Sketcher *plugin;
-	const char *titles[CV_SZ];
-	int widths[CV_SZ];
+	const char *col_titles[CV_SZ];
+	int col_widths[CV_SZ];
 };
 
 
-class SketcherPointX : public SketcherNum
+class SketcherPointX : public SketcherCoord
 {
 public:
 	SketcherPointX(SketcherWindow *gui, int x, int y, float output)
-	 : SketcherNum(gui, x, y, output) {}
+	 : SketcherCoord(gui, x, y, output) {}
 	~SketcherPointX() {}
 
 	int handle_event();
 };
-class SketcherPointY : public SketcherNum
+class SketcherPointY : public SketcherCoord
 {
 public:
 	SketcherPointY(SketcherWindow *gui, int x, int y, float output)
-	 : SketcherNum(gui, x, y, output) {}
+	 : SketcherCoord(gui, x, y, output) {}
 	~SketcherPointY() {}
+
+	int handle_event();
+};
+
+class SketcherPointId : public SketcherNum
+{
+public:
+	SketcherPointId(SketcherWindow *gui, int x, int y, int output)
+	 : SketcherNum(gui, x, y, output) {}
+	~SketcherPointId() {}
 
 	int handle_event();
 };
@@ -272,6 +295,7 @@ public:
 	void clear();
 	void add_point(const char *id, const char *ty, const char *xp, const char *yp);
 	void set_point(int i, int c, int v);
+	void set_point(int i, int c, coord v);
 	void set_point(int i, int c, const char *cp);
 	void set_selected(int k);
 	void update(int k);
@@ -280,8 +304,8 @@ public:
 
 	SketcherWindow *gui;
 	Sketcher *plugin;
-	const char *titles[PT_SZ];
-	int widths[PT_SZ];
+	const char *col_titles[PT_SZ];
+	int col_widths[PT_SZ];
 };
 
 class SketcherNewPoint : public BC_GenericButton
@@ -365,6 +389,8 @@ public:
 	void update_gui();
 	void start_color_thread(SketcherCurveColor *curve_color);
 	int grab_event(XEvent *event);
+	int grab_button_press(XEvent *event);
+	int grab_cursor_motion(XEvent *event);
 	int do_grab_event(XEvent *event);
 	void done_event(int result);
 	void send_configure_change();
@@ -372,7 +398,7 @@ public:
 
 	Sketcher *plugin;
 
-	BC_Title *title_pen, *title_color, *title_radius;
+	BC_Title *title_pen, *title_color, *title_width;
 	SketcherCurveType *curve_type;
 	SketcherCurvePen *curve_pen;
 	SketcherCurveColor *curve_color;
@@ -381,7 +407,7 @@ public:
 	SketcherDelCurve *del_curve;
 	SketcherCurveUp *curve_up;
 	SketcherCurveDn *curve_dn;
-	SketcherCurveRadius *curve_radius;
+	SketcherCurveWidth *curve_width;
 	SketcherCurveList *curve_list;
 	SketcherResetCurves *reset_curves;
 
@@ -389,15 +415,23 @@ public:
 	SketcherDrag *drag;
 	SketcherPointType *point_type;
 	SketcherPointList *point_list;
-	BC_Title *title_x, *title_y;
+	BC_Title *title_x, *title_y, *title_id;
 	SketcherPointX *point_x;
 	SketcherPointY *point_y;
+	SketcherPointId *point_id;
 	SketcherNewPoint *new_point;
 	SketcherDelPoint *del_point;
 	SketcherPointUp *point_up;
 	SketcherPointDn *point_dn;
-	int dragging, pending_config;
+	int64_t position;
+	float projector_x, projector_y, projector_z;
+	int track_w, track_h;
 	int new_points;
+	float cursor_x, cursor_y;
+	float output_x, output_y;
+	int state, dragging;
+	int pending_motion, pending_config;
+	XEvent motion_event;
 	float last_x, last_y;
 	BC_Title *notes0, *notes1, *notes2;
 };

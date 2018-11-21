@@ -37,7 +37,7 @@
 #include "language.h"
 #include "vframe.h"
 
-void SketcherPoint::init(int id, int pty, int x, int y)
+void SketcherPoint::init(int id, int pty, coord x, coord y)
 {
 	this->id = id;  this->pty = pty;
 	this->x = x;    this->y = y;
@@ -46,7 +46,7 @@ SketcherPoint::SketcherPoint(int id)
 {
 	init(id, PTY_LINE, 0, 0);
 }
-SketcherPoint::SketcherPoint(int id, int pty, int x, int y)
+SketcherPoint::SketcherPoint(int id, int pty, coord x, coord y)
 {
 	init(id, pty, x, y);
 }
@@ -61,8 +61,8 @@ int SketcherPoint::equivalent(SketcherPoint &that)
 {
 	return this->id == that.id &&
 		this->pty == that.pty &&
-		this->x == that.x &&
-		this->y == that.y ? 1 : 0;
+		EQUIV(this->x, that.x) &&
+		EQUIV(this->y, that.y) ? 1 : 0;
 }
 void SketcherPoint::copy_from(SketcherPoint &that)
 {
@@ -86,15 +86,15 @@ void SketcherPoint::read_data(FileXML &input)
 {
 	id = atoi(input.tag.get_title() + 6);
 	pty = input.tag.get_property("TYPE", PTY_OFF);
-	x = input.tag.get_property("X", 0.f);
-	y = input.tag.get_property("Y", 0.f);
+	x = input.tag.get_property("X", (coord)0);
+	y = input.tag.get_property("Y", (coord)0);
 	bclamp(pty, 0, PTY_SZ-1);
 }
 
-void SketcherCurve::init(int id, int pen, int radius, int color)
+void SketcherCurve::init(int id, int pen, int width, int color)
 {
 	this->id = id;
-	this->radius = radius;
+	this->width = width;
 	this->pen = pen;
 	this->color = color;
 }
@@ -102,9 +102,9 @@ SketcherCurve::SketcherCurve(int id)
 {
 	init(id, 1, PTY_LINE, CV_COLOR);
 }
-SketcherCurve::SketcherCurve(int id, int pen, int radius, int color)
+SketcherCurve::SketcherCurve(int id, int pen, int width, int color)
 {
-	init(id, pen, radius, color);
+	init(id, pen, width, color);
 }
 SketcherCurve::~SketcherCurve()
 {
@@ -117,7 +117,7 @@ int SketcherCurve::equivalent(SketcherCurve &that)
 {
 	if( this->id != that.id ) return 0;
 	if( this->pen != that.pen ) return 0;
-	if( this->radius != that.radius ) return 0;
+	if( this->width != that.width ) return 0;
 	if( this->color != that.color ) return 0;
 	int n = this->points.size();
 	if( n != that.points.size() ) return 0;
@@ -130,7 +130,7 @@ void SketcherCurve::copy_from(SketcherCurve &that)
 {
 	this->id = that.id;
 	this->pen = that.pen;
-	this->radius = that.radius;
+	this->width = that.width;
 	this->color = that.color;
 	int m = points.size(), n = that.points.size();
 	while( m > n ) points.remove_object_number(--m);
@@ -144,7 +144,7 @@ void SketcherCurve::save_data(FileXML &output)
 	sprintf(curve,"/CURVE_%d",id);
 	output.tag.set_title(curve+1);
 	output.tag.set_property("PEN", pen);
-	output.tag.set_property("RADIUS", radius);
+	output.tag.set_property("RADIUS", width);
 	output.tag.set_property("COLOR", color);
 	output.append_tag();
 	output.append_newline();
@@ -158,12 +158,12 @@ void SketcherCurve::read_data(FileXML &input)
 {
 	id = atoi(input.tag.get_title() + 6);
 	pen = input.tag.get_property("PEN", PTY_OFF);
-	radius = input.tag.get_property("RADIUS", 1.);
+	width = input.tag.get_property("RADIUS", 1.);
 	color = input.tag.get_property("COLOR", CV_COLOR);
 	bclamp(pen, 0, PEN_SZ-1);
 }
 
-int Sketcher::new_curve(int pen, int radius, int color)
+int Sketcher::new_curve(int pen, int width, int color)
 {
 	SketcherCurves &curves = config.curves;
 	int k = curves.size(), id = 1;
@@ -171,7 +171,7 @@ int Sketcher::new_curve(int pen, int radius, int color)
 		int n = config.curves[i]->id;
 		if( n >= id ) id = n + 1;
 	}
-	SketcherCurve *cv = new SketcherCurve(id, pen, radius, color);
+	SketcherCurve *cv = new SketcherCurve(id, pen, width, color);
 	curves.append(cv);
 	config.cv_selected = k;
 	return k;
@@ -182,7 +182,7 @@ int Sketcher::new_curve()
 	return new_curve(PEN_XLANT, 1, CV_COLOR);
 }
 
-int Sketcher::new_point(SketcherCurve *cv, int pty, int x, int y, int idx)
+int Sketcher::new_point(SketcherCurve *cv, int pty, coord x, coord y, int idx)
 {
 	int id = 1;
 	for( int i=cv->points.size(); --i>=0; ) {
@@ -203,12 +203,12 @@ int Sketcher::new_point(int idx)
 		return -1;
 	SketcherCurve *cv = config.curves[ci];
 	EDLSession *session = get_edlsession();
-	int x = !session ? 0.f : session->output_w / 2.f;
-	int y = !session ? 0.f : session->output_h / 2.f;
+	coord x = !session ? 0.f : session->output_w / 2.f;
+	coord y = !session ? 0.f : session->output_h / 2.f;
 	return new_point(cv, PTY_LINE, x, y, idx);
 }
 
-double SketcherCurve::nearest_point(int &pi, float x, float y)
+double SketcherCurve::nearest_point(int &pi, coord x, coord y)
 {
 	pi = -1;
 	double dist = DBL_MAX;
@@ -220,7 +220,7 @@ double SketcherCurve::nearest_point(int &pi, float x, float y)
 	return pi >= 0 ? dist : -1.;
 }
 
-double SketcherConfig::nearest_point(int &ci, int &pi, float x, float y)
+double SketcherConfig::nearest_point(int &ci, int &pi, coord x, coord y)
 {
 	double dist = DBL_MAX;
 	ci = -1;  pi = -1;
@@ -293,17 +293,29 @@ void SketcherConfig::interpolate(SketcherConfig &prev, SketcherConfig &next,
 		if( k >= 0 ) {
 			cv->id = pcv->id;
 			cv->pen = pcv->pen;
-			cv->radius = pcv->radius;
-			cv->color = pcv->color;
+			cv->width = pcv->width == ncv->width ? pcv->width :
+				pcv->width*prev_scale + ncv->width*next_scale + 0.5;
+			int pr =  (pcv->color>>16)&0xff, nr =  (ncv->color>>16)&0xff;
+			int pg =  (pcv->color>> 8)&0xff, ng =  (ncv->color>> 8)&0xff;
+			int pb =  (pcv->color>> 0)&0xff, nb =  (ncv->color>> 0)&0xff;
+			int pa = (~pcv->color>>24)&0xff, na = (~ncv->color>>24)&0xff;
+			int r = pr == nr ? pr : pr*prev_scale + nr*next_scale + 0.5;
+			int g = pg == ng ? pg : pg*prev_scale + ng*next_scale + 0.5;
+			int b = pb == nb ? pb : pb*prev_scale + nb*next_scale + 0.5;
+			int a = pa == na ? pa : pa*prev_scale + na*next_scale + 0.5;
+			bclamp(r,0,255); bclamp(g,0,255); bclamp(b,0,255); bclamp(a,0,255);
+			cv->color = (~a<<24) | (r<<16) | (g<<8) | (b<<0);
 			int prev_pt_sz = pcv->points.size(), next_pt_sz = ncv->points.size();
 			for( int j=0; j<prev_pt_sz; ++j ) {
 				SketcherPoint &pt = *pcv->points[j], *nt = 0;
 				k = next_pt_sz;  // associated by id in next
 				while( --k >= 0 && pt.id != (nt=ncv->points[k])->id );
-				int x = pt.x, y = pt.y;
+				coord x = pt.x, y = pt.y;
 				if( k >= 0 ) {
-					x = x * prev_scale + nt->x * next_scale;
-					y = y * prev_scale + nt->y * next_scale;
+					if( x != nt->x )
+						x = x * prev_scale + nt->x * next_scale;
+					if( y != nt->y )
+						y = y * prev_scale + nt->y * next_scale;
 				}
 				cv->points.append(new SketcherPoint(pt.id, pt.pty, x, y));
 			}
@@ -472,10 +484,10 @@ int SketcherPenXlant::draw_pixel(int x, int y)
 SketcherVPen *SketcherCurve::new_vpen(VFrame *out)
 {
 	switch( pen ) {
-	case PEN_SQUARE: return new SketcherPenSquare(out, radius);
-	case PEN_PLUS:   return new SketcherPenPlus(out, radius);
-	case PEN_SLANT:  return new SketcherPenSlant(out, radius);
-	case PEN_XLANT:  return new SketcherPenXlant(out, radius);
+	case PEN_SQUARE: return new SketcherPenSquare(out, width);
+	case PEN_PLUS:   return new SketcherPenPlus(out, width);
+	case PEN_SLANT:  return new SketcherPenSlant(out, width);
+	case PEN_XLANT:  return new SketcherPenXlant(out, width);
 	}
 	return 0;
 }
@@ -756,7 +768,7 @@ void SketcherPoints::dump()
 {
 	for( int i=0; i<size(); ++i ) {
 		SketcherPoint *pt = get(i);
-		printf("  Pt %d, id=%d, pty=%s, x=%d, y=%d\n",
+		printf("  Pt %d, id=%d, pty=%s, x=%0.1f, y=%0.1f\n",
 			i, pt->id, pt_type[pt->pty], pt->x, pt->y);
 	}
 }
@@ -764,8 +776,8 @@ void SketcherCurves::dump()
 {
 	for( int i=0; i<size(); ++i ) {
 		SketcherCurve *cv = get(i);
-		printf("Curve %d, id=%d, pen=%s, r=%d, color=%02x%02x%02x, %d points\n",
-			i, cv->id, cv_pen[cv->pen], cv->radius,
+		printf("Curve %d, id=%d, pen=%s, r=%d, color=%02x%02x%02x%02x, %d points\n",
+			i, cv->id, cv_pen[cv->pen], cv->width, (~cv->color>>24)&0xff,
 			(cv->color>>16)&0xff, (cv->color>>8)&0xff, (cv->color>>0)&0xff,
 			cv->points.size());
 		cv->points.dump();

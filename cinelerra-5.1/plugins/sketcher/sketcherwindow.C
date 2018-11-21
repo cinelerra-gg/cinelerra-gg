@@ -164,7 +164,7 @@ SketcherCurveColorPicker::SketcherCurveColorPicker(SketcherWindow *gui, Sketcher
 {
 	this->gui = gui;
 	this->color_button = color_button;
-	this->color = 0;
+	this->color = CV_COLOR;
 	color_update = new SketcherCurveColorThread(this);
 }
 
@@ -175,7 +175,9 @@ SketcherCurveColorPicker::~SketcherCurveColorPicker()
 
 void SketcherCurveColorPicker::start(int color)
 {
-	start_window(color & 0xffffff, ((~color>>24)&0xff), 1);
+	this->color = color;
+	int alpha = (~color>>24) & 0xff;
+	start_window(color & 0xffffff, alpha, 1);
 	color_update->start();
 }
 
@@ -259,21 +261,31 @@ void SketcherCurveColorThread::run()
 }
 
 
-SketcherNum::SketcherNum(SketcherWindow *gui, int x, int y, int output,
-		int mn, int mx)
- : BC_TumbleTextBox(gui, output, mn, mx, x, y, 64)
+SketcherCoord::SketcherCoord(SketcherWindow *gui, int x, int y,
+		coord output, coord mn, coord mx)
+ : BC_TumbleTextBox(gui, output, mn, mx, x, y, 64, 1)
 {
 	this->gui = gui;
 	set_increment(1);
 }
+SketcherCoord::~SketcherCoord()
+{
+}
 
+SketcherNum::SketcherNum(SketcherWindow *gui, int x, int y,
+		int output, int mn, int mx)
+ : BC_TumbleTextBox(gui, output, mn, mx, x, y, 54)
+{
+	this->gui = gui;
+	set_increment(1);
+}
 SketcherNum::~SketcherNum()
 {
 }
 
 int SketcherPointX::handle_event()
 {
-	if( !SketcherNum::handle_event() ) return 0;
+	if( !SketcherCoord::handle_event() ) return 0;
 	SketcherConfig &config = gui->plugin->config;
 	int ci = config.cv_selected;
 	if( ci >= 0 && ci < config.curves.size() ) {
@@ -282,7 +294,7 @@ int SketcherPointX::handle_event()
 		int pi = config.pt_selected;
 		SketcherPoints &points = cv->points;
 		if( pi >= 0 && pi < points.size() ) {
-			int v = atoi(get_text());
+			coord v = atof(get_text());
 			points[pi]->x = v;
 			point_list->set_point(pi, PT_X, v);
 			point_list->update_list(pi);
@@ -293,7 +305,7 @@ int SketcherPointX::handle_event()
 }
 int SketcherPointY::handle_event()
 {
-	if( !SketcherNum::handle_event() ) return 0;
+	if( !SketcherCoord::handle_event() ) return 0;
 	SketcherConfig &config = gui->plugin->config;
 	int ci = config.cv_selected;
 	if( ci >= 0 && ci < config.curves.size() ) {
@@ -302,7 +314,7 @@ int SketcherPointY::handle_event()
 		int pi = config.pt_selected;
 		SketcherPoints &points = cv->points;
 		if( pi >= 0 && pi < points.size() ) {
-			int v = atoi(get_text());
+			coord v = atof(get_text());
 			points[pi]->y = v;
 			point_list->set_point(pi, PT_Y, v);
 			point_list->update_list(pi);
@@ -312,7 +324,28 @@ int SketcherPointY::handle_event()
 	return 1;
 }
 
-int SketcherCurveRadius::handle_event()
+int SketcherPointId::handle_event()
+{
+	if( !SketcherNum::handle_event() ) return 0;
+	SketcherConfig &config = gui->plugin->config;
+	int ci = config.cv_selected;
+	if( ci >= 0 && ci < config.curves.size() ) {
+		SketcherCurve *cv = config.curves[ci];
+		SketcherPointList *point_list = gui->point_list;
+		int pi = config.pt_selected;
+		SketcherPoints &points = cv->points;
+		if( pi >= 0 && pi < points.size() ) {
+			int id = atoi(get_text());
+			points[pi]->id = id;
+			point_list->set_point(pi, PT_ID, id);
+			point_list->update_list(pi);
+			gui->send_configure_change();
+		}
+	}
+	return 1;
+}
+
+int SketcherCurveWidth::handle_event()
 {
 	if( !SketcherNum::handle_event() ) return 0;
 	SketcherConfig &config = gui->plugin->config;
@@ -320,7 +353,7 @@ int SketcherCurveRadius::handle_event()
 	if( ci >= 0 && ci < config.curves.size() ) {
 		SketcherCurve *cv = config.curves[ci];
 		int v = atoi(get_text());
-		cv->radius = v;
+		cv->width = v;
 		gui->curve_list->update(ci);
 		gui->send_configure_change();
 	}
@@ -334,21 +367,32 @@ SketcherWindow::SketcherWindow(Sketcher *plugin)
 	this->plugin = plugin;
 	this->title_pen = 0;  this->curve_pen = 0;
 	this->title_color = 0; this->curve_color = 0;
-	this->color_picker = 0; this->new_points = 0;
+	this->color_picker = 0; this->drag = 0;
 	this->new_curve = 0;  this->del_curve = 0;
 	this->curve_up = 0;   this->curve_dn = 0;
 	this->title_x = 0;    this->point_x = 0;
 	this->title_y = 0;    this->point_y = 0;
+	this->title_id = 0;   this->point_id = 0;
 	this->new_point = 0;  this->del_point = 0;
 	this->point_up = 0;   this->point_dn = 0;
-	this->drag = 0;       this->dragging = 0;
-	this->last_x = 0;     this->last_y = 0;
-	this->point_list = 0; this->pending_config = 0;
+	this->point_list = 0; this->notes0 = 0;
+	this->notes1 = 0;     this->notes2 = 0;
+
+	position = -1;
+	track_w = track_h -1;
+	cursor_x = cursor_y = -1;
+	output_x = output_y = -1;
+	last_x = last_y = -1;
+	projector_x = projector_y = projector_z = -1;
+	state = 0;  dragging = 0;
+	new_points = 0;
+	pending_motion = 0;
+	pending_config = 0;
 }
 
 SketcherWindow::~SketcherWindow()
 {
-	delete curve_radius;
+	delete curve_width;
 	delete point_x;
 	delete point_y;
 	delete color_picker;
@@ -368,11 +412,11 @@ void SketcherWindow::create_objects()
 	add_subwindow(reset_curves);	dy = bmax(dy,reset_curves->get_h());
 	x1 += reset_curves->get_w() + 2*margin;
 	const char *curve_text = _("Curve");
-	title_radius = new BC_Title(x1, y, _("Width:"));
-	add_subwindow(title_radius);	dy = bmax(dy,title_radius->get_h());
-	x1 += title_radius->get_w() + margin;
-	curve_radius = new SketcherCurveRadius(this, x1, y, cv->radius);
-	curve_radius->create_objects();
+	title_width = new BC_Title(x1, y, _("Width:"));
+	add_subwindow(title_width);	dy = bmax(dy,title_width->get_h());
+	x1 += title_width->get_w() + margin;
+	curve_width = new SketcherCurveWidth(this, x1, y, cv->width);
+	curve_width->create_objects();
 	y += dy + 2*margin;		dy = 0;
 
 	x1 = get_w()-x - BC_Title::calculate_w(this, curve_text, LARGEFONT);
@@ -458,6 +502,9 @@ void SketcherWindow::create_objects()
 	x1 += title_x->get_w() + margin;
 	point_x = new SketcherPointX(this, x1, y, !pt ? 0.f : pt->x);
 	point_x->create_objects();	dy = bmax(dy, point_x->get_h());
+	x2 = x1 + point_x->get_w() + 2*margin;
+	title_id = new BC_Title(x2, y, _("ID:"));
+	add_subwindow(title_id);	dy = bmax(dy, title_id->get_h());
 	y += dy + margin;  dy = 0;
 
 	del_point = new SketcherDelPoint(this, plugin, x1=x, y);
@@ -471,6 +518,8 @@ void SketcherWindow::create_objects()
 	x1 += title_y->get_w() + margin;
 	point_y = new SketcherPointY(this, x1, y, !pt ? 0.f : pt->y);
 	point_y->create_objects();	dy = bmax(dy, point_y->get_h());
+	point_id = new SketcherPointId(this, x2+10, y, !pt ? 0 : pt->id);
+	point_id->create_objects();	dy = bmax(dy, point_id->get_h());
 	y += dy + margin + 5;
 	point_list->update(pi);
 
@@ -504,11 +553,17 @@ void SketcherWindow::send_configure_change()
 	plugin->send_configure_change();
 }
 
+
 int SketcherWindow::grab_event(XEvent *event)
 {
 	int ret = do_grab_event(event);
-	if( pending_config && !grab_event_count() )
-		send_configure_change();
+	if( !grab_event_count() ) {
+		if( pending_motion && grab_cursor_motion(&motion_event) )
+			pending_config = 1;
+		if( pending_config )
+			send_configure_change();
+	}
+	last_x = output_x;  last_y = output_y;
 	return ret;
 }
 
@@ -554,170 +609,195 @@ int SketcherWindow::do_grab_event(XEvent *event)
 		dragging = 0;
 		break;
 	case MotionNotify:
-		if( !dragging ) return 0;
-		break;
-	default:
+		if( dragging ) break;
+	default: // fall thru
 		return 0;
 	}
 
-	SketcherConfig &config = plugin->config;
-	int ci = config.cv_selected;
-	if( ci < 0 || ci >= plugin->config.curves.size() )
-		return 1;
-
-	SketcherCurves &curves = config.curves;
-	SketcherCurve *cv = curves[ci];
-	SketcherPoints &points = cv->points;
-	int pi = config.pt_selected;
-
-	float cursor_x = cx, cursor_y = cy;
+	cursor_x = cx, cursor_y = cy;
 	canvas->canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
-	int64_t position = plugin->get_source_position();
-	float projector_x, projector_y, projector_z;
+	position = plugin->get_source_position();
 	Track *track = plugin->server->plugin->track;
-	int track_w = track->track_w, track_h = track->track_h;
+	track_w = track->track_w;
+	track_h = track->track_h;
 	track->automation->get_projector(
 		&projector_x, &projector_y, &projector_z,
 		position, PLAY_FORWARD);
 	projector_x += mwindow->edl->session->output_w / 2;
 	projector_y += mwindow->edl->session->output_h / 2;
-	float output_x = (cursor_x - projector_x) / projector_z + track_w / 2;
-	float output_y = (cursor_y - projector_y) / projector_z + track_h / 2;
-	int state = event->xmotion.state;
+	output_x = (cursor_x - projector_x) / projector_z + track_w / 2;
+	output_y = (cursor_y - projector_y) / projector_z + track_h / 2;
+	state = event->xmotion.state;
 
 	switch( event->type ) {
-	case ButtonPress: {
-		int button_no = event->xbutton.button;
-		switch( button_no ) {
-		case LEFT_BUTTON: {
-			if( (state & ShiftMask) ) { // create new point/string
-				++new_points;
-				pi = plugin->new_point(cv, PTY_LINE, output_x, output_y, pi+1);
-				point_list->update(pi);
-				break;
-			}
-			SketcherPoint *pt = 0; // select point
-			double dist = cv->nearest_point(pi, output_x,output_y);
-			if( dist >= 0 ) {
-				pt = points[pi];
-				float px = (pt->x - track_w / 2) * projector_z + projector_x;
-				float py = (pt->y - track_h / 2) * projector_z + projector_y;
-				float pix = DISTANCE(px, py, cursor_x,cursor_y);
-				if( (state & ControlMask) && pix >= HANDLE_W ) { pi = -1;  pt = 0; }
-			}
-			point_list->set_selected(pi);
-			break; }
-		case RIGHT_BUTTON: {
-			if( (state & ShiftMask) ) { // create new curve point
-				++new_points;
-				pi = plugin->new_point(cv, PTY_CURVE,
-						output_x, output_y, pi+1);
-				point_list->update(pi);
-				break;
-			}
-			if( (state & AltMask) ) { // create new curve
-				ci = plugin->new_curve(cv->pen, cv->radius, cv->color);
-				curve_list->update(ci);
-				point_list->update(-1);
-				break;
-			}
-			SketcherPoint *pt = 0;
-			double dist = config.nearest_point(ci, pi, output_x,output_y);
-			if( dist >= 0 ) {
-				pt = curves[ci]->points[pi];
-				float px = (pt->x - track_w / 2) * projector_z + projector_x;
-				float py = (pt->y - track_h / 2) * projector_z + projector_y;
-				float pix = DISTANCE(px, py, cursor_x,cursor_y);
-				if( (state & ControlMask) && pix >= HANDLE_W ) { ci = pi = -1;  pt = 0; }
-			}
-			if( pt ) {
-				curve_list->update(ci);
-				point_list->update(pi);
-			}
-			break; }
-		}
-		break; }
-	case MotionNotify: {
-		if( (state & ShiftMask) ) {  // string of points
-			if( (state & (Button1Mask|Button3Mask)) ) {
-				SketcherPoint *pt = pi >= 0 && pi < points.size() ? points[pi] : 0;
-				if( pt ) {
-					float dist = DISTANCE(pt->x, pt->y, output_x, output_y);
-					if( dist < get_w()*0.1 ) break; // tolerance w/10
-				}
-				++new_points;
-				int pty = (state & Button1Mask) ? PTY_LINE : PTY_CURVE;
-				pi = plugin->new_point(cv, pty, output_x, output_y, pi+1);
-				point_list->update(pi);
-			}
-			break;
-		}
-		if( (state & Button1Mask) ) {
-			if( (state & ControlMask) ) { // drag selected point
-				SketcherPoint *pt = pi >= 0 && pi < points.size() ? points[pi] : 0;
-				if( pt ) {
-					point_list->set_point(pi, PT_X, pt->x = output_x);
-					point_list->set_point(pi, PT_Y, pt->y = output_y);
-					point_list->update_list(pi);
-					point_x->update(pt->x);
-					point_y->update(pt->y);
-				}
-				break;
-			}
-			if( (state & AltMask) ) { // drag all curves
-				int dx = round(output_x - last_x);
-				int dy = round(output_y - last_y);
-				for( int i=0; i<curves.size(); ++i ) {
-					SketcherCurve *crv = plugin->config.curves[i];
-					int pts = crv->points.size();
-					for( int k=0; k<pts; ++k ) {
-						SketcherPoint *pt = crv->points[k];
-						pt->x += dx;  pt->y += dy;
-					}
-				}
-				SketcherPoint *pt = pi >= 0 && pi < points.size() ?
-					points[pi] : 0;
-				point_x->update(pt ? pt->x : 0.f);
-				point_y->update(pt ? pt->y : 0.f);
-				point_list->update(pi);
-				break;
-			}
-			double dist = cv->nearest_point(pi, output_x,output_y);
-			if( dist >= 0 )
-				point_list->set_selected(pi);
-			break;
-		}
-		if( (state & Button3Mask) ) {
-			if( (state & (ControlMask | AltMask)) ) { // drag selected curve(s)
-				int dx = round(output_x - last_x);
-				int dy = round(output_y - last_y);
-				for( int i=0; i<points.size(); ++i ) {
-					SketcherPoint *pt = points[i];
-					pt->x += dx;  pt->y += dy;
-				}
-				SketcherPoint *pt = pi >= 0 && pi < points.size() ?
-					points[pi] : 0;
-				point_x->update(pt ? pt->x : 0.f);
-				point_y->update(pt ? pt->y : 0.f);
-				point_list->update(pi);
-				break;
-			}
-			double dist = config.nearest_point(ci, pi, output_x,output_y);
-			if( dist >= 0 ) {
-				curve_list->update(ci);
-				point_list->update(pi);
-			}
-			break;
-		}
-		break; }
-	case ButtonRelease: {
+	case ButtonPress:
+		pending_config = grab_button_press(event);
+		break;
+	case ButtonRelease:
 		new_points = 0;
-		break; }
+		break;
+	case MotionNotify:
+		memcpy(&motion_event, event, sizeof(motion_event));
+		pending_motion = 1;
+		break;
 	}
 
-	last_x = output_x;  last_y = output_y;
-	pending_config = 1;
 	return 1;
+}
+
+int SketcherWindow::grab_button_press(XEvent *event)
+{
+	SketcherConfig &config = plugin->config;
+	int ci = config.cv_selected;
+	if( ci < 0 || ci >= plugin->config.curves.size() )
+		return 0;
+	SketcherCurves &curves = config.curves;
+	SketcherCurve *cv = curves[ci];
+	SketcherPoints &points = cv->points;
+	int pi = config.pt_selected;
+
+	int button_no = event->xbutton.button;
+	switch( button_no ) {
+	case LEFT_BUTTON: {
+		if( (state & ShiftMask) ) { // create new point/string
+			++new_points;
+			pi = plugin->new_point(cv, PTY_LINE, output_x, output_y, pi+1);
+			point_list->update(pi);
+			break;
+		}
+		SketcherPoint *pt = 0; // select point
+		double dist = cv->nearest_point(pi, output_x,output_y);
+		if( dist >= 0 ) {
+			pt = points[pi];
+			Track *track = plugin->server->plugin->track;
+			int track_w = track->track_w, track_h = track->track_h;
+			float px = (pt->x - track_w / 2) * projector_z + projector_x;
+			float py = (pt->y - track_h / 2) * projector_z + projector_y;
+			float pix = DISTANCE(px, py, cursor_x,cursor_y);
+			if( (state & ControlMask) && pix >= HANDLE_W ) { pi = -1;  pt = 0; }
+		}
+		point_list->set_selected(pi);
+		break; }
+	case RIGHT_BUTTON: {
+		if( (state & ShiftMask) ) { // create new curve point
+			++new_points;
+			pi = plugin->new_point(cv, PTY_CURVE,
+					output_x, output_y, pi+1);
+			point_list->update(pi);
+			break;
+		}
+		if( (state & AltMask) ) { // create new curve
+			ci = plugin->new_curve(cv->pen, cv->width, cv->color);
+			curve_list->update(ci);
+			point_list->update(-1);
+			break;
+		}
+		SketcherPoint *pt = 0;
+		double dist = config.nearest_point(ci, pi, output_x,output_y);
+		if( dist >= 0 ) {
+			pt = curves[ci]->points[pi];
+			Track *track = plugin->server->plugin->track;
+			int track_w = track->track_w, track_h = track->track_h;
+			float px = (pt->x - track_w / 2) * projector_z + projector_x;
+			float py = (pt->y - track_h / 2) * projector_z + projector_y;
+			float pix = DISTANCE(px, py, cursor_x,cursor_y);
+			if( (state & ControlMask) && pix >= HANDLE_W ) { ci = pi = -1;  pt = 0; }
+		}
+		if( pt ) {
+			curve_list->update(ci);
+			point_list->update(pi);
+		}
+		break; }
+	}
+	return 1;
+}
+
+int SketcherWindow::grab_cursor_motion(XEvent *event)
+{
+	pending_motion = 0;
+	SketcherConfig &config = plugin->config;
+	int ci = config.cv_selected;
+	if( ci < 0 || ci >= plugin->config.curves.size() )
+		return 0;
+	SketcherCurves &curves = config.curves;
+	SketcherCurve *cv = curves[ci];
+	SketcherPoints &points = cv->points;
+	int pi = config.pt_selected;
+
+	if( (state & ShiftMask) ) {  // string of points
+		if( (state & (Button1Mask|Button3Mask)) ) {
+			SketcherPoint *pt = pi >= 0 && pi < points.size() ? points[pi] : 0;
+			if( pt ) {
+				float dist = DISTANCE(pt->x, pt->y, output_x, output_y);
+				if( dist < get_w()*0.1 ) return 0; // tolerance w/10
+			}
+			++new_points;
+			int pty = (state & Button1Mask) ? PTY_LINE : PTY_CURVE;
+			pi = plugin->new_point(cv, pty, output_x, output_y, pi+1);
+			point_list->update(pi);
+		}
+		return 1;
+	}
+	if( (state & Button1Mask) ) {
+		if( (state & ControlMask) ) { // drag selected point
+			SketcherPoint *pt = pi >= 0 && pi < points.size() ? points[pi] : 0;
+			if( pt ) {
+				point_list->set_point(pi, PT_X, pt->x = output_x);
+				point_list->set_point(pi, PT_Y, pt->y = output_y);
+				point_list->update_list(pi);
+				point_x->update(pt->x);
+				point_y->update(pt->y);
+			}
+			return 1;
+		}
+		if( (state & AltMask) ) { // drag all curves
+			int dx = round(output_x - last_x);
+			int dy = round(output_y - last_y);
+			for( int i=0; i<curves.size(); ++i ) {
+				SketcherCurve *crv = plugin->config.curves[i];
+				int pts = crv->points.size();
+				for( int k=0; k<pts; ++k ) {
+					SketcherPoint *pt = crv->points[k];
+					pt->x += dx;  pt->y += dy;
+				}
+			}
+			SketcherPoint *pt = pi >= 0 && pi < points.size() ?
+				points[pi] : 0;
+			point_x->update(pt ? pt->x : 0.f);
+			point_y->update(pt ? pt->y : 0.f);
+			point_id->update(pt ? pt->id : 0);
+			point_list->update(pi);
+			return 1;
+		}
+		double dist = cv->nearest_point(pi, output_x,output_y);
+		if( dist >= 0 )
+			point_list->set_selected(pi);
+		return 1;
+	}
+	if( (state & Button3Mask) ) {
+		if( (state & (ControlMask | AltMask)) ) { // drag selected curve(s)
+			int dx = round(output_x - last_x);
+			int dy = round(output_y - last_y);
+			for( int i=0; i<points.size(); ++i ) {
+				SketcherPoint *pt = points[i];
+				pt->x += dx;  pt->y += dy;
+			}
+			SketcherPoint *pt = pi >= 0 && pi < points.size() ?
+				points[pi] : 0;
+			point_x->update(pt ? pt->x : 0.f);
+			point_y->update(pt ? pt->y : 0.f);
+			point_id->update(pt ? pt->id : 0);
+			point_list->update(pi);
+			return 1;
+		}
+		double dist = config.nearest_point(ci, pi, output_x,output_y);
+		if( dist >= 0 ) {
+			curve_list->update(ci);
+			point_list->update(pi);
+		}
+		return 1;
+	}
+	return 0;
 }
 
 int SketcherWindow::keypress_event()
@@ -756,10 +836,11 @@ SketcherCurveList::SketcherCurveList(SketcherWindow *gui, Sketcher *plugin, int 
 {
 	this->gui = gui;
 	this->plugin = plugin;
-	titles[CV_ID] = _("id");  widths[CV_ID] = 64;
-	titles[CV_RAD] = _("radius");  widths[CV_RAD] = 64;
-	titles[CV_PEN] = _("pen");  widths[CV_PEN] = 64;
-	titles[CV_CLR] = _("color");  widths[CV_CLR] = 64;
+	col_titles[CV_ID] = _("ID");      col_widths[CV_ID] = 64;
+	col_titles[CV_RAD] = _("width");  col_widths[CV_RAD] = 64;
+	col_titles[CV_PEN] = _("pen");    col_widths[CV_PEN] = 64;
+	col_titles[CV_CLR] = _("color");  col_widths[CV_CLR] = 80;
+	col_titles[CV_ALP] = _("alpha");  col_widths[CV_ALP] = 64;
 }
 SketcherCurveList::~SketcherCurveList()
 {
@@ -774,7 +855,7 @@ void SketcherCurveList::clear()
 int SketcherCurveList::column_resize_event()
 {
 	for( int i=CV_SZ; --i>=0; )
-		widths[i] = get_column_width(i);
+		col_widths[i] = get_column_width(i);
 	return 1;
 }
 
@@ -793,17 +874,12 @@ int SketcherCurveList::selection_changed()
 	return 1;
 }
 
-void SketcherCurveList::set_curve(int i, int c, const char *cp)
-{
-	cols[c].get(i)->set_text(cp);
-}
-
 void SketcherCurveList::set_selected(int k)
 {
 	int ci = -1;
 	if( k >= 0 && k < plugin->config.curves.size() ) {
 		SketcherCurve *cv = plugin->config.curves[k];
-		gui->curve_radius->update(cv->radius);
+		gui->curve_width->update(cv->width);
 		gui->curve_pen->update(cv->pen);
 		gui->curve_color->update_gui(cv->color);
 		ci = k;
@@ -816,7 +892,7 @@ void SketcherCurveList::update_list(int k)
 {
 	int xpos = get_xposition(), ypos = get_yposition();
 	if( k >= 0 ) update_selection(&cols[0], k);
-	BC_ListBox::update(&cols[0], &titles[0],&widths[0],CV_SZ, xpos,ypos,k);
+	BC_ListBox::update(&cols[0], &col_titles[0],&col_widths[0],CV_SZ, xpos,ypos,k);
 	center_selection();
 }
 
@@ -829,22 +905,27 @@ void SketcherCurveList::update(int k)
 		SketcherCurve *cv = curves[i];
 		char itxt[BCSTRLEN];  sprintf(itxt,"%d", cv->id);
 		char ptxt[BCSTRLEN];  sprintf(ptxt,"%s", cv_pen[cv->pen]);
-		char rtxt[BCSTRLEN];  sprintf(rtxt,"%d", cv->radius);
+		char rtxt[BCSTRLEN];  sprintf(rtxt,"%d", cv->width);
 		int color = cv->color;
-		int r = (color>>16)&0xff, g = (color>>8)&0xff, b = (color>>0)&0xff;
+		int r = (color>>16)&0xff;
+		int g = (color>> 8)&0xff;
+		int b = (color>> 0)&0xff;
+		int a = (~color>>24)&0xff;
 		char ctxt[BCSTRLEN];  sprintf(ctxt,"#%02x%02x%02x", r, g, b);
-		add_curve(itxt, ptxt, rtxt, ctxt);
+		char atxt[BCSTRLEN];  sprintf(atxt,"%5.3f", a/255.);
+		add_curve(itxt, ptxt, rtxt, ctxt, atxt);
 	}
 	set_selected(k);
 }
 
 void SketcherCurveList::add_curve(const char *id, const char *pen,
-		const char *radius, const char *color)
+		const char *width, const char *color, const char *alpha)
 {
 	cols[CV_ID].append(new BC_ListBoxItem(id));
-	cols[CV_RAD].append(new BC_ListBoxItem(radius));
+	cols[CV_RAD].append(new BC_ListBoxItem(width));
 	cols[CV_PEN].append(new BC_ListBoxItem(pen));
 	cols[CV_CLR].append(new BC_ListBoxItem(color));
+	cols[CV_ALP].append(new BC_ListBoxItem(alpha));
 }
 
 SketcherNewCurve::SketcherNewCurve(SketcherWindow *gui, Sketcher *plugin, int x, int y)
@@ -858,13 +939,13 @@ SketcherNewCurve::~SketcherNewCurve()
 }
 int SketcherNewCurve::handle_event()
 {
-	int pen = PTY_LINE, radius = 1, color = CV_COLOR;
+	int pen = PTY_LINE, width = 1, color = CV_COLOR;
 	int ci = plugin->config.cv_selected;
 	if( ci >= 0 && ci < plugin->config.curves.size() ) {
 		SketcherCurve *cv = plugin->config.curves[ci];
-		pen = cv->pen;  radius = cv->radius;  color = cv->color;
+		pen = cv->pen;  width = cv->width;  color = cv->color;
 	}
-	ci = plugin->new_curve(pen, radius, color);
+	ci = plugin->new_curve(pen, width, color);
 	gui->curve_list->update(ci);
 	gui->point_list->update(-1);
 	gui->send_configure_change();
@@ -1003,10 +1084,10 @@ SketcherPointList::SketcherPointList(SketcherWindow *gui, Sketcher *plugin, int 
 {
 	this->gui = gui;
 	this->plugin = plugin;
-	titles[PT_ID] = _("ID");    widths[PT_ID] = 50;
-	titles[PT_TY] = _("Type");  widths[PT_TY] = 80;
-	titles[PT_X] = _("X");      widths[PT_X] = 90;
-	titles[PT_Y] = _("Y");      widths[PT_Y] = 90;
+	col_titles[PT_ID] = _("ID");    col_widths[PT_ID] = 50;
+	col_titles[PT_TY] = _("Type");  col_widths[PT_TY] = 80;
+	col_titles[PT_X] = _("X");      col_widths[PT_X] = 90;
+	col_titles[PT_Y] = _("Y");      col_widths[PT_Y] = 90;
 	set_selection_mode(LISTBOX_MULTIPLE);
 }
 SketcherPointList::~SketcherPointList()
@@ -1022,7 +1103,7 @@ void SketcherPointList::clear()
 int SketcherPointList::column_resize_event()
 {
 	for( int i=PT_SZ; --i>=0; )
-		widths[i] = get_column_width(i);
+		col_widths[i] = get_column_width(i);
 	return 1;
 }
 
@@ -1055,6 +1136,12 @@ void SketcherPointList::set_point(int i, int c, int v)
 	sprintf(stxt,"%d",v);
 	set_point(i,c,stxt);
 }
+void SketcherPointList::set_point(int i, int c, coord v)
+{
+	char stxt[BCSTRLEN];
+	sprintf(stxt,"%0.1f",v);
+	set_point(i,c,stxt);
+}
 void SketcherPointList::set_point(int i, int c, const char *cp)
 {
 	cols[c].get(i)->set_text(cp);
@@ -1071,6 +1158,7 @@ void SketcherPointList::set_selected(int k)
 	gui->point_type->update(pt ? pt->pty : PTY_OFF);
 	gui->point_x->update(pt ? pt->x : 0.f);
 	gui->point_y->update(pt ? pt->y : 0.f);
+	gui->point_id->update(pt ? pt->id : 0);
 	plugin->config.pt_selected = pi;
 	update_list(pi);
 }
@@ -1078,7 +1166,7 @@ void SketcherPointList::update_list(int k)
 {
 	int xpos = get_xposition(), ypos = get_yposition();
 	if( k >= 0 ) update_selection(&cols[0], k);
-	BC_ListBox::update(&cols[0], &titles[0],&widths[0],PT_SZ, xpos,ypos,k);
+	BC_ListBox::update(&cols[0], &col_titles[0],&col_widths[0],PT_SZ, xpos,ypos,k);
 	center_selection();
 }
 void SketcherPointList::update(int k)
@@ -1093,8 +1181,8 @@ void SketcherPointList::update(int k)
 			SketcherPoint *pt = points[i];
 			char itxt[BCSTRLEN];  sprintf(itxt,"%d", pt->id);
 			char ttxt[BCSTRLEN];  sprintf(ttxt,"%s", _(pt_type[pt->pty]));
-			char xtxt[BCSTRLEN];  sprintf(xtxt,"%d", pt->x);
-			char ytxt[BCSTRLEN];  sprintf(ytxt,"%d", pt->y);
+			char xtxt[BCSTRLEN];  sprintf(xtxt,"%0.1f", pt->x);
+			char ytxt[BCSTRLEN];  sprintf(ytxt,"%0.1f", pt->y);
 			add_point(itxt, ttxt, xtxt, ytxt);
 		}
 	}
@@ -1109,12 +1197,13 @@ void SketcherWindow::update_gui()
 	curve_list->update(ci);
 	point_list->update(pi);
 	SketcherCurve *cv = ci >= 0 ? config.curves[ci] : 0;
-	curve_radius->update(cv ? cv->radius : 1);
+	curve_width->update(cv ? cv->width : 1);
 	curve_pen->update(cv ? cv->pen : PEN_SQUARE);
 	curve_color->set_color(cv ? cv->color : CV_COLOR);
 	SketcherPoint *pt = pi >= 0 ? cv->points[pi] : 0;
 	point_x->update(pt ? pt->x : 0);
 	point_y->update(pt ? pt->y : 0);
+	point_id->update(pt ? pt->id : 0);
 	drag->update(plugin->config.drag);
 }
 
