@@ -39,7 +39,7 @@
 
 #define AltMask Mod1Mask
 
-#define COLOR_W 32
+#define COLOR_W 40
 #define COLOR_H 24
 
 const char *SketcherPoint::types[] = {
@@ -82,6 +82,7 @@ SketcherCurvePen::SketcherCurvePen(SketcherWindow *gui, int x, int y, int pen)
  : BC_PopupMenu(x,y,72,_(cv_pen[pen]))
 {
 	this->gui = gui;
+	this->pen = pen;
 }
 void SketcherCurvePen::create_objects()
 {
@@ -91,7 +92,7 @@ void SketcherCurvePen::create_objects()
 }
 void SketcherCurvePen::update(int pen)
 {
-	set_text(_(cv_pen[pen]));
+	set_text(_(cv_pen[this->pen=pen]));
 }
 
 
@@ -345,6 +346,15 @@ int SketcherPointId::handle_event()
 	return 1;
 }
 
+SketcherCurveWidth::SketcherCurveWidth(SketcherWindow *gui, int x, int y, int width)
+ : SketcherNum(gui, x, y, width, 0, 255)
+{
+	this->width = width;
+}
+SketcherCurveWidth::~SketcherCurveWidth()
+{
+}
+
 int SketcherCurveWidth::handle_event()
 {
 	if( !SketcherNum::handle_event() ) return 0;
@@ -360,9 +370,14 @@ int SketcherCurveWidth::handle_event()
 	return 1;
 }
 
+void SketcherCurveWidth::update(int width)
+{
+	SketcherNum::update(this->width=width);
+}
+
 
 SketcherWindow::SketcherWindow(Sketcher *plugin)
- : PluginClientWindow(plugin, 380, 580, 380, 580, 0)
+ : PluginClientWindow(plugin, 380, 620, 380, 620, 0)
 {
 	this->plugin = plugin;
 	this->title_pen = 0;  this->curve_pen = 0;
@@ -434,10 +449,12 @@ void SketcherWindow::create_objects()
 	curve_up = new SketcherCurveUp(this, x1, y);
 	add_subwindow(curve_up);	dy = bmax(dy,curve_up->get_h());
 	x1 += curve_up->get_w() + 4*margin;
-	title_pen = new BC_Title(x1+30, y, _("Pen:"));
+	y1 = BC_Title::calculate_h(this, _("Pen:"));
+	title_pen = new BC_Title(x1+30, y+dy-y1, _("Pen:"));
 	add_subwindow(title_pen);	dy = bmax(dy,title_pen->get_h());
-	int x2 = (get_w()+x1)/2;
-	title_color = new BC_Title(x2+10, y, _("Color:"));
+	int x2 = (get_w()+x1)/2 + 20;
+	y1 = BC_Title::calculate_h(this, _("Color:"));
+	title_color = new BC_Title(x2, y+dy-y1, _("Color:"));
 	add_subwindow(title_color);	dy = bmax(dy,title_color->get_h());
 	y += dy + margin;		dy = 0;
 
@@ -450,7 +467,7 @@ void SketcherWindow::create_objects()
 	curve_pen = new SketcherCurvePen(this, x1, y, cv->pen);
 	add_subwindow(curve_pen);	dy = bmax(dy,curve_pen->get_h());
 	curve_pen->create_objects();
-	curve_color = new SketcherCurveColor(this, x2+20, y, COLOR_W, COLOR_H);
+	curve_color = new SketcherCurveColor(this, x2, y, COLOR_W, COLOR_H);
 	add_subwindow(curve_color);	dy = bmax(dy,curve_color->get_h());
 	curve_color->set_color(cv->color);
 	curve_color->draw_face();
@@ -459,6 +476,8 @@ void SketcherWindow::create_objects()
 
 	BC_Bar *bar;
 	bar = new BC_Bar(x, y, get_w()-2*x);
+	add_subwindow(bar);		dy = bmax(dy,bar->get_h());
+	bar = new BC_Bar(x, y+=dy, get_w()-2*x);
 	add_subwindow(bar);		dy = bmax(dy,bar->get_h());
 	y += dy + 2*margin;
 
@@ -476,8 +495,8 @@ void SketcherWindow::create_objects()
 	drag = new SketcherDrag(this, x1, y);
 	add_subwindow(drag);		dy = bmax(dy,drag->get_h());
 	x1 += drag->get_w() + 2*margin;
-	int pty = pt ? pt->pty : PTY_LINE;
-	point_type = new SketcherPointType(this, x1, y, pty);
+	int arc = pt ? pt->arc : ARC_LINE;
+	point_type = new SketcherPointType(this, x1, y, arc);
 	add_subwindow(point_type);	dy = bmax(dy,point_type->get_h());
 	point_type->create_objects();
 	y += dy + margin;  dy = 0;
@@ -502,8 +521,9 @@ void SketcherWindow::create_objects()
 	x1 += title_x->get_w() + margin;
 	point_x = new SketcherPointX(this, x1, y, !pt ? 0.f : pt->x);
 	point_x->create_objects();	dy = bmax(dy, point_x->get_h());
-	x2 = x1 + point_x->get_w() + 2*margin;
-	title_id = new BC_Title(x2, y, _("ID:"));
+	x2 = x1 + point_x->get_w() + 2*margin + 10;
+	y1 = BC_Title::calculate_h(this, _("ID:"));
+	title_id = new BC_Title(x2+16, y+dy-y1, _("ID:"));
 	add_subwindow(title_id);	dy = bmax(dy, title_id->get_h());
 	y += dy + margin;  dy = 0;
 
@@ -518,10 +538,14 @@ void SketcherWindow::create_objects()
 	x1 += title_y->get_w() + margin;
 	point_y = new SketcherPointY(this, x1, y, !pt ? 0.f : pt->y);
 	point_y->create_objects();	dy = bmax(dy, point_y->get_h());
-	point_id = new SketcherPointId(this, x2+10, y, !pt ? 0 : pt->id);
+	point_id = new SketcherPointId(this, x2, y, !pt ? 0 : pt->id);
 	point_id->create_objects();	dy = bmax(dy, point_id->get_h());
-	y += dy + margin + 5;
+	y += dy + margin + 5;		dy = 0;
 	point_list->update(pi);
+
+	bar = new BC_Bar(x, y, get_w()-2*x);
+	add_subwindow(bar);		dy = bmax(dy,bar->get_h());
+	y += dy + 2*margin;
 
 	add_subwindow(notes0 = new BC_Title(x, y,
 		 _("\n"
@@ -529,21 +553,25 @@ void SketcherWindow::create_objects()
 		   "None=\n"
 		   "Ctrl=\n"
 		   "Alt=\n"
-		   "DEL=\n")));
-	add_subwindow(notes1 = new BC_Title(x+80, y,
+		   "Ctrl+Shift=")));	dy = bmax(dy, notes0->get_h());
+	add_subwindow(notes1 = new BC_Title(x+100, y,
 		 _("     LMB\n"
 		   "new line point\n"
 		   "select point\n"
 		   "drag point\n"
 		   "drag all curves\n"
-		   "deletes point\n")));
-	add_subwindow(notes2 = new BC_Title(x+200, y,
+		   "new fill point"))); dy = bmax(dy, notes1->get_h());
+	add_subwindow(notes2 = new BC_Title(x+220, y,
 		 _("      RMB\n"
 		   "new arc point\n"
 		   "select curve\n"
 		   "drag curve\n"
 		   "new curve\n"
-		   "deletes curve\n")));
+		   "new off point"))); dy = bmax(dy, notes2->get_h());
+	y += dy + margin + 10;
+
+	add_subwindow(notes3 = new BC_Title(x, y,
+		   "Key DEL= delete point, +Shift= delete curve\n"));
 	show_window(1);
 }
 
@@ -558,12 +586,13 @@ int SketcherWindow::grab_event(XEvent *event)
 {
 	int ret = do_grab_event(event);
 	if( !grab_event_count() ) {
-		if( pending_motion && grab_cursor_motion(&motion_event) )
+		if( grab_cursor_motion() )
 			pending_config = 1;
-		if( pending_config )
+		if( pending_config ) {
+			last_x = output_x;  last_y = output_y;
 			send_configure_change();
+		}
 	}
-	last_x = output_x;  last_y = output_y;
 	return ret;
 }
 
@@ -629,16 +658,20 @@ int SketcherWindow::do_grab_event(XEvent *event)
 	output_y = (cursor_y - projector_y) / projector_z + track_h / 2;
 	state = event->xmotion.state;
 
+	if( event->type == MotionNotify ) {
+		memcpy(&motion_event, event, sizeof(motion_event));
+		pending_motion = 1;
+		return 1;
+	}
+	if( grab_cursor_motion() )
+		pending_config = 1;
+
 	switch( event->type ) {
 	case ButtonPress:
 		pending_config = grab_button_press(event);
 		break;
 	case ButtonRelease:
 		new_points = 0;
-		break;
-	case MotionNotify:
-		memcpy(&motion_event, event, sizeof(motion_event));
-		pending_motion = 1;
 		break;
 	}
 
@@ -661,7 +694,9 @@ int SketcherWindow::grab_button_press(XEvent *event)
 	case LEFT_BUTTON: {
 		if( (state & ShiftMask) ) { // create new point/string
 			++new_points;
-			pi = plugin->new_point(cv, PTY_LINE, output_x, output_y, pi+1);
+			pi = plugin->new_point(cv,
+				!(state & ControlMask) ? ARC_LINE : ARC_FILL,
+				output_x, output_y, pi+1);
 			point_list->update(pi);
 			break;
 		}
@@ -681,13 +716,14 @@ int SketcherWindow::grab_button_press(XEvent *event)
 	case RIGHT_BUTTON: {
 		if( (state & ShiftMask) ) { // create new curve point
 			++new_points;
-			pi = plugin->new_point(cv, PTY_CURVE,
-					output_x, output_y, pi+1);
+			pi = plugin->new_point(cv,
+				!(state & ControlMask) ? ARC_CURVE : ARC_OFF,
+				output_x, output_y, pi+1);
 			point_list->update(pi);
 			break;
 		}
 		if( (state & AltMask) ) { // create new curve
-			ci = plugin->new_curve(cv->pen, cv->width, cv->color);
+			ci = plugin->new_curve(cv->pen, cv->width, curve_color->color);
 			curve_list->update(ci);
 			point_list->update(-1);
 			break;
@@ -712,8 +748,10 @@ int SketcherWindow::grab_button_press(XEvent *event)
 	return 1;
 }
 
-int SketcherWindow::grab_cursor_motion(XEvent *event)
+int SketcherWindow::grab_cursor_motion()
 {
+	if( !pending_motion )
+		return 0;
 	pending_motion = 0;
 	SketcherConfig &config = plugin->config;
 	int ci = config.cv_selected;
@@ -732,8 +770,8 @@ int SketcherWindow::grab_cursor_motion(XEvent *event)
 				if( dist < get_w()*0.1 ) return 0; // tolerance w/10
 			}
 			++new_points;
-			int pty = (state & Button1Mask) ? PTY_LINE : PTY_CURVE;
-			pi = plugin->new_point(cv, pty, output_x, output_y, pi+1);
+			int arc = (state & Button1Mask) ? ARC_LINE : ARC_CURVE;
+			pi = plugin->new_point(cv, arc, output_x, output_y, pi+1);
 			point_list->update(pi);
 		}
 		return 1;
@@ -809,11 +847,6 @@ int SketcherWindow::keypress_event()
 			del_point->handle_event() ;
 	}
 	return 0;
-}
-
-void SketcherWindow::done_event(int result)
-{
-	ungrab(client->server->mwindow->cwindow->gui);
 }
 
 void SketcherWindow::start_color_thread(SketcherCurveColor *color_button)
@@ -939,7 +972,9 @@ SketcherNewCurve::~SketcherNewCurve()
 }
 int SketcherNewCurve::handle_event()
 {
-	int pen = PTY_LINE, width = 1, color = CV_COLOR;
+	int pen = gui->curve_pen->pen;
+	int color = gui->curve_color->color;
+	int width = gui->curve_width->width;
 	int ci = plugin->config.cv_selected;
 	if( ci >= 0 && ci < plugin->config.curves.size() ) {
 		SketcherCurve *cv = plugin->config.curves[ci];
@@ -1027,15 +1062,15 @@ int SketcherCurveDn::handle_event()
 }
 
 
-SketcherPointTypeItem::SketcherPointTypeItem(int pty)
- : BC_MenuItem(_(pt_type[pty]))
+SketcherPointTypeItem::SketcherPointTypeItem(int arc)
+ : BC_MenuItem(_(pt_type[arc]))
 {
-	this->pty = pty;
+	this->arc = arc;
 }
 int SketcherPointTypeItem::handle_event()
 {
 	SketcherPointType *popup = (SketcherPointType*)get_popup_menu();
-	popup->update(pty);
+	popup->update(arc);
 	SketcherWindow *gui = popup->gui;
 	SketcherConfig &config = gui->plugin->config;
 	SketcherCurves &curves = config.curves;
@@ -1054,8 +1089,8 @@ int SketcherPointTypeItem::handle_event()
 		int k = selected[i];
 		if( k < 0 || k >= points.size() ) continue;
 		SketcherPoint *pt = cv->points[k];
-		pt->pty = pty;
-		gui->point_list->set_point(k, PT_TY, _(pt_type[pty]));
+		pt->arc = arc;
+		gui->point_list->set_point(k, PT_TY, _(pt_type[arc]));
 	}
 
 	gui->point_list->update_list(pi);
@@ -1063,19 +1098,20 @@ int SketcherPointTypeItem::handle_event()
 	return 1;
 }
 
-SketcherPointType::SketcherPointType(SketcherWindow *gui, int x, int y, int pty)
- : BC_PopupMenu(x,y,64,_(pt_type[pty]))
+SketcherPointType::SketcherPointType(SketcherWindow *gui, int x, int y, int arc)
+ : BC_PopupMenu(x,y,64,_(pt_type[arc]))
 {
 	this->gui = gui;
+	this->type = arc;
 }
 void SketcherPointType::create_objects()
 {
-	for( int pty=0; pty<PT_SZ; ++pty )
-		add_item(new SketcherPointTypeItem(pty));
+	for( int arc=0; arc<PT_SZ; ++arc )
+		add_item(new SketcherPointTypeItem(arc));
 }
-void SketcherPointType::update(int pty)
+void SketcherPointType::update(int arc)
 {
-	set_text(_(pt_type[pty]));
+	set_text(_(pt_type[this->type=arc]));
 }
 
 
@@ -1155,7 +1191,7 @@ void SketcherPointList::set_selected(int k)
 		SketcherCurve *cv = plugin->config.curves[ci];
 		pt = k >= 0 && k < cv->points.size() ? cv->points[pi=k] : 0;
 	}
-	gui->point_type->update(pt ? pt->pty : PTY_OFF);
+	gui->point_type->update(pt ? pt->arc : ARC_OFF);
 	gui->point_x->update(pt ? pt->x : 0.f);
 	gui->point_y->update(pt ? pt->y : 0.f);
 	gui->point_id->update(pt ? pt->id : 0);
@@ -1180,7 +1216,7 @@ void SketcherPointList::update(int k)
 		for( int i=0; i<sz; ++i ) {
 			SketcherPoint *pt = points[i];
 			char itxt[BCSTRLEN];  sprintf(itxt,"%d", pt->id);
-			char ttxt[BCSTRLEN];  sprintf(ttxt,"%s", _(pt_type[pt->pty]));
+			char ttxt[BCSTRLEN];  sprintf(ttxt,"%s", _(pt_type[pt->arc]));
 			char xtxt[BCSTRLEN];  sprintf(xtxt,"%0.1f", pt->x);
 			char ytxt[BCSTRLEN];  sprintf(ytxt,"%0.1f", pt->y);
 			add_point(itxt, ttxt, xtxt, ytxt);
@@ -1319,7 +1355,8 @@ SketcherNewPoint::~SketcherNewPoint()
 int SketcherNewPoint::handle_event()
 {
 	int pi = plugin->config.pt_selected;
-	int k = plugin->new_point(pi+1);
+	int arc = gui->point_type->type;
+	int k = plugin->new_point(pi+1, arc);
 	gui->point_list->update(k);
 	gui->send_configure_change();
 	return 1;

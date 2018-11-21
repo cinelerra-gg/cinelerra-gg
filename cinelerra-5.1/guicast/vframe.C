@@ -1359,7 +1359,7 @@ void VFrame::set_pixel_color(int rgb, int a)
 	int ig = 0xff & (pixel_rgb >> 8);
 	int ib = 0xff & (pixel_rgb >> 0);
 	YUV::yuv.rgb_to_yuv_8(ir, ig, ib);
-	pixel_yuv =  (a<<24) | (ir<<16) | (ig<<8) | (ib<<0);
+	pixel_yuv =  (~a<<24) | (ir<<16) | (ig<<8) | (ib<<0);
 }
 
 void VFrame::set_stiple(int mask)

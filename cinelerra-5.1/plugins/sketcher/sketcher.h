@@ -35,7 +35,7 @@ class Sketcher;
 
 enum { PT_ID, PT_TY, PT_X, PT_Y, PT_SZ };
 enum { CV_ID, CV_RAD, CV_PEN, CV_CLR, CV_ALP, CV_SZ };
-enum { PTY_OFF, PTY_LINE, PTY_CURVE, PTY_FILL, PTY_SZ };
+enum { ARC_OFF, ARC_LINE, ARC_CURVE, ARC_FILL, ARC_SZ };
 enum { PEN_OFF, PEN_SQUARE, PEN_PLUS, PEN_SLANT, PEN_XLANT, PEN_SZ };
 typedef float coord;
 
@@ -97,11 +97,11 @@ public:
 class SketcherPoint
 {
 public:
-	int id, pty;
+	int id, arc;
 	coord x, y;
 
-	void init(int id, int pty, coord x, coord y);
-	SketcherPoint(int id, int pty, coord x, coord y);
+	void init(int id, int arc, coord x, coord y);
+	SketcherPoint(int id, int arc, coord x, coord y);
 	SketcherPoint(int id=-1);
 	SketcherPoint(SketcherPoint &pt);
 	~SketcherPoint();
@@ -109,7 +109,7 @@ public:
 	void copy_from(SketcherPoint &that);
 	void save_data(FileXML &output);
 	void read_data(FileXML &input);
-	static const char *types[PTY_SZ];
+	static const char *types[ARC_SZ];
 };
 class SketcherPoints : public ArrayList<SketcherPoint *>
 {
@@ -181,8 +181,8 @@ public:
 	void read_data(KeyFrame *keyframe);
 	int new_curve(int pen, int width, int color);
 	int new_curve();
-	int new_point(SketcherCurve *cv, int pty, coord x, coord y, int idx=-1);
-	int new_point(int idx=-1);
+	int new_point(SketcherCurve *cv, int arc, coord x, coord y, int idx=-1);
+	int new_point(int idx, int arc);
 	int process_realtime(VFrame *input, VFrame *output);
 	static void draw_point(VFrame *vfrm, SketcherPoint *pt, int color, int d);
 	void draw_point(VFrame *vfrm, SketcherPoint *pt, int color);

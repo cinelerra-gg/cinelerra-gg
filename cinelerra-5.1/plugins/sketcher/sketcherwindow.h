@@ -95,6 +95,7 @@ public:
 	void update(int pen);
 
 	SketcherWindow *gui;
+	int pen;
 };
 
 class SketcherCurveColor : public BC_Button
@@ -192,11 +193,12 @@ public:
 class SketcherCurveWidth : public SketcherNum
 {
 public:
-	SketcherCurveWidth(SketcherWindow *gui, int x, int y, float output)
-	 : SketcherNum(gui, x, y, output, 0, 255) {}
-	~SketcherCurveWidth() {}
+	SketcherCurveWidth(SketcherWindow *gui, int x, int y, int width);
+	~SketcherCurveWidth();
 
 	int handle_event();
+	void update(int width);
+	int width;
 };
 
 class SketcherCurveList : public BC_ListBox
@@ -266,19 +268,20 @@ public:
 class SketcherPointTypeItem : public BC_MenuItem
 {
 public:
-	SketcherPointTypeItem(int pty);
+	SketcherPointTypeItem(int arc);
 	int handle_event();
-	int pty;
+	int arc;
 };
 
 class SketcherPointType : public BC_PopupMenu
 {
 public:
-	SketcherPointType(SketcherWindow *gui, int x, int y, int pty);
+	SketcherPointType(SketcherWindow *gui, int x, int y, int arc);
 	void create_objects();
-	void update(int pty);
+	void update(int arc);
 
 	SketcherWindow *gui;
+	int type;
 };
 
 
@@ -389,10 +392,9 @@ public:
 	void update_gui();
 	void start_color_thread(SketcherCurveColor *curve_color);
 	int grab_event(XEvent *event);
-	int grab_button_press(XEvent *event);
-	int grab_cursor_motion(XEvent *event);
 	int do_grab_event(XEvent *event);
-	void done_event(int result);
+	int grab_button_press(XEvent *event);
+	int grab_cursor_motion();
 	void send_configure_change();
 	int keypress_event();
 
@@ -433,7 +435,7 @@ public:
 	int pending_motion, pending_config;
 	XEvent motion_event;
 	float last_x, last_y;
-	BC_Title *notes0, *notes1, *notes2;
+	BC_Title *notes0, *notes1, *notes2, *notes3;
 };
 #endif
 

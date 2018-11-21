@@ -37,18 +37,18 @@
 #include "language.h"
 #include "vframe.h"
 
-void SketcherPoint::init(int id, int pty, coord x, coord y)
+void SketcherPoint::init(int id, int arc, coord x, coord y)
 {
-	this->id = id;  this->pty = pty;
+	this->id = id;  this->arc = arc;
 	this->x = x;    this->y = y;
 }
 SketcherPoint::SketcherPoint(int id)
 {
-	init(id, PTY_LINE, 0, 0);
+	init(id, ARC_LINE, 0, 0);
 }
-SketcherPoint::SketcherPoint(int id, int pty, coord x, coord y)
+SketcherPoint::SketcherPoint(int id, int arc, coord x, coord y)
 {
-	init(id, pty, x, y);
+	init(id, arc, x, y);
 }
 SketcherPoint::~SketcherPoint()
 {
@@ -60,13 +60,13 @@ SketcherPoint::SketcherPoint(SketcherPoint &pt)
 int SketcherPoint::equivalent(SketcherPoint &that)
 {
 	return this->id == that.id &&
-		this->pty == that.pty &&
+		this->arc == that.arc &&
 		EQUIV(this->x, that.x) &&
 		EQUIV(this->y, that.y) ? 1 : 0;
 }
 void SketcherPoint::copy_from(SketcherPoint &that)
 {
-	this->id = that.id;  this->pty = that.pty;
+	this->id = that.id;  this->arc = that.arc;
 	this->x = that.x;    this->y = that.y;
 }
 void SketcherPoint::save_data(FileXML &output)
@@ -74,7 +74,7 @@ void SketcherPoint::save_data(FileXML &output)
 	char point[BCSTRLEN];
 	sprintf(point,"/POINT_%d",id);
 	output.tag.set_title(point+1);
-	output.tag.set_property("TYPE", pty);
+	output.tag.set_property("TYPE", arc);
 	output.tag.set_property("X", x);
 	output.tag.set_property("Y", y);
 	output.append_tag();
@@ -85,10 +85,10 @@ void SketcherPoint::save_data(FileXML &output)
 void SketcherPoint::read_data(FileXML &input)
 {
 	id = atoi(input.tag.get_title() + 6);
-	pty = input.tag.get_property("TYPE", PTY_OFF);
+	arc = input.tag.get_property("TYPE", ARC_OFF);
 	x = input.tag.get_property("X", (coord)0);
 	y = input.tag.get_property("Y", (coord)0);
-	bclamp(pty, 0, PTY_SZ-1);
+	bclamp(arc, 0, ARC_SZ-1);
 }
 
 void SketcherCurve::init(int id, int pen, int width, int color)
@@ -100,7 +100,7 @@ void SketcherCurve::init(int id, int pen, int width, int color)
 }
 SketcherCurve::SketcherCurve(int id)
 {
-	init(id, 1, PTY_LINE, CV_COLOR);
+	init(id, 1, ARC_LINE, CV_COLOR);
 }
 SketcherCurve::SketcherCurve(int id, int pen, int width, int color)
 {
@@ -139,7 +139,6 @@ void SketcherCurve::copy_from(SketcherCurve &that)
 }
 void SketcherCurve::save_data(FileXML &output)
 {
-	this->pen = pen;  this->color = color;
 	char curve[BCSTRLEN];
 	sprintf(curve,"/CURVE_%d",id);
 	output.tag.set_title(curve+1);
@@ -157,7 +156,7 @@ void SketcherCurve::save_data(FileXML &output)
 void SketcherCurve::read_data(FileXML &input)
 {
 	id = atoi(input.tag.get_title() + 6);
-	pen = input.tag.get_property("PEN", PTY_OFF);
+	pen = input.tag.get_property("PEN", PEN_OFF);
 	width = input.tag.get_property("RADIUS", 1.);
 	color = input.tag.get_property("COLOR", CV_COLOR);
 	bclamp(pen, 0, PEN_SZ-1);
@@ -182,21 +181,21 @@ int Sketcher::new_curve()
 	return new_curve(PEN_XLANT, 1, CV_COLOR);
 }
 
-int Sketcher::new_point(SketcherCurve *cv, int pty, coord x, coord y, int idx)
+int Sketcher::new_point(SketcherCurve *cv, int arc, coord x, coord y, int idx)
 {
 	int id = 1;
 	for( int i=cv->points.size(); --i>=0; ) {
 		int n = cv->points[i]->id;
 		if( n >= id ) id = n + 1;
 	}
-	SketcherPoint *pt = new SketcherPoint(id, pty, x, y);
+	SketcherPoint *pt = new SketcherPoint(id, arc, x, y);
 	int n = cv->points.size();
 	if( idx < 0 || idx > n ) idx = n;
 	cv->points.insert(pt, idx);
 	return idx;
 }
 
-int Sketcher::new_point(int idx)
+int Sketcher::new_point(int idx, int arc)
 {
 	int ci = config.cv_selected;
 	if( ci < 0 || ci >= config.curves.size() )
@@ -205,7 +204,7 @@ int Sketcher::new_point(int idx)
 	EDLSession *session = get_edlsession();
 	coord x = !session ? 0.f : session->output_w / 2.f;
 	coord y = !session ? 0.f : session->output_h / 2.f;
-	return new_point(cv, PTY_LINE, x, y, idx);
+	return new_point(cv, arc, x, y, idx);
 }
 
 double SketcherCurve::nearest_point(int &pi, coord x, coord y)
@@ -317,7 +316,7 @@ void SketcherConfig::interpolate(SketcherConfig &prev, SketcherConfig &next,
 					if( y != nt->y )
 						y = y * prev_scale + nt->y * next_scale;
 				}
-				cv->points.append(new SketcherPoint(pt.id, pt.pty, x, y));
+				cv->points.append(new SketcherPoint(pt.id, pt.arc, x, y));
 			}
 		}
 		else
@@ -624,7 +623,8 @@ SketcherPoint *FillRegion::next()
 {
 	while( nxt < points.size() ) {
 		SketcherPoint *pt = points[nxt];
-		if( pt->pty != PTY_FILL ) break;
+		if( pt->arc == ARC_OFF ) continue;
+		if( pt->arc != ARC_FILL ) break;
 		start_at(pt->x, pt->y);
 		++nxt;
 	}
@@ -650,11 +650,11 @@ void SketcherCurve::draw(VFrame *img)
 		smooth_axy(ax,ay, bx,by, cx,cy, dx,dy);
 		while( pt2 ) {
 			dx = pt2->x;  dy = pt2->y;
-			switch( pt0->pty ) {
-			case PTY_LINE:
+			switch( pt0->arc ) {
+			case ARC_LINE:
 				vpen->draw_line(bx, by, cx, cy);
 				break;
-			case PTY_CURVE: {
+			case ARC_CURVE: {
 				// s = ac thru b x bd thru c
 				intersects_at(sx,sy, ax,ay,cx,cy,bx,by, bx,by,dx,dy,cx,cy,fmx);
 				vpen->draw_smooth(bx,by, sx,sy, cx,cy);
@@ -664,15 +664,15 @@ void SketcherCurve::draw(VFrame *img)
 			bx = cx;  by = cy;  pt1 = pt2;
 			cx = dx;  cy = dy;  pt2 = fill.next();
 		}
-		switch( pt1->pty ) {
-		case PTY_LINE:
+		switch( pt1->arc ) {
+		case ARC_LINE:
 			vpen->draw_line(bx, by, cx, cy);
 			if( fill.exists() ) {
 				dx = pnt0->x;  dy = pnt0->y;
 				vpen->draw_line(cx,cy, dx,dy);
 			}
 			break;
-		case PTY_CURVE: {
+		case ARC_CURVE: {
 			if( fill.exists() ) {
 				dx = pnt0->x;  dy = pnt0->y;
 				intersects_at(sx,sy, ax,ay,cx,cy,bx,by, bx,by,dx,dy,cx,cy,fmx);
@@ -736,8 +736,9 @@ int Sketcher::process_realtime(VFrame *input, VFrame *output)
 
 	for( int ci=0, n=config.curves.size(); ci<n; ++ci ) {
 		SketcherCurve *cv = config.curves[ci];
+		if( cv->pen == PEN_OFF ) continue;
 		int m = cv->points.size();
-		if( !m || cv->pen == PTY_OFF ) continue;
+		if( !m ) continue;
 		img->clear_frame();
 		img->set_pixel_color(cv->color, (~cv->color>>24)&0xff);
 		cv->draw(img);
@@ -768,8 +769,8 @@ void SketcherPoints::dump()
 {
 	for( int i=0; i<size(); ++i ) {
 		SketcherPoint *pt = get(i);
-		printf("  Pt %d, id=%d, pty=%s, x=%0.1f, y=%0.1f\n",
-			i, pt->id, pt_type[pt->pty], pt->x, pt->y);
+		printf("  Pt %d, id=%d, arc=%s, x=%0.1f, y=%0.1f\n",
+			i, pt->id, pt_type[pt->arc], pt->x, pt->y);
 	}
 }
 void SketcherCurves::dump()

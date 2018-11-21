@@ -182,6 +182,8 @@ Selective Temporal Averaging: Smooths out non-moving areas of a video
 Sharpen:	Sharpen the video, either the luminance, horizontal,
 		or interlace.
 ShiftInterlace:	Shift the interlace lines using odd or even.
+Sketcher:	Sketch lines, curves, or points in different colors/
+		alpha and with fill using various pen widths/types.
 Sphere Cam:	Converts a fisheye image into a panoramic projection.
 Swap Frames:	Swap frames with 0-1, 2-3, 4-5... or 1-2, 3-4, 5-6...
 Swap channels:	Swap R,G,B,Alpha with another color channel.
