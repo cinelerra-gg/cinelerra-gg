@@ -63,6 +63,7 @@ using namespace cv::xfeatures2d;
 using namespace cvflann;
 
 // enabled detectors
+// _SIFT/_SURF are broken in v4, although they work in v3, no upgrade
 #define _SIFT
 #define _SURF
 #define _ORB

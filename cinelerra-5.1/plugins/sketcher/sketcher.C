@@ -100,7 +100,7 @@ void SketcherCurve::init(int id, int pen, int width, int color)
 }
 SketcherCurve::SketcherCurve(int id)
 {
-	init(id, 1, ARC_LINE, CV_COLOR);
+	init(id, 1, PEN_SQUARE, CV_COLOR);
 }
 SketcherCurve::SketcherCurve(int id, int pen, int width, int color)
 {
@@ -346,6 +346,7 @@ Sketcher::~Sketcher()
 
 const char* Sketcher::plugin_title() { return N_("Sketcher"); }
 int Sketcher::is_realtime() { return 1; }
+int Sketcher::is_synthesis() { return 1; }
 
 NEW_WINDOW_MACRO(Sketcher, SketcherWindow);
 LOAD_CONFIGURATION_MACRO(Sketcher, SketcherConfig)
@@ -526,7 +527,6 @@ static void smooth_dxy(float &dx, float &dy,
 	dx = xc - xd;  dy = yc - yd;
 }
 
-#if 0
 static int convex(float ax,float ay, float bx,float by,
 		  float cx,float cy, float dx,float dy)
 {
@@ -539,8 +539,6 @@ static int convex(float ax,float ay, float bx,float by,
 	float v = abc * bcd;
 	return !v ? 0 : v>0 ? 1 : -1;
 }
-#endif
-
 
 class FillRegion
 {
@@ -622,13 +620,12 @@ void FillRegion::run()
 SketcherPoint *FillRegion::next()
 {
 	while( nxt < points.size() ) {
-		SketcherPoint *pt = points[nxt];
+		SketcherPoint *pt = points[nxt++];
 		if( pt->arc == ARC_OFF ) continue;
-		if( pt->arc != ARC_FILL ) break;
+		if( pt->arc != ARC_FILL ) return pt;
 		start_at(pt->x, pt->y);
-		++nxt;
 	}
-	return nxt < points.size() ? points[nxt++] : 0;
+	return 0;
 }
 
 
@@ -651,14 +648,16 @@ void SketcherCurve::draw(VFrame *img)
 		while( pt2 ) {
 			dx = pt2->x;  dy = pt2->y;
 			switch( pt0->arc ) {
+			case ARC_CURVE:
+				if( convex(ax,ay, bx,by, cx,cy, dx,dy) >= 0 ) {
+					// s = ac thru b x bd thru c
+					intersects_at(sx,sy, ax,ay,cx,cy,bx,by, bx,by,dx,dy,cx,cy,fmx);
+					vpen->draw_smooth(bx,by, sx,sy, cx,cy);
+					break;
+				} // fall thru
 			case ARC_LINE:
 				vpen->draw_line(bx, by, cx, cy);
 				break;
-			case ARC_CURVE: {
-				// s = ac thru b x bd thru c
-				intersects_at(sx,sy, ax,ay,cx,cy,bx,by, bx,by,dx,dy,cx,cy,fmx);
-				vpen->draw_smooth(bx,by, sx,sy, cx,cy);
-				break; }
 			}
 			ax = bx;  ay = by;  pt0 = pt1;
 			bx = cx;  by = cy;  pt1 = pt2;

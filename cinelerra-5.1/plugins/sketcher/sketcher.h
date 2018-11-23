@@ -176,6 +176,7 @@ public:
 	~Sketcher();
 	PLUGIN_CLASS_MEMBERS2(SketcherConfig)
 	int is_realtime();
+	int is_synthesis();
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
