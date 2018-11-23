@@ -77,6 +77,7 @@ TitleWindow::TitleWindow(TitleMain *client)
 	drag = 0;
 	cur_popup = 0;
 	fonts_popup = 0;
+	png_popup = 0;
 
 	color_x = color_y = 0;
 	outline_color_x = outline_color_y = 0;
@@ -92,6 +93,7 @@ TitleWindow::TitleWindow(TitleMain *client)
 	encoding = 0;
 	color_button = 0;
 	color_thread = 0;
+	color_popup = 0;
 	outline_color_button = 0;
 	outline_color_thread = 0;
 	motion_title = 0;
@@ -121,14 +123,17 @@ TitleWindow::TitleWindow(TitleMain *client)
 void TitleWindow::done_event(int result)
 {
 	drag->drag_deactivate();
-	color_thread->close_window();
-	outline_color_thread->close_window();
-	color_popup->close_window();
-	png_popup->close_window();
+	delete color_thread;	color_thread = 0;
+	delete outline_color_thread;  outline_color_thread = 0;
+	delete color_popup;	color_popup = 0;
+	delete png_popup;	png_popup = 0;
+
 }
 
 TitleWindow::~TitleWindow()
 {
+	delete color_thread;
+	delete outline_color_thread;
 	delete color_popup;
 	delete png_popup;
 	for( int i=0; i<fonts.size(); ++i )

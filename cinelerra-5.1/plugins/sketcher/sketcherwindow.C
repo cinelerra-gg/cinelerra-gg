@@ -575,6 +575,11 @@ void SketcherWindow::create_objects()
 	show_window(1);
 }
 
+void SketcherWindow::done_event(int result)
+{
+	delete color_picker;  color_picker = 0;
+}
+
 void SketcherWindow::send_configure_change()
 {
 	pending_config = 0;

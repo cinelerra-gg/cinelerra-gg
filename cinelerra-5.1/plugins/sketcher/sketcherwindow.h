@@ -389,6 +389,7 @@ public:
 	~SketcherWindow();
 
 	void create_objects();
+	void done_event(int result);
 	void update_gui();
 	void start_color_thread(SketcherCurveColor *curve_color);
 	int grab_event(XEvent *event);
