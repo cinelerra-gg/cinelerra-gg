@@ -49,6 +49,9 @@
 #include "samples.inc"
 #include "vicon.h"
 
+#define SELECT_USED 0
+#define SELECT_UNUSED 1
+
 class AWindowFolderItem : public BC_ListBoxItem
 {
 public:
@@ -544,6 +547,25 @@ public:
 
 	void update();
 	int handle_event();
+	MWindow *mwindow;
+	AWindowGUI *gui;
+};
+
+class AssetSelectUsedItem : public BC_MenuItem
+{
+public:
+	AssetSelectUsedItem(AssetSelectUsed *select_used, const char *text, int action);
+	int handle_event();
+
+	int action;
+	AssetSelectUsed *select_used;
+};
+
+class AssetSelectUsed : public BC_MenuItem
+{
+public:
+	AssetSelectUsed(MWindow *mwindow, AWindowGUI *gui);
+
 	MWindow *mwindow;
 	AWindowGUI *gui;
 };

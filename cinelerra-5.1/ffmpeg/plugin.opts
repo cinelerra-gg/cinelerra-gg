@@ -1,62 +1,62 @@
 abench
-#abitscope rate=25:size=1024x256
-#abuffer abuffer=sample_rate=48000:sample_fmt=s16p:channel_layout=stereo
-#abuffersink
+#abitscope rate=25:size=1024x256 ###Input/output error
+#abuffer abuffer=sample_rate=48000:sample_fmt=s16p:channel_layout=stereo ###Invalid argument
+#abuffersink ###Input/output error
 acompressor
-#acrossfade
+#acrossfade ###Input/output error
 acrusher
 adelay delays=1
-#adrawgraph signalstats,drawgraph=lavfi.signalstats.YAVG:min=0:max=255
+#adrawgraph signalstats,drawgraph=lavfi.signalstats.YAVG:min=0:max=255 ###Input/output error
 aecho
 aemphasis
 aeval exprs=(sin(2*PI*t*440)+sin(2*PI*t*350))/2*mod(floor(2*t),2):channel_layout=1c
-#aevalsrc 0
+#aevalsrc 0 ###Cannot allocate memory
 afade
 #afftfilt 1-clip((b/nb)*b,0,1)
 #afifo  ###will not work within cin
 aformat sample_fmts=u8|s16:channel_layouts=stereo
 agate
-#ahistogram dmode=single:r=25:s=hd720:scale=log:ascale=log:slide=replace
+#ahistogram dmode=single:r=25:s=hd720:scale=log:ascale=log:slide=replace ###Input/output error
 #ainterleave
 #alimiter
 allpass
 #allrgb
 #allyuv
 aloop
-#alphaextract
-#alphamerge
-#amerge
-ametadata mode=print:file=/tmp/ametadata.txt
-#amix
-#amovie
-#anequalizer c0 f=200 w=100 g=-10 t=1|c1 f=200 w=100 g=-10 t=1
+#alphaextract ###Operation not permitted
+#alphamerge ###Input/output error
+#amerge ###Operation not permitted
+#ametadata mode=add:file=/tmp/ametadata.txt
+#amix ###Operation not permitted
+#amovie ###Operation not permitted
+#anequalizer c0 f=200 w=100 g=-10 t=1|c1 f=200 w=100 g=-10 t=1 ###Operation not permitted
 anoisesrc d=60:c=pink:r=48000:a=0.5
 #anull
-#anullsink
+#anullsink ###Input/output error
 #anullsrc
 #apad   ###not part of frame data
 aperms
-#aphasemeter r=25:s=800x400:rc=2:gc=7:bc=1
+#aphasemeter r=25:s=800x400:rc=2:gc=7:bc=1 ###Operation not permitted
 aphaser
 #apulsator
 arealtime
 aresample sample_rate=48000
 #areverse
-#aselect
-#asendcmd
+#aselect ###Operation not permitted
+#asendcmd ###Invalid argument
 #asetnsamples
 #asetpts   ###not part of frame data
 asetrate r=48000
 #asettb
 #ashowinfo ###not part of frame data
-#asidedata
-#asplit
+#asidedata ###Invalid argument
+#asplit ###Operation not permitted
 astats
-#astreamselect
+#astreamselect ###Operation not permitted
 atadenoise
 atempo
 atrim start=1:end=240:start_pts=1:end_pts=2:duration=1:start_sample=1:end_sample=2
-#avectorscope
+#avectorscope ###Input/output error
 avgblur
 bandpass
 bandreject
@@ -66,14 +66,14 @@ bench
 biquad
 blackdetect
 blackframe
-#blend
+#blend ###Input/output error
 boxblur
-#buffer size=320x240:pixfmt=6:time_base=1/24:pixel_aspect=1/1
-#buffersink
+#buffer size=320x240:pixfmt=6:time_base=1/24:pixel_aspect=1/1 ###Invalid argument
+#buffersink ###Input/output error
 bwdif
 #cellauto p=@:s=100x400:full=0:rule=18
-#channelmap 1|2|0|5|3|4:5.1
-#channelsplit
+#channelmap 1|2|0|5|3|4:5.1 ###Invalid argument
+#channelsplit ###Operation not permitted
 chorus in_gain=0.400000:out_gain=0.400000:delays=1|1:decays=1|1:speeds=1|1:depths=1|1
 chromakey
 #codecview
@@ -86,7 +86,7 @@ colormatrix src=bt601:dst=bt709
 #colorspace bt709
 compand
 compensationdelay
-#concat
+#concat ###Operation not permitted
 #convolution 0 -1 0 -1 5 -1 0 -1 0:0 -1 0 -1 5 -1 0 -1 0:0 -1 0 -1 5 -1 0 -1 0:0 -1 0 -1 5 -1 0 -1 0
 #copy
 cover_rect
@@ -111,35 +111,35 @@ drawgraph
 drawgrid
 dynaudnorm
 earwax
-#ebur128
+#ebur128 ###Operation not permitted
 edgedetect
 elbg
 eq
 equalizer frequency=1000.000000:width_type=1:width=200.000000:gain=-10.000000
 erosion
-#extractplanes
+#extractplanes ###Operation not permitted
 extrastereo
 fade
 fftfilt
 field
-#fieldhint
-#fieldmatch
+#fieldhint ###Invalid argument
+#fieldmatch ###Operation not permitted
 fieldorder
 #fifo   ###will not work within cin
 fillborders
-#find_rect
+#find_rect ###Invalid argument
 #firequalizer delay=0.1:fixed=on:zero_phase=on
 flanger
 format pix_fmts=yuv420p|yuv444p|yuv410p
 #fps 30
-#framepack
+#framepack ###Input/output error
 framerate
 framestep step=30
 fspp
 gblur
-#geq
+#geq ###Invalid argument
 gradfun
-#haldclut ###not working due to need for multiple video streams
+#haldclut ###not working due to need for multiple video streams ###Input/output error
 haldclutsrc
 #hdcd
 hflip
@@ -148,18 +148,18 @@ histeq
 histogram
 hqdn3d
 hqx
-#hstack
+#hstack ###Operation not permitted
 hue
 #hwdownload
 #hwmap
 #hwupload
 #hwupload_cuda
-#hysteresis
+#hysteresis ###Input/output error
 idet
 il
 inflate
 interlace
-#interleave
+#interleave ###Operation not permitted
 #join
 kerndeint
 lenscorrection
@@ -167,35 +167,35 @@ life ratio=2/3:s=200x200
 loudnorm
 lowpass
 lut
-#lut2
+#lut2 ###Input/output error
 lut3d
 lutrgb
 lutyuv
 mandelbrot
-#maskedclamp
-#maskedmerge
+#maskedclamp ###Input/output error
+#maskedmerge ###Input/output error
 mcdeint
 #mergeplanes 0x03010200:yuva444p
 mestimate
-metadata mode=print:file=/tmp/metadata.txt
-#midequalizer
+#metadata mode=add:file=/tmp/metadata.txt
+#midequalizer ###Input/output error
 #minterpolate
-#movie
+#movie ###Operation not permitted
 mpdecimate
 mptestsrc t=dc_luma
 negate
 nlmeans r=15:p=7:s=2
-#nnedi
+#nnedi ###Invalid argument
 #noformat ###not part of frame data
 noise
 #null
-#nullsink
+#nullsink ###Input/output error
 #nullsrc
-#overlay x=main_w-overlay_w-10:y=main_h-overlay_h-10
+#overlay x=main_w-overlay_w-10:y=main_h-overlay_h-10 ###Input/output error
 owdenoise
 pad
 #palettegen
-#paletteuse
+#paletteuse ###Input/output error
 pan 1c|c0=0.9*c0+0.1*c1
 perms
 perspective
@@ -203,18 +203,18 @@ phase
 #pixdesctest
 pp
 pp7
-#premultiply
+#premultiply ###Operation not permitted
 prewitt
-#psnr PSNR=10*log10(MAX^2/MSE)
+#psnr PSNR=10*log10(MAX^2/MSE) ###Input/output error
 #pullup
 #qp     ###not part of frame data
 #random seed=-1
 readeia608
 readvitc
 realtime
-#remap
+#remap ###Input/output error
 removegrain
-#removelogo
+#removelogo ###Invalid argument
 repeatfields
 #replaygain
 #reverse
@@ -222,32 +222,32 @@ rgbtestsrc
 rotate
 sab
 scale 200:100
-#scale2ref
-#select
+#scale2ref ###Input/output error
+#select ###Operation not permitted
 #selectivecolor greens=.5 0 -.33 0:blues=0 .27
-#sendcmd
+#sendcmd ###Invalid argument
 separatefields
 #setdar   ###will not work because Format already set
 #setfield ###not part of frame data
 #setpts   ###not part of frame data
 #setsar   ###will not work because Format already set
 #settb
-#showcqt
-#showfreqs
+#showcqt ###Input/output error
+#showfreqs ###Input/output error
 #showinfo ###not part of frame data
 showpalette s=30
-#showspectrum s=1280x480:scale=log
-#showspectrumpic
-#showvolume r=30
-#showwaves
-#showwavespic
+#showspectrum s=1280x480:scale=log ###Input/output error
+#showspectrumpic ###Input/output error
+#showvolume r=30 ###Input/output error
+#showwaves ###Input/output error
+#showwavespic ###Input/output error
 shuffleframes
 shuffleplanes
-#sidechaincompress
-#sidechaingate
-#sidedata mode=add
+#sidechaincompress ###Input/output error
+#sidechaingate ###Input/output error
+#sidedata mode=add  ###Invalid argument
 signalstats
-#signature
+#signature ###Operation not permitted
 #silencedetect n=0.001  ###does not appear to work
 silenceremove
 sine
@@ -255,14 +255,14 @@ smartblur
 smptebars
 smptehdbars
 sobel
-#spectrumsynth
-#split
+#spectrumsynth ###Input/output error
+#split ###Operation not permitted
 spp
-#ssim
+#ssim ###Input/output error
 stereo3d
 stereotools
 stereowiden
-#streamselect
+#streamselect ###Operation not permitted
 super2xsai
 swaprect
 swapuv
@@ -270,7 +270,7 @@ tblend all_mode=grainextract
 #telecine
 testsrc duration=5.3:size=qcif:rate=10
 testsrc2 duration=5.3:size=qcif:rate=10
-#threshold
+#threshold ###Input/output error
 #thumbnail n=50
 tile layout=3x2:nb_frames=5:padding=7:margin=2
 tinterlace
@@ -287,7 +287,7 @@ vibrato
 vignette
 volume
 volumedetect
-#vstack
+#vstack ###Operation not permitted
 w3fdif
 waveform
 weave
@@ -319,19 +319,19 @@ tlut2
 #vmafmotion
 ; new in 4.0
 acontrast
-#afir
-#convolve
-#deconvolve
+#afir ###Operation not permitted
+#convolve ###Input/output error
+#deconvolve ###Input/output error
 drmeter
 entropy
 fillborders
 #headphone
 hilbert
 mcompand
-#mix
+#mix ###Operation not permitted
 normalize
 setrange
-#unpremultiply
+#unpremultiply ###Operation not permitted
 vfrdet
 ; new in 4.1
 acue
@@ -357,10 +357,10 @@ setparams
 tmix
 vibrance
 ; broken in 4.1
-#acrossover
-#aiir
-#amultiply
-#bm3d sigma=3:block=4:bstep=2:group=1:estim=basic
-#sr
-#xstack
-#agraphmonitor
+#acrossover ###Operation not permitted
+#aiir ###Operation not permitted
+#amultiply ###Input/output error
+#bm3d sigma=3:block=4:bstep=2:group=1:estim=basic ###Operation not permitted
+#sr ###Input/output error
+#xstack ###Operation not permitted
+#agraphmonitor ###Input/output error

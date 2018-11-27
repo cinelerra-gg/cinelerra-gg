@@ -463,113 +463,133 @@ int CWindowGUI::keypress_event()
 	int result = 0;
 	int cwindow_operation = CWINDOW_NONE;
 
-	switch(get_keypress())
-	{
-		case 'w':
-		case 'W':
-			close_event();
-			result = 1;
-			break;
-		case '+':
-		case '=':
-			keyboard_zoomin();
-			result = 1;
-			break;
-		case '-':
-			keyboard_zoomout();
-			result = 1;
-			break;
-		case 'f':
+	switch( get_keypress() ) {
+	case 'w':
+	case 'W':
+		close_event();
+		result = 1;
+		break;
+	case '+':
+	case '=':
+		keyboard_zoomin();
+		result = 1;
+		break;
+	case '-':
+		keyboard_zoomout();
+		result = 1;
+		break;
+	case 'f':
+		unlock_window();
+		if(mwindow->session->cwindow_fullscreen)
+			canvas->stop_fullscreen();
+		else
+			canvas->start_fullscreen();
+		lock_window("CWindowGUI::keypress_event 1");
+		result = 1;
+		break;
+	case 'x':
+		if( ctrl_down() || shift_down() || alt_down() ) break;
+		unlock_window();
+		mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+		mwindow->cut();
+		mwindow->gui->unlock_window();
+		lock_window("CWindowGUI::keypress_event 2");
+		result = 1;
+		break;
+	case DELETE:
+		unlock_window();
+		mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+		mwindow->clear_entry();
+		mwindow->gui->unlock_window();
+		lock_window("CWindowGUI::keypress_event 3");
+		result = 1;
+		break;
+	case ESC:
+		unlock_window();
+		if(mwindow->session->cwindow_fullscreen)
+			canvas->stop_fullscreen();
+		lock_window("CWindowGUI::keypress_event 4");
+		result = 1;
+		break;
+	case LEFT:
+		if( !ctrl_down() ) {
+			int alt_down = this->alt_down();
+			int shift_down = this->shift_down();
 			unlock_window();
-			if(mwindow->session->cwindow_fullscreen)
-				canvas->stop_fullscreen();
+			stop_transport(0);
+			mwindow->gui->lock_window("CWindowGUI::keypress_event 5");
+			if( alt_down )
+				mwindow->prev_edit_handle(shift_down);
 			else
-				canvas->start_fullscreen();
-			lock_window("CWindowGUI::keypress_event 1");
-			break;
-		case 'x':
-			if( ctrl_down() || shift_down() || alt_down() ) break;
-			unlock_window();
-			mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
-			mwindow->cut();
-			mwindow->gui->unlock_window();
-			lock_window("CWindowGUI::keypress_event 2");
-			break;
-		case DELETE:
-			unlock_window();
-			mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
-			mwindow->clear_entry();
-			mwindow->gui->unlock_window();
-			lock_window("CWindowGUI::keypress_event 3");
-			break;
-		case ESC:
-			unlock_window();
-			if(mwindow->session->cwindow_fullscreen)
-				canvas->stop_fullscreen();
-			lock_window("CWindowGUI::keypress_event 4");
-			break;
-		case LEFT:
-			if( !ctrl_down() ) {
-				int alt_down = this->alt_down();
-				int shift_down = this->shift_down();
-				unlock_window();
-				stop_transport(0);
-				mwindow->gui->lock_window("CWindowGUI::keypress_event 5");
-				if( alt_down )
-					mwindow->prev_edit_handle(shift_down);
-				else
-					mwindow->move_left();
-				mwindow->gui->unlock_window();
-				lock_window("CWindowGUI::keypress_event 6");
- 				result = 1;
-			}
-			break;
-
-		case ',':
-			if( !ctrl_down() && !alt_down() ) {
-				unlock_window();
-				stop_transport(0);
-				mwindow->gui->lock_window("CWindowGUI::keypress_event 7");
 				mwindow->move_left();
-				mwindow->gui->unlock_window();
-				lock_window("CWindowGUI::keypress_event 8");
-				result = 1;
-			}
-			break;
+			mwindow->gui->unlock_window();
+			lock_window("CWindowGUI::keypress_event 6");
+ 			result = 1;
+		}
+		break;
 
-		case RIGHT:
-			if( !ctrl_down() ) {
-				int alt_down = this->alt_down();
-				int shift_down = this->shift_down();
-				unlock_window();
-				stop_transport(0);
-				mwindow->gui->lock_window("CWindowGUI::keypress_event 8");
-				if( alt_down )
-					mwindow->next_edit_handle(shift_down);
-				else
-					mwindow->move_right();
-				mwindow->gui->unlock_window();
-				lock_window("CWindowGUI::keypress_event 9");
-				result = 1;
-			}
-			break;
+	case ',':
+		if( !ctrl_down() && !alt_down() ) {
+			unlock_window();
+			stop_transport(0);
+			mwindow->gui->lock_window("CWindowGUI::keypress_event 7");
+			mwindow->move_left();
+			mwindow->gui->unlock_window();
+			lock_window("CWindowGUI::keypress_event 8");
+			result = 1;
+		}
+		break;
 
-		case '.':
-			if( !ctrl_down() && !alt_down() ) {
-				unlock_window();
-				stop_transport(0);
-				mwindow->gui->lock_window("CWindowGUI::keypress_event 10");
+	case RIGHT:
+		if( !ctrl_down() ) {
+			int alt_down = this->alt_down();
+			int shift_down = this->shift_down();
+			unlock_window();
+			stop_transport(0);
+			mwindow->gui->lock_window("CWindowGUI::keypress_event 8");
+			if( alt_down )
+				mwindow->next_edit_handle(shift_down);
+			else
 				mwindow->move_right();
-				mwindow->gui->unlock_window();
-				lock_window("CWindowGUI::keypress_event 11");
-				result = 1;
-			}
-			break;
+			mwindow->gui->unlock_window();
+			lock_window("CWindowGUI::keypress_event 9");
+			result = 1;
+		}
+		break;
 
-		case KEY_F1: if( shift_down() ) { mwindow->toggle_camera_xyz();  break; }
-				cwindow_operation = CWINDOW_PROTECT;	break;
-		case KEY_F2: if( shift_down() ) { mwindow->toggle_projector_xyz();  break; }
-				cwindow_operation = CWINDOW_ZOOM;	break;
+	case '.':
+		if( !ctrl_down() && !alt_down() ) {
+			unlock_window();
+			stop_transport(0);
+			mwindow->gui->lock_window("CWindowGUI::keypress_event 10");
+			mwindow->move_right();
+			mwindow->gui->unlock_window();
+			lock_window("CWindowGUI::keypress_event 11");
+			result = 1;
+		}
+		break;
+	}
+
+	if( !result && !ctrl_down() ) {
+		switch( get_keypress() ) {
+		case KEY_F1:
+			if( shift_down() ) {
+				mwindow->toggle_camera_xyz();  result = 1;
+			}
+			else
+				cwindow_operation = CWINDOW_PROTECT;
+			break;
+		case KEY_F2:
+			if( shift_down() ) {
+				mwindow->toggle_projector_xyz();  result = 1;
+			}
+			else
+				cwindow_operation = CWINDOW_ZOOM;
+			break;
+		}
+	}
+	if( !result && cwindow_operation < 0 && !ctrl_down() && !shift_down() ) {
+		switch( get_keypress() ) {
 		case KEY_F3:	cwindow_operation = CWINDOW_MASK;	break;
 		case KEY_F4:	cwindow_operation = CWINDOW_RULER;	break;
 		case KEY_F5:	cwindow_operation = CWINDOW_CAMERA;	break;
@@ -578,8 +598,9 @@ int CWindowGUI::keypress_event()
 		case KEY_F8:	cwindow_operation = CWINDOW_EYEDROP;	break;
 		case KEY_F9:	cwindow_operation = CWINDOW_TOOL_WINDOW; break;
 		case KEY_F10:	cwindow_operation = CWINDOW_TITLESAFE;	break;
-		case KEY_F11:	canvas->reset_camera();			break;
-		case KEY_F12:	canvas->reset_projector();		break;
+		case KEY_F11:	canvas->reset_camera();	   result = 1;	break;
+		case KEY_F12:	canvas->reset_projector(); result = 1;	break;
+		}
 	}
 
 	if( cwindow_operation >= 0 ) {
@@ -587,7 +608,8 @@ int CWindowGUI::keypress_event()
 		result = 1;
 	}
 
-	if(!result) result = transport->keypress_event();
+	if( !result )
+		result = transport->keypress_event();
 
 	return result;
 }

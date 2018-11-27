@@ -44,6 +44,8 @@ class KeyframeCurveTypeItem;
 class SplitX;
 class SplitY;
 class MixerViewer;
+class LoadLayoutItem;
+class LoadLayout;
 
 
 #include "arraylist.h"
@@ -66,6 +68,9 @@ class MixerViewer;
 
 #define TOTAL_LOADS 10      // number of files to cache
 #define TOTAL_EFFECTS 10     // number of effects to cache
+
+#define LAYOUT_LOAD 0
+#define LAYOUT_SAVE 1
 
 class MainMenu : public BC_MenuBar
 {
@@ -148,6 +153,8 @@ public:
 	SplitX *split_x;
 	SplitY *split_y;
 	MixerViewer *mixer_viewer;
+	LoadLayout *load_layout;
+	LoadLayout *save_layout;
 };
 
 // ========================================= edit
@@ -703,6 +710,27 @@ public:
 	MixerViewer(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
+};
+
+
+class LoadLayoutItem : public BC_MenuItem
+{
+public:
+	LoadLayoutItem(LoadLayout *load_layout, const char *text, int no, int hotkey);
+	int handle_event();
+
+	int no;
+	LoadLayout *load_layout;
+};
+
+class LoadLayout : public BC_MenuItem
+{
+public:
+	LoadLayout(MWindow *mwindow, const char *text, int action);
+	void create_objects();
+
+	MWindow *mwindow; 
+	int action;
 };
 
 #endif

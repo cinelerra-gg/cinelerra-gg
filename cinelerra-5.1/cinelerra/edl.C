@@ -1638,3 +1638,22 @@ double EDL::get_cursor_position(int cursor_x, int pane_no)
 			local_session->zoom_sample / session->sample_rate;
 }
 
+int EDL::in_use(Indexable *indexable)
+{
+	for( Track *track=tracks->first; track; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			Indexable *idxbl = (Indexable *)edit->asset;
+			if( !idxbl ) idxbl = (Indexable *)edit->nested_edl;
+			if( !idxbl ) continue;
+			if( idxbl->id == indexable->id ) return 1;
+			if( !indexable->is_asset != !idxbl->is_asset ) continue;
+			if( !strcmp(idxbl->path, indexable->path) ) return 1;
+		}
+	}
+	for( int i=0; i<clips.size(); ++i )
+		if( clips[i]->in_use(indexable) ) return 1;
+	for( int i=0; i<nested_edls.size(); ++i )
+		if( nested_edls[i]->in_use(indexable) ) return 1;
+	return 0;
+}
+

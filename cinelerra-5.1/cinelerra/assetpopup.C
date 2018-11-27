@@ -404,6 +404,11 @@ void AssetListMenu::create_objects()
 {
 	add_item(load_file = new AssetPopupLoadFile(mwindow, gui));
 	add_item(format = new AWindowListFormat(mwindow, gui));
+	add_item(select_used = new AssetSelectUsed(mwindow, gui));
+	BC_SubMenu *submenu;
+	select_used->add_submenu(submenu = new BC_SubMenu());
+	submenu->add_submenuitem(new AssetSelectUsedItem(select_used, _("Used"), SELECT_USED));
+	submenu->add_submenuitem(new AssetSelectUsedItem(select_used, _("Unused"), SELECT_UNUSED));
 	add_item(new AWindowListSort(mwindow, gui));
 	add_item(new AssetListCopy(mwindow, gui));
 	add_item(new AssetListPaste(mwindow, gui));

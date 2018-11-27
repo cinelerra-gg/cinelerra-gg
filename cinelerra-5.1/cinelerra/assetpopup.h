@@ -217,6 +217,7 @@ public:
 	AWindowListFormat *format;
 	AssetSnapshot *asset_snapshot;
 	AssetGrabshot *asset_grabshot;
+	AssetSelectUsed *select_used;
 	int shots_displayed;
 };
 

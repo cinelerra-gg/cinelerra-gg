@@ -204,6 +204,7 @@ public:
 		int edit_labels /* = 1 */,
 		int edit_plugins,
 		int edit_autos);
+	int in_use(Indexable *indexable);
 	void remove_from_project(ArrayList<Indexable*> *assets);
 	void remove_from_project(ArrayList<EDL*> *clips);
 	int blade(double position);

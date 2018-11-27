@@ -484,7 +484,7 @@ int FFStream::write_packet(FFPacket &pkt)
 int FFStream::encode_frame(AVFrame *frame)
 {
 	int pkts = 0, ret = 0;
-	for( int retry=100; --retry>=0; ) {
+	for( int retry=MAX_RETRY; --retry>=0; ) {
 		if( frame || !pkts )
 			ret = avcodec_send_frame(avctx, frame);
 		if( !ret && frame ) return pkts;

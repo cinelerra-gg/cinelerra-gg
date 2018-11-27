@@ -2856,6 +2856,39 @@ void MWindow::show_lwindow()
 	gui->mainmenu->show_lwindow->set_checked(1);
 }
 
+void MWindow::restore_windows()
+{
+	if( !session->show_vwindow ) {
+		for( int i=0, n=vwindows.size(); i<n; ++i ) {
+			VWindow *vwindow = vwindows[i];
+			if( !vwindow ) continue;
+			vwindow->gui->close(0);
+		}
+	}
+	else
+		show_vwindow();
+
+	if( !session->show_awindow )
+		awindow->gui->close(0);
+	else
+		show_awindow();
+
+	if( !session->show_cwindow )
+		cwindow->gui->close(0);
+	else
+		show_cwindow();
+
+	if( !session->show_gwindow )
+		gwindow->gui->close(0);
+	else
+		show_gwindow();
+
+	if( !session->show_lwindow )
+		lwindow->gui->close(0);
+	else
+		show_lwindow();
+}
+
 int MWindow::tile_windows(int window_config)
 {
 	int need_reload = 0;

@@ -603,3 +603,31 @@ void MainSession::update_clip_number()
 	clip_number = clip_no+1;
 }
 
+int MainSession::load_file(const char *path)
+{
+	int ret = 1;
+	FILE *fp = fopen(path,"r");
+	if( fp ) {
+		BC_Hash defaults;
+		defaults.load_file(fp);
+		load_defaults(&defaults);
+		fclose(fp);
+		ret = 0;
+	}
+	return ret;
+}
+
+int MainSession::save_file(const char *path)
+{
+	int ret = 1;
+	FILE *fp = fopen(path,"w");
+	if( fp ) {
+		BC_Hash defaults;
+		save_defaults(&defaults);
+		defaults.save_file(fp);
+		fclose(fp);
+		ret = 0;
+	}
+	return ret;
+}
+

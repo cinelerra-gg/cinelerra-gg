@@ -2937,3 +2937,47 @@ int AWindowListSort::handle_event()
 	return 1;
 }
 
+AssetSelectUsedItem::AssetSelectUsedItem(AssetSelectUsed *select_used, const char *text, int action)
+ : BC_MenuItem(text)
+{
+	this->select_used = select_used;
+	this->action = action;
+}
+
+int AssetSelectUsedItem::handle_event()
+{
+	MWindow *mwindow = select_used->mwindow;
+	AWindowGUI *gui = select_used->gui;
+	AWindowAssets *asset_list = gui->asset_list;
+	ArrayList<BC_ListBoxItem*> *data = gui->displayed_assets;
+	asset_list->set_all_selected(data, 0);
+
+	for( int i = 0; i < data->total; i++ ) {
+		AssetPicon *picon = (AssetPicon*)data->values[i];
+		Indexable *idxbl = picon->indexable ? picon->indexable :
+		    picon->edl ? picon->edl->get_proxy_asset() : 0;
+		int used = idxbl && mwindow->edl->in_use(idxbl) ? 1 : 0;
+		int selected = 0;
+		switch( action ) {
+		case SELECT_USED:    selected = used;	break;
+		case SELECT_UNUSED:  selected = !used;	break;
+		}
+		asset_list->set_selected(data, i, selected);
+	}
+
+	int asset_xposition = asset_list->get_xposition();
+	int asset_yposition = asset_list->get_yposition();
+	asset_list->update(gui->displayed_assets, gui->asset_titles,
+		mwindow->edl->session->asset_columns, ASSET_COLUMNS,
+		asset_xposition, asset_yposition, -1, 0);
+	asset_list->center_selection();
+	return 1;
+}
+
+AssetSelectUsed::AssetSelectUsed(MWindow *mwindow, AWindowGUI *gui)
+ : BC_MenuItem(_("Select used"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+

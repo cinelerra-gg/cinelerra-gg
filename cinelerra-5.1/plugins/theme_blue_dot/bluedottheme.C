@@ -1007,6 +1007,11 @@ void BlueDotTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mcanvas_w = w;
 	mcanvas_h = patchbay_h;
 //COPIED START
+        control_pixels = (mcanvas_w * control_pixels) / 1000;
+        pane_w = get_image_set("xpane")[0]->get_w();
+        pane_h = get_image_set("ypane")[0]->get_h();
+        pane_x = mcanvas_x + mcanvas_w;
+        pane_y = mcanvas_y + mcanvas_h;
 	mhscroll_x = 0;
 	mhscroll_y = mzoom_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
 	mhscroll_w = w - BC_ScrollBar::get_span(SCROLL_VERT);

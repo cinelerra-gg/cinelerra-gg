@@ -220,10 +220,12 @@ Edit* Edits::insert_new_edit(int64_t position)
 {
 //printf("Edits::insert_new_edit 1\n");
 	Edit *current = split_edit(position);
-	if(current) current = PREVIOUS;
 
 //printf("Edits::insert_new_edit 1\n");
 	Edit *new_edit = create_edit();
+	if( current ) new_edit->hard_right = current->hard_left;
+	if( current ) current = PREVIOUS;
+	if( current ) new_edit->hard_left = current->hard_right;
 //printf("Edits::insert_new_edit 1\n");
 	insert_after(current, new_edit);
 	new_edit->startproject = position;
@@ -409,12 +411,14 @@ int Edits::optimize()
 				int64_t current_start = current->startproject;
 				int64_t next_end = next_edit->startproject + next_edit->length;
 				current->length = next_end - current_start;
+				current->hard_right = next_edit->hard_right;
 				remove(next_edit);
 				result = 1;
 			}
 		}
 
-		if( last && last->silence() && !last->transition ) {
+		if( last && last->silence() &&
+		    !last->transition && !last->hard_left && !last->hard_right ) {
 			delete last;
 			result = 1;
 		}
@@ -800,7 +804,7 @@ void Edits::paste_silence(int64_t start, int64_t end)
 	Edit *new_edit = editof(start, PLAY_FORWARD, 0);
 	if (!new_edit) return;
 
-	if( !new_edit->silence() ) {
+	if( !new_edit->silence() || new_edit->hard_right ) {
 		new_edit = insert_new_edit(start);
 		new_edit->length = end - start;
 	}

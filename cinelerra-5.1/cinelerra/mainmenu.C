@@ -36,6 +36,7 @@
 #include "dvdcreate.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "floatauto.h"
@@ -272,9 +273,15 @@ void MainMenu::create_objects()
 	windowmenu->add_item(split_y = new SplitY(mwindow));
 	windowmenu->add_item(mixer_viewer = new MixerViewer(mwindow));
 	windowmenu->add_item(new TileMixers(mwindow));
-	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,_("Ctrl-P"),'p'));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile left"),0));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile right"),1));
+	windowmenu->add_item(new BC_MenuItem("-"));
+
+	windowmenu->add_item(new TileWindows(mwindow,_("Default positions"),-1,_("Ctrl-P"),'p'));
+	windowmenu->add_item(load_layout = new LoadLayout(mwindow, _("Load layout..."),LAYOUT_LOAD));
+	load_layout->create_objects();
+	windowmenu->add_item(save_layout = new LoadLayout(mwindow, _("Save layout..."),LAYOUT_SAVE));
+	save_layout->create_objects();
 }
 
 int MainMenu::load_defaults(BC_Hash *defaults)
@@ -1566,5 +1573,60 @@ int TileMixers::handle_event()
 {
 	mwindow->tile_mixers();
 	return 1;
+}
+
+
+LoadLayoutItem::LoadLayoutItem(LoadLayout *load_layout, const char *text, int no, int hotkey)
+ : BC_MenuItem(text, "", hotkey)
+{
+	this->no = no;
+	this->load_layout = load_layout;
+	if( hotkey ) {
+		char hot_txt[BCSTRLEN];
+		sprintf(hot_txt, _("Ctl+Shift+F%d"), hotkey-KEY_F1+1);
+		set_ctrl();  set_shift();
+		set_hotkey_text(hot_txt);
+	}
+}
+
+int LoadLayoutItem::handle_event()
+{
+	char layout_path[BCTEXTLEN];
+	snprintf(layout_path, sizeof(layout_path), "%s/" LAYOUT_FILE,
+		File::get_config_path(), no);
+	MWindow *mwindow = load_layout->mwindow;
+	switch( load_layout->action ) {
+	case LAYOUT_LOAD:
+		mwindow->session->load_file(layout_path);
+		break;
+	case LAYOUT_SAVE:
+		mwindow->session->save_file(layout_path);
+		break;
+	}
+	mwindow->restore_windows();
+	mwindow->gui->default_positions();
+	mwindow->save_defaults();
+	return 1;
+}
+
+LoadLayout::LoadLayout(MWindow *mwindow, const char *text, int action)
+ : BC_MenuItem(text)
+{
+	this->mwindow = mwindow;
+	this->action = action;
+}
+
+void LoadLayout::create_objects()
+{
+	BC_SubMenu *layout_submenu = new BC_SubMenu();
+	add_submenu(layout_submenu);
+	for( int i=1; i<=4; ++i ) {
+		char text[BCSTRLEN];
+		sprintf(text, _("Layout %d"), i);
+		LoadLayoutItem *load_layout_item =
+			new LoadLayoutItem(this, text, i,
+				action==LAYOUT_LOAD ? KEY_F1-1+i : 0);
+		layout_submenu->add_submenuitem(load_layout_item);
+	}
 }
 

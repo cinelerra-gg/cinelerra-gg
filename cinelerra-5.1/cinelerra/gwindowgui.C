@@ -498,11 +498,11 @@ int GWindowGUI::keypress_event()
 {
 	switch(get_keypress()) {
 	case KEY_F1:
-		if( shift_down() )
+		if( !ctrl_down() && shift_down() )
 			toggle_camera_xyz();
 		break;
 	case KEY_F2:
-		if( shift_down() )
+		if( !ctrl_down() && shift_down() )
 			toggle_projector_xyz();
 		break;
 	case 'w':

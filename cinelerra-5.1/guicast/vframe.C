@@ -874,6 +874,28 @@ int VFrame::write_png(const char *path)
 	return 0;
 }
 
+void VFrame::write_ppm(VFrame *vfrm, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	char fn[BCTEXTLEN];
+	vsnprintf(fn, sizeof(fn), fmt, ap);
+	va_end(ap);
+	FILE *fp = fopen(fn,"w");
+	if( !fp ) { perror("write_ppm"); return; }
+	VFrame *frm = vfrm;
+	if( frm->get_color_model() != BC_RGB888 ) {
+		frm = new VFrame(frm->get_w(), frm->get_h(), BC_RGB888);
+		frm->transfer_from(vfrm);
+	}
+	int w = frm->get_w(), h = frm->get_h();
+	fprintf(fp,"P6\n%d %d\n255\n",w,h);
+	unsigned char **rows = frm->get_rows();
+	for( int i=0; i<h; ++i ) fwrite(rows[i],3,w,fp);
+	fclose(fp);
+	if( frm != vfrm ) delete frm;
+}
+
 
 #define ZERO_YUV(components, type, max) \
 { \

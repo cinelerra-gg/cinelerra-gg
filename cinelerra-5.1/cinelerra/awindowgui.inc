@@ -49,5 +49,7 @@ class AddPluginItem;
 class AVIconDrawing;
 class AWindowListFormat;
 class AWindowListSort;
+class AssetSelectUsedItem;
+class AssetSelectUsed;
 
 #endif

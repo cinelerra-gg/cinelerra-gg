@@ -26,6 +26,7 @@
 #define DEAMON_PORT 400
 #define BACKUP_FILE "backup.xml"
 #define BACKUP_FILE1 "backup.prev"
+#define LAYOUT_FILE "layout%d_rc"
 #define DEFAULT_LV2_PATH CINDAT_DIR "/lv2"
 #define FFMPEG_EARLY_TIP _("Currently: Try FFMpeg first\n   Click to: Try FFMpeg last")
 #define FFMPEG_LATE_TIP  _("Currently: Try FFMpeg last\n   Click to: Try FFMpeg first")

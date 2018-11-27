@@ -112,8 +112,11 @@ public:
 		int data_size,
 		int data_allocated);
 
-// Write a PNG for debugging
+// Write a PNG/PPM for debugging
 	int write_png(const char *path);
+	static void write_ppm(VFrame *vfrm, const char *fmt, ...);
+	void write_ppm(const char *path) { write_ppm(this, "%s", path); }
+//static int n = 0; write_ppm(vframe, "/tmp/data/f%05d", ++n);
 
 // if frame points to the same data as this return 1
 	int equals(VFrame *frame);

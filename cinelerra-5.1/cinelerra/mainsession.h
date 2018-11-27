@@ -55,6 +55,8 @@ public:
 	void boundaries();
 	Track *drag_handle_track();
 	void update_clip_number();
+	int load_file(const char *path);
+	int save_file(const char *path);
 
 // For drag and drop events
 // The entire track where the dropped asset is going to go

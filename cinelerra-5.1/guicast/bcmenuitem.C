@@ -29,6 +29,7 @@
 #include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "bccolors.h"
+#include "cstrdup.h"
 
 #include <string.h>
 
@@ -44,6 +45,8 @@
 
 BC_MenuItem::BC_MenuItem(const char *text, const char *hotkey_text, int hotkey)
 {
+	this->text = 0;
+	this->hotkey_text = 0;
 	reset();
 
 	if(text) set_text(text);
@@ -74,10 +77,8 @@ BC_MenuItem::~BC_MenuItem()
 
 void BC_MenuItem::reset()
 {
-	text = new char[1];
-	hotkey_text = new char[1];
-	text[0] = 0;
-	hotkey_text[0] = 0;
+	set_text("");
+	set_hotkey_text("");
 	icon = 0;
 }
 
@@ -112,16 +113,14 @@ BC_Pixmap* BC_MenuItem::get_icon()
 
 void BC_MenuItem::set_text(const char *text)
 {
-	if(this->text) delete [] this->text;
-	this->text = new char[strlen(text) + 1];
-	strcpy(this->text, text);
+	delete [] this->text;
+	this->text = cstrdup(text);
 }
 
 void BC_MenuItem::set_hotkey_text(const char *text)
 {
-	if(this->hotkey_text) delete [] this->hotkey_text;
-	this->hotkey_text = new char[strlen(text) + 1];
-	strcpy(this->hotkey_text, text);
+	delete [] this->hotkey_text;
+	this->hotkey_text = cstrdup(text);
 }
 
 int BC_MenuItem::deactivate_submenus(BC_MenuPopup *exclude)
