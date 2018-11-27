@@ -21,6 +21,7 @@
 
 #include "edl.h"
 #include "edlsession.h"
+#include "keys.h"
 #include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
@@ -112,14 +113,22 @@ int LevelWindowGUI::close_event()
 
 int LevelWindowGUI::keypress_event()
 {
-	if(get_keypress() == 'w' || get_keypress() == 'W')
-	{
+	switch( get_keypress() ) {
+	case 'w':
+	case 'W':
 		close_event();
 		return 1;
+	case KEY_F1:
+	case KEY_F2:
+	case KEY_F3:
+	case KEY_F4:
+		if( ctrl_down() && shift_down() ) {
+			resend_event(mwindow->gui);
+			return 1;
+		}
 	}
 	return 0;
 }
-
 
 int LevelWindowGUI::reset_over()
 {

@@ -344,35 +344,44 @@ int VWindowGUI::close_event()
 int VWindowGUI::keypress_event()
 {
 	int result = 0;
-	switch(get_keypress())
-	{
-		case 'w':
-		case 'W':
-			close_event();
+	switch( get_keypress() ) {
+	case 'w':
+	case 'W':
+		close_event();
+		result = 1;
+		break;
+	case 'z':
+		mwindow->undo_entry(this);
+		break;
+	case 'Z':
+		mwindow->redo_entry(this);
+		break;
+	case 'f':
+		unlock_window();
+		if(mwindow->session->vwindow_fullscreen)
+			canvas->stop_fullscreen();
+		else
+			canvas->start_fullscreen();
+		lock_window("VWindowGUI::keypress_event 1");
+		break;
+	case ESC:
+		unlock_window();
+		if(mwindow->session->vwindow_fullscreen)
+			canvas->stop_fullscreen();
+		lock_window("VWindowGUI::keypress_event 2");
+		break;
+	case KEY_F1:
+	case KEY_F2:
+	case KEY_F3:
+	case KEY_F4:
+		if( ctrl_down() && shift_down() ) {
+			resend_event(mwindow->gui);
 			result = 1;
 			break;
-		case 'z':
-			mwindow->undo_entry(this);
-			break;
-		case 'Z':
-			mwindow->redo_entry(this);
-			break;
-		case 'f':
-			unlock_window();
-			if(mwindow->session->vwindow_fullscreen)
-				canvas->stop_fullscreen();
-			else
-				canvas->start_fullscreen();
-			lock_window("VWindowGUI::keypress_event 1");
-			break;
-		case ESC:
-			unlock_window();
-			if(mwindow->session->vwindow_fullscreen)
-				canvas->stop_fullscreen();
-			lock_window("VWindowGUI::keypress_event 2");
-			break;
+		}
 	}
-	if(!result) result = transport->keypress_event();
+	if( !result )
+		result = transport->keypress_event();
 	return result;
 }
 

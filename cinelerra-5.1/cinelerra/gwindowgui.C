@@ -496,15 +496,29 @@ int GWindowGUI::close_event()
 
 int GWindowGUI::keypress_event()
 {
-	switch(get_keypress()) {
-	case KEY_F1:
-		if( !ctrl_down() && shift_down() )
+	if( ctrl_down() && shift_down() ) {
+		switch(get_keypress()) {
+		case KEY_F1:
+		case KEY_F2:
+		case KEY_F3:
+		case KEY_F4:
+			if( ctrl_down() && shift_down() ) {
+				resend_event(mwindow->gui);
+				return 1;
+			}
+		}
+	}
+	else if( !ctrl_down() && shift_down() ) {
+		switch(get_keypress()) {
+		case KEY_F1:
 			toggle_camera_xyz();
-		break;
-	case KEY_F2:
-		if( !ctrl_down() && shift_down() )
+			return 1;
+		case KEY_F2:
 			toggle_projector_xyz();
-		break;
+			return 1;
+		}
+	}
+	switch(get_keypress()) {
 	case 'w':
 	case 'W':
 	case '0':

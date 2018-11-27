@@ -1,17 +1,23 @@
-Cinelerra Unify (GG) continuously merged/enriched from the
+Cinelerra-GG Infinity continuously merged/enriched from the
   original Heroine Virtual of Adam Williams which does not
   support many modern formats, and now contains CV mods
   provided over prior years from the Community Version.
-Email cinelerra@lists.cinelerra-cv.org 4 help.
+Email cin@lists.cinelerra-gg.org 4 help.
 For usage help, refer to the following:
   https://cinelerra-cv.org/docs/cinelerra_cv_manual_en.html
-  https://cinelerra-cv.org/five/Features5.pdf
+  https://cinelerra-gg.org/downloads/Features.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 Cinfinity icons selected in Preferences Sam (CC BY 3.0,
   https://creativecommons.org/licenses/by/3.0/)
 Neophyte theme selected in Preferences by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+Nov 2018 New features of note:
+  FFmpeg is now at version 4.1 with a few more plugins.
+  Sketcher plugin newly added to "pencil in" lines/curves.
+  Delete shortcut in Resources to "remove from project".
+  Window layout save and load feature added - total of 4.
+  Select asset popup in Resources to highlight used/unused.
 Oct 2018 New features of note:
   Title plugin has unlimited number of characters allowed.
   Histogram Bezier bug fixes and some improvements applied.

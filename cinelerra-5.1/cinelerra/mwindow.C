@@ -2901,6 +2901,27 @@ void MWindow::restore_windows()
 	}
 	else if( session->show_lwindow && lwindow->gui->is_hidden() )
 		show_lwindow();
+
+	gui->focus();
+}
+
+void MWindow::save_layout(int no)
+{
+	char layout_path[BCTEXTLEN];
+	snprintf(layout_path, sizeof(layout_path), "%s/" LAYOUT_FILE,
+		File::get_config_path(), no);
+	session->save_file(layout_path);
+}
+
+void MWindow::load_layout(int no)
+{
+	char layout_path[BCTEXTLEN];
+	snprintf(layout_path, sizeof(layout_path), "%s/" LAYOUT_FILE,
+		File::get_config_path(), no);
+	session->load_file(layout_path);
+	restore_windows();
+	gui->default_positions();
+	save_defaults();
 }
 
 int MWindow::tile_windows(int window_config)

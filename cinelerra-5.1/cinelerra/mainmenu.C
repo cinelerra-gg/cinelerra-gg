@@ -1583,7 +1583,7 @@ LoadLayoutItem::LoadLayoutItem(LoadLayout *load_layout, const char *text, int no
 	this->load_layout = load_layout;
 	if( hotkey ) {
 		char hot_txt[BCSTRLEN];
-		sprintf(hot_txt, _("Ctl+Shift+F%d"), hotkey-KEY_F1+1);
+		sprintf(hot_txt, _("CtlSft+F%d"), hotkey-KEY_F1+1);
 		set_ctrl();  set_shift();
 		set_hotkey_text(hot_txt);
 	}
@@ -1591,21 +1591,15 @@ LoadLayoutItem::LoadLayoutItem(LoadLayout *load_layout, const char *text, int no
 
 int LoadLayoutItem::handle_event()
 {
-	char layout_path[BCTEXTLEN];
-	snprintf(layout_path, sizeof(layout_path), "%s/" LAYOUT_FILE,
-		File::get_config_path(), no);
 	MWindow *mwindow = load_layout->mwindow;
 	switch( load_layout->action ) {
 	case LAYOUT_LOAD:
-		mwindow->session->load_file(layout_path);
+		mwindow->load_layout(no);
 		break;
 	case LAYOUT_SAVE:
-		mwindow->session->save_file(layout_path);
+		mwindow->save_layout(no);
 		break;
 	}
-	mwindow->restore_windows();
-	mwindow->gui->default_positions();
-	mwindow->save_defaults();
 	return 1;
 }
 

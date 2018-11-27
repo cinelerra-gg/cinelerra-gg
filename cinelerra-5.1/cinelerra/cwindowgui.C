@@ -570,6 +570,17 @@ int CWindowGUI::keypress_event()
 		break;
 	}
 
+	if( !result && cwindow_operation < 0 && ctrl_down() && shift_down() ) {
+		switch( get_keypress() ) {
+		case KEY_F1:
+		case KEY_F2:
+		case KEY_F3:
+		case KEY_F4:
+			resend_event(mwindow->gui);
+			result = 1;
+			break;
+		}
+	}
 	if( !result && !ctrl_down() ) {
 		switch( get_keypress() ) {
 		case KEY_F1:

@@ -1488,6 +1488,15 @@ int AWindowGUI::keypress_event()
 			mwindow->session->drag_clips);
 		lock_window("AWindowGUI::keypress_event 2");
 		return 1;
+	case KEY_F1:
+	case KEY_F2:
+	case KEY_F3:
+	case KEY_F4:
+		if( shift_down() && ctrl_down() ) {
+			resend_event(mwindow->gui);
+			return 1;
+		}
+		break;
 	}
 	return 0;
 }
@@ -2950,19 +2959,23 @@ int AssetSelectUsedItem::handle_event()
 	AWindowGUI *gui = select_used->gui;
 	AWindowAssets *asset_list = gui->asset_list;
 	ArrayList<BC_ListBoxItem*> *data = gui->displayed_assets;
-	asset_list->set_all_selected(data, 0);
 
-	for( int i = 0; i < data->total; i++ ) {
-		AssetPicon *picon = (AssetPicon*)data->values[i];
-		Indexable *idxbl = picon->indexable ? picon->indexable :
-		    picon->edl ? picon->edl->get_proxy_asset() : 0;
-		int used = idxbl && mwindow->edl->in_use(idxbl) ? 1 : 0;
-		int selected = 0;
-		switch( action ) {
-		case SELECT_USED:    selected = used;	break;
-		case SELECT_UNUSED:  selected = !used;	break;
+	switch( action ) {
+	case SELECT_ALL:
+	case SELECT_NONE:
+		asset_list->set_all_selected(data, action==SELECT_ALL ? 1 : 0);
+		break;
+	case SELECT_USED:
+	case SELECT_UNUSED:
+		asset_list->set_all_selected(data, 0);
+		for( int i = 0; i < data->total; i++ ) {
+			AssetPicon *picon = (AssetPicon*)data->values[i];
+			Indexable *idxbl = picon->indexable ? picon->indexable :
+			    picon->edl ? picon->edl->get_proxy_asset() : 0;
+			int used = idxbl && mwindow->edl->in_use(idxbl) ? 1 : 0;
+			asset_list->set_selected(data, i, action==SELECT_USED ? used : !used);
 		}
-		asset_list->set_selected(data, i, selected);
+		break;
 	}
 
 	int asset_xposition = asset_list->get_xposition();
@@ -2975,7 +2988,7 @@ int AssetSelectUsedItem::handle_event()
 }
 
 AssetSelectUsed::AssetSelectUsed(MWindow *mwindow, AWindowGUI *gui)
- : BC_MenuItem(_("Select used"))
+ : BC_MenuItem(_("Select"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

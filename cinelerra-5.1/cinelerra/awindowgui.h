@@ -49,8 +49,10 @@
 #include "samples.inc"
 #include "vicon.h"
 
-#define SELECT_USED 0
-#define SELECT_UNUSED 1
+#define SELECT_ALL 0
+#define SELECT_USED 1
+#define SELECT_UNUSED 2
+#define SELECT_NONE 3
 
 class AWindowFolderItem : public BC_ListBoxItem
 {
