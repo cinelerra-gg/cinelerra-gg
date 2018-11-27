@@ -2861,31 +2861,45 @@ void MWindow::restore_windows()
 	if( !session->show_vwindow ) {
 		for( int i=0, n=vwindows.size(); i<n; ++i ) {
 			VWindow *vwindow = vwindows[i];
-			if( !vwindow ) continue;
-			vwindow->gui->close(0);
+			if( !vwindow || !vwindow->is_running() ) continue;
+			vwindow->gui->lock_window("MWindow::restore_windows");
+			vwindow->gui->close(1);
+			vwindow->gui->unlock_window();
 		}
 	}
 	else
 		show_vwindow();
 
-	if( !session->show_awindow )
-		awindow->gui->close(0);
-	else
+	if( !session->show_awindow && !awindow->gui->is_hidden() ) {
+		awindow->gui->lock_window("MWindow::restore_windows");
+		awindow->gui->close_event();
+		awindow->gui->unlock_window();
+	}
+	else if( session->show_awindow && awindow->gui->is_hidden() )
 		show_awindow();
 
-	if( !session->show_cwindow )
-		cwindow->gui->close(0);
-	else
-		show_cwindow();
+	if( !session->show_cwindow && !cwindow->gui->is_hidden() ) {
+		cwindow->gui->lock_window("MWindow::restore_windows");
+		cwindow->hide_window();
+		cwindow->gui->unlock_window();
+	}
+	else if( session->show_cwindow && cwindow->gui->is_hidden() )
+		cwindow->show_window();
 
-	if( !session->show_gwindow )
-		gwindow->gui->close(0);
-	else
+	if( !session->show_gwindow && !gwindow->gui->is_hidden() ) {
+		gwindow->gui->lock_window("MWindow::restore_windows");
+		gwindow->gui->close_event();
+		gwindow->gui->unlock_window();
+	}
+	else if( session->show_gwindow && gwindow->gui->is_hidden() )
 		show_gwindow();
 
-	if( !session->show_lwindow )
-		lwindow->gui->close(0);
-	else
+	if( !session->show_lwindow && !lwindow->gui->is_hidden() ) {
+		lwindow->gui->lock_window("MWindow::restore_windows");
+		lwindow->gui->close_event();
+		lwindow->gui->unlock_window();
+	}
+	else if( session->show_lwindow && lwindow->gui->is_hidden() )
 		show_lwindow();
 }
 
