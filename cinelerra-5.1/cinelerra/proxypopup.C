@@ -308,6 +308,13 @@ ProxyListMenu::~ProxyListMenu()
 void ProxyListMenu::create_objects()
 {
 	add_item(format = new AWindowListFormat(mwindow, gui));
+	add_item(select_used = new AssetSelectUsed(mwindow, gui));
+	BC_SubMenu *submenu;
+	select_used->add_submenu(submenu = new BC_SubMenu());
+	submenu->add_submenuitem(new AssetSelectUsedItem(select_used, _("All"), SELECT_ALL));
+	submenu->add_submenuitem(new AssetSelectUsedItem(select_used, _("Used"), SELECT_USED));
+	submenu->add_submenuitem(new AssetSelectUsedItem(select_used, _("Unused"), SELECT_UNUSED));
+	submenu->add_submenuitem(new AssetSelectUsedItem(select_used, _("None"), SELECT_NONE));
 	add_item(new AWindowListSort(mwindow, gui));
 	update();
 }

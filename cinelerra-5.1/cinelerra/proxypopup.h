@@ -159,6 +159,7 @@ public:
 	void create_objects();
 	void update();
 	AWindowListFormat *format;
+	AssetSelectUsed *select_used;
 	MWindow *mwindow;
 	AWindowGUI *gui;
 };
