@@ -2007,6 +2007,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				break;
 			}
 			if( strcmp(cin_version, CINELERRA_VERSION) &&
+			    strcmp(cin_version, "Unify") &&
 			    strcmp(cin_version, "5.1") ) {
 				char string[BCTEXTLEN];
 				snprintf(string, sizeof(string),
