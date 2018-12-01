@@ -64,8 +64,8 @@ mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
 git clone --depth 1 $GITURL $PRGNAM-$VERSION
-#rsh host tar -C /mnt0 -cf - cinelerra5 | tar -xf -
-#mv cinelerra5 $PRGNAM-$VERSION
+#rsh host tar -C /mnt0 -cf - cinelerra-gg | tar -xf -
+#mv cinelerra-gg $PRGNAM-$VERSION
 cd $PRGNAM-$VERSION/cinelerra-5.1
 chown -R root:root .
 
