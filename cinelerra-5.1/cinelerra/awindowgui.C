@@ -40,6 +40,8 @@
 #include "cursors.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
+#include "edits.h"
+#include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "effectlist.h"
@@ -63,6 +65,7 @@
 #include "samples.h"
 #include "theme.h"
 #include "tracks.h"
+#include "track.h"
 #include "transportque.h"
 #include "vframe.h"
 #include "vicon.h"
@@ -291,6 +294,7 @@ void AssetVIconAudio::stop(int wait)
 
 void AssetVIcon::start_audio()
 {
+	if( playing_audio < 0 ) return;
 	picon->gui->vicon_audio->stop(0);
 	playing_audio = 1;
 	picon->gui->vicon_audio->start(this);
@@ -298,8 +302,88 @@ void AssetVIcon::start_audio()
 
 void AssetVIcon::stop_audio()
 {
-	picon->gui->vicon_audio->stop(0);
+	if( playing_audio > 0 )
+		picon->gui->vicon_audio->stop(0);
 	playing_audio = 0;
+}
+
+int AssetVIcon::popup_button_press(int x, int y)
+{
+	if( playing_audio >= 0 ) return 0;
+	VIconThread *vt = picon->gui->vicon_thread;
+	ViewPopup *view_win = vt->view_win;
+	if( !view_win || !view_win->is_event_win() ) return 0;
+	int view_w = view_win->get_w(), view_h = view_win->get_h();
+	MWindow *mwindow = picon->mwindow;
+	EDL *edl = mwindow->edl;
+	if( y < VIEW_POPUP_BAR_H ) {
+		Indexable *idxbl =
+			picon->indexable ? picon->indexable :
+			picon->edl ? picon->edl : 0;
+		if( !idxbl ) return 0;
+		double sample_rate = idxbl->get_sample_rate();
+		double audio_length = sample_rate > 0 && idxbl->have_audio() ?
+			idxbl->get_audio_samples() / sample_rate : 0;
+		double frame_rate = idxbl->get_frame_rate();
+		double video_length = frame_rate > 0 && idxbl->have_video() ?
+			idxbl->get_video_frames() / frame_rate : 0;
+		double idxbl_length = bmax(audio_length, video_length);
+		double pos = x * idxbl_length / view_w;
+		double start = 0, end = idxbl_length;
+		double lt = DBL_MAX, rt = DBL_MAX;
+		for( Track *track=edl->tracks->first; track!=0; track=track->next ) {
+			for( Edit *edit=track->edits->first; edit!=0; edit=edit->next ) {
+				Indexable *indexable = (Indexable *)edit->asset;
+				if( !indexable ) indexable = (Indexable *)edit->nested_edl;
+				if( !indexable ) continue;
+				if( indexable->id == idxbl->id ||
+				    (!indexable->is_asset == !idxbl->is_asset &&
+				     !strcmp(indexable->path, idxbl->path)) ) {
+					double start_pos = track->from_units(edit->startsource);
+					double end_pos = track->from_units(edit->startsource + edit->length);
+					double dlt = pos - start_pos, drt = end_pos - pos;
+					if( dlt >= 0 &&  dlt < lt ) { lt = dlt;  start = start_pos; }
+					else if( dlt < 0 && -dlt < rt ) { rt = -dlt;  end = start_pos; }
+					if( drt >= 0 &&  drt < rt ) { rt = drt;  end = end_pos; }
+					else if( drt < 0 && -drt < lt ) { lt = -drt; start = end_pos; }
+				}
+			}
+		}
+		mwindow->gui->lock_window("AssetVIcon::popup_button_press");
+		VWindow *vwindow = mwindow->get_viewer(1, 0);
+		vwindow->change_source(idxbl);
+		mwindow->gui->unlock_window();
+		EDL *vedl = vwindow->get_edl();
+		vedl->set_inpoint(start);
+		vedl->set_outpoint(end);
+		vedl->local_session->set_selectionstart(start);
+		vedl->local_session->set_selectionend(end);
+		vwindow->update_position(CHANGE_NONE, 0, 1, 0);
+		return 1;
+	}
+	return y < view_h-VIEW_POPUP_BAR_H ? 0 : popup_cursor_motion(x, y);
+}
+
+int AssetVIcon::popup_cursor_motion(int x, int y)
+{
+	if( playing_audio >= 0 ) return 0;
+	VIconThread *vt = picon->gui->vicon_thread;
+	ViewPopup *view_win = (ViewPopup *)vt->view_win;
+	if( !view_win || !view_win->is_event_win() ||
+	    !view_win->get_button_down() ) return 0;
+	int view_w = view_win->get_w(), view_h = view_win->get_h();
+	MWindow *mwindow = picon->mwindow;
+	EDL *edl = mwindow->edl;
+	if( y >= view_h-VIEW_POPUP_BAR_H ) {
+		double total_length = edl->tracks->total_length();
+		double pos = x * total_length / view_w;
+		mwindow->gui->lock_window("AssetVIcon::popup_cursor_motion");
+		mwindow->select_point(pos);
+		mwindow->zoom_sample(edl->local_session->zoom_sample);
+		mwindow->gui->unlock_window();
+		return 1;
+	}
+	return 0;
 }
 
 
@@ -447,14 +531,14 @@ void AssetPicon::draw_hue_bar(VFrame *frame, double duration)
 	}
 }
 
-void AssetPicon::draw_wave(VFrame *frame, double *dp, int len, int base_color, int line_color)
+void AssetPicon::draw_wave(VFrame *frame, double *dp, int len,
+		int base_color, int line_color, int x, int y, int w, int h)
 {
-	int w = frame->get_w(), h = frame->get_h();
-	int h1 = h-1, h2 = h/2, y = h2;
+	int h1 = h-1, h2 = h/2, iy = h2;
 	int rgb_color = frame->pixel_rgb;
-	for( int x=0,x1=0,x2=0; x<w; ++x,x1=x2 ) {
+	for( int ix=0,x1=0,x2=0; ix<w; ++ix,x1=x2 ) {
 		double min = *dp, max = min;
-		x2 = (len * (x+1))/w;
+		x2 = (len * (ix+1))/w;
 		for( int i=x1; i<x2; ++i ) {
 			double value = *dp++;
 			if( value < min ) min = value;
@@ -465,10 +549,10 @@ void AssetPicon::draw_wave(VFrame *frame, double *dp, int len, int base_color, i
 		int y1 = (int)(h2 - min*h2);  CLAMP(y1, 0,h1);
 		int y2 = (int)(h2 - max*h2);  CLAMP(y2, 0,h1);
 		frame->pixel_rgb = line_color;
-		frame->draw_line(x,y1, x,y2);
+		frame->draw_line(ix+x,y1+y, ix+x,y2+y);
 		frame->pixel_rgb = base_color;
-		frame->draw_line(x,y, x,y0);
-		y = y0;
+		frame->draw_line(ix+x,iy+y, ix+x,y0+y);
+		iy = y0;
 	}
 	frame->pixel_rgb = rgb_color;
 }
@@ -2293,6 +2377,7 @@ AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, in
 	this->gui = gui;
 	set_drag_scroll(0);
 	set_scroll_stretch(1, 1);
+	draw_func = 0;
 }
 
 AWindowAssets::~AWindowAssets()
@@ -2411,7 +2496,8 @@ int AWindowAssets::selection_changed()
 
 		deactivate_selection();
 	}
-	else if( gui->vicon_drawing && get_button_down() && get_buttonpress() == 1 &&
+	else if( gui->vicon_drawing && get_button_down() &&
+		 ( get_buttonpress() == 1 || get_buttonpress() == 2 ) &&
 		 ( mwindow->edl->session->awindow_folder == AW_MEDIA_FOLDER ||
 		   mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ||
 		   mwindow->edl->session->awindow_folder >= AWINDOW_USER_FOLDERS ) &&
@@ -2420,9 +2506,77 @@ int AWindowAssets::selection_changed()
 		if( !gui->vicon_thread->vicon  ) {
 			vicon = item->vicon;
 		}
-		gui->vicon_thread->set_view_popup(vicon);
+		if( vicon && get_buttonpress() == 2 ) {
+			vicon->playing_audio = -1;
+			draw_func = AWindowAssets::draw_vframe;
+		}
+		else
+			draw_func = 0;
+		gui->vicon_thread->set_view_popup(vicon, draw_func);
 	}
 	return 1;
+}
+
+void AWindowAssets::draw_vframe(BC_WindowBase *wdw, VFrame *vframe) 
+{
+	int y1 = VIEW_POPUP_BAR_H;
+	int y2 = wdw->get_h()-VIEW_POPUP_BAR_H;
+	wdw->set_color(BLACK);
+	wdw->draw_box(0,0,wdw->get_w(),wdw->get_h());
+	wdw->draw_vframe(vframe, 0,y1, wdw->get_w(),y2-y1);
+	ViewPopup *view_popup = (ViewPopup *)wdw;
+	VIconThread *vt = view_popup->vt;
+	AssetVIcon *vicon = (AssetVIcon *)vt->vicon;
+	AssetPicon *picon = (AssetPicon *)vicon->picon;
+	Indexable *idxbl =
+		picon->indexable ? picon->indexable :
+		picon->edl ? picon->edl : 0;
+	if( !idxbl ) return;
+	double sample_rate = idxbl->get_sample_rate();
+	double audio_length = sample_rate > 0 && idxbl->have_audio() ?
+		idxbl->get_audio_samples() / sample_rate : 0;
+	double frame_rate = idxbl->get_frame_rate();
+	double video_length = frame_rate > 0 && idxbl->have_video() ?
+		idxbl->get_video_frames() / frame_rate : 0;
+	double idxbl_length = bmax(audio_length, video_length);
+	if( !idxbl_length ) idxbl_length = 1;
+
+	EDL *edl = picon->mwindow->edl;
+	double total_length = edl->tracks->total_length();
+	if( !total_length ) total_length = 1;
+	for( Track *track=edl->tracks->first; track!=0; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit!=0; edit=edit->next ) {
+			Indexable *indexable = (Indexable *)edit->asset;
+			if( !indexable ) indexable = (Indexable *)edit->nested_edl;
+			if( !indexable ) continue;
+			if( indexable->id == idxbl->id ||
+			    (!indexable->is_asset == !idxbl->is_asset &&
+			     !strcmp(indexable->path, idxbl->path)) ) {
+				double pos1 = track->from_units(edit->startsource);
+				double pos2 = track->from_units(edit->startsource + edit->length);
+				double xscale = wdw->get_w() / idxbl_length;
+				int ex1 = pos1 * xscale, ex2 = pos2 * xscale;
+				wdw->set_color(WHITE);
+				wdw->draw_box(ex1,0, ex2-ex1,y1);
+				wdw->set_color(BLACK);
+				wdw->draw_line(ex1,0, ex1,y1);
+				wdw->draw_line(ex2,0, ex2,y1);
+				pos1 = track->from_units(edit->startproject);
+				pos2 = track->from_units(edit->startproject + edit->length);
+				xscale = wdw->get_w() / total_length;
+				int px1 = pos1 * xscale, px2 = pos2 * xscale;
+				wdw->set_color(RED);
+				wdw->draw_box(px1,y2, px2-px1,wdw->get_h()-y2);
+				wdw->set_color(BLACK);
+				wdw->draw_line(px1,y2, px1,wdw->get_h()-1);
+				wdw->draw_line(px2,y2, px2,wdw->get_h()-1);
+
+				wdw->set_color(YELLOW);
+				wdw->draw_line(ex1,y1, px1,y2);
+				wdw->draw_line(ex2,y1, px2,y2);
+			}
+		}
+	}
 }
 
 void AWindowAssets::draw_background()
@@ -2612,7 +2766,9 @@ int AWindowAssets::cursor_enter_event()
 
 int AWindowAssets::cursor_leave_event()
 {
-	gui->stop_vicon_drawing();
+	VIcon *vicon = gui->vicon_thread->vicon;
+	if( vicon && vicon->playing_audio >= 0 )
+		gui->stop_vicon_drawing();
 	return BC_ListBox::cursor_leave_event();
 }
 
@@ -2634,7 +2790,10 @@ int AWindowAssets::mouse_over_event(int no)
 	    no >= 0 && no < gui->displayed_assets[0].size() ) {
 		AssetPicon *picon = (AssetPicon *)gui->displayed_assets[0][no];
 		VIcon *vicon = picon->vicon;
-		picon->gui->vicon_thread->set_view_popup(vicon);
+		if( gui->vicon_thread->vicon &&
+		    gui->vicon_thread->vicon->playing_audio < 0 )
+			vicon->playing_audio = -1;
+		picon->gui->vicon_thread->set_view_popup(vicon, draw_func);
 	}
 	return 0;
 }

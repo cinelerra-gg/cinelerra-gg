@@ -53,6 +53,7 @@
 #define SELECT_USED 1
 #define SELECT_UNUSED 2
 #define SELECT_NONE 3
+#define VIEW_POPUP_BAR_H 15
 
 class AWindowFolderItem : public BC_ListBoxItem
 {
@@ -82,7 +83,12 @@ public:
 	void reset();
 	static void draw_hue_bar(VFrame *frame, double t);
 	static void draw_wave(VFrame *frame, double *dp, int len,
-		int base_color, int line_color);
+		int base_color, int line_color, int x, int y, int w, int h);
+	static void draw_wave(VFrame *frame, double *dp, int len,
+		int base_color, int line_color, int x=0, int y=0) {
+	  draw_wave(frame, dp, len, base_color, line_color,
+		x,y,frame->get_w(),frame->get_h());
+	}
 	void open_render_engine(EDL *edl, int is_audio);
 	void close_render_engine();
 	void render_video(int64_t pos, VFrame *vfrm);
@@ -149,6 +155,8 @@ public:
 	void load_audio();
 	void start_audio();
 	void stop_audio();
+	int popup_button_press(int x, int y);
+	int popup_cursor_motion(int x, int y);
 
 	AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_t length);
 	~AssetVIcon();
@@ -346,6 +354,8 @@ public:
 	int cursor_leave_event();
 	void update_vicon_area();
 	int mouse_over_event(int no);
+	static VIconDrawVFrame draw_vframe;
+	VIconDrawVFrame *draw_func;
 
 	MWindow *mwindow;
 	AWindowGUI *gui;

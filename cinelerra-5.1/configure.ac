@@ -1,6 +1,6 @@
 
 AC_PREREQ([2.69])
-AC_INIT([cinelerra], [5.1], [mail@lists.cinelerra-cv.org])
+AC_INIT([cinelerra], [5.1], [mail@lists.cinelerra-gg.org])
 AM_INIT_AUTOMAKE([foreign])
 
 AM_PROG_AS

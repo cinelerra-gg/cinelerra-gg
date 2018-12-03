@@ -9,11 +9,14 @@
 #include "vicon.inc"
 #include "vframe.h"
 
+typedef void VIconDrawVFrame(BC_WindowBase *wdw, VFrame *frame);
+
 class ViewPopup : public BC_Popup {
 public:
 	VIconThread *vt;
 	int keypress_event();
-	void draw_vframe(VFrame *frame);
+	int button_press_event();
+	int cursor_motion_event();
 
 	ViewPopup(VIconThread *vt, VFrame *frame, int x, int y, int w, int h);
 	~ViewPopup();
@@ -56,6 +59,8 @@ public:
 	virtual void load_audio() {}
 	virtual void start_audio() {}
 	virtual void stop_audio() {}
+	virtual int popup_button_press(int x, int y) { return 0; }
+	virtual int popup_cursor_motion(int x, int y) { return 0; }
 
 	void add_image(VFrame *frm, int ww, int hh, int vcmdl);
 	void draw_vframe(VIconThread *vt, BC_WindowBase *wdw, int x, int y);
@@ -96,13 +101,16 @@ public:
 	void remove_vicon(int i);
 	int keypress_event(int key);
 	void set_drawing_area(int x0, int y0, int x1, int y1);
-	void set_view_popup(VIcon *vicon);
+	void set_view_popup(VIcon *vicon, VIconDrawVFrame *draw_vfrm=0);
+	void close_view_popup();
 	void hide_vicons(int v=1);
-
 	ViewPopup *new_view_window(VFrame *frame);
+
 	virtual bool visible(VIcon *vicon, int x, int y);
 	virtual void drawing_started() {}
 	virtual void drawing_stopped() {}
+	static VIconDrawVFrame draw_vframe;
+	VIconDrawVFrame *draw_vfrm;
 
 	VIconThread(BC_WindowBase *wdw, int vw=4*VICON_WIDTH, int vh=4*VICON_HEIGHT);
 	~VIconThread();

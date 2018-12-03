@@ -141,7 +141,7 @@ void VIconThread::
 stop_drawing()
 {
 	wdw->lock_window("VIconThread::stop_drawing");
-	set_view_popup(0);
+	close_view_popup();
 	if( !interrupted )
 		interrupted = 1;
 	stop_age = timer->get_difference();
@@ -151,7 +151,7 @@ stop_drawing()
 int VIconThread::keypress_event(int key)
 {
 	if( key != ESC ) return 0;
-	set_view_popup(0);
+	close_view_popup();
 	return 1;
 }
 
@@ -172,6 +172,18 @@ int ViewPopup::keypress_event()
 	return vt->keypress_event(key);
 }
 
+int ViewPopup::button_press_event()
+{
+	return !vt->vicon ? 0 :
+		vt->vicon->popup_button_press(get_cursor_x(), get_cursor_y());
+}
+int ViewPopup::cursor_motion_event()
+{
+	return !vt->vicon ? 0 :
+		vt->vicon->popup_cursor_motion(get_cursor_x(), get_cursor_y());
+}
+
+
 ViewPopup::ViewPopup(VIconThread *vt, VFrame *frame, int x, int y, int w, int h)
  : BC_Popup(vt->wdw, x, y, w, h, BLACK)
 {
@@ -181,12 +193,6 @@ ViewPopup::ViewPopup(VIconThread *vt, VFrame *frame, int x, int y, int w, int h)
 ViewPopup::~ViewPopup()
 {
 	vt->wdw->set_active_subwindow(0);
-}
-
-void ViewPopup::draw_vframe(VFrame *frame)
-{
-	if( !frame ) return;
-	BC_WindowBase::draw_vframe(frame, 0,0, get_w(),get_h());
 }
 
 ViewPopup *VIconThread::new_view_window(VFrame *frame)
@@ -231,9 +237,21 @@ int VIconThread::del_vicon(VIcon *vicon)
 	return 1;
 }
 
-void VIconThread::set_view_popup(VIcon *vicon)
+void VIconThread::draw_vframe(BC_WindowBase *wdw, VFrame *frame)
+{
+	if( !wdw || !frame ) return;
+	wdw->draw_vframe(frame, 0,0, wdw->get_w(),wdw->get_h());
+}
+
+void VIconThread::set_view_popup(VIcon *vicon, VIconDrawVFrame *draw_vfrm)
 {
 	this->vicon = vicon;
+	this->draw_vfrm = vicon && !draw_vfrm ? VIconThread::draw_vframe : draw_vfrm;
+}
+
+void VIconThread::close_view_popup()
+{
+	set_view_popup(0);
 }
 
 int VIconThread::
@@ -281,7 +299,7 @@ draw(VIcon *vicon)
 		img_dirty = 1;
 	}
 	if( draw_win ) {
-		view_win->draw_vframe(vicon->frame());
+		draw_vfrm(view_win, vicon->frame());
 		win_dirty = 1;
 	}
 	return 1;
@@ -316,7 +334,7 @@ run()
 				draw(next);
 				if( !next->seq_no ) {
 					next->cycle_start = now;
-					if( next->playing_audio )
+					if( next->playing_audio > 0 )
 						next->start_audio();
 				}
 				int64_t ref_no = (now - next->cycle_start) / 1000. * refresh_rate;
