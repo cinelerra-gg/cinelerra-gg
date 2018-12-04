@@ -95,7 +95,7 @@ $(shell echo $(OBJS) > $(OBJDIR)/objs)
 all: $(OUTPUT) $(UTILS)
 
 $(BCXFER):	bccmdl.py bcxfer.C bcxfer.h
-	python2.7 < ./bccmdl.py
+	python3 < ./bccmdl.py
 	+$(MAKE) -C xfer
 
 $(OUTPUT): $(OBJS) $(BCXFER)
