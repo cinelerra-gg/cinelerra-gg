@@ -155,12 +155,24 @@ public:
 	void load_audio();
 	void start_audio();
 	void stop_audio();
-	int popup_button_press(int x, int y);
-	int popup_cursor_motion(int x, int y);
 
 	AssetVIcon(AssetPicon *picon, int w, int h, double framerate, int64_t length);
 	~AssetVIcon();
 };
+
+class AssetVIconThread : public VIconThread
+{
+public:
+	AssetVIconThread(AWindowAssets *asset_list);
+	~AssetVIconThread();
+
+	int popup_button_press(int x, int y);
+	int popup_button_release(int x, int y);
+	int popup_cursor_motion(int x, int y);
+
+	int popup_dragging;
+};
+
 
 class AWindowRemovePlugin;
 

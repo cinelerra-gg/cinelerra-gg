@@ -307,13 +307,25 @@ void AssetVIcon::stop_audio()
 	playing_audio = 0;
 }
 
-int AssetVIcon::popup_button_press(int x, int y)
+
+AssetVIconThread::AssetVIconThread(AWindowAssets *asset_list)
+ : VIconThread(asset_list)
 {
-	if( playing_audio >= 0 ) return 0;
-	VIconThread *vt = picon->gui->vicon_thread;
-	ViewPopup *view_win = vt->view_win;
+	popup_dragging = 0;
+}
+
+AssetVIconThread::~AssetVIconThread()
+{
+}
+
+int AssetVIconThread::popup_button_press(int x, int y)
+{
 	if( !view_win || !view_win->is_event_win() ) return 0;
+	if( !vicon || vicon->playing_audio >= 0 ) return 0;
+	popup_dragging = 0;
 	int view_w = view_win->get_w(), view_h = view_win->get_h();
+	AssetVIcon *vicon = (AssetVIcon *)this->vicon;
+	AssetPicon *picon = vicon->picon;
 	MWindow *mwindow = picon->mwindow;
 	EDL *edl = mwindow->edl;
 	if( y < VIEW_POPUP_BAR_H ) {
@@ -361,21 +373,70 @@ int AssetVIcon::popup_button_press(int x, int y)
 		vwindow->update_position(CHANGE_NONE, 0, 1, 0);
 		return 1;
 	}
-	return y < view_h-VIEW_POPUP_BAR_H ? 0 : popup_cursor_motion(x, y);
+	if( y >= view_h-VIEW_POPUP_BAR_H ) {
+		popup_dragging = 1;
+		if( !view_win->ctrl_down() )
+			return popup_cursor_motion(x, y);
+		Indexable *idxbl =
+			picon->indexable ? picon->indexable :
+			picon->edl ? picon->edl : 0;
+		if( !idxbl ) return 0;
+		double total_length = mwindow->edl->tracks->total_length();
+		double pos = x * total_length / view_w;
+		double start = 0, end = total_length;
+		double lt = DBL_MAX, rt = DBL_MAX;
+		for( Track *track=edl->tracks->first; track!=0; track=track->next ) {
+			for( Edit *edit=track->edits->first; edit!=0; edit=edit->next ) {
+				Indexable *indexable = (Indexable *)edit->asset;
+				if( !indexable ) indexable = (Indexable *)edit->nested_edl;
+				if( !indexable ) continue;
+				if( indexable->id == idxbl->id ||
+				    (!indexable->is_asset == !idxbl->is_asset &&
+				     !strcmp(indexable->path, idxbl->path)) ) {
+					double start_pos = track->from_units(edit->startproject);
+					double end_pos = track->from_units(edit->startproject + edit->length);
+					double dlt = pos - start_pos, drt = end_pos - pos;
+					if( dlt >= 0 &&  dlt < lt ) { lt = dlt;  start = start_pos; }
+					else if( dlt < 0 && -dlt < rt ) { rt = -dlt;  end = start_pos; }
+					if( drt >= 0 &&  drt < rt ) { rt = drt;  end = end_pos; }
+					else if( drt < 0 && -drt < lt ) { lt = -drt; start = end_pos; }
+				}
+			}
+		}
+		mwindow->gui->lock_window("AssetVIcon::popup_button_press");
+		edl->local_session->set_selectionstart(pos);
+		edl->local_session->set_selectionend(pos);
+		mwindow->find_cursor();
+		edl->local_session->set_selectionstart(start);
+		edl->local_session->set_selectionend(end);
+		mwindow->zoom_sample(edl->local_session->zoom_sample);
+		mwindow->gui->unlock_window();
+		return 1;
+	}
+	return 0;
 }
 
-int AssetVIcon::popup_cursor_motion(int x, int y)
+int AssetVIconThread::popup_button_release(int x, int y)
 {
-	if( playing_audio >= 0 ) return 0;
-	VIconThread *vt = picon->gui->vicon_thread;
-	ViewPopup *view_win = (ViewPopup *)vt->view_win;
-	if( !view_win || !view_win->is_event_win() ||
-	    !view_win->get_button_down() ) return 0;
-	int view_w = view_win->get_w(), view_h = view_win->get_h();
-	MWindow *mwindow = picon->mwindow;
+	if( !view_win || !view_win->is_event_win() ) return 0;
+	if( !vicon || vicon->playing_audio >= 0 ) return 0;
+	popup_dragging = 0;
+	return 1;
+}
+
+int AssetVIconThread::popup_cursor_motion(int x, int y)
+{
+	if( !view_win || !view_win->is_event_win() ) return 0;
+	if( !vicon || vicon->playing_audio >= 0 ) return 0;
+	if( !view_win->get_button_down() || view_win->get_buttonpress() != 1 ||
+	    view_win->ctrl_down() || view_win->alt_down() || view_win->shift_down() )
+		return 0;
+	AssetVIcon *vicon = (AssetVIcon *)this->vicon;
+	MWindow *mwindow = vicon->picon->mwindow;
 	EDL *edl = mwindow->edl;
-	if( y >= view_h-VIEW_POPUP_BAR_H ) {
+	if( popup_dragging ) {
 		double total_length = edl->tracks->total_length();
+		int view_w = view_win->get_w();
 		double pos = x * total_length / view_w;
 		mwindow->gui->lock_window("AssetVIcon::popup_cursor_motion");
 		mwindow->select_point(pos);
@@ -1201,7 +1262,7 @@ void AWindowGUI::create_objects()
 	y1 += dy;  h1 -= dy;
 	add_subwindow(asset_list = new AWindowAssets(mwindow, this, x1, y1, w1, h1));
 
-	vicon_thread = new VIconThread(asset_list);
+	vicon_thread = new AssetVIconThread(asset_list);
 	asset_list->update_vicon_area();
 	vicon_thread->start();
 	vicon_audio = new AssetVIconAudio(this);
@@ -2525,7 +2586,7 @@ void AWindowAssets::draw_vframe(BC_WindowBase *wdw, VFrame *vframe)
 	wdw->draw_box(0,0,wdw->get_w(),wdw->get_h());
 	wdw->draw_vframe(vframe, 0,y1, wdw->get_w(),y2-y1);
 	ViewPopup *view_popup = (ViewPopup *)wdw;
-	VIconThread *vt = view_popup->vt;
+	AssetVIconThread *vt = (AssetVIconThread *)view_popup->vt;
 	AssetVIcon *vicon = (AssetVIcon *)vt->vicon;
 	AssetPicon *picon = (AssetPicon *)vicon->picon;
 	Indexable *idxbl =

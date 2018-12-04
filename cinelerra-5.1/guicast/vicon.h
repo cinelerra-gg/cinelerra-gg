@@ -16,6 +16,7 @@ public:
 	VIconThread *vt;
 	int keypress_event();
 	int button_press_event();
+	int button_release_event();
 	int cursor_motion_event();
 
 	ViewPopup(VIconThread *vt, VFrame *frame, int x, int y, int w, int h);
@@ -59,8 +60,6 @@ public:
 	virtual void load_audio() {}
 	virtual void start_audio() {}
 	virtual void stop_audio() {}
-	virtual int popup_button_press(int x, int y) { return 0; }
-	virtual int popup_cursor_motion(int x, int y) { return 0; }
 
 	void add_image(VFrame *frm, int ww, int hh, int vcmdl);
 	void draw_vframe(VIconThread *vt, BC_WindowBase *wdw, int x, int y);
@@ -105,6 +104,9 @@ public:
 	void close_view_popup();
 	void hide_vicons(int v=1);
 	ViewPopup *new_view_window(VFrame *frame);
+	virtual int popup_button_press(int x, int y) { return 0; }
+	virtual int popup_button_release(int x, int y) { return 0; }
+	virtual int popup_cursor_motion(int x, int y) { return 0; }
 
 	virtual bool visible(VIcon *vicon, int x, int y);
 	virtual void drawing_started() {}

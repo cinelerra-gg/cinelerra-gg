@@ -174,13 +174,15 @@ int ViewPopup::keypress_event()
 
 int ViewPopup::button_press_event()
 {
-	return !vt->vicon ? 0 :
-		vt->vicon->popup_button_press(get_cursor_x(), get_cursor_y());
+	return vt->popup_button_press(get_cursor_x(), get_cursor_y());
+}
+int ViewPopup::button_release_event()
+{
+	return vt->popup_button_release(get_cursor_x(), get_cursor_y());
 }
 int ViewPopup::cursor_motion_event()
 {
-	return !vt->vicon ? 0 :
-		vt->vicon->popup_cursor_motion(get_cursor_x(), get_cursor_y());
+	return vt->popup_cursor_motion(get_cursor_x(), get_cursor_y());
 }
 
 
