@@ -94,6 +94,7 @@ public:
 	int trap_sigintr;
 // media thumbnail size
 	int awindow_picon_h;
+	int vicon_size, vicon_color_mode;
 // Title of theme
 	char theme[BCTEXTLEN];
 // plugin icon set

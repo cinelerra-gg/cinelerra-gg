@@ -66,11 +66,12 @@ void AppearancePrefs::create_objects()
 	char string[BCTEXTLEN];
 	int x0 = mwindow->theme->preferencesoptions_x;
 	int y0 = mwindow->theme->preferencesoptions_y;
-	int x = x0, y = y0, x1 = x + 100, x2 = x + 160;
+	int x = x0, y = y0, x1 = x + 100;
 
 	add_subwindow(new BC_Title(x, y, _("Layout:"), LARGEFONT,
 		resources->text_default));
 	y += 35;
+	int y1 = y;
 
 	ViewTheme *theme;
 	add_subwindow(new BC_Title(x, y, _("Theme:")));
@@ -84,11 +85,23 @@ void AppearancePrefs::create_objects()
 	add_subwindow(plugin_icons = new ViewPluginIcons(x1, y, pwindow));
 	plugin_icons->create_objects();
 	y += plugin_icons->get_h() + 15;
+	x1 = get_w()/2;
 
-	add_subwindow(new BC_Title(x, y, _("View Thumbnail size:")));
+	int x2 = x1 + 160, y2 = y;
+	y = y1;
+	add_subwindow(new BC_Title(x1, y, _("View thumbnail size:")));
 	thumbnail_size = new ViewThumbnailSize(pwindow, this, x2, y);
 	thumbnail_size->create_objects();
 	y += thumbnail_size->get_h() + 5;
+	add_subwindow(new BC_Title(x1, y, _("Vicon memory size:")));
+	vicon_size = new ViewViconSize(pwindow, this, x2, y);
+	vicon_size->create_objects();
+	y += vicon_size->get_h() + 5;
+	add_subwindow(new BC_Title(x1, y, _("Vicon color mode:")));
+	add_subwindow(vicon_color_mode = new ViewViconColorMode(pwindow, x2, y));
+	vicon_color_mode->create_objects();
+	y += vicon_color_mode->get_h() + 5;
+	y = bmax(y, y2);	
 
 	y += 10;
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
@@ -97,13 +110,12 @@ void AppearancePrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Time Format:"), LARGEFONT,
 		resources->text_default));
 
-	x1 = get_w()/2;
 	add_subwindow(new BC_Title(x1, y, _("Flags:"), LARGEFONT,
 		resources->text_default));
 
 	y += get_text_height(LARGEFONT) + 5;
 	y += 10;
-	int y1 = y;
+	y1 = y;
 
 	add_subwindow(hms = new TimeFormatHMS(pwindow, this,
 		pwindow->thread->edl->session->time_format == TIME_HMS,
@@ -426,6 +438,68 @@ int ViewThumbnailSize::handle_event()
 	return 1;
 }
 
+ViewViconSize::ViewViconSize(PreferencesWindow *pwindow,
+		AppearancePrefs *aprefs, int x, int y)
+ : BC_TumbleTextBox(aprefs,
+	pwindow->thread->preferences->vicon_size,
+	16, 512, x, y, 80)
+
+{
+	this->pwindow = pwindow;
+	this->aprefs = aprefs;
+}
+
+int ViewViconSize::handle_event()
+{
+	int v = atoi(get_text());
+	bclamp(v, 16,512);
+	pwindow->thread->preferences->vicon_size = v;
+	return 1;
+}
+
+ViewViconColorMode::ViewViconColorMode(PreferencesWindow *pwindow, int x, int y)
+ : BC_PopupMenu(x, y, 100,
+	_(vicon_color_modes[pwindow->thread->preferences->vicon_color_mode]), 1)
+{
+	this->pwindow = pwindow;
+}
+ViewViconColorMode::~ViewViconColorMode()
+{
+}
+
+const char *ViewViconColorMode::vicon_color_modes[] = {
+	N_("Low"),
+	N_("Med"),
+	N_("High"),
+};
+
+void ViewViconColorMode::create_objects()
+{
+	for( int id=0,nid=sizeof(vicon_color_modes)/sizeof(vicon_color_modes[0]); id<nid; ++id )
+		add_item(new ViewViconColorModeItem(this, _(vicon_color_modes[id]), id));
+	handle_event();
+}
+
+int ViewViconColorMode::handle_event()
+{
+	set_text(_(vicon_color_modes[pwindow->thread->preferences->vicon_color_mode]));
+	return 1;
+}
+
+ViewViconColorModeItem::ViewViconColorModeItem(ViewViconColorMode *popup, const char *text, int id)
+ : BC_MenuItem(text)
+{
+	this->popup = popup;
+	this->id = id;
+}
+
+int ViewViconColorModeItem::handle_event()
+{
+	popup->set_text(get_text());
+	popup->pwindow->thread->preferences->vicon_color_mode = id;
+	return popup->handle_event();
+}
+
 
 UseTipWindow::UseTipWindow(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x,
@@ -597,7 +671,7 @@ void YuvColorSpace::create_objects()
 
 int YuvColorSpace::handle_event()
 {
-	set_text(color_space[pwindow->thread->preferences->yuv_color_space]);
+	set_text(_(color_space[pwindow->thread->preferences->yuv_color_space]));
 	return 1;
 }
 

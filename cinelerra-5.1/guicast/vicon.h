@@ -40,7 +40,7 @@ public:
 class VIcon
 {
 public:
-	int vw, vh, in_use, hidden;
+	int w, h, in_use, hidden;
 	ArrayList<VIFrame *> images;
         int64_t seq_no;
         double cycle_start, age, frame_rate;

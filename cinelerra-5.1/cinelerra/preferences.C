@@ -69,6 +69,8 @@ Preferences::Preferences()
 	trap_sigsegv = 1;
 	trap_sigintr = 1;
 	awindow_picon_h = 50;
+	vicon_size = 50;
+	vicon_color_mode = VICON_COLOR_MODE_LOW;
 	theme[0] = 0;
 	plugin_icons[0] = 0;
 	strcpy(snapshot_path, "/tmp");
@@ -174,6 +176,8 @@ void Preferences::copy_from(Preferences *that)
 	keyframe_reticle = that->keyframe_reticle;
 	perpetual_session = that->perpetual_session;
 	awindow_picon_h = that->awindow_picon_h;
+	vicon_size = that->vicon_size;
+	vicon_color_mode = that->vicon_color_mode;
 	strcpy(theme, that->theme);
 	strcpy(plugin_icons, that->plugin_icons);
 	strcpy(snapshot_path, that->snapshot_path);
@@ -316,6 +320,8 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	trap_sigintr = defaults->get("TRAP_SIGINTR", trap_sigintr);
 
 	awindow_picon_h = defaults->get("AWINDOW_PICON_H", awindow_picon_h);
+	vicon_size = defaults->get("VICON_SIZE",vicon_size);
+	vicon_color_mode = defaults->get("VICON_COLOR_MODE",vicon_color_mode);
 	strcpy(theme, _(DEFAULT_THEME));
 	strcpy(plugin_icons, DEFAULT_PICON);
 	defaults->get("THEME", theme);
@@ -458,6 +464,8 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("TRAP_SIGSEGV", trap_sigsegv);
 	defaults->update("TRAP_SIGINTR", trap_sigintr);
 	defaults->update("AWINDOW_PICON_H", awindow_picon_h);
+	defaults->update("VICON_SIZE",vicon_size);
+	defaults->update("VICON_COLOR_MODE",vicon_color_mode);
 	defaults->update("THEME", theme);
 	defaults->update("PLUGIN_ICONS", plugin_icons);
 	defaults->update("SNAPSHOT_PATH", snapshot_path);

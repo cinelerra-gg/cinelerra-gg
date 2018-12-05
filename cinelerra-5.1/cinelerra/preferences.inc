@@ -31,6 +31,10 @@
 #define FFMPEG_EARLY_TIP _("Currently: Try FFMpeg first\n   Click to: Try FFMpeg last")
 #define FFMPEG_LATE_TIP  _("Currently: Try FFMpeg last\n   Click to: Try FFMpeg first")
 
+#define VICON_COLOR_MODE_LOW 0
+#define VICON_COLOR_MODE_MED 1
+#define VICON_COLOR_MODE_HIGH 2
+
 class Preferences;
 class PlaybackConfig;
 class AudioOutConfig;

@@ -113,7 +113,7 @@ VFrame *AssetVIcon::frame()
 {
 	Asset *asset = (Asset *)picon->indexable;
 	if( !asset->video_data && audio_data && audio_size && length > 0 ) {
-		if( !temp ) temp = new VFrame(0, -1, vw, vh, BC_RGB888, -1);
+		if( !temp ) temp = new VFrame(0, -1, w, h, BC_RGB888, -1);
 		temp->clear_frame();
 		int sample_rate = asset->get_sample_rate();
 		int64_t audio_samples = asset->get_audio_samples();
@@ -134,9 +134,9 @@ VFrame *AssetVIcon::frame()
 		while( i < len ) data[i++] = *audio_data++ * sample_scale;
 		while( i < bfrsz ) data[i++] = 0;
 		picon->draw_wave(temp, data, bfrsz, RED, GREEN);
-		int x = (vw-1) * line_pos;
+		int x = (w-1) * line_pos;
 		temp->pixel_rgb = RED;
-		temp->draw_line(x,0, x,vh);
+		temp->draw_line(x,0, x,h);
 		return temp;
 	}
 	int vw = picon->gui->vicon_thread->vw;
@@ -157,6 +157,12 @@ VFrame *AssetVIcon::frame()
 		}
 		if( !temp )
 			temp = new VFrame(0, -1, asset->width, asset->height, BC_RGB888, -1);
+		int vicon_cmodel = BC_RGB8;
+		switch( mwindow->preferences->vicon_color_mode ) {
+		case VICON_COLOR_MODE_LOW:   vicon_cmodel = BC_RGB8;    break;
+		case VICON_COLOR_MODE_MED:   vicon_cmodel = BC_RGB565;  break;
+		case VICON_COLOR_MODE_HIGH:  vicon_cmodel = BC_RGB888;  break;
+		}
 		while( seq_no >= images.size() ) {
 			mwindow->video_cache->check_in(asset);
 			Thread::yield();
@@ -166,7 +172,7 @@ VFrame *AssetVIcon::frame()
 			int64_t pos = images.size() / picon->gui->vicon_thread->refresh_rate * frame_rate;
 			file->set_video_position(pos,0);
 			if( file->read_frame(temp) ) temp->clear_frame();
-			add_image(temp, vw, vh, BC_RGB8);
+			add_image(temp, vw, vh, vicon_cmodel);
 		}
 		mwindow->video_cache->check_in(asset);
 	}
@@ -418,11 +424,9 @@ int AssetViewPopup::button_press_event()
 			}
 		}
 		mwindow->gui->lock_window("AssetVIcon::popup_button_press");
-		edl->local_session->set_selectionstart(pos);
-		edl->local_session->set_selectionend(pos);
-		mwindow->find_cursor();
-		edl->local_session->set_selectionstart(start);
-		edl->local_session->set_selectionend(end);
+		if( !shift_down() ) mwindow->select_point(!ctrl_down() ? pos : start);
+		edl->local_session->set_selectionstart(!ctrl_down() ? pos : start);
+		edl->local_session->set_selectionend(!ctrl_down() ? pos : !shift_down() ? start : end);
 		mwindow->zoom_sample(edl->local_session->zoom_sample);
 		mwindow->gui->unlock_window();
 		return 1;
@@ -531,10 +535,10 @@ void AssetViewPopup::draw_vframe(VFrame *vframe)
 
 AssetVIconThread::AssetVIconThread(AWindowAssets *asset_list)
  : VIconThread(asset_list,
-	asset_list->mwindow->preferences->awindow_picon_h * 16/9,
-	asset_list->mwindow->preferences->awindow_picon_h,
-	4 * asset_list->mwindow->preferences->awindow_picon_h * 16/9,
-	4 * asset_list->mwindow->preferences->awindow_picon_h)
+	asset_list->mwindow->preferences->vicon_size * 16/9,
+	asset_list->mwindow->preferences->vicon_size,
+	4*asset_list->mwindow->preferences->awindow_picon_h * 16/9,
+	4*asset_list->mwindow->preferences->awindow_picon_h)
 {
 	draw_mode = ASSET_DRAW_IMAGE;
 }
@@ -559,8 +563,8 @@ ViewPopup *AssetVIconThread::new_view_window(VFrame *frame)
 	int vx = viewing->get_vx(), rx = 0;
 	int vy = viewing->get_vy(), ry = 0;
 	wdw->get_root_coordinates(vx, vy, &rx, &ry);
-	rx += (rx >= cx ? -view_w : viewing->vw);
-	ry += (ry >= cy ? -view_h : viewing->vh);
+	rx += (rx >= cx ? -view_w : viewing->w);
+	ry += (ry >= cy ? -view_h : viewing->h);
 	AssetViewPopup *popup = new AssetViewPopup(this, draw_mode,
 		frame, rx, ry, view_w, view_h);
 	if( draw_mode == ASSET_DRAW_MEDIA_MAP )
@@ -1565,7 +1569,7 @@ VFrame *AssetPicon::get_vicon_frame()
 	VFrame *frame = vicon->frame();
 	if( !frame ) return 0;
 	if( !vicon_frame )
-		vicon_frame = new VFrame(vicon->vw, vicon->vh, frame->get_color_model());
+		vicon_frame = new VFrame(vicon->w, vicon->h, frame->get_color_model());
 	vicon_frame->transfer_from(frame);
 	return vicon_frame;
 }

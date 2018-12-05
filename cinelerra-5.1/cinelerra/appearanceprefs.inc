@@ -37,6 +37,9 @@ class ViewPluginIcons;
 class ViewPluginIconItem;
 class ViewThumbnails;
 class ViewThumbnailSize;
+class ViewViconSize;
+class ViewViconColorMode;
+class ViewViconModeItem;
 class UseTipWindow;
 class UseWarnIndecies;
 class UseWarnVersion;
@@ -51,7 +54,6 @@ class YuvColorSpace;
 class YuvColorSpaceItem;
 class YuvColorRange;
 class YuvColorRangeItem;
-class PrefsAutostartLV2UI;
 class PerpetualSession;
 
 #endif

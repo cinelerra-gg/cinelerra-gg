@@ -8,10 +8,10 @@
 #include "condition.h"
 
 VIcon::
-VIcon(int vw, int vh, double rate)
+VIcon(int w, int h, double rate)
 {
-	this->vw = vw;
-	this->vh = vh;
+	this->w = w;
+	this->h = h;
 	this->frame_rate = rate;
 
 	cycle_start = 0;
@@ -47,12 +47,12 @@ draw_vframe(VIconThread *vt, BC_WindowBase *wdw, int x, int y)
 	if( !vfrm ) return;
 	int sx0 = 0, sx1 = sx0 + vt->vw;
 	int sy0 = 0, sy1 = sy0 + vt->vh;
-	int dx0 = x, dx1 = dx0 + vw;
-	int dy0 = y, dy1 = dy0 + vh;
-	if( (x=vt->draw_x0-dx0) > 0 ) { sx0 += (x*vt->vw)/vw;  dx0 = vt->draw_x0; }
-	if( (x=dx1-vt->draw_x1) > 0 ) { sx1 -= (x*vt->vw)/vw;  dx1 = vt->draw_x1; }
-	if( (y=vt->draw_y0-dy0) > 0 ) { sy0 += (y*vt->vh)/vh;  dy0 = vt->draw_y0; }
-	if( (y=dy1-vt->draw_y1) > 0 ) { sy1 -= (y*vt->vh)/vh;  dy1 = vt->draw_y1; }
+	int dx0 = x, dx1 = dx0 + w;
+	int dy0 = y, dy1 = dy0 + h;
+	if( (x=vt->draw_x0-dx0) > 0 ) { sx0 += (x*vt->vw)/w;  dx0 = vt->draw_x0; }
+	if( (x=dx1-vt->draw_x1) > 0 ) { sx1 -= (x*vt->vw)/w;  dx1 = vt->draw_x1; }
+	if( (y=vt->draw_y0-dy0) > 0 ) { sy0 += (y*vt->vh)/h;  dy0 = vt->draw_y0; }
+	if( (y=dy1-vt->draw_y1) > 0 ) { sy1 -= (y*vt->vh)/h;  dy1 = vt->draw_y1; }
 	int sw = sx1 - sx0, sh = sy1 - sy0;
 	int dw = dx1 - dx0, dh = dy1 - dy0;
 	if( dw > 0 && dh > 0 && sw > 0 && sh > 0 )
@@ -179,9 +179,9 @@ bool VIconThread::
 visible(VIcon *vicon, int x, int y)
 {
 	if( vicon->hidden ) return false;
-	if( y+vicon->vh <= draw_y0 ) return false;
+	if( y+vicon->h <= draw_y0 ) return false;
 	if( y >= draw_y1 ) return false;
-	if( x+vicon->vw <= draw_x0 ) return false;
+	if( x+vicon->w <= draw_x0 ) return false;
 	if( x >= draw_x1 ) return false;
 	return true;
 }
@@ -213,8 +213,8 @@ ViewPopup *VIconThread::new_view_window(VFrame *frame)
 	int vx = viewing->get_vx(), rx = 0;
 	int vy = viewing->get_vy(), ry = 0;
 	wdw->get_root_coordinates(vx, vy, &rx, &ry);
-	rx += (rx >= cx ? -view_w : viewing->vw);
-	ry += (ry >= cy ? -view_h : viewing->vh);
+	rx += (rx >= cx ? -view_w : viewing->w);
+	ry += (ry >= cy ? -view_h : viewing->h);
 	ViewPopup *vwin = new ViewPopup(this, frame, rx, ry, view_w, view_h);
 	wdw->set_active_subwindow(vwin);
 	return vwin;

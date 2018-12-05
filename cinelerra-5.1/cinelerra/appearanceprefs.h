@@ -48,6 +48,8 @@ public:
 	TimeFormatSeconds *seconds;
 	ViewThumbnails *thumbnails;
 	ViewThumbnailSize *thumbnail_size;
+	ViewViconSize *vicon_size;
+	ViewViconColorMode *vicon_color_mode;
 	YuvColorSpace *yuv_color_space;
 	YuvColorRange *yuv_color_range;
 };
@@ -182,6 +184,38 @@ public:
 	int handle_event();
 	AppearancePrefs *aprefs;
 	PreferencesWindow *pwindow;
+};
+
+class ViewViconSize : public BC_TumbleTextBox
+{
+public:
+	ViewViconSize(PreferencesWindow *pwindow,
+		AppearancePrefs *aprefs, int x, int y);
+	int handle_event();
+	AppearancePrefs *aprefs;
+	PreferencesWindow *pwindow;
+};
+
+class ViewViconColorMode : public BC_PopupMenu
+{
+	static const char *vicon_color_modes[3];
+public:
+	ViewViconColorMode(PreferencesWindow *pwindow, int x, int y);
+	~ViewViconColorMode();
+
+	void create_objects();
+	int handle_event();
+
+	PreferencesWindow *pwindow;
+};
+
+class ViewViconColorModeItem : public BC_MenuItem
+{
+public:
+	ViewViconColorModeItem(ViewViconColorMode *popup, const char *text, int id);
+	int handle_event();
+	ViewViconColorMode *popup;
+	int id;
 };
 
 class UseTipWindow : public BC_CheckBox
