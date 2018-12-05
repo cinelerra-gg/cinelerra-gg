@@ -350,7 +350,7 @@ DbWindowVIcon::~DbWindowVIcon()
 
 DbWindowVIconThread::
 DbWindowVIconThread(DbWindowGUI *gui)
- : VIconThread(gui->search_list, 4*SWIDTH, 4*SHEIGHT)
+ : VIconThread(gui->search_list, SWIDTH,SHEIGHT, 4*SWIDTH,4*SHEIGHT)
 {
 	this->gui = gui;
 	list_update = 0;

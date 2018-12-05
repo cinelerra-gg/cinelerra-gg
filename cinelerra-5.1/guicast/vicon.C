@@ -45,18 +45,29 @@ draw_vframe(VIconThread *vt, BC_WindowBase *wdw, int x, int y)
 {
 	VFrame *vfrm = frame();
 	if( !vfrm ) return;
-	int sx0 = 0, sx1 = sx0 + vt->view_w;
-	int sy0 = 0, sy1 = sy0 + vt->view_h;
+	int sx0 = 0, sx1 = sx0 + vt->vw;
+	int sy0 = 0, sy1 = sy0 + vt->vh;
 	int dx0 = x, dx1 = dx0 + vw;
 	int dy0 = y, dy1 = dy0 + vh;
-	if( (x=vt->draw_x0-dx0) > 0 ) { sx0 += (x*vt->view_w)/vw;  dx0 = vt->draw_x0; }
-	if( (x=dx1-vt->draw_x1) > 0 ) { sx1 -= (x*vt->view_w)/vw;  dx1 = vt->draw_x1; }
-	if( (y=vt->draw_y0-dy0) > 0 ) { sy0 += (y*vt->view_h)/vh;  dy0 = vt->draw_y0; }
-	if( (y=dy1-vt->draw_y1) > 0 ) { sy1 -= (y*vt->view_h)/vh;  dy1 = vt->draw_y1; }
+	if( (x=vt->draw_x0-dx0) > 0 ) { sx0 += (x*vt->vw)/vw;  dx0 = vt->draw_x0; }
+	if( (x=dx1-vt->draw_x1) > 0 ) { sx1 -= (x*vt->vw)/vw;  dx1 = vt->draw_x1; }
+	if( (y=vt->draw_y0-dy0) > 0 ) { sy0 += (y*vt->vh)/vh;  dy0 = vt->draw_y0; }
+	if( (y=dy1-vt->draw_y1) > 0 ) { sy1 -= (y*vt->vh)/vh;  dy1 = vt->draw_y1; }
 	int sw = sx1 - sx0, sh = sy1 - sy0;
 	int dw = dx1 - dx0, dh = dy1 - dy0;
 	if( dw > 0 && dh > 0 && sw > 0 && sh > 0 )
 		wdw->draw_vframe(vfrm, dx0,dy0, dw,dh, sx0,sy0, sw,sh);
+}
+
+
+int VIconThread::cursor_inside(int x, int y)
+{
+	if( !viewing ) return 0;
+	int vx = viewing->get_vx();
+	if( x < vx || x >= vx+vw ) return 0;
+	int vy = viewing->get_vy();
+	if( y < vy || y >= vy+vh ) return 0;
+	return 1;
 }
 
 void VIconThread::
@@ -91,15 +102,15 @@ void VIconThread::remove_vicon(int i)
 
 
 VIconThread::
-VIconThread(BC_WindowBase *wdw, int vw, int vh)
+VIconThread(BC_WindowBase *wdw, int vw, int vh, int view_w, int view_h)
  : Thread(1, 0, 0)
 {
 	this->wdw = wdw;
-	this->view_win = 0;  this->vicon = 0;
-	this->view_w = vw;   this->view_h = vh;
-	this->viewing = 0;
-	this->draw_x0 = 0;   this->draw_x1 = wdw->get_w();
-	this->draw_y0 = 0;   this->draw_y1 = wdw->get_h();
+	this->vw = vw;         this->vh = vh;
+	this->view_w = view_w; this->view_h = view_h;
+	this->view_win = 0;    this->vicon = 0;    this->viewing = 0;
+	this->draw_x0 = 0;     this->draw_x1 = wdw->get_w();
+	this->draw_y0 = 0;     this->draw_y1 = wdw->get_h();
 	draw_lock = new Condition(0, "VIconThread::draw_lock", 1);
 	timer = new Timer();
 	this->refresh_rate = VICON_RATE;
@@ -148,6 +159,15 @@ stop_drawing()
 	wdw->unlock_window();
 }
 
+void VIconThread::
+stop_viewing()
+{
+	if( viewing ) {
+		viewing->stop_audio();
+		viewing = 0;
+	}
+}
+
 int VIconThread::keypress_event(int key)
 {
 	if( key != ESC ) return 0;
@@ -170,19 +190,6 @@ int ViewPopup::keypress_event()
 {
 	int key = get_keypress();
 	return vt->keypress_event(key);
-}
-
-int ViewPopup::button_press_event()
-{
-	return vt->popup_button_press(get_cursor_x(), get_cursor_y());
-}
-int ViewPopup::button_release_event()
-{
-	return vt->popup_button_release(get_cursor_x(), get_cursor_y());
-}
-int ViewPopup::cursor_motion_event()
-{
-	return vt->popup_cursor_motion(get_cursor_x(), get_cursor_y());
 }
 
 
@@ -213,6 +220,17 @@ ViewPopup *VIconThread::new_view_window(VFrame *frame)
 	return vwin;
 }
 
+int ViewPopup::zoom_scale(int dir)
+{
+	int view_h = vt->view_h + dir*vt->view_h/10 + dir;
+	bclamp(view_h, 16,512);
+	vt->view_h = view_h;
+	vt->view_w = view_h * vt->vw/vt->vh;
+	vt->stop_viewing();
+	return 1;
+}
+
+
 void VIconThread::
 reset_images()
 {
@@ -239,16 +257,15 @@ int VIconThread::del_vicon(VIcon *vicon)
 	return 1;
 }
 
-void VIconThread::draw_vframe(BC_WindowBase *wdw, VFrame *frame)
+void ViewPopup::draw_vframe(VFrame *frame)
 {
-	if( !wdw || !frame ) return;
-	wdw->draw_vframe(frame, 0,0, wdw->get_w(),wdw->get_h());
+	if( !frame ) return;
+	BC_WindowBase::draw_vframe(frame, 0,0, get_w(),get_h());
 }
 
-void VIconThread::set_view_popup(VIcon *vicon, VIconDrawVFrame *draw_vfrm)
+void VIconThread::set_view_popup(VIcon *vicon)
 {
 	this->vicon = vicon;
-	this->draw_vfrm = vicon && !draw_vfrm ? VIconThread::draw_vframe : draw_vfrm;
 }
 
 void VIconThread::close_view_popup()
@@ -301,7 +318,7 @@ draw(VIcon *vicon)
 		img_dirty = 1;
 	}
 	if( draw_win ) {
-		draw_vfrm(view_win, vicon->frame());
+		view_win->draw_vframe(vicon->frame());
 		win_dirty = 1;
 	}
 	return 1;

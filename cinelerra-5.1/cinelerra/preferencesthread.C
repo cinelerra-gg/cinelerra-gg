@@ -235,6 +235,8 @@ int PreferencesThread::apply_settings()
 		mwindow->restart_status = -1; // reload, need new bcresources
 	if( strcmp(preferences->plugin_icons, mwindow->preferences->plugin_icons) != 0 )
 		mwindow->restart_status = -1;
+	if( preferences->awindow_picon_h != mwindow->preferences->awindow_picon_h )
+		mwindow->restart_status = -1;
 	if( strcmp(preferences->lv2_path, mwindow->preferences->lv2_path) != 0 )
 		reload_plugins = 1;
 	if( reload_plugins ) {

@@ -9,15 +9,15 @@
 #include "vicon.inc"
 #include "vframe.h"
 
-typedef void VIconDrawVFrame(BC_WindowBase *wdw, VFrame *frame);
-
 class ViewPopup : public BC_Popup {
 public:
 	VIconThread *vt;
-	int keypress_event();
-	int button_press_event();
-	int button_release_event();
-	int cursor_motion_event();
+	virtual int keypress_event();
+	virtual int button_press_event() { return 0; }
+	virtual int button_release_event() { return 0; }
+	virtual int cursor_motion_event() { return 0; }
+	virtual void draw_vframe(VFrame *frame);
+	int zoom_scale(int dir);
 
 	ViewPopup(VIconThread *vt, VFrame *frame, int x, int y, int w, int h);
 	~ViewPopup();
@@ -78,7 +78,7 @@ public:
 	Condition *draw_lock;
 	ViewPopup *view_win;
 	VIcon *viewing, *vicon;
-	int view_w, view_h;
+	int vw, vh, view_w, view_h;
 	int draw_x0, draw_y0;
 	int draw_x1, draw_y1;
 	int img_dirty, win_dirty;
@@ -96,25 +96,24 @@ public:
 	void draw_images();
 	void start_drawing();
 	void stop_drawing();
+	void stop_viewing();
 	void reset_images();
 	void remove_vicon(int i);
 	int keypress_event(int key);
+	int cursor_inside(int x, int y);
 	void set_drawing_area(int x0, int y0, int x1, int y1);
-	void set_view_popup(VIcon *vicon, VIconDrawVFrame *draw_vfrm=0);
+	void set_view_popup(VIcon *vicon);
 	void close_view_popup();
 	void hide_vicons(int v=1);
-	ViewPopup *new_view_window(VFrame *frame);
-	virtual int popup_button_press(int x, int y) { return 0; }
-	virtual int popup_button_release(int x, int y) { return 0; }
-	virtual int popup_cursor_motion(int x, int y) { return 0; }
+	virtual ViewPopup *new_view_window(VFrame *frame);
 
 	virtual bool visible(VIcon *vicon, int x, int y);
 	virtual void drawing_started() {}
 	virtual void drawing_stopped() {}
-	static VIconDrawVFrame draw_vframe;
-	VIconDrawVFrame *draw_vfrm;
 
-	VIconThread(BC_WindowBase *wdw, int vw=4*VICON_WIDTH, int vh=4*VICON_HEIGHT);
+	VIconThread(BC_WindowBase *wdw,
+		int vw=VICON_WIDTH, int vh=VICON_HEIGHT,
+		int view_w=4*VICON_WIDTH, int view_h=4*VICON_HEIGHT);
 	~VIconThread();
 };
 

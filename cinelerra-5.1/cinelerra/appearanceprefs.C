@@ -43,6 +43,7 @@ AppearancePrefs::AppearancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 	hex = 0;
 	feet = 0;
 	thumbnails = 0;
+	thumbnail_size = 0;
 }
 
 AppearancePrefs::~AppearancePrefs()
@@ -54,6 +55,7 @@ AppearancePrefs::~AppearancePrefs()
 	delete hex;
 	delete feet;
 	delete thumbnails;
+	delete thumbnail_size;
 }
 
 
@@ -64,7 +66,7 @@ void AppearancePrefs::create_objects()
 	char string[BCTEXTLEN];
 	int x0 = mwindow->theme->preferencesoptions_x;
 	int y0 = mwindow->theme->preferencesoptions_y;
-	int x = x0, y = y0, x1 = x + 100;
+	int x = x0, y = y0, x1 = x + 100, x2 = x + 160;
 
 	add_subwindow(new BC_Title(x, y, _("Layout:"), LARGEFONT,
 		resources->text_default));
@@ -81,7 +83,12 @@ void AppearancePrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Plugin Icons:")));
 	add_subwindow(plugin_icons = new ViewPluginIcons(x1, y, pwindow));
 	plugin_icons->create_objects();
-	y += plugin_icons->get_h() + 5;
+	y += plugin_icons->get_h() + 15;
+
+	add_subwindow(new BC_Title(x, y, _("View Thumbnail size:")));
+	thumbnail_size = new ViewThumbnailSize(pwindow, this, x2, y);
+	thumbnail_size->create_objects();
+	y += thumbnail_size->get_h() + 5;
 
 	y += 10;
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
@@ -399,6 +406,25 @@ int ViewThumbnails::handle_event()
 	return 1;
 }
 
+
+ViewThumbnailSize::ViewThumbnailSize(PreferencesWindow *pwindow,
+		AppearancePrefs *aprefs, int x, int y)
+ : BC_TumbleTextBox(aprefs,
+	pwindow->thread->preferences->awindow_picon_h,
+	16, 512, x, y, 80)
+
+{
+	this->pwindow = pwindow;
+	this->aprefs = aprefs;
+}
+
+int ViewThumbnailSize::handle_event()
+{
+	int v = atoi(get_text());
+	bclamp(v, 16,512);
+	pwindow->thread->preferences->awindow_picon_h = v;
+	return 1;
+}
 
 
 UseTipWindow::UseTipWindow(PreferencesWindow *pwindow, int x, int y)

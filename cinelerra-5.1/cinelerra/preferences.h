@@ -92,6 +92,8 @@ public:
 	int perpetual_session;
 	int trap_sigsegv;
 	int trap_sigintr;
+// media thumbnail size
+	int awindow_picon_h;
 // Title of theme
 	char theme[BCTEXTLEN];
 // plugin icon set

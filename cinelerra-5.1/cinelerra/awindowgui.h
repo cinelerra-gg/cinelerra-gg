@@ -53,7 +53,12 @@
 #define SELECT_USED 1
 #define SELECT_UNUSED 2
 #define SELECT_NONE 3
+
+// in percent view_h
 #define VIEW_POPUP_BAR_H 15
+
+#define ASSET_DRAW_IMAGE 0
+#define ASSET_DRAW_MEDIA_MAP 1
 
 class AWindowFolderItem : public BC_ListBoxItem
 {
@@ -160,17 +165,34 @@ public:
 	~AssetVIcon();
 };
 
+class AssetViewPopup : public ViewPopup
+{
+public:
+	AssetViewPopup(VIconThread *vt, int draw_mode,
+		VFrame *frame, int x, int y, int w, int h);
+	~AssetViewPopup();
+
+	int button_press_event();
+	int button_release_event();
+	int cursor_motion_event();
+
+	void draw_vframe(VFrame *frame);
+
+	int bar_h;
+	int draw_mode;
+	int dragging;
+};
+
 class AssetVIconThread : public VIconThread
 {
 public:
 	AssetVIconThread(AWindowAssets *asset_list);
 	~AssetVIconThread();
 
-	int popup_button_press(int x, int y);
-	int popup_button_release(int x, int y);
-	int popup_cursor_motion(int x, int y);
+	void set_view_popup(AssetVIcon *vicon, int draw_mode=-1);
+	ViewPopup *new_view_window(VFrame *frame);
 
-	int popup_dragging;
+	int draw_mode;
 };
 
 
@@ -319,14 +341,15 @@ public:
 	AddTools *add_tools;
 // Temporary for reading picons from files
 	VFrame *temp_picon;
-	VIconThread *vicon_thread;
+	AssetVIconThread *vicon_thread;
 	AssetVIconAudio *vicon_audio;
 
 	int64_t plugin_visibility;
 	AWindowRemovePlugin *remove_plugin;
 
 	AVIconDrawing *avicon_drawing;
-	int avicon_w, avicon_h, vicon_drawing;
+	int avicon_w, avicon_h;
+	int vicon_drawing;
 	int allow_iconlisting;
 
 // Create custom atoms to be used for async messages between windows
@@ -362,12 +385,8 @@ public:
 	int column_resize_event();
 	int focus_in_event();
 	int focus_out_event();
-	int cursor_enter_event();
-	int cursor_leave_event();
 	void update_vicon_area();
 	int mouse_over_event(int no);
-	static VIconDrawVFrame draw_vframe;
-	VIconDrawVFrame *draw_func;
 
 	MWindow *mwindow;
 	AWindowGUI *gui;

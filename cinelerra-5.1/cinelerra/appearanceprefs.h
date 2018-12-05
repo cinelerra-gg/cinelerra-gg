@@ -47,6 +47,7 @@ public:
 	TimeFormatFeet *feet;
 	TimeFormatSeconds *seconds;
 	ViewThumbnails *thumbnails;
+	ViewThumbnailSize *thumbnail_size;
 	YuvColorSpace *yuv_color_space;
 	YuvColorRange *yuv_color_range;
 };
@@ -170,6 +171,16 @@ class ViewThumbnails : public BC_CheckBox
 public:
 	ViewThumbnails(int x, int y, PreferencesWindow *pwindow);
 	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+class ViewThumbnailSize : public BC_TumbleTextBox
+{
+public:
+	ViewThumbnailSize(PreferencesWindow *pwindow,
+		AppearancePrefs *aprefs, int x, int y);
+	int handle_event();
+	AppearancePrefs *aprefs;
 	PreferencesWindow *pwindow;
 };
 

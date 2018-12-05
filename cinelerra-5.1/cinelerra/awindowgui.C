@@ -139,11 +139,11 @@ VFrame *AssetVIcon::frame()
 		temp->draw_line(x,0, x,vh);
 		return temp;
 	}
-	int ww = picon->gui->vicon_thread->view_w;
-	int hh = picon->gui->vicon_thread->view_h;
+	int vw = picon->gui->vicon_thread->vw;
+	int vh = picon->gui->vicon_thread->vh;
 	if( !asset->video_data ) {
 		if( !temp ) {
-			temp = new VFrame(0, -1, ww, hh, BC_RGB888, -1);
+			temp = new VFrame(0, -1, vw, vh, BC_RGB888, -1);
 			temp->clear_frame();
 		}
 		return temp;
@@ -166,7 +166,7 @@ VFrame *AssetVIcon::frame()
 			int64_t pos = images.size() / picon->gui->vicon_thread->refresh_rate * frame_rate;
 			file->set_video_position(pos,0);
 			if( file->read_frame(temp) ) temp->clear_frame();
-			add_image(temp, ww, hh, BC_RGB8);
+			add_image(temp, vw, vh, BC_RGB8);
 		}
 		mwindow->video_cache->check_in(asset);
 	}
@@ -307,28 +307,42 @@ void AssetVIcon::stop_audio()
 	playing_audio = 0;
 }
 
-
-AssetVIconThread::AssetVIconThread(AWindowAssets *asset_list)
- : VIconThread(asset_list)
+AssetViewPopup::AssetViewPopup(VIconThread *vt, int draw_mode,
+		VFrame *frame, int x, int y, int w, int h)
+ : ViewPopup(vt, frame, x, y, w, h)
 {
-	popup_dragging = 0;
+	this->draw_mode = draw_mode;
+	this->bar_h = (VIEW_POPUP_BAR_H * h) / 200;
 }
 
-AssetVIconThread::~AssetVIconThread()
+AssetViewPopup::~AssetViewPopup()
 {
 }
 
-int AssetVIconThread::popup_button_press(int x, int y)
+int AssetViewPopup::button_press_event()
 {
-	if( !view_win || !view_win->is_event_win() ) return 0;
-	if( !vicon || vicon->playing_audio >= 0 ) return 0;
-	popup_dragging = 0;
-	int view_w = view_win->get_w(), view_h = view_win->get_h();
-	AssetVIcon *vicon = (AssetVIcon *)this->vicon;
+	if( !is_event_win() ) return 0;
+	AssetVIconThread *avt = (AssetVIconThread *)vt;
+	if( !avt->vicon ) return 0;
+
+	int dir = 1, button = get_buttonpress();
+	switch( button ) {
+	case WHEEL_DOWN: dir = -1; // fall thru
+	case WHEEL_UP:   return zoom_scale(dir);
+	case LEFT_BUTTON:
+		break;
+	default:
+		return 0;
+	}
+
+	if( draw_mode != ASSET_DRAW_MEDIA_MAP ) return 0;
+	int x = get_cursor_x(), y = get_cursor_y();
+	AssetVIcon *vicon = (AssetVIcon *)avt->vicon;
 	AssetPicon *picon = vicon->picon;
 	MWindow *mwindow = picon->mwindow;
 	EDL *edl = mwindow->edl;
-	if( y < VIEW_POPUP_BAR_H ) {
+	dragging = 0;
+	if( y < bar_h ) {
 		Indexable *idxbl =
 			picon->indexable ? picon->indexable :
 			picon->edl ? picon->edl : 0;
@@ -340,7 +354,7 @@ int AssetVIconThread::popup_button_press(int x, int y)
 		double video_length = frame_rate > 0 && idxbl->have_video() ?
 			idxbl->get_video_frames() / frame_rate : 0;
 		double idxbl_length = bmax(audio_length, video_length);
-		double pos = x * idxbl_length / view_w;
+		double pos = x * idxbl_length / get_w();
 		double start = 0, end = idxbl_length;
 		double lt = DBL_MAX, rt = DBL_MAX;
 		for( Track *track=edl->tracks->first; track!=0; track=track->next ) {
@@ -373,16 +387,16 @@ int AssetVIconThread::popup_button_press(int x, int y)
 		vwindow->update_position(CHANGE_NONE, 0, 1, 0);
 		return 1;
 	}
-	if( y >= view_h-VIEW_POPUP_BAR_H ) {
-		popup_dragging = 1;
-		if( !view_win->ctrl_down() )
-			return popup_cursor_motion(x, y);
+	if( y >= get_h()-bar_h ) {
+		dragging = 1;
+		if( !ctrl_down() )
+			return cursor_motion_event();
 		Indexable *idxbl =
 			picon->indexable ? picon->indexable :
 			picon->edl ? picon->edl : 0;
 		if( !idxbl ) return 0;
 		double total_length = mwindow->edl->tracks->total_length();
-		double pos = x * total_length / view_w;
+		double pos = x * total_length / get_w();
 		double start = 0, end = total_length;
 		double lt = DBL_MAX, rt = DBL_MAX;
 		for( Track *track=edl->tracks->first; track!=0; track=track->next ) {
@@ -416,28 +430,28 @@ int AssetVIconThread::popup_button_press(int x, int y)
 	return 0;
 }
 
-int AssetVIconThread::popup_button_release(int x, int y)
+int AssetViewPopup::button_release_event()
 {
-	if( !view_win || !view_win->is_event_win() ) return 0;
-	if( !vicon || vicon->playing_audio >= 0 ) return 0;
-	popup_dragging = 0;
+	if( !is_event_win() ) return 0;
+	dragging = 0;
 	return 1;
 }
 
-int AssetVIconThread::popup_cursor_motion(int x, int y)
+int AssetViewPopup::cursor_motion_event()
 {
-	if( !view_win || !view_win->is_event_win() ) return 0;
-	if( !vicon || vicon->playing_audio >= 0 ) return 0;
-	if( !view_win->get_button_down() || view_win->get_buttonpress() != 1 ||
-	    view_win->ctrl_down() || view_win->alt_down() || view_win->shift_down() )
+	if( !is_event_win() ) return 0;
+	AssetVIconThread *avt = (AssetVIconThread *)vt;
+	if( !avt->vicon || draw_mode != ASSET_DRAW_MEDIA_MAP ) return 0;
+	if( !get_button_down() || get_buttonpress() != 1 ||
+	    ctrl_down() || alt_down() || shift_down() )
 		return 0;
-	AssetVIcon *vicon = (AssetVIcon *)this->vicon;
+	AssetVIcon *vicon = (AssetVIcon *)avt->vicon;
 	MWindow *mwindow = vicon->picon->mwindow;
 	EDL *edl = mwindow->edl;
-	if( popup_dragging ) {
+	if( dragging ) {
+		int x = get_cursor_x();
 		double total_length = edl->tracks->total_length();
-		int view_w = view_win->get_w();
-		double pos = x * total_length / view_w;
+		double pos = x * total_length / get_w();
 		mwindow->gui->lock_window("AssetVIcon::popup_cursor_motion");
 		mwindow->select_point(pos);
 		mwindow->zoom_sample(edl->local_session->zoom_sample);
@@ -445,6 +459,114 @@ int AssetVIconThread::popup_cursor_motion(int x, int y)
 		return 1;
 	}
 	return 0;
+}
+
+void AssetViewPopup::draw_vframe(VFrame *vframe) 
+{
+	if( draw_mode == ASSET_DRAW_IMAGE ) {
+		ViewPopup::draw_vframe(vframe);
+		return;
+	}
+	set_color(BLACK);
+	draw_box(0,0,get_w(),get_h());
+	if( draw_mode != ASSET_DRAW_MEDIA_MAP )
+		return;
+	int y1 = bar_h;
+	int y2 = get_h()-bar_h;
+	BC_WindowBase::draw_vframe(vframe, 0,y1, get_w(),y2-y1);
+	AssetVIconThread *avt = (AssetVIconThread *)vt;
+	AssetVIcon *vicon = (AssetVIcon *)avt->vicon;
+	AssetPicon *picon = (AssetPicon *)vicon->picon;
+	Indexable *idxbl =
+		picon->indexable ? picon->indexable :
+		picon->edl ? picon->edl : 0;
+	if( !idxbl ) return;
+	double sample_rate = idxbl->get_sample_rate();
+	double audio_length = sample_rate > 0 && idxbl->have_audio() ?
+		idxbl->get_audio_samples() / sample_rate : 0;
+	double frame_rate = idxbl->get_frame_rate();
+	double video_length = frame_rate > 0 && idxbl->have_video() ?
+		idxbl->get_video_frames() / frame_rate : 0;
+	double idxbl_length = bmax(audio_length, video_length);
+	if( !idxbl_length ) idxbl_length = 1;
+
+	EDL *edl = picon->mwindow->edl;
+	double total_length = edl->tracks->total_length();
+	if( !total_length ) total_length = 1;
+	for( Track *track=edl->tracks->first; track!=0; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit!=0; edit=edit->next ) {
+			Indexable *indexable = (Indexable *)edit->asset;
+			if( !indexable ) indexable = (Indexable *)edit->nested_edl;
+			if( !indexable ) continue;
+			if( indexable->id == idxbl->id ||
+			    (!indexable->is_asset == !idxbl->is_asset &&
+			     !strcmp(indexable->path, idxbl->path)) ) {
+				double pos1 = track->from_units(edit->startsource);
+				double pos2 = track->from_units(edit->startsource + edit->length);
+				double xscale = get_w() / idxbl_length;
+				int ex1 = pos1 * xscale, ex2 = pos2 * xscale;
+				set_color(WHITE);
+				draw_box(ex1,0, ex2-ex1,y1);
+				set_color(BLACK);
+				draw_line(ex1,0, ex1,y1);
+				draw_line(ex2,0, ex2,y1);
+				pos1 = track->from_units(edit->startproject);
+				pos2 = track->from_units(edit->startproject + edit->length);
+				xscale = get_w() / total_length;
+				int px1 = pos1 * xscale, px2 = pos2 * xscale;
+				set_color(RED);
+				draw_box(px1,y2, px2-px1,get_h()-y2);
+				set_color(BLACK);
+				draw_line(px1,y2, px1,get_h()-1);
+				draw_line(px2,y2, px2,get_h()-1);
+
+				set_color(YELLOW);
+				draw_line(ex1,y1, px1,y2);
+				draw_line(ex2,y1, px2,y2);
+			}
+		}
+	}
+}
+
+
+AssetVIconThread::AssetVIconThread(AWindowAssets *asset_list)
+ : VIconThread(asset_list,
+	asset_list->mwindow->preferences->awindow_picon_h * 16/9,
+	asset_list->mwindow->preferences->awindow_picon_h,
+	4 * asset_list->mwindow->preferences->awindow_picon_h * 16/9,
+	4 * asset_list->mwindow->preferences->awindow_picon_h)
+{
+	draw_mode = ASSET_DRAW_IMAGE;
+}
+
+AssetVIconThread::~AssetVIconThread()
+{
+}
+
+void AssetVIconThread::set_view_popup(AssetVIcon *vicon, int draw_mode)
+{
+	if( draw_mode >= 0 )
+		this->draw_mode = draw_mode;
+	VIconThread::set_view_popup(vicon);
+}
+
+ViewPopup *AssetVIconThread::new_view_window(VFrame *frame)
+{
+	BC_WindowBase *parent = wdw->get_parent();
+	XineramaScreenInfo *info = parent->get_xinerama_info(-1);
+	int cx = info ? info->x_org + info->width/2 : parent->get_root_w(0)/2;
+	int cy = info ? info->y_org + info->height/2 : parent->get_root_h(0)/2;
+	int vx = viewing->get_vx(), rx = 0;
+	int vy = viewing->get_vy(), ry = 0;
+	wdw->get_root_coordinates(vx, vy, &rx, &ry);
+	rx += (rx >= cx ? -view_w : viewing->vw);
+	ry += (ry >= cy ? -view_h : viewing->vh);
+	AssetViewPopup *popup = new AssetViewPopup(this, draw_mode,
+		frame, rx, ry, view_w, view_h);
+	if( draw_mode == ASSET_DRAW_MEDIA_MAP )
+		vicon->playing_audio = -1;
+	wdw->set_active_subwindow(popup);
+	return popup;
 }
 
 
@@ -671,7 +793,8 @@ void AssetPicon::create_objects()
 	char name[BCTEXTLEN];
 	int pixmap_w, pixmap_h;
 
-	pixmap_h = 50 * BC_WindowBase::get_resources()->icon_scale;
+	int picon_h = mwindow->preferences->awindow_picon_h;
+	pixmap_h = picon_h * BC_WindowBase::get_resources()->icon_scale;
 
 	if( indexable ) {
 		fs.extract_name(name, indexable->path);
@@ -2313,12 +2436,25 @@ int AWindowFolders::selection_changed()
 
 int AWindowFolders::button_press_event()
 {
-	int result = 0;
+	AssetVIconThread *avt = gui->vicon_thread;
+	if(  gui->asset_list->is_event_win() &&
+	     avt->viewing && avt->view_win ) {
+		int dir = 1, button = get_buttonpress();
+		switch( button ) {
+		case WHEEL_DOWN: dir = -1;  // fall thru
+		case WHEEL_UP: {
+			int x = get_cursor_x(), y = get_cursor_y();
+			if( avt->cursor_inside(x, y) )
+				return avt->view_win->zoom_scale(dir);
+			break; }
+		}
+	}
 
-	result = BC_ListBox::button_press_event();
+	int result = BC_ListBox::button_press_event();
 
 	if( !result ) {
-		if( get_buttonpress() == 3 && is_event_win() && cursor_inside() ) {
+		if( get_buttonpress() == RIGHT_BUTTON &&
+		    is_event_win() && cursor_inside() ) {
 			gui->folderlist_menu->update_titles();
 			gui->folderlist_menu->activate_menu();
 			result = 1;
@@ -2438,7 +2574,6 @@ AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, in
 	this->gui = gui;
 	set_drag_scroll(0);
 	set_scroll_stretch(1, 1);
-	draw_func = 0;
 }
 
 AWindowAssets::~AWindowAssets()
@@ -2563,81 +2698,15 @@ int AWindowAssets::selection_changed()
 		   mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ||
 		   mwindow->edl->session->awindow_folder >= AWINDOW_USER_FOLDERS ) &&
 		   (item = (AssetPicon*)get_selection(0, 0)) != 0 ) {
-		VIcon *vicon = 0;
+		AssetVIcon *vicon = 0;
 		if( !gui->vicon_thread->vicon  ) {
 			vicon = item->vicon;
 		}
-		if( vicon && get_buttonpress() == 2 ) {
-			vicon->playing_audio = -1;
-			draw_func = AWindowAssets::draw_vframe;
-		}
-		else
-			draw_func = 0;
-		gui->vicon_thread->set_view_popup(vicon, draw_func);
+		int draw_mode = vicon && get_buttonpress() == 2 ?
+			ASSET_DRAW_MEDIA_MAP : ASSET_DRAW_IMAGE;
+		gui->vicon_thread->set_view_popup(vicon, draw_mode);
 	}
 	return 1;
-}
-
-void AWindowAssets::draw_vframe(BC_WindowBase *wdw, VFrame *vframe) 
-{
-	int y1 = VIEW_POPUP_BAR_H;
-	int y2 = wdw->get_h()-VIEW_POPUP_BAR_H;
-	wdw->set_color(BLACK);
-	wdw->draw_box(0,0,wdw->get_w(),wdw->get_h());
-	wdw->draw_vframe(vframe, 0,y1, wdw->get_w(),y2-y1);
-	ViewPopup *view_popup = (ViewPopup *)wdw;
-	AssetVIconThread *vt = (AssetVIconThread *)view_popup->vt;
-	AssetVIcon *vicon = (AssetVIcon *)vt->vicon;
-	AssetPicon *picon = (AssetPicon *)vicon->picon;
-	Indexable *idxbl =
-		picon->indexable ? picon->indexable :
-		picon->edl ? picon->edl : 0;
-	if( !idxbl ) return;
-	double sample_rate = idxbl->get_sample_rate();
-	double audio_length = sample_rate > 0 && idxbl->have_audio() ?
-		idxbl->get_audio_samples() / sample_rate : 0;
-	double frame_rate = idxbl->get_frame_rate();
-	double video_length = frame_rate > 0 && idxbl->have_video() ?
-		idxbl->get_video_frames() / frame_rate : 0;
-	double idxbl_length = bmax(audio_length, video_length);
-	if( !idxbl_length ) idxbl_length = 1;
-
-	EDL *edl = picon->mwindow->edl;
-	double total_length = edl->tracks->total_length();
-	if( !total_length ) total_length = 1;
-	for( Track *track=edl->tracks->first; track!=0; track=track->next ) {
-		for( Edit *edit=track->edits->first; edit!=0; edit=edit->next ) {
-			Indexable *indexable = (Indexable *)edit->asset;
-			if( !indexable ) indexable = (Indexable *)edit->nested_edl;
-			if( !indexable ) continue;
-			if( indexable->id == idxbl->id ||
-			    (!indexable->is_asset == !idxbl->is_asset &&
-			     !strcmp(indexable->path, idxbl->path)) ) {
-				double pos1 = track->from_units(edit->startsource);
-				double pos2 = track->from_units(edit->startsource + edit->length);
-				double xscale = wdw->get_w() / idxbl_length;
-				int ex1 = pos1 * xscale, ex2 = pos2 * xscale;
-				wdw->set_color(WHITE);
-				wdw->draw_box(ex1,0, ex2-ex1,y1);
-				wdw->set_color(BLACK);
-				wdw->draw_line(ex1,0, ex1,y1);
-				wdw->draw_line(ex2,0, ex2,y1);
-				pos1 = track->from_units(edit->startproject);
-				pos2 = track->from_units(edit->startproject + edit->length);
-				xscale = wdw->get_w() / total_length;
-				int px1 = pos1 * xscale, px2 = pos2 * xscale;
-				wdw->set_color(RED);
-				wdw->draw_box(px1,y2, px2-px1,wdw->get_h()-y2);
-				wdw->set_color(BLACK);
-				wdw->draw_line(px1,y2, px1,wdw->get_h()-1);
-				wdw->draw_line(px2,y2, px2,wdw->get_h()-1);
-
-				wdw->set_color(YELLOW);
-				wdw->draw_line(ex1,y1, px1,y2);
-				wdw->draw_line(ex2,y1, px2,y2);
-			}
-		}
-	}
 }
 
 void AWindowAssets::draw_background()
@@ -2818,21 +2887,6 @@ int AWindowAssets::focus_out_event()
 	return BC_ListBox::focus_out_event();
 }
 
-int AWindowAssets::cursor_enter_event()
-{
-	int ret = BC_ListBox::cursor_enter_event();
-	gui->start_vicon_drawing();
-	return ret;
-}
-
-int AWindowAssets::cursor_leave_event()
-{
-	VIcon *vicon = gui->vicon_thread->vicon;
-	if( vicon && vicon->playing_audio >= 0 )
-		gui->stop_vicon_drawing();
-	return BC_ListBox::cursor_leave_event();
-}
-
 void AWindowAssets::update_vicon_area()
 {
 	int x0 = 0, x1 = get_w();
@@ -2850,11 +2904,7 @@ int AWindowAssets::mouse_over_event(int no)
 	if( gui->vicon_thread->viewing &&
 	    no >= 0 && no < gui->displayed_assets[0].size() ) {
 		AssetPicon *picon = (AssetPicon *)gui->displayed_assets[0][no];
-		VIcon *vicon = picon->vicon;
-		if( gui->vicon_thread->vicon &&
-		    gui->vicon_thread->vicon->playing_audio < 0 )
-			vicon->playing_audio = -1;
-		picon->gui->vicon_thread->set_view_popup(vicon, draw_func);
+		gui->vicon_thread->set_view_popup(picon->vicon);
 	}
 	return 0;
 }

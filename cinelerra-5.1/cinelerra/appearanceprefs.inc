@@ -36,6 +36,7 @@ class ViewThemeItem;
 class ViewPluginIcons;
 class ViewPluginIconItem;
 class ViewThumbnails;
+class ViewThumbnailSize;
 class UseTipWindow;
 class UseWarnIndecies;
 class UseWarnVersion;
