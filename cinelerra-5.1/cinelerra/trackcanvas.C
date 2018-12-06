@@ -1193,7 +1193,6 @@ void TrackCanvas::draw_paste_destination()
 								from_units(drop_edit_position(&insertion,
 									mwindow->session->drag_edit,
 									mwindow->session->drag_edit->length));
-							current_vedit++;
 						}
 					}
 					if( paste_position >= 0 ) {

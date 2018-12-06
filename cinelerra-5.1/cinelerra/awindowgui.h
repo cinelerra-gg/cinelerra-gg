@@ -44,6 +44,7 @@
 #include "mwindow.inc"
 #include "mutex.inc"
 #include "pluginserver.inc"
+#include "preferences.inc"
 #include "proxypopup.inc"
 #include "renderengine.inc"
 #include "samples.inc"
@@ -57,8 +58,10 @@
 // in percent view_h
 #define VIEW_POPUP_BAR_H 15
 
-#define ASSET_DRAW_IMAGE 0
-#define ASSET_DRAW_MEDIA_MAP 1
+#define ASSET_VIEW_NONE 0
+#define ASSET_VIEW_ICON 1
+#define ASSET_VIEW_MEDIA 2
+#define ASSET_VIEW_MEDIA_MAP 3
 
 class AWindowFolderItem : public BC_ListBoxItem
 {
@@ -169,7 +172,7 @@ class AssetViewPopup : public ViewPopup
 {
 public:
 	AssetViewPopup(VIconThread *vt, int draw_mode,
-		VFrame *frame, int x, int y, int w, int h);
+			int x, int y, int w, int h);
 	~AssetViewPopup();
 
 	int button_press_event();
@@ -186,13 +189,15 @@ public:
 class AssetVIconThread : public VIconThread
 {
 public:
-	AssetVIconThread(AWindowAssets *asset_list);
+	AssetVIconThread(AWindowGUI *gui, Preferences *preferences);
 	~AssetVIconThread();
 
-	void set_view_popup(AssetVIcon *vicon, int draw_mode=-1);
-	ViewPopup *new_view_window(VFrame *frame);
+	void set_view_popup(AssetVIcon *v, int draw_mode=-1);
+	ViewPopup *new_view_window();
 
+	AWindowGUI *gui;
 	int draw_mode;
+	int vicon_cmodel;
 };
 
 

@@ -54,6 +54,7 @@
 #include "labels.h"
 #include "labelpopup.h"
 #include "localsession.h"
+#include "mainerror.h"
 #include "mainmenu.h"
 #include "mainsession.h"
 #include "mwindowgui.h"
@@ -111,7 +112,10 @@ AssetVIcon::~AssetVIcon()
 
 VFrame *AssetVIcon::frame()
 {
+	AssetVIconThread *avt = picon->gui->vicon_thread;
 	Asset *asset = (Asset *)picon->indexable;
+	if( !asset )
+		return *images[0];
 	if( !asset->video_data && audio_data && audio_size && length > 0 ) {
 		if( !temp ) temp = new VFrame(0, -1, w, h, BC_RGB888, -1);
 		temp->clear_frame();
@@ -139,8 +143,7 @@ VFrame *AssetVIcon::frame()
 		temp->draw_line(x,0, x,h);
 		return temp;
 	}
-	int vw = picon->gui->vicon_thread->vw;
-	int vh = picon->gui->vicon_thread->vh;
+	int vw = avt->vw, vh = avt->vh, vicon_cmodel = avt->vicon_cmodel;
 	if( !asset->video_data ) {
 		if( !temp ) {
 			temp = new VFrame(0, -1, vw, vh, BC_RGB888, -1);
@@ -157,12 +160,6 @@ VFrame *AssetVIcon::frame()
 		}
 		if( !temp )
 			temp = new VFrame(0, -1, asset->width, asset->height, BC_RGB888, -1);
-		int vicon_cmodel = BC_RGB8;
-		switch( mwindow->preferences->vicon_color_mode ) {
-		case VICON_COLOR_MODE_LOW:   vicon_cmodel = BC_RGB8;    break;
-		case VICON_COLOR_MODE_MED:   vicon_cmodel = BC_RGB565;  break;
-		case VICON_COLOR_MODE_HIGH:  vicon_cmodel = BC_RGB888;  break;
-		}
 		while( seq_no >= images.size() ) {
 			mwindow->video_cache->check_in(asset);
 			Thread::yield();
@@ -314,8 +311,8 @@ void AssetVIcon::stop_audio()
 }
 
 AssetViewPopup::AssetViewPopup(VIconThread *vt, int draw_mode,
-		VFrame *frame, int x, int y, int w, int h)
- : ViewPopup(vt, frame, x, y, w, h)
+		int x, int y, int w, int h)
+ : ViewPopup(vt, x, y, w, h)
 {
 	this->draw_mode = draw_mode;
 	this->bar_h = (VIEW_POPUP_BAR_H * h) / 200;
@@ -341,7 +338,7 @@ int AssetViewPopup::button_press_event()
 		return 0;
 	}
 
-	if( draw_mode != ASSET_DRAW_MEDIA_MAP ) return 0;
+	if( draw_mode != ASSET_VIEW_MEDIA_MAP ) return 0;
 	int x = get_cursor_x(), y = get_cursor_y();
 	AssetVIcon *vicon = (AssetVIcon *)avt->vicon;
 	AssetPicon *picon = vicon->picon;
@@ -395,7 +392,7 @@ int AssetViewPopup::button_press_event()
 	}
 	if( y >= get_h()-bar_h ) {
 		dragging = 1;
-		if( !ctrl_down() )
+		if( !ctrl_down() && !shift_down() )
 			return cursor_motion_event();
 		Indexable *idxbl =
 			picon->indexable ? picon->indexable :
@@ -424,9 +421,9 @@ int AssetViewPopup::button_press_event()
 			}
 		}
 		mwindow->gui->lock_window("AssetVIcon::popup_button_press");
-		if( !shift_down() ) mwindow->select_point(!ctrl_down() ? pos : start);
-		edl->local_session->set_selectionstart(!ctrl_down() ? pos : start);
-		edl->local_session->set_selectionend(!ctrl_down() ? pos : !shift_down() ? start : end);
+		mwindow->select_point(!ctrl_down() && !shift_down() ? pos : start);
+		edl->local_session->set_selectionstart(start);
+		edl->local_session->set_selectionend(!shift_down() ? start : end);
 		mwindow->zoom_sample(edl->local_session->zoom_sample);
 		mwindow->gui->unlock_window();
 		return 1;
@@ -445,8 +442,8 @@ int AssetViewPopup::cursor_motion_event()
 {
 	if( !is_event_win() ) return 0;
 	AssetVIconThread *avt = (AssetVIconThread *)vt;
-	if( !avt->vicon || draw_mode != ASSET_DRAW_MEDIA_MAP ) return 0;
-	if( !get_button_down() || get_buttonpress() != 1 ||
+	if( !avt->vicon || draw_mode != ASSET_VIEW_MEDIA_MAP ) return 0;
+	if( !get_button_down() || get_buttonpress() != LEFT_BUTTON ||
 	    ctrl_down() || alt_down() || shift_down() )
 		return 0;
 	AssetVIcon *vicon = (AssetVIcon *)avt->vicon;
@@ -467,14 +464,18 @@ int AssetViewPopup::cursor_motion_event()
 
 void AssetViewPopup::draw_vframe(VFrame *vframe) 
 {
-	if( draw_mode == ASSET_DRAW_IMAGE ) {
+	switch( draw_mode ) {
+	case ASSET_VIEW_MEDIA:
+	case ASSET_VIEW_ICON:
 		ViewPopup::draw_vframe(vframe);
+	case ASSET_VIEW_NONE:
+	default:
 		return;
+	case ASSET_VIEW_MEDIA_MAP:
+		break;
 	}
 	set_color(BLACK);
 	draw_box(0,0,get_w(),get_h());
-	if( draw_mode != ASSET_DRAW_MEDIA_MAP )
-		return;
 	int y1 = bar_h;
 	int y2 = get_h()-bar_h;
 	BC_WindowBase::draw_vframe(vframe, 0,y1, get_w(),y2-y1);
@@ -533,28 +534,37 @@ void AssetViewPopup::draw_vframe(VFrame *vframe)
 }
 
 
-AssetVIconThread::AssetVIconThread(AWindowAssets *asset_list)
- : VIconThread(asset_list,
-	asset_list->mwindow->preferences->vicon_size * 16/9,
-	asset_list->mwindow->preferences->vicon_size,
-	4*asset_list->mwindow->preferences->awindow_picon_h * 16/9,
-	4*asset_list->mwindow->preferences->awindow_picon_h)
+AssetVIconThread::AssetVIconThread(AWindowGUI *gui, Preferences *preferences)
+ : VIconThread(gui->asset_list, preferences->vicon_size * 16/9, preferences->vicon_size,
+	4*preferences->awindow_picon_h * 16/9, 4*preferences->awindow_picon_h)
 {
-	draw_mode = ASSET_DRAW_IMAGE;
+	this->gui = gui;
+	draw_mode = ASSET_VIEW_NONE;
+	int vicon_cmodel = BC_RGB8;
+	switch( preferences->vicon_color_mode ) {
+	case VICON_COLOR_MODE_LOW:   vicon_cmodel = BC_RGB8;    break;
+	case VICON_COLOR_MODE_MED:   vicon_cmodel = BC_RGB565;  break;
+	case VICON_COLOR_MODE_HIGH:  vicon_cmodel = BC_RGB888;  break;
+	}
+	this->vicon_cmodel = vicon_cmodel;
 }
 
 AssetVIconThread::~AssetVIconThread()
 {
 }
 
-void AssetVIconThread::set_view_popup(AssetVIcon *vicon, int draw_mode)
+void AssetVIconThread::set_view_popup(AssetVIcon *v, int draw_mode)
 {
-	if( draw_mode >= 0 )
-		this->draw_mode = draw_mode;
-	VIconThread::set_view_popup(vicon);
+	gui->stop_vicon_drawing();
+	int mode = !v ? ASSET_VIEW_NONE :
+		draw_mode >= 0 ? draw_mode :
+		this->draw_mode;
+	this->vicon = v;
+	this->draw_mode = mode;
+	gui->start_vicon_drawing();
 }
 
-ViewPopup *AssetVIconThread::new_view_window(VFrame *frame)
+ViewPopup *AssetVIconThread::new_view_window()
 {
 	BC_WindowBase *parent = wdw->get_parent();
 	XineramaScreenInfo *info = parent->get_xinerama_info(-1);
@@ -566,8 +576,8 @@ ViewPopup *AssetVIconThread::new_view_window(VFrame *frame)
 	rx += (rx >= cx ? -view_w : viewing->w);
 	ry += (ry >= cy ? -view_h : viewing->h);
 	AssetViewPopup *popup = new AssetViewPopup(this, draw_mode,
-		frame, rx, ry, view_w, view_h);
-	if( draw_mode == ASSET_DRAW_MEDIA_MAP )
+		rx, ry, view_w, view_h);
+	if( draw_mode == ASSET_VIEW_MEDIA_MAP )
 		vicon->playing_audio = -1;
 	wdw->set_active_subwindow(popup);
 	return popup;
@@ -852,7 +862,8 @@ void AssetPicon::create_objects()
 					icon_vframe = new VFrame(0,
 						-1, pixmap_w, pixmap_h, BC_RGB888, -1);
 					icon_vframe->transfer_from(gui->temp_picon);
-					if( asset->folder_no == AW_MEDIA_FOLDER ) {
+					if( asset->folder_no == AW_MEDIA_FOLDER ||
+					    asset->folder_no == AW_PROXY_FOLDER ) {
 // vicon images
 						double framerate = asset->get_frame_rate();
 						if( !framerate ) framerate = VICON_RATE;
@@ -870,27 +881,9 @@ void AssetPicon::create_objects()
 						}
 						gui->vicon_thread->add_vicon(vicon);
 					}
-					else if( asset->folder_no == AW_PROXY_FOLDER ) {
-						char unproxy_path[BCTEXTLEN];
-						int proxy_scale = mwindow->edl->session->proxy_scale;
-						if( !ProxyRender::from_proxy_path(unproxy_path, asset, proxy_scale) ) {
-							Asset *unproxy = mwindow->edl->assets->get_asset(unproxy_path);
-							if( unproxy ) {
-								int i = gui->assets.total;
-								while( --i >= 0 ) {
-									AssetPicon *picon = (AssetPicon*)gui->assets[i];
-									if( picon->id == unproxy->id ) {
-										vicon = picon->vicon;
-										if( vicon ) vicon->add_user();
-										break;
-									}
-								}
-							}
-						}
-					}
-
 				}
 				else {
+					eprintf("Unable to open %s\nin asset: %s",asset->path, get_text());
 					gui->lock_window("AssetPicon::create_objects 2");
 					icon = gui->video_icon;
 					icon_vframe = gui->video_vframe;
@@ -953,6 +946,7 @@ void AssetPicon::create_objects()
 						0, 0, pixmap_w, pixmap_h, 0, 0);
 				}
 				else {
+					eprintf("Unable to open %s\nin asset: %s",asset->path, get_text());
 					gui->lock_window("AssetPicon::create_objects 5");
 					icon = gui->audio_icon;
 					icon_vframe = gui->audio_vframe;
@@ -977,32 +971,26 @@ void AssetPicon::create_objects()
 		if( edl->tracks->playable_video_tracks() ) {
 			if( mwindow->preferences->use_thumbnails ) {
 				gui->unlock_window();
+				AssetVIconThread *avt = gui->vicon_thread;
 				char clip_icon_path[BCTEXTLEN];
 				char *clip_icon = edl->local_session->clip_icon;
+				VFrame *vframe = 0;
 				if( clip_icon[0] ) {
 					snprintf(clip_icon_path, sizeof(clip_icon_path),
 						"%s/%s", File::get_config_path(), clip_icon);
-					icon_vframe = VFramePng::vframe_png(clip_icon_path);
+					vframe = VFramePng::vframe_png(clip_icon_path);
 				}
-				if( !icon_vframe ) {
+				if( vframe &&
+				    ( vframe->get_w() != avt->vw || vframe->get_h() != avt->vh ) ) {
+					delete vframe;  vframe = 0;
+				}
+				int edl_h = edl->get_h(), edl_w = edl->get_w();
+				int height = edl_h > 0 ? edl_h : 1;
+				int width = edl_w > 0 ? edl_w : 1;
+				int color_model = edl->session->color_model;
+				if( !vframe ) {
 //printf("render clip: %s\n", name);
-					int edl_h = edl->get_h(), edl_w = edl->get_w();
-					int height = edl_h > 0 ? edl_h : 1;
-					int width = edl_w > 0 ? edl_w : 1;
-					int color_model = edl->session->color_model;
-					pixmap_w = pixmap_h * width / height;
-
-					if( gui->temp_picon &&
-					    (gui->temp_picon->get_color_model() != color_model ||
-					     gui->temp_picon->get_w() != width ||
-					     gui->temp_picon->get_h() != height) ) {
-						delete gui->temp_picon;  gui->temp_picon = 0;
-					}
-
-					if( !gui->temp_picon ) {
-						gui->temp_picon = new VFrame(0, -1,
-							width, height, color_model, -1);
-					}
+					VFrame::get_temp(gui->temp_picon, width, height, color_model);
 					char string[BCTEXTLEN];
 					sprintf(string, _("Rendering %s"), name);
 					mwindow->gui->lock_window("AssetPicon::create_objects");
@@ -1011,15 +999,17 @@ void AssetPicon::create_objects()
 					open_render_engine(edl, 0);
 					render_video(0, gui->temp_picon);
 					close_render_engine();
-					icon_vframe = new VFrame(0,
-						-1, pixmap_w, pixmap_h, BC_RGB888, -1);
-					icon_vframe->transfer_from(gui->temp_picon);
-					if( clip_icon[0] ) icon_vframe->write_png(clip_icon_path);
+					vframe = new VFrame(avt->vw, avt->vh, BC_RGB888);
+					vframe->transfer_from(gui->temp_picon);
+					if( clip_icon[0] )
+						vframe->write_png(clip_icon_path);
 				}
-				else {
-					pixmap_w = icon_vframe->get_w();
-					pixmap_h = icon_vframe->get_h();
-				}
+				pixmap_w = pixmap_h * width / height;
+				vicon = new AssetVIcon(this, pixmap_w, pixmap_h, VICON_RATE, 1);
+				vicon->add_image(vframe, avt->vw, avt->vh, avt->vicon_cmodel);
+				icon_vframe = new VFrame(pixmap_w, pixmap_h, BC_RGB888);
+				icon_vframe->transfer_from(vframe);
+				delete vframe;
 				gui->lock_window("AssetPicon::create_objects 0");
 				icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
 				icon->draw_vframe(icon_vframe,
@@ -1389,7 +1379,7 @@ void AWindowGUI::create_objects()
 	y1 += dy;  h1 -= dy;
 	add_subwindow(asset_list = new AWindowAssets(mwindow, this, x1, y1, w1, h1));
 
-	vicon_thread = new AssetVIconThread(asset_list);
+	vicon_thread = new AssetVIconThread(this, mwindow->preferences);
 	asset_list->update_vicon_area();
 	vicon_thread->start();
 	vicon_audio = new AssetVIconAudio(this);
@@ -1542,6 +1532,7 @@ void AWindowGUI::start_vicon_drawing()
 	if( !vicon_drawing || !vicon_thread->interrupted ) return;
 	if( mwindow->edl->session->awindow_folder == AW_MEDIA_FOLDER ||
 	    mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ||
+	    mwindow->edl->session->awindow_folder == AW_CLIP_FOLDER ||
 	    mwindow->edl->session->awindow_folder >= AWINDOW_USER_FOLDERS ) {
 		switch( mwindow->edl->session->assetlist_format ) {
 		case ASSETS_ICONS:
@@ -2424,7 +2415,7 @@ int AWindowFolders::selection_changed()
 
 		gui->stop_vicon_drawing();
 
-		if( get_button_down() && get_buttonpress() == 3 ) {
+		if( get_button_down() && get_buttonpress() == RIGHT_BUTTON ) {
 			gui->folderlist_menu->update_titles();
 			gui->folderlist_menu->activate_menu();
 		}
@@ -2440,20 +2431,6 @@ int AWindowFolders::selection_changed()
 
 int AWindowFolders::button_press_event()
 {
-	AssetVIconThread *avt = gui->vicon_thread;
-	if(  gui->asset_list->is_event_win() &&
-	     avt->viewing && avt->view_win ) {
-		int dir = 1, button = get_buttonpress();
-		switch( button ) {
-		case WHEEL_DOWN: dir = -1;  // fall thru
-		case WHEEL_UP: {
-			int x = get_cursor_x(), y = get_cursor_y();
-			if( avt->cursor_inside(x, y) )
-				return avt->view_win->zoom_scale(dir);
-			break; }
-		}
-	}
-
 	int result = BC_ListBox::button_press_event();
 
 	if( !result ) {
@@ -2464,7 +2441,6 @@ int AWindowFolders::button_press_event()
 			result = 1;
 		}
 	}
-
 
 	return result;
 }
@@ -2586,11 +2562,23 @@ AWindowAssets::~AWindowAssets()
 
 int AWindowAssets::button_press_event()
 {
-	int result = 0;
+	AssetVIconThread *avt = gui->vicon_thread;
+	if( avt->draw_mode != ASSET_VIEW_NONE && is_event_win() ) {
+		int dir = 1, button = get_buttonpress();
+		switch( button ) {
+		case WHEEL_DOWN: dir = -1;  // fall thru
+		case WHEEL_UP: {
+			int x = get_cursor_x(), y = get_cursor_y();
+			if( avt->cursor_inside(x, y) && avt->view_win )
+				return avt->view_win->zoom_scale(dir);
+			return 1; }
+		}
+	}
 
-	result = BC_ListBox::button_press_event();
+	int result = BC_ListBox::button_press_event();
 
-	if( !result && get_buttonpress() == 3 && is_event_win() && cursor_inside() ) {
+	if( !result && get_buttonpress() == RIGHT_BUTTON &&
+	    is_event_win() && cursor_inside() ) {
 		BC_ListBox::deactivate_selection();
 		int folder = mwindow->edl->session->awindow_folder;
 		switch( folder ) {
@@ -2662,9 +2650,9 @@ int AWindowAssets::selection_changed()
 {
 // Show popup window
 	AssetPicon *item;
-	if( get_button_down() && get_buttonpress() == 3 &&
+	int folder = mwindow->edl->session->awindow_folder;
+	if( get_button_down() && get_buttonpress() == RIGHT_BUTTON &&
 	    (item = (AssetPicon*)get_selection(0, 0)) ) {
-		int folder = mwindow->edl->session->awindow_folder;
 		switch( folder ) {
 		case AW_AEFFECT_FOLDER:
 		case AW_VEFFECT_FOLDER:
@@ -2697,18 +2685,30 @@ int AWindowAssets::selection_changed()
 		deactivate_selection();
 	}
 	else if( gui->vicon_drawing && get_button_down() &&
-		 ( get_buttonpress() == 1 || get_buttonpress() == 2 ) &&
-		 ( mwindow->edl->session->awindow_folder == AW_MEDIA_FOLDER ||
-		   mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ||
-		   mwindow->edl->session->awindow_folder >= AWINDOW_USER_FOLDERS ) &&
-		   (item = (AssetPicon*)get_selection(0, 0)) != 0 ) {
-		AssetVIcon *vicon = 0;
-		if( !gui->vicon_thread->vicon  ) {
-			vicon = item->vicon;
+		(item = (AssetPicon*)get_selection(0, 0)) != 0 ) {
+		switch( folder ) {
+		case AW_MEDIA_FOLDER:
+		case AW_PROXY_FOLDER:
+		case AWINDOW_USER_FOLDERS:
+			if( get_buttonpress() == LEFT_BUTTON ||
+			    get_buttonpress() == MIDDLE_BUTTON ) {
+				AssetVIcon *vicon = 0;
+				if( !gui->vicon_thread->vicon )
+					vicon = item->vicon;
+				int draw_mode = vicon && get_buttonpress() == MIDDLE_BUTTON ?
+					ASSET_VIEW_MEDIA_MAP : ASSET_VIEW_MEDIA;
+				gui->vicon_thread->set_view_popup(vicon, draw_mode);
+			}
+			break;
+		case AW_CLIP_FOLDER:
+			if( get_buttonpress() == LEFT_BUTTON ) {
+				AssetVIcon *vicon = 0;
+				if( !gui->vicon_thread->vicon )
+					vicon = item->vicon;
+				gui->vicon_thread->set_view_popup(vicon, ASSET_VIEW_ICON);
+			}
+			break;
 		}
-		int draw_mode = vicon && get_buttonpress() == 2 ?
-			ASSET_DRAW_MEDIA_MAP : ASSET_DRAW_IMAGE;
-		gui->vicon_thread->set_view_popup(vicon, draw_mode);
 	}
 	return 1;
 }

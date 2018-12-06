@@ -19,7 +19,7 @@ public:
 	virtual void draw_vframe(VFrame *frame);
 	int zoom_scale(int dir);
 
-	ViewPopup(VIconThread *vt, VFrame *frame, int x, int y, int w, int h);
+	ViewPopup(VIconThread *vt, int x, int y, int w, int h);
 	~ViewPopup();
 };
 
@@ -105,7 +105,7 @@ public:
 	void set_view_popup(VIcon *vicon);
 	void close_view_popup();
 	void hide_vicons(int v=1);
-	virtual ViewPopup *new_view_window(VFrame *frame);
+	virtual ViewPopup *new_view_window();
 
 	virtual bool visible(VIcon *vicon, int x, int y);
 	virtual void drawing_started() {}

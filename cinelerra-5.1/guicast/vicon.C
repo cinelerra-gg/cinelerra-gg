@@ -193,7 +193,7 @@ int ViewPopup::keypress_event()
 }
 
 
-ViewPopup::ViewPopup(VIconThread *vt, VFrame *frame, int x, int y, int w, int h)
+ViewPopup::ViewPopup(VIconThread *vt, int x, int y, int w, int h)
  : BC_Popup(vt->wdw, x, y, w, h, BLACK)
 {
 	this->vt = vt;
@@ -204,7 +204,7 @@ ViewPopup::~ViewPopup()
 	vt->wdw->set_active_subwindow(0);
 }
 
-ViewPopup *VIconThread::new_view_window(VFrame *frame)
+ViewPopup *VIconThread::new_view_window()
 {
 	BC_WindowBase *parent = wdw->get_parent();
 	XineramaScreenInfo *info = parent->get_xinerama_info(-1);
@@ -215,7 +215,7 @@ ViewPopup *VIconThread::new_view_window(VFrame *frame)
 	wdw->get_root_coordinates(vx, vy, &rx, &ry);
 	rx += (rx >= cx ? -view_w : viewing->w);
 	ry += (ry >= cy ? -view_h : viewing->h);
-	ViewPopup *vwin = new ViewPopup(this, frame, rx, ry, view_w, view_h);
+	ViewPopup *vwin = new ViewPopup(this, rx, ry, view_w, view_h);
 	wdw->set_active_subwindow(vwin);
 	return vwin;
 }
@@ -279,8 +279,9 @@ update_view()
 	if( viewing ) viewing->stop_audio();
 	delete view_win;  view_win = 0;
 	if( (viewing=vicon) != 0 ) {
-		VFrame *frame = viewing->frame();
-		view_win = new_view_window(frame);
+		view_win = new_view_window();
+		view_win->draw_vframe(viewing->frame());
+		view_win->flash(0);
 		view_win->show_window();
 		vicon->start_audio();
 	}
