@@ -331,7 +331,7 @@ int AssetViewPopup::button_press_event()
 	int dir = 1, button = get_buttonpress();
 	switch( button ) {
 	case WHEEL_DOWN: dir = -1; // fall thru
-	case WHEEL_UP:   return zoom_scale(dir);
+	case WHEEL_UP:   return avt->zoom_scale(dir);
 	case LEFT_BUTTON:
 		break;
 	default:
@@ -2570,7 +2570,7 @@ int AWindowAssets::button_press_event()
 		case WHEEL_UP: {
 			int x = get_cursor_x(), y = get_cursor_y();
 			if( avt->cursor_inside(x, y) && avt->view_win )
-				return avt->view_win->zoom_scale(dir);
+				return avt->zoom_scale(dir);
 			return 1; }
 		}
 	}

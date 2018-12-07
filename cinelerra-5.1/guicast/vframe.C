@@ -390,7 +390,8 @@ int VFrame::get_keyframe()
 
 void VFrame::get_temp(VFrame *&vfrm, int w, int h, int color_model)
 {
-	if( vfrm && ( vfrm->get_w() != w || vfrm->get_h() != h ) ) {
+	if( vfrm && ( vfrm->color_model != color_model ||
+	    vfrm->get_w() != w || vfrm->get_h() != h ) ) {
 		delete vfrm;  vfrm = 0;
 	}
 	if( !vfrm ) vfrm = new VFrame(w, h, color_model, 0);

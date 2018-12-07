@@ -220,16 +220,6 @@ ViewPopup *VIconThread::new_view_window()
 	return vwin;
 }
 
-int ViewPopup::zoom_scale(int dir)
-{
-	int view_h = vt->view_h + dir*vt->view_h/10 + dir;
-	bclamp(view_h, 16,512);
-	vt->view_h = view_h;
-	vt->view_w = view_h * vt->vw/vt->vh;
-	vt->stop_viewing();
-	return 1;
-}
-
 
 void VIconThread::
 reset_images()
@@ -286,6 +276,17 @@ update_view()
 		vicon->start_audio();
 	}
 	wdw->set_active_subwindow(view_win);
+	return 1;
+}
+
+int VIconThread::zoom_scale(int dir)
+{
+	int view_h = this->view_h;
+	view_h += dir*view_h/10 + dir;
+	bclamp(view_h, 16,512);
+	this->view_h = view_h;
+	this->view_w = view_h * vw/vh;
+	stop_viewing();
 	return 1;
 }
 

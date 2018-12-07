@@ -17,7 +17,6 @@ public:
 	virtual int button_release_event() { return 0; }
 	virtual int cursor_motion_event() { return 0; }
 	virtual void draw_vframe(VFrame *frame);
-	int zoom_scale(int dir);
 
 	ViewPopup(VIconThread *vt, int x, int y, int w, int h);
 	~ViewPopup();
@@ -103,6 +102,7 @@ public:
 	int cursor_inside(int x, int y);
 	void set_drawing_area(int x0, int y0, int x1, int y1);
 	void set_view_popup(VIcon *vicon);
+	int zoom_scale(int dir);
 	void close_view_popup();
 	void hide_vicons(int v=1);
 	virtual ViewPopup *new_view_window();
