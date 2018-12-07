@@ -217,10 +217,10 @@ void MainMenu::create_objects()
 	settingsmenu->add_item(proxy = new ProxyMenuItem(mwindow));
 	proxy->create_objects();
 	mwindow->preferences_thread = preferences->thread;
+	settingsmenu->add_item(cursor_on_frames = new CursorOnFrames(mwindow));
 	settingsmenu->add_item(labels_follow_edits = new LabelsFollowEdits(mwindow));
 	settingsmenu->add_item(plugins_follow_edits = new PluginsFollowEdits(mwindow));
 	settingsmenu->add_item(keyframes_follow_edits = new KeyframesFollowEdits(mwindow));
-	settingsmenu->add_item(cursor_on_frames = new CursorOnFrames(mwindow));
 	settingsmenu->add_item(typeless_keyframes = new TypelessKeyframes(mwindow));
 	settingsmenu->add_item(new BC_MenuItem("-"));
 	settingsmenu->add_item(new SaveSettingsNow(mwindow));
@@ -249,11 +249,11 @@ void MainMenu::create_objects()
 	viewmenu->add_item(mask_automation = new ShowAutomation(mwindow, _("Mask"), "8", AUTOMATION_MASK));
 	viewmenu->add_item(speed_automation = new ShowAutomation(mwindow, _("Speed"), "9", AUTOMATION_SPEED));
 
-	camera_x = new ShowAutomation(mwindow, _("Camera X"), "Ctl-Shift-X", AUTOMATION_CAMERA_X);
+	camera_x = new ShowAutomation(mwindow, _("Camera X"), "Ctrl-Shift-X", AUTOMATION_CAMERA_X);
 	camera_x->set_ctrl();  camera_x->set_shift();   viewmenu->add_item(camera_x);
-	camera_y = new ShowAutomation(mwindow, _("Camera Y"), "Ctl-Shift-Y", AUTOMATION_CAMERA_Y);
+	camera_y = new ShowAutomation(mwindow, _("Camera Y"), "Ctrl-Shift-Y", AUTOMATION_CAMERA_Y);
 	camera_y->set_ctrl();  camera_y->set_shift();   viewmenu->add_item(camera_y);
-	camera_z = new ShowAutomation(mwindow, _("Camera Z"), "Ctl-Shift-Z", AUTOMATION_CAMERA_Z);
+	camera_z = new ShowAutomation(mwindow, _("Camera Z"), "Ctrl-Shift-Z", AUTOMATION_CAMERA_Z);
 	camera_z->set_ctrl();  camera_z->set_shift();  viewmenu->add_item(camera_z);
 	project_x = new ShowAutomation(mwindow, _("Projector X"), "Alt-Shift-X", AUTOMATION_PROJECTOR_X);
 	project_x->set_alt();  project_x->set_shift();  viewmenu->add_item(project_x);
@@ -1360,10 +1360,11 @@ int KeyframesFollowEdits::handle_event()
 
 
 CursorOnFrames::CursorOnFrames(MWindow *mwindow)
- : BC_MenuItem(_("Align cursor on frames"))
+ : BC_MenuItem(_("Align cursor on frames"),_("Ctrl-a"),'a')
 {
 	this->mwindow = mwindow;
 	set_checked(mwindow->edl->session->cursor_on_frames);
+	set_ctrl(1);
 }
 
 int CursorOnFrames::handle_event()
@@ -1389,7 +1390,8 @@ int TypelessKeyframes::handle_event()
 }
 
 
-ScrubSpeed::ScrubSpeed(MWindow *mwindow) : BC_MenuItem(_("Slow Shuttle"))
+ScrubSpeed::ScrubSpeed(MWindow *mwindow)
+ : BC_MenuItem(_("Slow Shuttle"))
 {
 	this->mwindow = mwindow;
 }
@@ -1409,9 +1411,11 @@ int ScrubSpeed::handle_event()
 	return 1;
 }
 
-SaveSettingsNow::SaveSettingsNow(MWindow *mwindow) : BC_MenuItem(_("Save settings now"))
+SaveSettingsNow::SaveSettingsNow(MWindow *mwindow)
+ : BC_MenuItem(_("Save settings now"),_("Ctrl-s"),'s')
 {
 	this->mwindow = mwindow;
+	set_ctrl(1);
 }
 
 int SaveSettingsNow::handle_event()
@@ -1583,7 +1587,7 @@ LoadLayoutItem::LoadLayoutItem(LoadLayout *load_layout, const char *text, int no
 	this->load_layout = load_layout;
 	if( hotkey ) {
 		char hot_txt[BCSTRLEN];
-		sprintf(hot_txt, _("CtlSft+F%d"), hotkey-KEY_F1+1);
+		sprintf(hot_txt, _("Ctrl-Shift+F%d"), hotkey-KEY_F1+1);
 		set_ctrl();  set_shift();
 		set_hotkey_text(hot_txt);
 	}

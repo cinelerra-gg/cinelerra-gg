@@ -213,8 +213,8 @@ ViewPopup *VIconThread::new_view_window()
 	int vx = viewing->get_vx(), rx = 0;
 	int vy = viewing->get_vy(), ry = 0;
 	wdw->get_root_coordinates(vx, vy, &rx, &ry);
-	rx += (rx >= cx ? -view_w : viewing->w);
-	ry += (ry >= cy ? -view_h : viewing->h);
+	rx += (rx >= cx ? -view_w+viewing->w/4 : viewing->w-viewing->w/4);
+	ry += (ry >= cy ? -view_h+viewing->h/4 : viewing->h-viewing->h/4);
 	ViewPopup *vwin = new ViewPopup(this, rx, ry, view_w, view_h);
 	wdw->set_active_subwindow(vwin);
 	return vwin;

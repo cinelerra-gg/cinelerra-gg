@@ -1223,7 +1223,7 @@ int BC_ListBox::get_text_mask(BC_ListBoxItem *item,
 		h = get_text_h(item) + ICON_MARGIN * 2;
 		break; }
 	case LISTBOX_ICON_LIST: {
-		w = get_text_width(MEDIUMFONT, item->text) + LISTBOX_MARGIN * 2;
+		w = column_width ? column_width[0] : default_column_width[0];
 		h = row_height;
 		break; }
 	default:
@@ -2615,7 +2615,7 @@ int BC_ListBox::button_press_event()
 
 // Multiple item selection is possible
 			if( selection_mode == LISTBOX_MULTIPLE &&
-			    (ctrl_down() || shift_down()) ) {
+			    (ctrl_down() || shift_down() || current_item->selected) ) {
 // Expand text selection.
 // Fill items between selected region and current item.
 				if( shift_down() &&
@@ -2639,7 +2639,7 @@ int BC_ListBox::button_press_event()
 					new_value = 1;
 				}
 // Toggle a single item on or off
-				else {
+				else if( ctrl_down() ) {
 					toggle_item_selection(data, selection_number);
 					new_value = current_item->selected;
 				}
