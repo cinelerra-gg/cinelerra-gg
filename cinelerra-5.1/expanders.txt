@@ -2,22 +2,28 @@ Video Effects
 	- Color_Correction
 		Blue Banana
 		Brightness/Contrast
+		C41
 		Color 3 Way
 		Color Balance
 		Gamma
+		Gradient
 		HistEq
 		Histogram
 		Histogram Bezier
 		Hue saturation
 		Interpolate Bayer
+		Invert Video
 		RGB - 601
 		Reroute
+		Sketcher
 		Swap channels
 		Threshold
 		VideoScope
+		YUV
 		YUV411
+		YUVShift
 	- FF_Color_Correction
-		F_ciescope
+		F_chromahold
 		F_colorbalance
 		F_colorchannelmixer
 		F_colorkey
@@ -26,21 +32,27 @@ Video Effects
 		F_curves
 		F_elbg
 		F_eq
+		F_fftfilt
 		F_floodfill
+		F_greyedge
+		F_haldclutsrc
 		F_histeq
 		F_histogram
+		F_limiter
 		F_lut
+		F_lut1d
 		F_lut3d
 		F_lutrgb
 		F_lutyuv
+		F_negate
 		F_normalize
-		F_pixscope
 		F_pseudocolor
+		F_separatefields
+		F_setparams
 		F_setrange
 		F_shuffleplanes
 		F_swapuv
 		F_tlut2
-		F_vectorscope
 		F_vignette
 		F_vibrance
 	- Motion
@@ -49,8 +61,8 @@ Video Effects
 		Motion51
 		MotionCV
 		MotionHV
+		F_dejudder
 		F_deshake
-		F_mestimate
 	- Blur
 		Blur
 		Edge
@@ -62,6 +74,8 @@ Video Effects
 		Zoom Blur
 		F_avgblur
 		F_boxblur
+		F_deband
+		F_deblock
 		F_edgedetect
 		F_gblur
 		F_sab
@@ -84,6 +98,7 @@ Video Effects
 		F_removegrain
 		F_vaguedenoiser
 	- Extract Keys
+		Blue Banana
 		Chroma key
 		Chroma key (HSV)
 		CriKey
@@ -98,8 +113,10 @@ Video Effects
 		Perspective
 		Polar
 		Rotate
+		Rumbler
 		Scale
 		Scale Ratio
+		Sketcher
 		Sphere Cam
 		Translate
 		Whirl
@@ -110,22 +127,69 @@ Video Effects
 		F_drawbox
 		F_drawgraph
 		F_drawgrid
+		F_fillborders
 		F_hflip
 		F_lenscorrection
+		F_pad
 		F_perspective
 		F_rotate
 		F_scale
 		F_super2xsai
-		F_transpose
+		F_swaprect
+		F_tile
 		F_vflip
 	- Scale
 		Auto Scale
+		Downsample
 		F_hqx
 		F_scale
 		F_super2xsai
 		F_xbr
 		Scale
 		Scale Ratio
+	- Time
+		Decimate
+		Delay Video
+		Freeze Frame
+		Loop video
+		ReframeRT
+		Reverse video
+		Time Average
+		TimeFront
+		F_amplify
+		F_deflicker
+		F_framerate
+		F_framestep
+		F_loop
+		F_mpdecimate
+		F_realtime
+		F_tblend
+		F_tinterlace
+		F_tmix
+		F_vfrdet
+	- Test
+		F_bench
+		F_bbox
+		F_ciescope
+		F_color
+		F_datascope
+		F_entropy
+		F_graphmonitor
+		F_mptestsrc
+		F_oscilloscope
+		F_pal100bars
+		F_pal75bars
+		F_pixscope
+		F_rgbtestsrc
+		F_showpalette
+		F_signalstats
+		F_smptebars
+		F_smptehdbars
+		F_testsrc
+		F_testsrc2
+		F_vectorscope
+		F_yuvtestsrc
+		F_waveform
 Audio Effects
 	- Calf
 		- Instruments / Generators
