@@ -43,19 +43,12 @@
 #include "resourcepixmap.inc"
 #include "timelinepane.inc"
 #include "track.inc"
+#include "trackcanvas.inc"
 #include "tracks.inc"
 #include "transitionhandles.inc"
 #include "keyframe.inc"
 
 #include <stdarg.h>
-
-// draw mode:
-// NORMAL_DRAW causes incremental drawing of pixmaps.  Used for navigation and index refresh.
-// FORCE_REDRAW causes all resource pixmaps to be redrawn from scratch.  Used by editing.
-// IGNORE_THREAD causes resource pixmaps to ignore picon thread.  Used by Piconthread.
-#define NORMAL_DRAW 1
-#define FORCE_REDRAW 2
-#define IGNORE_THREAD 3
 
 class TrackCanvas : public BC_SubWindow
 {
@@ -273,7 +266,7 @@ public:
 	void update_transitions();
 	void update_keyframe_handles(Track *track);
 // Draw everything to synchronize with the view.
-	void draw(int mode = 0, int hide_cursor = 1);
+	void draw(int mode, int hide_cursor);
 // Draw resources during index building
 	void draw_indexes(Indexable *indexable);
 // Get location of edit on screen without boundary checking

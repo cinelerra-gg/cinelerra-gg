@@ -722,7 +722,7 @@ int CWindowGUI::drag_stop()
 		{
 			mwindow->save_backup();
 			mwindow->restart_brender();
-			mwindow->gui->update(1, 1, 1, 1, 0, 1, 0);
+			mwindow->gui->update(1, NORMAL_DRAW, 1, 1, 0, 1, 0);
 			mwindow->undo->update_undo_after(_("insert assets"), LOAD_ALL);
 			mwindow->gui->unlock_window();
 			mwindow->sync_parameters(CHANGE_ALL);

@@ -27,4 +27,14 @@ class TrackCanvas;
 #define HANDLE_W 8
 #define HANDLE_H 8
 
+// draw mode:
+// NO_DRAW used in MWindowGUI/TimelinePane update to disable canvas update
+// NORMAL_DRAW causes incremental drawing of pixmaps.  Used for navigation and index refresh.
+// FORCE_REDRAW causes all resource pixmaps to be redrawn from scratch.  Used by editing.
+// IGNORE_THREAD causes resource pixmaps to ignore picon thread.  Used by Piconthread.
+#define NO_DRAW 0
+#define NORMAL_DRAW 1
+#define FORCE_REDRAW 2
+#define IGNORE_THREAD 3
+
 #endif

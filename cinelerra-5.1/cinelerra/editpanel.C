@@ -440,7 +440,7 @@ void EditPanel::set_position(double position)
 		edl->local_session->set_selectionend(position);
 		mwindow->gui->lock_window();
 		mwindow->find_cursor();
-		mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);
+		mwindow->gui->update(1, NORMAL_DRAW, 1, 1, 1, 1, 0);
 		mwindow->gui->unlock_window();
 		mwindow->cwindow->update(1, 0, 0, 0, 0);
 	}

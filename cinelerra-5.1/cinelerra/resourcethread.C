@@ -270,8 +270,10 @@ void ResourceThread::stop_draw(int reset)
 
 //printf("ResourceThread::stop_draw %d %d\n", __LINE__, reset);
 //BC_Signals::dump_stack();
-		if(reset) items.remove_all_objects();
-		operation_count++;
+		if( reset ) {
+			items.remove_all_objects();
+			++operation_count;
+		}
 		item_lock->unlock();
 		prev_x = -1;
 		prev_h = 0;
@@ -757,7 +759,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 					low);
 			if(timer->get_difference() > 250 || item->last)
 			{
-				mwindow->gui->update(0, 3, 0, 0, 0, 0, 0);
+				mwindow->gui->update(0, IGNORE_THREAD, 0, 0, 0, 0, 0);
 				timer->update();
 			}
 		}

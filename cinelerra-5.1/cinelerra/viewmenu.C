@@ -43,7 +43,7 @@ int ShowAssets::handle_event()
 {
 	set_checked(get_checked() ^ 1);
 	mwindow->edl->session->show_assets = get_checked();
-	mwindow->gui->update(1, 1, 0, 0, 1, 0, 0);
+	mwindow->gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
 	mwindow->gui->lock_window("ShowAssets::handle_event");
@@ -64,7 +64,7 @@ int ShowTitles::handle_event()
 {
 	set_checked(get_checked() ^ 1);
 	mwindow->edl->session->show_titles = get_checked();
-	mwindow->gui->update(1, 1, 0, 0, 1, 0, 0);
+	mwindow->gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
 	mwindow->gui->lock_window("ShowTitles::handle_event");

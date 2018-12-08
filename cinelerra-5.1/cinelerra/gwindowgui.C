@@ -629,7 +629,7 @@ int GWindowToggle::handle_event()
 	MWindow *mwindow = gui->mwindow;
 	mwindow->gui->lock_window("GWindowToggle::handle_event");
 
-	mwindow->gui->update(1, 1, 0, 0, 1, 0, 0);
+	mwindow->gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	mwindow->gui->draw_overlays(1);
 
 	if( value && info->isauto > 0 ) {

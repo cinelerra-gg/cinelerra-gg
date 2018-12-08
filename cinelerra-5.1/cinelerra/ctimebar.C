@@ -30,6 +30,7 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "theme.h"
+#include "trackcanvas.inc"
 
 
 CTimeBar::CTimeBar(MWindow *mwindow, CWindowGUI *gui,
@@ -118,8 +119,7 @@ void CTimeBar::select_label(double position)
 	mwindow->gui->lock_window();
 	mwindow->gui->hide_cursor(0);
 	mwindow->gui->draw_cursor(1);
-	mwindow->gui->update(0, 1,      // 1 for incremental drawing.  2 for full refresh
-		1, 0, 1, 1, 0);
+	mwindow->gui->update(0, NORMAL_DRAW, 1, 0, 1, 1, 0);
 	mwindow->gui->unlock_window();
 	mwindow->update_plugin_guis();
 //printf("CTimeBar::select_label 2\n");

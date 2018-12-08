@@ -461,7 +461,7 @@ int MWindow::paste_subtitle_text(char *text, double start, double end)
 
 	sync_parameters(CHANGE_EDL);
 	restart_brender();
-	gui->update(0, 1, 1, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 1, 0, 0, 0, 0);
 	gui->unlock_window();
 
 	return 0;

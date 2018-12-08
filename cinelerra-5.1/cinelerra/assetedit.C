@@ -146,7 +146,7 @@ void AssetEdit::handle_close_event(int result)
 			}
 //printf("AssetEdit::handle_close_event %d\n", __LINE__);
 
-			mwindow->gui->update(0, 2, 0, 0, 0, 0, 0);
+			mwindow->gui->update(0, FORCE_REDRAW, 0, 0, 0, 0, 0);
 //printf("AssetEdit::handle_close_event %d\n", __LINE__);
 
 // Start index rebuilding

@@ -88,7 +88,7 @@ void MWindow::add_audio_track_entry(int above, Track *dst)
 	undo->update_undo_after(_("add track"), LOAD_ALL);
 
 	restart_brender();
-	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	gui->activate_timeline();
 
 //	gui->get_scrollbars(0);
@@ -108,7 +108,7 @@ void MWindow::add_video_track_entry(Track *dst)
 
 	restart_brender();
 
-	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	gui->activate_timeline();
 //	gui->get_scrollbars(0);
 //	gui->canvas->draw();
@@ -128,7 +128,7 @@ void MWindow::add_subttl_track_entry(Track *dst)
 
 	restart_brender();
 
-	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	gui->activate_timeline();
 //	gui->get_scrollbars(0);
 //	gui->canvas->draw();
@@ -230,7 +230,7 @@ void MWindow::asset_to_all()
 
 		undo->update_undo_after(_("asset to all"), LOAD_ALL);
 		restart_brender();
-		gui->update(1, 2, 1, 1, 1, 1, 0);
+		gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 		sync_parameters(CHANGE_ALL);
 	}
 }
@@ -290,7 +290,7 @@ void MWindow::asset_to_rate()
 
 		undo->update_undo_after(_("asset to rate"), LOAD_ALL);
 		restart_brender();
-		gui->update(1, 2, 1, 1, 1, 1, 0);
+		gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 		sync_parameters(CHANGE_ALL);
 	}
 }
@@ -307,7 +307,7 @@ void MWindow::clear_entry()
 
 	restart_brender();
 	update_plugin_guis();
-	gui->update(1, 2, 1, 1, 1, 1, 0);
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
 	cwindow->refresh_frame(CHANGE_EDL);
 }
@@ -330,7 +330,7 @@ void MWindow::update_gui(int changed_edl)
 	restart_brender();
 	update_plugin_guis();
 	if( changed_edl ) {
-		gui->update(1, 2, 1, 1, 1, 1, 0);
+		gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 		cwindow->update(1, 0, 0, 0, 1);
 		cwindow->refresh_frame(CHANGE_EDL);
 	}
@@ -415,7 +415,7 @@ void MWindow::concatenate_tracks()
 	undo->update_undo_after(_("concatenate tracks"), LOAD_EDITS);
 
 	restart_brender();
-	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	cwindow->refresh_frame(CHANGE_EDL);
 }
 
@@ -535,7 +535,7 @@ void MWindow::blade(double position)
 	undo->update_undo_after(_("blade"), LOAD_EDITS | LOAD_TIMEBAR);
 	restart_brender();
 	update_plugin_guis();
-	gui->update(1, 2, 1, 1, 1, 1, 0);
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
 	awindow->gui->async_update_assets();
 	cwindow->refresh_frame(CHANGE_EDL);
@@ -559,7 +559,7 @@ void MWindow::cut(double start, double end, double new_position)
 	}
 	restart_brender();
 	update_plugin_guis();
-	gui->update(1, 2, 1, 1, 1, 1, 0);
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
 	awindow->gui->async_update_assets();
 	cwindow->refresh_frame(CHANGE_EDL);
@@ -650,7 +650,7 @@ void MWindow::delete_tracks()
 	restart_brender();
 	update_plugin_states();
 
-	gui->update(1, 1, 1, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 1, 0, 1, 0, 0);
 	cwindow->refresh_frame(CHANGE_EDL);
 }
 
@@ -663,7 +663,7 @@ void MWindow::delete_track(Track *track)
 	restart_brender();
 	update_plugin_states();
 
-	gui->update(1, 1, 1, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 1, 0, 1, 0, 0);
 	cwindow->refresh_frame(CHANGE_EDL);
 	save_backup();
 }
@@ -758,7 +758,7 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 	undo->update_undo_after(_("insert effect"), LOAD_EDITS | LOAD_PATCHES);
 	restart_brender();
 	sync_parameters(CHANGE_EDL);
-	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 }
 
 void MWindow::insert_effect(char *title,
@@ -884,7 +884,7 @@ void MWindow::finish_modify_handles()
 	restart_brender();
 	sync_parameters(CHANGE_EDL);
 	update_plugin_guis();
-	gui->update(1, 2, 1, 1, 1, 1, 0);
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 // label list can be modified
 	awindow->gui->async_update_assets();
 	cwindow->update(1, 0, 0, 0, 1);
@@ -925,8 +925,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	cwindow->refresh_frame(CHANGE_EDL);
 
 	update_plugin_guis();
-	gui->update(1, 1,      // 1 for incremental drawing.  2 for full refresh
-		1, 0, 0, 0, 0);
+	gui->update(1, NORMAL_DRAW, 1, 0, 0, 0, 0);
 }
 
 void MWindow::move_effect(Plugin *plugin, Track *track, int64_t position)
@@ -939,8 +938,7 @@ void MWindow::move_effect(Plugin *plugin, Track *track, int64_t position)
 	restart_brender();
 	cwindow->refresh_frame(CHANGE_EDL);
 	update_plugin_guis();
-	gui->update(1, 1,      // 1 for incremental drawing.  2 for full refresh
-		0, 0, 0, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 0, 0, 0);
 }
 
 void MWindow::move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t position)
@@ -953,8 +951,7 @@ void MWindow::move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t positio
 	restart_brender();
 	cwindow->refresh_frame(CHANGE_EDL);
 	update_plugin_guis();
-	gui->update(1, 1,      // 1 for incremental drawing.  2 for full refresh
-		0, 0, 0, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 0, 0, 0);
 }
 
 void MWindow::move_plugins_up(PluginSet *plugin_set)
@@ -966,8 +963,7 @@ void MWindow::move_plugins_up(PluginSet *plugin_set)
 	save_backup();
 	undo->update_undo_after(_("move effect up"), LOAD_ALL);
 	restart_brender();
-	gui->update(1, 1,      // 1 for incremental drawing.  2 for full refresh
-		0, 0, 0, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	sync_parameters(CHANGE_EDL);
 }
 
@@ -980,8 +976,7 @@ void MWindow::move_plugins_down(PluginSet *plugin_set)
 	save_backup();
 	undo->update_undo_after(_("move effect down"), LOAD_ALL);
 	restart_brender();
-	gui->update(1, 1,      // 1 for incremental drawing.  2 for full refresh
-		0, 0, 0, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	sync_parameters(CHANGE_EDL);
 }
 
@@ -993,7 +988,7 @@ void MWindow::move_track_down(Track *track)
 	undo->update_undo_after(_("move track down"), LOAD_ALL);
 
 	restart_brender();
-	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	sync_parameters(CHANGE_EDL);
 	save_backup();
 }
@@ -1006,7 +1001,7 @@ void MWindow::move_tracks_down()
 	undo->update_undo_after(_("move tracks down"), LOAD_ALL);
 
 	restart_brender();
-	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	sync_parameters(CHANGE_EDL);
 	save_backup();
 }
@@ -1018,7 +1013,7 @@ void MWindow::move_track_up(Track *track)
 	save_backup();
 	undo->update_undo_after(_("move track up"), LOAD_ALL);
 	restart_brender();
-	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	sync_parameters(CHANGE_EDL);
 	save_backup();
 }
@@ -1030,7 +1025,7 @@ void MWindow::move_tracks_up()
 	save_backup();
 	undo->update_undo_after(_("move tracks up"), LOAD_ALL);
 	restart_brender();
-	gui->update(1, 1, 0, 0, 1, 0, 0);
+	gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 	sync_parameters(CHANGE_EDL);
 }
 
@@ -1055,7 +1050,7 @@ void MWindow::mute_selection()
 
 		restart_brender();
 		update_plugin_guis();
-		gui->update(1, 2, 1, 1, 1, 1, 0);
+		gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 		cwindow->refresh_frame(CHANGE_EDL);
 	}
 }
@@ -1105,7 +1100,7 @@ void MWindow::overwrite(EDL *source, int all)
 
 	restart_brender();
 	update_plugin_guis();
-	gui->update(1, 1, 1, 1, 0, 1, 0);
+	gui->update(1, NORMAL_DRAW, 1, 1, 0, 1, 0);
 	sync_parameters(CHANGE_EDL);
 }
 
@@ -1156,7 +1151,7 @@ void MWindow::paste()
 		undo->update_undo_after(_("paste"), LOAD_EDITS | LOAD_TIMEBAR);
 		restart_brender();
 		update_plugin_guis();
-		gui->update(1, 2, 1, 1, 0, 1, 0);
+		gui->update(1, FORCE_REDRAW, 1, 1, 0, 1, 0);
 		awindow->gui->async_update_assets();
 		sync_parameters(CHANGE_EDL);
 	}
@@ -1192,7 +1187,7 @@ int MWindow::paste_assets(double position, Track *dest_track, int overwrite)
 
 	undo->update_undo_after(_("paste assets"), LOAD_EDITS);
 	restart_brender();
-	gui->update(1, 2, 1, 0, 0, 1, 0);
+	gui->update(1, FORCE_REDRAW, 1, 0, 0, 1, 0);
 	sync_parameters(CHANGE_EDL);
 	return result;
 }
@@ -1619,7 +1614,7 @@ void MWindow::paste_silence()
 
 	update_plugin_guis();
 	restart_brender();
-	gui->update(1, 2, 1, 1, 1, 1, 0);
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
 	cwindow->refresh_frame(CHANGE_EDL);
 }
@@ -1634,7 +1629,7 @@ void MWindow::detach_transition(Transition *transition)
 	undo->update_undo_after(_("detach transition"), LOAD_ALL);
 
 	if( is_video ) restart_brender();
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	sync_parameters(CHANGE_EDL);
 }
 
@@ -1651,7 +1646,7 @@ void MWindow::detach_transitions()
 	undo->update_undo_after(_("detach transitions"), LOAD_EDITS);
 
 	sync_parameters(CHANGE_EDL);
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	gui->unlock_window();
 }
 
@@ -1681,7 +1676,7 @@ void MWindow::paste_transitions(int track_type, char *title)
 	undo->update_undo_after(_("attach transitions"), LOAD_EDITS);
 
 	sync_parameters(CHANGE_EDL);
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	gui->unlock_window();
 }
 
@@ -1693,7 +1688,7 @@ void MWindow::paste_transition_cwindow(Track *dest_track)
 	save_backup();
 	undo->update_undo_after(_("transition"), LOAD_EDITS);
 	restart_brender();
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	sync_parameters(CHANGE_ALL);
 }
 
@@ -1714,7 +1709,7 @@ void MWindow::paste_audio_transition()
 	undo->update_undo_after(_("transition"), LOAD_EDITS);
 
 	sync_parameters(CHANGE_EDL);
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 }
 
 void MWindow::paste_video_transition()
@@ -1736,7 +1731,7 @@ void MWindow::paste_video_transition()
 
 	sync_parameters(CHANGE_EDL);
 	restart_brender();
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 }
 
 void MWindow::shuffle_edits()
@@ -1754,7 +1749,7 @@ void MWindow::shuffle_edits()
 
 	sync_parameters(CHANGE_EDL);
 	restart_brender();
-	gui->update(0, 1, 1, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 1, 0, 0, 0, 0);
 	gui->unlock_window();
 }
 
@@ -1773,7 +1768,7 @@ void MWindow::reverse_edits()
 
 	sync_parameters(CHANGE_EDL);
 	restart_brender();
-	gui->update(0, 1, 1, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 1, 0, 0, 0, 0);
 	gui->unlock_window();
 }
 
@@ -1792,7 +1787,7 @@ void MWindow::align_edits()
 
 	sync_parameters(CHANGE_EDL);
 	restart_brender();
-	gui->update(0, 1, 1, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 1, 0, 0, 0, 0);
 	gui->unlock_window();
 }
 
@@ -1811,7 +1806,7 @@ void MWindow::set_edit_length(double length)
 
 	sync_parameters(CHANGE_EDL);
 	restart_brender();
-	gui->update(0, 1, 1, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 1, 0, 0, 0, 0);
 	gui->unlock_window();
 }
 
@@ -1831,7 +1826,7 @@ void MWindow::set_transition_length(Transition *transition, double length)
 
 	edl->session->default_transition_length = length;
 	sync_parameters(CHANGE_PARAMS);
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	gui->unlock_window();
 }
 
@@ -1851,7 +1846,7 @@ void MWindow::set_transition_length(double length)
 	edl->session->default_transition_length = length;
 	sync_parameters(CHANGE_PARAMS);
 	restart_brender();
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	gui->unlock_window();
 }
 
@@ -1880,7 +1875,7 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 	update_plugin_states();
 	update_plugin_guis();
 
-	gui->update(1, 2, 1, 1, 1, 1, 1);
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 1);
 	gui->update_proxy_toggle();
 	gui->unlock_window();
 	cwindow->update(1, 1, 1, 1, 1);
@@ -2021,7 +2016,7 @@ void MWindow::splice(EDL *source, int all)
 	undo->update_undo_after(_("splice"), LOAD_EDITS | LOAD_TIMEBAR);
 	update_plugin_guis();
 	restart_brender();
-	gui->update(1, 1, 1, 1, 0, 1, 0);
+	gui->update(1, NORMAL_DRAW, 1, 1, 0, 1, 0);
 	sync_parameters(CHANGE_EDL);
 }
 
@@ -2175,7 +2170,7 @@ void MWindow::trim_selection()
 	save_backup();
 	undo->update_undo_after(_("trim selection"), LOAD_EDITS | LOAD_TIMEBAR);
 	update_plugin_guis();
-	gui->update(1, 2, 1, 1, 1, 1, 0);
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
 	awindow->gui->async_update_assets();
 	restart_brender();
@@ -2207,7 +2202,7 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 	update_plugin_states();
 	update_plugin_guis();
 
-	gui->update(1, 2, 1, 1, 1, 1, 1);
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 1);
 	gui->update_proxy_toggle();
 	gui->unlock_window();
 	cwindow->update(1, 1, 1, 1, 1);
@@ -2283,7 +2278,7 @@ void MWindow::map_audio(int pattern)
 		pattern == MWindow::AUDIO_1_TO_1 ? _("map 1:1") : _("map 5.1:2"),
 		LOAD_AUTOMATION);
 	sync_parameters(CHANGE_PARAMS);
-	gui->update(0, 1, 0, 0, 1, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 1, 0, 0);
 }
 
 void MWindow::remap_audio(int pattern)
@@ -2357,7 +2352,7 @@ void MWindow::cut_commercials()
 
 	restart_brender();
 	update_plugin_guis();
-	gui->update(1, 2, 1, 1, 1, 1, 0);
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
 	cwindow->refresh_frame(CHANGE_EDL);
 #endif

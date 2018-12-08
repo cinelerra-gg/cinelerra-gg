@@ -948,13 +948,7 @@ if(debug) printf("Render::render %d\n", __LINE__);
 if(debug) printf("Render::render %d\n", __LINE__);
 		mwindow->update_plugin_guis();
 if(debug) printf("Render::render %d\n", __LINE__);
-		mwindow->gui->update(1,
-			2,
-			1,
-			1,
-			1,
-			1,
-			0);
+		mwindow->gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 if(debug) printf("Render::render %d\n", __LINE__);
 		mwindow->sync_parameters(CHANGE_ALL);
 if(debug) printf("Render::render %d\n", __LINE__);

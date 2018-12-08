@@ -254,7 +254,7 @@ void PatchGUI::toggle_behavior(int type,
 			break;
 
 		case Tracks::DRAW:
-			mwindow->gui->update(0, 1, 0, 0, 0, 0, 0);
+			mwindow->gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 			break;
 
 		case Tracks::EXPAND:

@@ -175,14 +175,7 @@ void PluginDialogThread::handle_close_event(int result)
 			mwindow->restart_brender();
 			mwindow->update_plugin_states();
 			mwindow->sync_parameters(CHANGE_EDL);
-			mwindow->gui->update(1,
-				1,
-				0,
-				0,
-				1,
-				0,
-				0);
-
+			mwindow->gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
 			mwindow->gui->unlock_window();
 		}
 	}

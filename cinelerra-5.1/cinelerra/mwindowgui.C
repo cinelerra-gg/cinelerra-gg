@@ -698,28 +698,17 @@ void MWindowGUI::draw_indexes(Indexable *indexable)
 	}
 }
 
-void MWindowGUI::draw_canvas(int mode /* = 0 */, int hide_cursor /* = 1 */)
+void MWindowGUI::draw_canvas(int redraw, int hide_cursor)
 {
-	if(mode != IGNORE_THREAD)
-	{
-		resource_thread->stop_draw(1);
-	}
+	resource_thread->stop_draw(0);
 
-
-	for(int i = 0; i < TOTAL_PANES; i++)
-	{
-		if(pane[i])
-		{
+	int mode = redraw ? FORCE_REDRAW : NORMAL_DRAW;
+	for(int i = 0; i < TOTAL_PANES; i++) {
+		if( pane[i] )
 			pane[i]->canvas->draw(mode, hide_cursor);
-		}
 	}
 
-
-	if(mode != IGNORE_THREAD)
-	{
-		resource_thread->start_draw();
-	}
-
+	resource_thread->start_draw();
 }
 
 void MWindowGUI::flash_canvas(int flush)
@@ -801,7 +790,7 @@ void MWindowGUI::update_scrollbars(int flush)
 	{
 		if(pane[i])
 		{
-			pane[i]->update(1, 0, 0, 0);
+			pane[i]->update(1, NO_DRAW, 0, 0);
 		}
 	}
 	if(flush) this->flush();
@@ -877,10 +866,8 @@ void MWindowGUI::update(int scrollbars,
 
 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
 
-	if(do_canvas && do_canvas != IGNORE_THREAD)
-	{
+	if( do_canvas != NO_DRAW && do_canvas != IGNORE_THREAD )
 		resource_thread->stop_draw(1);
-	}
 
 	for(int i = 0; i < TOTAL_PANES; i++)
 	{
@@ -890,10 +877,8 @@ void MWindowGUI::update(int scrollbars,
 			patchbay);
 	}
 
-	if(do_canvas && do_canvas != IGNORE_THREAD)
-	{
+	if( do_canvas != NO_DRAW && do_canvas != IGNORE_THREAD )
 		resource_thread->start_draw();
-	}
 
 //	if(scrollbars) this->get_scrollbars(0);
 //	if(timebar) this->timebar->update(0);
@@ -923,8 +908,7 @@ void MWindowGUI::update(int scrollbars,
 
 // Can't age if the cache called this to draw missing picons
 // or the GUI is updating the status of the draw toggle.
-	if(do_canvas != FORCE_REDRAW && do_canvas != IGNORE_THREAD)
-	{
+	if( do_canvas != FORCE_REDRAW && do_canvas != IGNORE_THREAD ) {
 		unlock_window();
 		mwindow->age_caches();
 		lock_window("MWindowGUI::update");
@@ -1304,7 +1288,7 @@ int MWindowGUI::keypress_event()
 			if( !selected && this_track ) this_track->record = 1;
 		}
 
-		update(0, 1, 0, 0, 1, 0, 1);
+		update(0, NORMAL_DRAW, 0, 0, 1, 0, 1);
 		unlock_window();
 		mwindow->cwindow->update(0, 1, 1);
 		lock_window("MWindowGUI::keypress_event 3");
@@ -1842,7 +1826,7 @@ void MWindowGUI::delete_y_pane(int cursor_y)
 void MWindowGUI::stop_pane_drag()
 {
 	dragging_pane = 0;
-	resource_thread->stop_draw(1);
+	resource_thread->stop_draw(0);
 
 	if(x_pane_drag)
 	{

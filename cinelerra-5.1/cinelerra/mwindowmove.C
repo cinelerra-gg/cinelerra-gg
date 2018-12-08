@@ -577,7 +577,7 @@ void MWindow::select_all()
 		edl->local_session->set_selectionstart(0);
 		edl->local_session->set_selectionend(edl->tracks->total_length());
 	}
-	gui->update(0, 1, 1, 1, 0, 1, 0);
+	gui->update(0, NORMAL_DRAW, 1, 1, 0, 1, 0);
 	gui->activate_timeline();
 	cwindow->update(1, 0, 0, 0, 1);
 	update_plugin_guis();

@@ -432,7 +432,7 @@ void Record::run()
 			mwindow->undo->update_undo_after(_("record"), LOAD_ALL);
 			mwindow->restart_brender();
 			mwindow->update_plugin_guis();
-			mwindow->gui->update(1, 2, 1, 1, 1, 1, 0);
+			mwindow->gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 			mwindow->sync_parameters(CHANGE_ALL);
 		}
 		mwindow->gui->unlock_window();

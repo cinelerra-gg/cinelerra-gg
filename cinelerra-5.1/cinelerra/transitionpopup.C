@@ -159,7 +159,7 @@ int TransitionLengthText::handle_event()
 	{
 		gui->thread->length = result;
 		mwindow->gui->lock_window();
-		mwindow->gui->update(0, 1, 0, 0, 0, 0, 0);
+		mwindow->gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 		mwindow->gui->unlock_window();
 	}
 

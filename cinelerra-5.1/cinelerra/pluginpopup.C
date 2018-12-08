@@ -140,13 +140,7 @@ int PluginPopupDetach::handle_event()
 
 
 	mwindow->gui->lock_window("PluginPopupDetach::handle_event");
-	mwindow->gui->update(0,
-		1,
-		0,
-		0,
-		0,
-		0,
-		0);
+	mwindow->gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	mwindow->gui->unlock_window();
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
@@ -217,7 +211,7 @@ PluginPopupShow::~PluginPopupShow()
 int PluginPopupShow::handle_event()
 {
 	mwindow->show_plugin(popup->plugin);
-	mwindow->gui->update(0, 1, 0, 0, 0, 0, 0);
+	mwindow->gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	return 1;
 }
 
@@ -238,7 +232,7 @@ PluginPopupOn::~PluginPopupOn()
 int PluginPopupOn::handle_event()
 {
 	popup->plugin->on = !get_checked();
-	mwindow->gui->update(0, 1, 0, 0, 0, 0, 0);
+	mwindow->gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
 	return 1;

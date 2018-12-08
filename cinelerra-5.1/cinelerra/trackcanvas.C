@@ -144,7 +144,7 @@ void TrackCanvas::create_objects()
 	pankeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->pankeyframe_data, PIXMAP_ALPHA);
 	projectorkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->projectorkeyframe_data, PIXMAP_ALPHA);
 	maskkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->maskkeyframe_data, PIXMAP_ALPHA);
-	draw();
+	draw(NORMAL_DRAW, 1);
 	update_cursor(0);
 	flash(0);
 }
@@ -152,7 +152,7 @@ void TrackCanvas::create_objects()
 void TrackCanvas::resize_event()
 {
 //printf("TrackCanvas::resize_event 1\n");
-	draw(0, 0);
+	draw(NORMAL_DRAW, 0);
 	flash(0);
 //printf("TrackCanvas::resize_event 2\n");
 }
@@ -650,7 +650,6 @@ void TrackCanvas::draw(int mode, int hide_cursor)
 {
 	const int debug = 0;
 
-
 // Swap pixmap layers
 	if(get_w() != background_pixmap->get_w() ||
 		get_h() != background_pixmap->get_h())
@@ -699,7 +698,7 @@ void TrackCanvas::draw_indexes(Indexable *indexable)
 // Don't redraw raw samples
 	if(index_state->index_zoom > mwindow->edl->local_session->zoom_sample)
 		return;
-	draw_resources(0, 1, indexable);
+	draw_resources(NORMAL_DRAW, 1, indexable);
 	draw_overlays();
 	flash(0);
 }

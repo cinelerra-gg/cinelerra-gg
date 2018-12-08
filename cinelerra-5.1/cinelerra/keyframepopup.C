@@ -128,7 +128,7 @@ int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyfr
 		mwindow->edl->local_session->set_selectionstart(new_position);
 		mwindow->edl->local_session->set_selectionend(new_position);
 		mwindow->gui->lock_window();
-		mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);
+		mwindow->gui->update(1, NORMAL_DRAW, 1, 1, 1, 1, 0);
 		mwindow->gui->unlock_window();
 	}
 	return 0;
@@ -196,7 +196,7 @@ int KeyframePopupDelete::handle_event()
 	mwindow->undo->update_undo_after(_("delete keyframe"), LOAD_ALL);
 
 	mwindow->save_backup();
-	mwindow->gui->update(0, 1,      // 1 for incremental drawing.  2 for full refresh
+	mwindow->gui->update(0, NORMAL_DRAW,
 		0, 0, 0, 0, 0);
 	mwindow->update_plugin_guis();
 	mwindow->restart_brender();
@@ -484,7 +484,7 @@ int KeyframePopupCurveMode::handle_event()
 		mwindow->undo->update_undo_after(_("change keyframe curve mode"), LOAD_ALL);
 		mwindow->save_backup();
 
-		mwindow->gui->update(0, 1, 0,0,0,0,0); // incremental redraw for canvas
+		mwindow->gui->update(0, NORMAL_DRAW, 0,0,0,0,0); // incremental redraw for canvas
 		mwindow->cwindow->update(0,0, 1, 0,0); // redraw tool window in compositor
 		mwindow->update_plugin_guis();
 		mwindow->restart_brender();

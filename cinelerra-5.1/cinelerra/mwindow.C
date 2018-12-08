@@ -1388,7 +1388,7 @@ void MWindow::create_mixers()
 	save_backup();
 	undo->update_undo_after(_("create mixers"), LOAD_ALL);
 	restart_brender();
-	gui->update(1, 2, 1, 1, 1, 1, 0);
+	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 	sync_parameters(CHANGE_ALL);
 }
 
@@ -2978,7 +2978,7 @@ void MWindow::set_auto_visibility(Autos *autos, int value)
 	else
 		return;
 
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	gui->mainmenu->update_toggles(1);
 	gui->unlock_window();
 	gwindow->gui->update_toggles(1);
@@ -3219,7 +3219,7 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 	plugin->show = 0;
 // Update the toggle
 	gui->lock_window("MWindow::hide_plugin");
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
 	gui->unlock_window();
 
 	if(lock) plugin_gui_lock->lock("MWindow::hide_plugin");
@@ -3550,7 +3550,7 @@ void MWindow::update_project(int load_mode)
 		gui->load_panes();
 	}
 
-	gui->update(1, 1, 1, 1, 1, 1, 1);
+	gui->update(1, NORMAL_DRAW, 1, 1, 1, 1, 1);
 	if(debug) PRINT_TRACE
 	gui->unlock_window();
 	init_brender();
@@ -4055,7 +4055,7 @@ void MWindow::remove_assets_from_project(int push_undo, int redraw,
 		restart_brender();
 
 		gui->lock_window("MWindow::remove_assets_from_project 3");
-		gui->update(1, 1, 1, 1, 0, 1, 0);
+		gui->update(1, NORMAL_DRAW, 1, 1, 0, 1, 0);
 		gui->unlock_window();
 
 	// Removes from playback here
@@ -4381,7 +4381,7 @@ void MWindow::resync_guis()
 // Update GUIs
 	restart_brender();
 	gui->lock_window("MWindow::resync_guis");
-	gui->update(1, 1, 1, 1, 1, 1, 0);
+	gui->update(1, NORMAL_DRAW, 1, 1, 1, 1, 0);
 	gui->unlock_window();
 
 	cwindow->gui->lock_window("MWindow::resync_guis");

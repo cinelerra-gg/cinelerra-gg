@@ -111,9 +111,11 @@ public:
 	int focus_in_event();
 	int focus_out_event();
 
-// do_canvas - 1 for incremental drawing of resources
-//          FORCE_REDRAW for delete and redraw of resources
-//          IGNORE_THREAD to ignore picon thread
+// do_canvas -
+//   NO_DRAW disable canvas draw
+//   IGNORE_THREAD to ignore picon thread
+//   NORMAL_DRAW for incremental drawing of resources
+//   FORCE_REDRAW for delete and redraw of resources
 	void update(int scrollbars,
 		int do_canvas,
 		int timebar,
@@ -130,7 +132,7 @@ public:
 	void update_proxy_toggle();
 	void update_plugintoggles();
 	void update_scrollbars(int flush);
-	void draw_canvas(int mode, int hide_cursor);
+	void draw_canvas(int redraw, int hide_cursor);
 	void flash_canvas(int flush);
 	int show_window(int flush=1);
 	void deactivate_timeline();

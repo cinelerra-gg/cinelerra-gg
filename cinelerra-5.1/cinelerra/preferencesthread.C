@@ -329,7 +329,7 @@ int PreferencesThread::apply_settings()
 	if(redraw_times)
 	{
 		mwindow->gui->lock_window("PreferencesThread::apply_settings 3");
-		mwindow->gui->update(0, 0, 1, 0, 0, 1, 0);
+		mwindow->gui->update(0, NO_DRAW, 1, 0, 0, 1, 0);
 		mwindow->gui->redraw_time_dependancies();
 		mwindow->gui->unlock_window();
 	}
