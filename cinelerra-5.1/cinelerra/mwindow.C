@@ -4011,9 +4011,7 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 void MWindow::remove_assets_from_project(int push_undo, int redraw,
 		ArrayList<Indexable*> *drag_assets, ArrayList<EDL*> *drag_clips)
 {
-	awindow->gui->vicon_thread->stop_drawing();
-	awindow->gui->vicon_thread->drawing_started(); // waits for draw lock
-	awindow->gui->vicon_thread->drawing_stopped();
+	awindow->gui->close_view_popup();
 
 	for(int i = 0; i < drag_assets->total; i++) {
 		Indexable *indexable = drag_assets->get(i);
@@ -4072,16 +4070,16 @@ void MWindow::remove_assets_from_project(int push_undo, int redraw,
 
 void MWindow::remove_assets_from_disk()
 {
+	remove_assets_from_project(1,
+		1,
+		session->drag_assets,
+		session->drag_clips);
+
 // Remove from disk
 	for(int i = 0; i < session->drag_assets->total; i++)
 	{
 		remove(session->drag_assets->get(i)->path);
 	}
-
-	remove_assets_from_project(1,
-		1,
-		session->drag_assets,
-		session->drag_clips);
 }
 
 void MWindow::dump_plugins(FILE *fp)

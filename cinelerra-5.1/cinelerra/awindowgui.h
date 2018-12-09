@@ -62,6 +62,7 @@
 #define ASSET_VIEW_ICON 1
 #define ASSET_VIEW_MEDIA 2
 #define ASSET_VIEW_MEDIA_MAP 3
+#define ASSET_VIEW_FULL 4
 
 class AWindowFolderItem : public BC_ListBoxItem
 {
@@ -178,6 +179,7 @@ public:
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
+	int keypress_event();
 
 	void draw_vframe(VFrame *frame);
 
@@ -196,6 +198,7 @@ public:
 	ViewPopup *new_view_window();
 	void drawing_started();
 	void drawing_stopped();
+	void close_view_popup();
 
 	AWindowGUI *gui;
 	int draw_mode;
@@ -274,6 +277,7 @@ public:
 	int load_defaults(BC_Hash *defaults);
 	void start_vicon_drawing();
 	void stop_vicon_drawing();
+	void close_view_popup();
 	void update_picon(Indexable *indexable);
 	int cycle_assetlist_format();
 

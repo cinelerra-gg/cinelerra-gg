@@ -328,17 +328,29 @@ int AssetViewPopup::button_press_event()
 	AssetVIconThread *avt = (AssetVIconThread *)vt;
 	if( !avt->vicon ) return 0;
 
-	int dir = 1, button = get_buttonpress();
-	switch( button ) {
-	case WHEEL_DOWN: dir = -1; // fall thru
-	case WHEEL_UP:   return avt->zoom_scale(dir);
-	case LEFT_BUTTON:
+	switch( draw_mode ) {
+	case ASSET_VIEW_MEDIA_MAP:
+	case ASSET_VIEW_FULL:
 		break;
 	default:
 		return 0;
 	}
 
-	if( draw_mode != ASSET_VIEW_MEDIA_MAP ) return 0;
+	int dir = 1;
+	switch( get_buttonpress() ) {
+	case LEFT_BUTTON:
+		break;
+	case WHEEL_DOWN:
+		dir = -1;
+		// fall thru
+	case WHEEL_UP:
+		if( draw_mode != ASSET_VIEW_FULL )
+			return avt->zoom_scale(dir);
+		// fall thru
+	default:
+		return 0;
+	}
+
 	int x = get_cursor_x(), y = get_cursor_y();
 	AssetVIcon *vicon = (AssetVIcon *)avt->vicon;
 	AssetPicon *picon = vicon->picon;
@@ -472,6 +484,7 @@ void AssetViewPopup::draw_vframe(VFrame *vframe)
 	default:
 		return;
 	case ASSET_VIEW_MEDIA_MAP:
+	case ASSET_VIEW_FULL:
 		break;
 	}
 	set_color(BLACK);
@@ -533,6 +546,27 @@ void AssetViewPopup::draw_vframe(VFrame *vframe)
 	}
 }
 
+int AssetViewPopup::keypress_event()
+{
+	AssetVIconThread *avt = (AssetVIconThread *)vt;
+	switch( avt->draw_mode ) {
+	case ASSET_VIEW_MEDIA_MAP:
+		switch( get_keypress() ) {
+		case 'f':
+		case 'F':
+			avt->draw_mode = ASSET_VIEW_FULL;
+			avt->viewing = 0;
+			return 1;
+		}
+		break;
+	case ASSET_VIEW_FULL:
+		avt->draw_mode = ASSET_VIEW_MEDIA_MAP;
+		avt->viewing = 0;
+		return 1;
+	}
+	return ViewPopup::keypress_event();
+}
+
 
 AssetVIconThread::AssetVIconThread(AWindowGUI *gui, Preferences *preferences)
  : VIconThread(gui->asset_list, preferences->vicon_size * 16/9, preferences->vicon_size,
@@ -579,20 +613,31 @@ void AssetVIconThread::set_view_popup(AssetVIcon *v, int draw_mode)
 ViewPopup *AssetVIconThread::new_view_window()
 {
 	BC_WindowBase *parent = wdw->get_parent();
-	XineramaScreenInfo *info = parent->get_xinerama_info(-1);
-	int cx = info ? info->x_org + info->width/2 : parent->get_root_w(0)/2;
-	int cy = info ? info->y_org + info->height/2 : parent->get_root_h(0)/2;
-	int vx = viewing->get_vx(), rx = 0;
-	int vy = viewing->get_vy(), ry = 0;
-	wdw->get_root_coordinates(vx, vy, &rx, &ry);
-	rx += (rx >= cx ? -view_w+viewing->w/4 : viewing->w-viewing->w/4);
-	ry += (ry >= cy ? -view_h+viewing->h/4 : viewing->h-viewing->h/4);
-	AssetViewPopup *popup = new AssetViewPopup(this, draw_mode,
-		rx, ry, view_w, view_h);
-	if( draw_mode == ASSET_VIEW_MEDIA_MAP )
+	int rx = 0, ry = 0, rw = 0, rh = 0;
+	if( draw_mode != ASSET_VIEW_FULL ) {
+		XineramaScreenInfo *info = parent->get_xinerama_info(-1);
+		int cx = info ? info->x_org + info->width/2 : parent->get_root_w(0)/2;
+		int cy = info ? info->y_org + info->height/2 : parent->get_root_h(0)/2;
+		int vx = viewing->get_vx(), vy = viewing->get_vy();
+		wdw->get_root_coordinates(vx, vy, &rx, &ry);
+		rx += (rx >= cx ? -view_w+viewing->w/4 : viewing->w-viewing->w/4);
+		ry += (ry >= cy ? -view_h+viewing->h/4 : viewing->h-viewing->h/4);
+		rw = view_w;  rh = view_h;
+	}
+	else
+		parent->get_fullscreen_geometry(rx, ry, rw, rh);
+	AssetViewPopup *popup = new AssetViewPopup(this, draw_mode, rx, ry, rw, rh);
+	if( draw_mode == ASSET_VIEW_MEDIA_MAP || draw_mode == ASSET_VIEW_FULL )
 		vicon->playing_audio = -1;
 	wdw->set_active_subwindow(popup);
 	return popup;
+}
+
+void AssetVIconThread::close_view_popup()
+{
+	stop_drawing();
+	drawing_started(); // waits for draw lock
+	drawing_stopped();
 }
 
 
@@ -1563,6 +1608,11 @@ void AWindowGUI::stop_vicon_drawing()
 {
 	if( vicon_thread->interrupted ) return;
 	vicon_thread->stop_drawing();
+}
+
+void AWindowGUI::close_view_popup()
+{
+	vicon_thread->close_view_popup();
 }
 
 VFrame *AssetPicon::get_vicon_frame()
