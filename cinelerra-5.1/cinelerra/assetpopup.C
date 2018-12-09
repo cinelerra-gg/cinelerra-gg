@@ -359,9 +359,11 @@ AssetPopupProjectRemove::~AssetPopupProjectRemove()
 
 int AssetPopupProjectRemove::handle_event()
 {
+	popup->gui->unlock_window();
 	mwindow->remove_assets_from_project(1, 1,
 		mwindow->session->drag_assets,
 		mwindow->session->drag_clips);
+	popup->gui->lock_window("AssetPopupProjectRemove::handle_event");
 	return 1;
 }
 

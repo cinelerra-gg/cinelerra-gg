@@ -2404,10 +2404,12 @@ ProxyToggle::~ProxyToggle()
 int ProxyToggle::handle_event()
 {
 	int disabled = get_value();
+	mwindow->gui->unlock_window();
 	if( disabled )
 		mwindow->disable_proxy();
 	else
 		mwindow->enable_proxy();
+	mwindow->gui->lock_window("ProxyToggle::handle_event");
 	set_tooltip(!disabled ? _("Disable proxy") : _("Enable proxy"));
 	return 1;
 }

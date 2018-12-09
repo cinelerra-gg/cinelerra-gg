@@ -603,7 +603,8 @@ int Asset::write(FileXML *file,
 	write_audio(file);
 	write_video(file);
 // index goes after source
-	if(index_state->index_status == INDEX_READY && include_index)
+	if( include_index && index_state &&
+	    index_state->index_status == INDEX_READY )
 		write_index(file);
 
 	file->tag.set_title("/ASSET");

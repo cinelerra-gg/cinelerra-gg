@@ -194,10 +194,13 @@ public:
 
 	void set_view_popup(AssetVIcon *v, int draw_mode=-1);
 	ViewPopup *new_view_window();
+	void drawing_started();
+	void drawing_stopped();
 
 	AWindowGUI *gui;
 	int draw_mode;
 	int vicon_cmodel;
+	Mutex *draw_lock;
 };
 
 
