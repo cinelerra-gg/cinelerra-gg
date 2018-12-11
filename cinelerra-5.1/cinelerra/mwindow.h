@@ -182,6 +182,7 @@ public:
 	void update_vwindow();
 // Fit selected time to horizontal display range
 	void fit_selection();
+	void selected_to_clipboard();
 // Fit selected autos to the vertical display range
 	void fit_autos(int doall);
 	void change_currentautorange(int autogrouptype, int increment, int changemax);
@@ -399,6 +400,10 @@ public:
 		int plugin_type);
 
 	void match_output_size(Track *track);
+	void delete_edit(Edit *edit, const char *msg, int collapse=0);
+	void delete_edits(ArrayList<Edit*> *edits, const char *msg, int collapse=0);
+	void delete_edits(int collapse=0);
+	void cut_selected_edits(int collapse=0);
 // Move edit to new position
 	void move_edits(ArrayList<Edit*> *edits,
 		Track *track,

@@ -23,29 +23,12 @@
 #define EDITPOPUP_H
 
 #include "guicast.h"
+#include "edit.inc"
+#include "editpopup.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
-#include "edit.inc"
 #include "plugindialog.inc"
 #include "resizetrackthread.inc"
-
-class EditPopup;
-class EditPopupMatchSize;
-class EditPopupResize;
-class EditPopupDeleteTrack;
-class EditPopupAddTrack;
-class EditPopupFindAsset;
-class EditAttachEffect;
-class EditMoveTrackUp;
-class EditMoveTrackDown;
-class EditPopupTitle;
-class EditTitleDialogThread;
-class EditPopupTitleText;
-class EditPopupTitleWindow;
-class EditPopupShow;
-class EditShowDialogThread;
-class EditPopupShowText;
-class EditPopupShowWindow;
 
 class EditPopup : public BC_PopupMenu
 {
@@ -54,52 +37,70 @@ public:
 	~EditPopup();
 
 	void create_objects();
-	int update(Track *track, Edit *edit);
+	int update(Edit *edit);
 
 	MWindow *mwindow;
 	MWindowGUI *gui;
-// Acquired through the update command as the edit currently being operated on
 	Edit *edit;
-	Track *track;
-	EditPopupResize *resize_option;
-	EditPopupMatchSize *matchsize_option;
 };
 
-class EditPopupMatchSize : public BC_MenuItem
+
+class EditPopupClear : public BC_MenuItem
 {
 public:
-	EditPopupMatchSize(MWindow *mwindow, EditPopup *popup);
-	~EditPopupMatchSize();
+	EditPopupClear(MWindow *mwindow, EditPopup *popup);
 	int handle_event();
+
 	MWindow *mwindow;
 	EditPopup *popup;
 };
 
-class EditPopupResize : public BC_MenuItem
+class EditPopupDelete : public BC_MenuItem
 {
 public:
-	EditPopupResize(MWindow *mwindow, EditPopup *popup);
-	~EditPopupResize();
+	EditPopupDelete(MWindow *mwindow, EditPopup *popup);
 	int handle_event();
-	MWindow *mwindow;
-	EditPopup *popup;
-	ResizeTrackThread *dialog_thread;
-};
 
-class EditPopupDeleteTrack : public BC_MenuItem
-{
-public:
-	EditPopupDeleteTrack(MWindow *mwindow, EditPopup *popup);
-	int handle_event();
 	MWindow *mwindow;
 	EditPopup *popup;
 };
 
-class EditPopupAddTrack : public BC_MenuItem
+class EditPopupCopy : public BC_MenuItem
 {
 public:
-	EditPopupAddTrack(MWindow *mwindow, EditPopup *popup);
+	EditPopupCopy(MWindow *mwindow, EditPopup *popup);
 	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
+class EditPopupCut : public BC_MenuItem
+{
+public:
+	EditPopupCut(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
+class EditPopupCopyCut : public BC_MenuItem
+{
+public:
+	EditPopupCopyCut(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
+class EditPopupPaste : public BC_MenuItem
+{
+public:
+	EditPopupPaste(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+
 	MWindow *mwindow;
 	EditPopup *popup;
 };
@@ -112,45 +113,6 @@ public:
 	MWindow *mwindow;
 	EditPopup *popup;
 };
-
-
-class EditAttachEffect : public BC_MenuItem
-{
-public:
-	EditAttachEffect(MWindow *mwindow, EditPopup *popup);
-	~EditAttachEffect();
-
-	int handle_event();
-
-	MWindow *mwindow;
-	EditPopup *popup;
-	PluginDialogThread *dialog_thread;
-};
-
-class EditMoveTrackUp : public BC_MenuItem
-{
-public:
-	EditMoveTrackUp(MWindow *mwindow, EditPopup *popup);
-	~EditMoveTrackUp();
-
-	int handle_event();
-
-	MWindow *mwindow;
-	EditPopup *popup;
-};
-
-class EditMoveTrackDown : public BC_MenuItem
-{
-public:
-	EditMoveTrackDown(MWindow *mwindow, EditPopup *popup);
-	~EditMoveTrackDown();
-
-	int handle_event();
-
-	MWindow *mwindow;
-	EditPopup *popup;
-};
-
 
 class EditPopupTitle : public BC_MenuItem
 {

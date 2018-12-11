@@ -76,6 +76,7 @@
 #include "theme.h"
 #include "trackcanvas.h"
 #include "tracking.h"
+#include "trackpopup.h"
 #include "tracks.h"
 #include "transition.h"
 #include "transitionhandles.h"
@@ -1192,11 +1193,12 @@ void TrackCanvas::draw_paste_destination()
 								from_units(drop_edit_position(&insertion,
 									mwindow->session->drag_edit,
 									mwindow->session->drag_edit->length));
+							current_vedit++;
 						}
 					}
 					if( paste_position >= 0 ) {
 						position = paste_position;
-						current_vedit++;
+						current_vtrack++;
 						//draw_box = 1;
 					}
 					else
@@ -1589,10 +1591,22 @@ void TrackCanvas::draw_highlighting()
 
 	}
 
-
-	if(draw_box)
-	{
+	if( draw_box )
 		draw_highlight_rectangle(x, y, w, h);
+
+	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->is_selected ) continue;
+			edit_dimensions(edit, x, y, w, h);
+			if( !MWindowGUI::visible(x, x + w, 0, get_w()) ) continue;
+			if( !MWindowGUI::visible(y, y + h, 0, get_h()) ) continue;
+			set_color(GREEN | BLUE);
+			set_inverse();
+			draw_rectangle(x, y, w, h);
+			set_color(RED);
+			draw_rectangle(x-1, y-1, w+2, h+2);
+			set_opaque();
+		}
 	}
 }
 
@@ -4672,13 +4686,19 @@ int TrackCanvas::do_tracks(int cursor_x, int cursor_y, int button_press)
 		int64_t track_x, track_y, track_w, track_h;
 		track_dimensions(track, track_x, track_y, track_w, track_h);
 
-		if( button_press && get_buttonpress() == RIGHT_BUTTON &&
-		    cursor_y >= track_y && cursor_y < track_y + track_h) {
+		if( button_press && cursor_y >= track_y && cursor_y < track_y + track_h ) {
 			double pos = mwindow->edl->get_cursor_position(cursor_x, pane->number);
 			int64_t position = track->to_units(pos, 0);
-			gui->edit_menu->update(track, track->edits->editof(position, PLAY_FORWARD, 0));
-			gui->edit_menu->activate_menu();
-			result = 1;
+			if( get_buttonpress() == RIGHT_BUTTON ) {
+				gui->track_menu->update(track);
+				gui->track_menu->activate_menu();
+				result = 1;
+			}
+			else if( get_buttonpress() == MIDDLE_BUTTON ) {
+				gui->edit_menu->update(track->edits->editof(position, PLAY_FORWARD, 0));
+				gui->edit_menu->activate_menu();
+				result = 1;
+			}
 		}
 	}
 
@@ -4701,7 +4721,7 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 				cursor_y >= edit_y && cursor_y < edit_y + edit_h) {
 // Select duration of edit
 				if(button_press) {
-					if(get_double_click() && !drag_start) {
+					if( !drag_start && get_double_click() ) {
 						mwindow->edl->local_session->set_selectionstart(edit->track->from_units(edit->startproject));
 						mwindow->edl->local_session->set_selectionend(edit->track->from_units(edit->startproject) +
 							edit->track->from_units(edit->length));
@@ -4712,31 +4732,33 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 							mwindow->edl->local_session->set_selectionend(
 								mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionend(1), 1));
 						}
+						result = 1;
+					}
+					if( ctrl_down() && get_buttonpress() == 1 &&
+					    mwindow->edl->session->editing_mode == EDITING_ARROW ) {
+						edit->is_selected = !edit->is_selected ? 1 : 0;
+						result = 1;
+					}
+					if( result ) {
 						redraw = 1;
 						rerender = 1;
 						update_cursor = -1;
-						result = 1;
 					}
 				}
-				else if(drag_start && track->record) {
-					if(mwindow->edl->session->editing_mode == EDITING_ARROW) {
+				else if( drag_start && track->record ) {
+					if( mwindow->edl->session->editing_mode == EDITING_ARROW ) {
 // Need to create drag window
 						mwindow->session->current_operation = DRAG_EDIT;
 						mwindow->session->drag_edit = edit;
-//printf("TrackCanvas::do_edits 2\n");
-
-// Drag only one edit if ctrl is initially down
-						if(ctrl_down()) {
-							mwindow->session->drag_edits->remove_all();
-							mwindow->session->drag_edits->append(edit);
-						}
-						else {
 // Construct list of all affected edits
-							mwindow->edl->tracks->get_affected_edits(
-								mwindow->session->drag_edits,
+						mwindow->edl->tracks->clear_selected_edits();
+						if( ctrl_down() )
+							edit->is_selected = 1;
+						else
+							mwindow->edl->tracks->select_affected_edits(
 								edit->track->from_units(edit->startproject),
 								edit->track);
-						}
+						mwindow->edl->tracks->get_selected_edits(mwindow->session->drag_edits);
 						mwindow->session->drag_origin_x = cursor_x;
 						mwindow->session->drag_origin_y = cursor_y;
 						// Where the drag started, so we know relative position inside the edit later
@@ -4996,7 +5018,7 @@ int TrackCanvas::button_press_event()
 					update_cursor) ) break;
 
 				if( do_edits(cursor_x, cursor_y, 1, 0,
-					update_cursor, rerender, new_cursor,
+					update_overlay, rerender, new_cursor,
 					update_cursor) ) break;
 
 				if( do_plugins(cursor_x, cursor_y, 0, 1,

@@ -53,6 +53,7 @@
 #include "timelinepane.inc"
 #include "track.inc"
 #include "trackcanvas.inc"
+#include "trackpopup.inc"
 #include "trackscroll.inc"
 #include "transitionpopup.inc"
 #include "zoombar.inc"
@@ -212,6 +213,7 @@ public:
 	DbWindow *db_window;
 	SWindow *swindow;
 // Popup menus
+	TrackPopup *track_menu;
 	EditPopup *edit_menu;
 	PluginPopup *plugin_menu;
 	KeyframePopup *keyframe_menu;

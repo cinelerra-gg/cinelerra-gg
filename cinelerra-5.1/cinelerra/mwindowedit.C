@@ -903,6 +903,104 @@ void MWindow::match_output_size(Track *track)
 }
 
 
+void MWindow::selected_to_clipboard()
+{
+	EDL *new_edl = new EDL();
+	new_edl->create_objects();
+	new_edl->copy_session(edl);
+	const char *text = _("new_edl edit");
+	new_edl->set_path(text);
+	strcpy(new_edl->local_session->clip_title, text);
+	strcpy(new_edl->local_session->clip_notes, text);
+	new_edl->session->video_tracks = 0;
+	new_edl->session->audio_tracks = 0;
+	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		int64_t startproject = 0;
+		Track *new_track = 0;
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->is_selected ) continue;
+			if( !new_track ) {
+				switch( track->data_type ) {
+				case TRACK_VIDEO:
+					++new_edl->session->video_tracks;
+					new_track = new_edl->tracks->add_video_track(0, 0);
+					break;
+				case TRACK_AUDIO:
+					++new_edl->session->audio_tracks;
+					new_track = new_edl->tracks->add_audio_track(0, 0);
+					break;
+				case TRACK_SUBTITLE:
+					new_track = new_edl->tracks->add_subttl_track(0, 0);
+					break;
+				}
+			}
+			if( new_track ) {
+				Edit *clip_edit = new Edit(new_edl, new_track);
+				clip_edit->copy_from(edit);
+				clip_edit->startproject = startproject;
+				startproject += clip_edit->length;
+				new_track->edits->append(clip_edit);
+			}
+		}
+	}
+	double length = new_edl->tracks->total_length();
+	FileXML file;
+	new_edl->copy(0, length, 0, &file, "", 1);
+	const char *file_string = file.string();
+	long file_length = strlen(file_string);
+	gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
+	gui->to_clipboard(file_string, file_length, SECONDARY_SELECTION);
+	new_edl->remove_user();
+}
+
+void MWindow::delete_edit(Edit *edit, const char *msg, int collapse)
+{
+	ArrayList<Edit*> edits;
+	edits.append(edit);
+	delete_edits(&edits, msg, collapse);
+}
+
+void MWindow::delete_edits(ArrayList<Edit*> *edits, const char *msg, int collapse)
+{
+	if( !edits->size() ) return;
+	undo->update_undo_before();
+	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		for( Edit *next=track->edits->first; next; ) {
+			Edit *edit = next;  next = edit->next;
+			if( !edit->is_selected ) continue;
+			int64_t len = edit->length;
+			delete edit;
+			if( !collapse ) continue;
+			for( edit=next; edit; edit=edit->next )
+				edit->startproject -= len;
+		}
+	}
+	edl->optimize();
+	save_backup();
+	undo->update_undo_after(msg, LOAD_EDITS);
+
+	restart_brender();
+	cwindow->refresh_frame(CHANGE_EDL);
+	update_plugin_guis();
+	gui->update(1, NORMAL_DRAW, 1, 0, 0, 0, 0);
+}
+
+void MWindow::delete_edits(int collapse)
+{
+	ArrayList<Edit*> edits;
+	edl->tracks->get_selected_edits(&edits);
+	delete_edits(&edits,_("del edit"), collapse);
+}
+
+void MWindow::cut_selected_edits(int collapse)
+{
+	selected_to_clipboard();
+	ArrayList<Edit*> edits;
+	edl->tracks->get_selected_edits(&edits);
+	delete_edits(&edits, _("cut edit"), collapse);
+}
+
+
 void MWindow::move_edits(ArrayList<Edit*> *edits,
 		Track *track,
 		double position,

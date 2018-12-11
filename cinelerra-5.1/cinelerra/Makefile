@@ -287,6 +287,7 @@ OBJS := \
 	$(OBJDIR)/trackcanvas.o \
 	$(OBJDIR)/tracking.o \
 	$(OBJDIR)/track.o \
+	$(OBJDIR)/trackpopup.o \
 	$(OBJDIR)/trackscroll.o \
 	$(OBJDIR)/tracksedit.o \
 	$(OBJDIR)/tracks.o \

@@ -57,162 +57,105 @@ EditPopup::~EditPopup()
 
 void EditPopup::create_objects()
 {
-	add_item(new EditAttachEffect(mwindow, this));
-	add_item(new EditMoveTrackUp(mwindow, this));
-	add_item(new EditMoveTrackDown(mwindow, this));
-	add_item(new EditPopupDeleteTrack(mwindow, this));
-	add_item(new EditPopupAddTrack(mwindow, this));
+	add_item(new EditPopupClear(mwindow, this));
+	add_item(new EditPopupDelete(mwindow, this));
+	add_item(new EditPopupCopy(mwindow, this));
+	add_item(new EditPopupCut(mwindow, this));
+	add_item(new EditPopupCopyCut(mwindow, this));
+	add_item(new EditPopupPaste(mwindow, this));
 	add_item(new EditPopupFindAsset(mwindow, this));
 	add_item(new EditPopupTitle(mwindow, this));
 	add_item(new EditPopupShow(mwindow, this));
-	resize_option = 0;
-	matchsize_option = 0;
 }
 
-int EditPopup::update(Track *track, Edit *edit)
+int EditPopup::update(Edit *edit)
 {
 	this->edit = edit;
-	this->track = track;
-
-	if(track->data_type == TRACK_VIDEO && !resize_option)
-	{
-		add_item(resize_option = new EditPopupResize(mwindow, this));
-		add_item(matchsize_option = new EditPopupMatchSize(mwindow, this));
-	}
-	else
-	if(track->data_type == TRACK_AUDIO && resize_option)
-	{
-		del_item(resize_option);     resize_option = 0;
-		del_item(matchsize_option);  matchsize_option = 0;
-	}
 	return 0;
 }
 
 
-EditAttachEffect::EditAttachEffect(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Attach effect..."))
+EditPopupClear::EditPopupClear(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Clear"),_("Ctrl-m"),'m')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-	dialog_thread = new PluginDialogThread(mwindow);
+	set_ctrl(1);
 }
 
-EditAttachEffect::~EditAttachEffect()
+int EditPopupClear::handle_event()
 {
-	delete dialog_thread;
-}
-
-int EditAttachEffect::handle_event()
-{
-	dialog_thread->start_window(popup->track,
-		0, _(PROGRAM_NAME ": Attach Effect"),
-		0, popup->track->data_type);
+	mwindow->delete_edits(0);
 	return 1;
 }
 
-
-EditMoveTrackUp::EditMoveTrackUp(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Move up"))
+EditPopupDelete::EditPopupDelete(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Delete"),_("Ctrl-DEL"),DELETE)
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
+	set_ctrl(1);
 }
-EditMoveTrackUp::~EditMoveTrackUp()
+
+int EditPopupDelete::handle_event()
 {
-}
-int EditMoveTrackUp::handle_event()
-{
-	mwindow->move_track_up(popup->track);
+	mwindow->delete_edits(1);
 	return 1;
 }
 
-
-
-EditMoveTrackDown::EditMoveTrackDown(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Move down"))
+EditPopupCopy::EditPopupCopy(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Copy"),_("Ctrl-c"),'c')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
+	set_ctrl(1);
 }
-EditMoveTrackDown::~EditMoveTrackDown()
+
+int EditPopupCopy::handle_event()
 {
-}
-int EditMoveTrackDown::handle_event()
-{
-	mwindow->move_track_down(popup->track);
+	mwindow->selected_to_clipboard();
 	return 1;
 }
 
-
-EditPopupResize::EditPopupResize(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Resize track..."))
+EditPopupCut::EditPopupCut(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Cut"),_("Ctrl-x"),'x')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-	dialog_thread = new ResizeTrackThread(mwindow);
-}
-EditPopupResize::~EditPopupResize()
-{
-	delete dialog_thread;
+	set_ctrl(1);
 }
 
-int EditPopupResize::handle_event()
+int EditPopupCut::handle_event()
 {
-	dialog_thread->start_window(popup->track);
+	mwindow->cut_selected_edits(1);
 	return 1;
 }
 
-
-EditPopupMatchSize::EditPopupMatchSize(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Match output size"))
+EditPopupCopyCut::EditPopupCopyCut(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Copy cut"),_("Ctrl-z"),'z')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-}
-EditPopupMatchSize::~EditPopupMatchSize()
-{
+	set_ctrl(1);
 }
 
-int EditPopupMatchSize::handle_event()
+int EditPopupCopyCut::handle_event()
 {
-	mwindow->match_output_size(popup->track);
+	mwindow->cut_selected_edits(0);
 	return 1;
 }
 
-
-EditPopupDeleteTrack::EditPopupDeleteTrack(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Delete track"))
+EditPopupPaste::EditPopupPaste(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Paste"),_("Ctrl-v"),'v')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-}
-int EditPopupDeleteTrack::handle_event()
-{
-	mwindow->delete_track(popup->track);
-	return 1;
+	set_ctrl(1);
 }
 
-
-EditPopupAddTrack::EditPopupAddTrack(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Add track"))
+int EditPopupPaste::handle_event()
 {
-	this->mwindow = mwindow;
-	this->popup = popup;
-}
-
-int EditPopupAddTrack::handle_event()
-{
-	switch( popup->track->data_type ) {
-	case TRACK_AUDIO:
-		mwindow->add_audio_track_entry(1, popup->track);
-		break;
-	case TRACK_VIDEO:
-		mwindow->add_video_track_entry(popup->track);
-		break;
-	case TRACK_SUBTITLE:
-		mwindow->add_subttl_track_entry(popup->track);
-		break;
-	}
+	mwindow->paste();
 	return 1;
 }
 
@@ -447,8 +390,8 @@ void EditPopupShowWindow::create_objects()
 	int x = 10, y = 10;
 	BC_Title *title;
 	char text[BCTEXTLEN];
-	Track *track = popup->track;
 	Edit *edit = popup->edit;
+	Track *track = edit->track;
 	sprintf(text, _("Track %d:"), mwindow->edl->tracks->number_of(track)+1);
 	add_subwindow(title = new BC_Title(x, y, text));
 	int x1 = x + title->get_w() + 10;

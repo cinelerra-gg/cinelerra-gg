@@ -105,32 +105,37 @@ void Tracks::equivalent_output(Tracks *tracks, double *result)
 }
 
 
-
-
-void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, Track *start_track)
+void Tracks::clear_selected_edits()
 {
-	drag_edits->remove_all();
+	for( Track *track=first; track; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit; edit=edit->next )
+			edit->is_selected = 0;
+	}
+}
 
-	for(Track *track = start_track;
-		track;
-		track = track->next)
-	{
-//printf("Tracks::get_affected_edits 1 %p %d %d\n", track, track->data_type, track->record);
-		if(track->record)
-		{
-			for(Edit *edit = track->edits->first; edit; edit = edit->next)
-			{
-				double startproject = track->from_units(edit->startproject);
-//printf("Tracks::get_affected_edits 1 %d\n", edl->equivalent(startproject, position));
-				if(edl->equivalent(startproject, position))
-				{
-					drag_edits->append(edit);
-					break;
-				}
+void Tracks::select_affected_edits(double position, Track *start_track)
+{
+	for( Track *track=start_track; track; track=track->next ) {
+		if( !track->record ) continue;
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			double startproject = track->from_units(edit->startproject);
+			if( edl->equivalent(startproject, position) ) {
+				edit->is_selected = 1;
+				break;
 			}
 		}
 	}
+}
 
+void Tracks::get_selected_edits(ArrayList<Edit*> *drag_edits)
+{
+	drag_edits->remove_all();
+	for( Track *track=first; track; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->is_selected ) continue;
+			drag_edits->append(edit);
+		}
+	}
 }
 
 void Tracks::get_automation_extents(float *min,

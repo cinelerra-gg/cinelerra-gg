@@ -65,6 +65,7 @@
 #include "swindow.h"
 #include "theme.h"
 #include "trackcanvas.h"
+#include "trackpopup.h"
 #include "trackscroll.h"
 #include "tracks.h"
 #include "transitionpopup.h"
@@ -116,6 +117,7 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 	statusbar = 0;
 	zoombar = 0;
 	mainclock = 0;
+	track_menu = 0;
 	edit_menu = 0;
 	plugin_menu = 0;
 	keyframe_menu = 0;
@@ -336,6 +338,9 @@ void MWindowGUI::create_objects()
 //	cursor->create_objects();
 
 
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
+	add_subwindow(track_menu = new TrackPopup(mwindow, this));
+	track_menu->create_objects();
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(edit_menu = new EditPopup(mwindow, this));
 	edit_menu->create_objects();
@@ -1179,6 +1184,25 @@ int MWindowGUI::keypress_event()
 		mwindow->nearest_plugin_keyframe(shift_down(),
 			!ctrl_down() ? PLAY_FORWARD : PLAY_REVERSE);
 		result = 1;
+		break;
+
+	case 'c':
+		if( !ctrl_down() || alt_down() ) break;
+		mwindow->selected_to_clipboard();
+		break;
+	case 'v':
+		if( !ctrl_down() || alt_down() ) break;
+		mwindow->paste();
+		break;
+	case 'z':
+	case 'x':
+		if( !ctrl_down() || alt_down() ) break;
+		mwindow->cut_selected_edits(get_keypress()=='x' ? 1 : 0);
+		break;
+	case 'm':
+	case DELETE:
+		if( !ctrl_down() || alt_down() ) break;
+		mwindow->delete_edits(get_keypress()==DELETE ? 1 : 0);
 		break;
 
 	case '1': case '2': case '3': case '4':

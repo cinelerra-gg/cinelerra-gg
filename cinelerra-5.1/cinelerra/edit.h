@@ -131,7 +131,7 @@ public:
 	int id;
 // User defined title for timeline
 	char user_title[BCTEXTLEN];
-	int is_plugin;
+	int is_plugin, is_selected;
 // edge cannot be optimized
 	int hard_left, hard_right;
 

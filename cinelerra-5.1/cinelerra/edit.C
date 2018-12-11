@@ -83,6 +83,7 @@ void Edit::reset()
 	user_title[0] = 0;
 	nested_edl = 0;
 	is_plugin = 0;
+	is_selected = 0;
 	hard_left = 0;
 	hard_right = 0;
 }

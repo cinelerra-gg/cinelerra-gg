@@ -357,7 +357,7 @@ int AssetViewPopup::button_press_event()
 	MWindow *mwindow = picon->mwindow;
 	EDL *edl = mwindow->edl;
 	dragging = 0;
-	if( y < bar_h ) {
+	if( y < get_h()/2 ) {
 		Indexable *idxbl =
 			picon->indexable ? picon->indexable :
 			picon->edl ? picon->edl : 0;
@@ -402,7 +402,7 @@ int AssetViewPopup::button_press_event()
 		vwindow->update_position(CHANGE_NONE, 0, 1, 0);
 		return 1;
 	}
-	if( y >= get_h()-bar_h ) {
+	else {
 		dragging = 1;
 		if( !ctrl_down() && !shift_down() )
 			return cursor_motion_event();
@@ -454,7 +454,9 @@ int AssetViewPopup::cursor_motion_event()
 {
 	if( !is_event_win() ) return 0;
 	AssetVIconThread *avt = (AssetVIconThread *)vt;
-	if( !avt->vicon || draw_mode != ASSET_VIEW_MEDIA_MAP ) return 0;
+	if( !avt->vicon ||
+	    ( draw_mode != ASSET_VIEW_FULL &&
+	      draw_mode != ASSET_VIEW_MEDIA_MAP ) ) return 0;
 	if( !get_button_down() || get_buttonpress() != LEFT_BUTTON ||
 	    ctrl_down() || alt_down() || shift_down() )
 		return 0;

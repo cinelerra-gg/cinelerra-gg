@@ -19,24 +19,17 @@
  *
  */
 
-#ifndef __EDITPOPUP_INC__
-#define __EDITPOPUP_INC__
+#ifndef __TRACKPOPUP_INC__
+#define __TRACKPOPUP_INC__
 
-class EditPopup;
-class EditClear;
-class EditDelete;
-class EditCopy;
-class EditCut;
-class EditCopyCut;
-class EditPaste;
-class EditPopupFindAsset;
-class EditPopupTitle;
-class EditTitleDialogThread;
-class EditPopupTitleText;
-class EditPopupTitleWindow;
-class EditPopupShow;
-class EditShowDialogThread;
-class EditPopupShowText;
-class EditPopupShowWindow;
+class TrackPopup;
+class TrackPopupMatchSize;
+class TrackPopupResize;
+class TrackPopupDeleteTrack;
+class TrackPopupAddTrack;
+class TrackPopupFindAsset;
+class TrackAttachEffect;
+class TrackMoveTrackUp;
+class TrackMoveTrackDown;
 
 #endif

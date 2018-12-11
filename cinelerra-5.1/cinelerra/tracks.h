@@ -64,9 +64,9 @@ public:
 		int64_t position);
 
 // Construct a list of all the recordable edits which start on position
-	void get_affected_edits(ArrayList<Edit*> *drag_edits,
-		double position,
-		Track *start_track);
+	void clear_selected_edits();
+	void select_affected_edits(double position, Track *start_track);
+	void get_selected_edits(ArrayList<Edit*> *drag_edits);
 
 	void get_automation_extents(float *min,
 		float *max,

@@ -933,7 +933,7 @@ int EditSplice::handle_event()
 int EditSplice::keypress_event()
 {
 	if( alt_down() ) return 0;
-	if( get_keypress() == 'v' ||
+	if( (get_keypress() == 'v' && !ctrl_down()) ||
 	    (panel->is_vwindow() && get_keypress() == 'V') ) {
 		handle_event();
 		return 1;
@@ -1065,7 +1065,7 @@ EditCopy::~EditCopy()
 int EditCopy::keypress_event()
 {
 	if( alt_down() ) return 0;
-	if( get_keypress() == 'c' ||
+	if( (get_keypress() == 'c' && !ctrl_down()) ||
 	    (panel->is_vwindow() && get_keypress() == 'C') ) {
 		return handle_event();
 	}
@@ -1127,7 +1127,7 @@ EditPaste::~EditPaste()
 
 int EditPaste::keypress_event()
 {
-	if( get_keypress() == 'v' )
+	if( get_keypress() == 'v' && !ctrl_down() )
 		return handle_event();
 	return 0;
 }
