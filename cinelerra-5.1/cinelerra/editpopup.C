@@ -89,7 +89,7 @@ int EditPopup::activate_menu(Track *track, Edit *edit,
 }
 
 EditPopupClearSelect::EditPopupClearSelect(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Clear Select"),_("Ctrl-A"),'A')
+ : BC_MenuItem(_("Clear Select"),_("Ctrl-Shift-A"),'A')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -119,7 +119,7 @@ int EditPopupCopy::handle_event()
 }
 
 EditPopupCopyPack::EditPopupCopyPack(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Copy pack"),_("Ctrl-C"),'C')
+ : BC_MenuItem(_("Copy pack"),_("Ctrl-Shift-C"),'C')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -176,7 +176,7 @@ int EditPopupMute::handle_event()
 }
 
 EditPopupMutePack::EditPopupMutePack(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Mute pack"),_("Ctrl-M"),'M')
+ : BC_MenuItem(_("Mute pack"),_("Ctrl-Shift-M"),'M')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -201,6 +201,8 @@ EditPopupPaste::EditPopupPaste(MWindow *mwindow, EditPopup *popup)
 int EditPopupPaste::handle_event()
 {
 	mwindow->paste(popup->position, popup->track, 0, 0);
+	mwindow->edl->tracks->clear_selected_edits();
+	popup->gui->draw_overlays(1);
 	if( mwindow->session->current_operation == DROP_TARGETING ) {
 		mwindow->session->current_operation = NO_OPERATION;
 		popup->gui->update_cursor();
@@ -219,6 +221,8 @@ EditPopupOverwrite::EditPopupOverwrite(MWindow *mwindow, EditPopup *popup)
 int EditPopupOverwrite::handle_event()
 {
 	mwindow->paste(popup->position, popup->track, 0, -1);
+	mwindow->edl->tracks->clear_selected_edits();
+	popup->gui->draw_overlays(1);
 	if( mwindow->session->current_operation == DROP_TARGETING ) {
 		mwindow->session->current_operation = NO_OPERATION;
 		popup->gui->update_cursor();

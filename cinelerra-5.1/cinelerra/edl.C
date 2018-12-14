@@ -1631,6 +1631,25 @@ Asset *EDL::get_proxy_asset()
 		tracks->first->edits->first->asset : 0;
 }
 
+Track *EDL::add_new_track(int data_type)
+{
+	Track *new_track = 0;
+	switch( data_type ) {
+	case TRACK_VIDEO:
+		++session->video_tracks;
+		new_track = tracks->add_video_track(0, 0);
+		break;
+	case TRACK_AUDIO:
+		++session->audio_tracks;
+		new_track = tracks->add_audio_track(0, 0);
+		break;
+	case TRACK_SUBTITLE:
+		new_track = tracks->add_subttl_track(0, 0);
+		break;
+	}
+	return new_track;
+}
+
 double EDL::get_cursor_position(int cursor_x, int pane_no)
 {
 	return (double)cursor_x * local_session->zoom_sample / session->sample_rate +

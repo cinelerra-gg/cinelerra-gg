@@ -905,6 +905,15 @@ void MWindow::match_output_size(Track *track)
 
 void MWindow::selected_to_clipboard(int packed)
 {
+	int64_t start = INT64_MAX, end = -INT64_MAX, pos = 0;
+	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		if( !track->record ) continue;
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->is_selected || edit->silence() ) continue;
+			if( start > (pos=edit->startproject) ) start = pos;
+			if( end < (pos+=edit->length) ) end = pos;
+		}
+	}
 	EDL *new_edl = new EDL();
 	new_edl->create_objects();
 	new_edl->copy_session(edl);
@@ -917,45 +926,20 @@ void MWindow::selected_to_clipboard(int packed)
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
 		if( !track->record ) continue;
 		Track *new_track = 0;
-		if( !packed ) {
-			switch( track->data_type ) {
-			case TRACK_VIDEO:
-				++new_edl->session->video_tracks;
-				new_track = new_edl->tracks->add_video_track(0, 0);
-				break;
-			case TRACK_AUDIO:
-				++new_edl->session->audio_tracks;
-				new_track = new_edl->tracks->add_audio_track(0, 0);
-				break;
-			case TRACK_SUBTITLE:
-				new_track = new_edl->tracks->add_subttl_track(0, 0);
-				break;
-			}
-		}
-		int64_t startproject = 0, last_startproject = 0;
+		if( !packed )
+			new_track = new_edl->add_new_track(track->data_type);
+		int64_t startproject = 0, last_startproject = start;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( edit->startproject < start ) continue;
+			if( edit->startproject >= end ) break;
 			if( !edit->is_selected || edit->silence() ) {
 				if( !packed ) startproject += edit->length;
 	 			continue;
 			}
-			if( !new_track ) {
-				switch( track->data_type ) {
-				case TRACK_VIDEO:
-					++new_edl->session->video_tracks;
-					new_track = new_edl->tracks->add_video_track(0, 0);
-					break;
-				case TRACK_AUDIO:
-					++new_edl->session->audio_tracks;
-					new_track = new_edl->tracks->add_audio_track(0, 0);
-					break;
-				case TRACK_SUBTITLE:
-					new_track = new_edl->tracks->add_subttl_track(0, 0);
-					break;
-				}
-			}
+			if( !new_track )
+				new_track = new_edl->add_new_track(track->data_type);
 			if( new_track ) {
-				if( !packed && last_startproject > 0 &&
-				    startproject > last_startproject ) {
+				if( !packed && startproject > last_startproject ) {
 					Edit *silence = new Edit(new_edl, new_track);
 					silence->startproject = last_startproject;
 					silence->length = startproject - last_startproject;

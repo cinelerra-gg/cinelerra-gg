@@ -1222,6 +1222,8 @@ int MWindowGUI::keypress_event()
 		else
 			position = mwindow->edl->local_session->get_selectionstart();
 		mwindow->paste(position, first_track, 0, overwrite);
+		mwindow->edl->tracks->clear_selected_edits();
+		draw_overlays(1);
 		result = 1;
 		break;
 	case 'M':

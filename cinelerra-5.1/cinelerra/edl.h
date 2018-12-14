@@ -263,6 +263,7 @@ public:
 	void add_proxy(int use_scaler,
 		ArrayList<Indexable*> *orig_assets, ArrayList<Indexable*> *proxy_assets);
 	Asset *get_proxy_asset();
+	Track *add_new_track(int data_type);
 
 // Titles of all subfolders
 	BinFolders folders;
