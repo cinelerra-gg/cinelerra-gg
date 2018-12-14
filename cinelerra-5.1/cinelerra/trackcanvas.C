@@ -553,7 +553,7 @@ int64_t TrackCanvas::drop_edit_position(int *is_insertion, Edit *moved_edit, int
 	Edit *last_edit = track->edits->last;
 	if( !last_edit || edit_position >= (last_edit->startproject+last_edit->length) ) {
 		*is_insertion = 0;
-		return grab_position;
+		return edit_position;
 	}
 
 	int64_t drop_start = 0, drop_end = 0;  // drop zone boundries

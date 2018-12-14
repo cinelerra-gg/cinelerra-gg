@@ -2249,7 +2249,7 @@ Cursor BC_WindowBase::create_grab_cursor()
 	XColor fc, bc;
 	fc.flags = bc.flags = DoRed | DoGreen | DoBlue;
 	fc.red = 0xffff; fc.green = fc.blue = 0;  // fg
-	bc.red = bc.green = bc.blue = 0x0000;     // bg
+	bc.red = 0xffff; bc.green = 0xffff; bc.blue = 0x0000;     // bg
 	Cursor cursor = XCreatePixmapCursor(display, img_xpm,msk_xpm, &fc,&bc, iw2,ih2);
 	XFreePixmap(display, img_xpm);
 	XFreePixmap(display, msk_xpm);

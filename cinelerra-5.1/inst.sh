@@ -3,12 +3,12 @@
 cr='
 '
 dir="$1"; shift 1
-$mkinstalldirs "$dir"
+mkdir -p "$dir"
 if [ "$*" = "*" ]; then exit; fi
 
 for f in "$@"; do
-  if [ -f "$f" ]; then $install_sh -c "$f" "$dir"; continue; fi
+  if [ -f "$f" ]; then ( umask 755; cp "$f" "$dir" ); continue; fi
   if [ -d "$f" ]; then ( cd $f; $inst_sh "$dir/$f" * )
-  else echo "*** Error - install $f in $dir failed." 1>&2; exit 1; fi
+  else echo "*** Error - inst.sh $f in $dir failed." 1>&2; exit 1; fi
 done
 

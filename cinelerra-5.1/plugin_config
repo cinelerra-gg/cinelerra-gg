@@ -3,6 +3,7 @@ CFLAGS += -I../ -I$(CINELERRA) -I$(GUICAST) -I../colors -fPIC
 
 CFLAGS += $(static_incs)
 LFLAGS += $(static_libs)
+LFLAGS += $(LDFLAGS)
 LDLINKER ?= $(CXX) -shared
 $(shell mkdir -p $(OBJDIR))
 
@@ -26,7 +27,7 @@ else
 THEME_DATA = $(OBJDIR)/$(PLUGIN)_data.o
 
 $(OUTPUT_THEME): $(OBJS) $(OUTPUT_DIR) $(THEME_DATA)
-	$(LDLINKER) -o $(OUTPUT_THEME) $(OBJS) $(THEME_DATA)
+	$(LDLINKER) -o $(OUTPUT_THEME) $(OBJS) $(THEME_DATA) $(LDFLAGS)
 	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT_THEME) $(OUTPUT_G))
 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT_THEME))
 

@@ -27,6 +27,8 @@ CFG_CFLAGS+=" -I/usr/include/freetype2 -I/usr/local/include/freetype2"
 CFG_CFLAGS+=" -I/usr/include/uuid -I/usr/local/include/uuid"
 CFG_CFLAGS+=" -I/usr/include/mjpegtools -I/usr/local/include/mjpegtools"
 
+CFG_LDFLAGS+=" -z noexecstack"
+
 AC_DEFUN([CHECK_WITH], [
 AC_ARG_WITH([$1],
   AC_HELP_STRING([--with-[$1]], [$2 ($4)]),
@@ -919,6 +921,16 @@ echo "else"
 echo "CFLAGS_ := ${CFLAGS:--g -O2}"
 echo "endif"
 echo "endif"
+echo "ifndef CXXFLAGS_"
+echo "ifdef CXXFLAGS"
+echo "CXXFLAGS_ := \$(CXXFLAGS)"
+echo "endif"
+echo "endif"
+echo "ifndef LDFLAGS_"
+echo "ifdef LDFLAGS"
+echo "LDFLAGS_ := \$(LDFLAGS)"
+echo "endif"
+echo "endif"
 
 echo "CFLAGS := \$(CFLAGS_)"
 echo "CFLAGS += '-DCIN=\"\$(WANT_CIN)\"'"
@@ -931,8 +943,14 @@ echo "CFLAGS += '-DLADSPA_DIR=\"$WANT_LADSPA_DIR\"'"
 echo "CFLAGS += '-DCIN_BROWSER=\"$WANT_CIN_BROWSER\"'"
 for flg in $CFG_CFLAGS; do echo "CFLAGS += $flg"; done
 echo ""
-for flg in $CFG_CXXFLAGS; do echo "CXXFLAGS += $flg"; done
-echo ""
+if test "x$CFG_CXXFLAGS" != "x"; then
+  for flg in $CFG_CXXFLAGS; do echo "CXXFLAGS += $flg"; done
+  echo ""
+fi
+if test "x$CFG_LDFLAGS" != "x" ; then
+  echo "LDFLAGS +=$CFG_LDFLAGS"
+  echo ""
+fi
 
 if test "x$WANT_X264_HIDEPTH" = "xyes" ; then
   X264_CFG_PARAMS="$X264_CFG_PARAMS --bit-depth=10"

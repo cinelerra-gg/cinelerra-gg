@@ -408,38 +408,45 @@ void Tracks::set_transition_length(Transition *transition, double length)
 
 void Tracks::paste_transitions(double start, double end, int track_type, char* title)
 {
-	for(Track *current_track = first;
-		current_track;
-		current_track = current_track->next)
-	{
-		if(current_track->record && current_track->data_type == track_type)
-		{
-			int64_t start_units = current_track->to_units(start, 0);
-			int64_t end_units = current_track->to_units(end, 0);
-			if( start_units == end_units ) {
-				for( Edit *current_edit = current_track->edits->first;
-				     current_edit; current_edit = current_edit->next) {
-					int64_t edit_start = current_edit->startproject;
-					int64_t edit_end = edit_start + current_edit->length;
-					if( edit_start > start_units ) continue;
-					if( start_units == current_track->edits->length() ) {
-						double length = edl->session->default_transition_length;
-						int64_t units = current_track->to_units(length, 1);
-						current_edit = current_track->edits->
-							create_silence(start_units, start_units+units);
-					}
-					else if( start_units >= edit_end ) continue;
-					current_edit->insert_transition(title);
+	int count = 0;
+	for( Track *track=first; track; track=track->next ) {
+		if( !track->record || track->data_type != track_type ) continue;
+		for( Edit *edit=track->edits->first;  edit; edit=edit->next ) {
+			if( !edit->is_selected ) continue;
+			edit->insert_transition(title);
+			++count;
+		}
+	}
+	if( count > 0 ) {
+		clear_selected_edits();
+		return;
+	}
+
+	for( Track *track=first; track; track=track->next ) {
+		if( !track->record || track->data_type != track_type ) continue;
+		int64_t start_units = track->to_units(start, 0);
+		int64_t end_units = track->to_units(end, 0);
+		if( start_units == end_units ) {
+			for( Edit *edit = track->edits->first; edit; edit = edit->next) {
+				int64_t edit_start = edit->startproject;
+				int64_t edit_end = edit_start + edit->length;
+				if( edit_start > start_units ) continue;
+				if( start_units == track->edits->length() ) {
+					double length = edl->session->default_transition_length;
+					int64_t units = track->to_units(length, 1);
+					edit = track->edits->
+						create_silence(start_units, start_units+units);
 				}
+				else if( start_units >= edit_end ) continue;
+				edit->insert_transition(title);
 			}
-			else {
-				for( Edit *current_edit = current_track->edits->first;
-				     current_edit; current_edit = current_edit->next) {
-					int64_t edit_start = current_edit->startproject;
-					if( !edit_start ) continue;
-					if( edit_start >= start_units && edit_start < end_units ) {
-						current_edit->insert_transition(title);
-					}
+		}
+		else {
+			for( Edit *edit=track->edits->first; edit; edit=edit->next) {
+				int64_t edit_start = edit->startproject;
+				if( !edit_start ) continue;
+				if( edit_start >= start_units && edit_start < end_units ) {
+					edit->insert_transition(title);
 				}
 			}
 		}

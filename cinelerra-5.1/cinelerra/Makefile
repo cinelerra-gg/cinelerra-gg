@@ -500,14 +500,14 @@ LDFLAGS1 = \
 LDFLAGS2 = -lcpml -lcxxstdma_rh60 -lcxxma_rh60 -lc -lots \
 	`expr /usr/lib/compaq/cxx-*/alpha-linux/`bin/crtend.o \
 	`expr /usr/lib/compaq/cxx-*/alpha-linux/`bin/crtn.o --no-demangle \
-	--warn-once
+	--warn-once $(LDFLAGS)
 LINKER = ld -o $(OUTPUT)
 CFLAGS += -DUSE_ALPHA
 
 else
 
 LDFLAGS1 = -Wl,-export-dynamic -g
-LDFLAGS2 =
+LDFLAGS2 = $(LDFLAGS)
 LINKER = $(CXX) -o $(OUTPUT)
 
 endif

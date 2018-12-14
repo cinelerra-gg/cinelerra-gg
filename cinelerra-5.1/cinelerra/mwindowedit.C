@@ -906,14 +906,21 @@ void MWindow::match_output_size(Track *track)
 void MWindow::selected_to_clipboard(int packed)
 {
 	int64_t start = INT64_MAX, end = -INT64_MAX, pos = 0;
+	Track *first_track=0, *last_track = 0;
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
 		if( !track->record ) continue;
+		int empty = 1;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( !edit->is_selected || edit->silence() ) continue;
 			if( start > (pos=edit->startproject) ) start = pos;
 			if( end < (pos+=edit->length) ) end = pos;
+			empty = 0;
 		}
+		if( empty ) continue;
+		if( !first_track ) first_track = track;
+		last_track = track;
 	}
+	if( !first_track ) return;
 	EDL *new_edl = new EDL();
 	new_edl->create_objects();
 	new_edl->copy_session(edl);
@@ -925,6 +932,10 @@ void MWindow::selected_to_clipboard(int packed)
 	new_edl->session->audio_tracks = 0;
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
 		if( !track->record ) continue;
+		if( first_track ) {
+			if( first_track != track ) continue;
+			first_track = 0;
+		}
 		Track *new_track = 0;
 		if( !packed )
 			new_track = new_edl->add_new_track(track->data_type);
@@ -953,6 +964,7 @@ void MWindow::selected_to_clipboard(int packed)
 				new_track->edits->append(clip_edit);
 			}
 		}
+		if( last_track == track ) break;
 	}
 	double length = new_edl->tracks->total_length();
 	FileXML file;
