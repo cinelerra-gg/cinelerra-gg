@@ -334,10 +334,11 @@ public:
 	int start_selection(double position);
 	int drag_motion_event();
 	int drag_stop_event();
-	int drag_motion(Track **over_track,
-		Edit **over_edit,
-		PluginSet **over_pluginset,
-		Plugin **over_plugin);
+	int drag_motion(Track **over_track, Edit **over_edit,
+		PluginSet **over_pluginset, Plugin **over_plugin);
+	int drag_cursor_motion(int cursor_x, int cursor_y,
+		Track **over_track, Edit **over_edit,
+		PluginSet **over_pluginset, Plugin **over_plugin);
 	int drag_stop(int *redraw);
 	int64_t drop_edit_position (int *is_insertion, Edit *moved_edit, int64_t moved_edit_length);
 	int64_t drop_plugin_position(PluginSet *plugin_set, Plugin *moved_plugin);

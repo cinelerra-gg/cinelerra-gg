@@ -49,6 +49,12 @@ EditPopup::EditPopup(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+
+	track = 0;
+	edit = 0;
+	plugin = 0;
+	pluginset = 0;
+	position = 0;
 }
 
 EditPopup::~EditPopup()
@@ -57,49 +63,44 @@ EditPopup::~EditPopup()
 
 void EditPopup::create_objects()
 {
-	add_item(new EditPopupClear(mwindow, this));
-	add_item(new EditPopupDelete(mwindow, this));
+	add_item(new EditPopupClearSelect(mwindow, this));
 	add_item(new EditPopupCopy(mwindow, this));
 	add_item(new EditPopupCut(mwindow, this));
-	add_item(new EditPopupCopyCut(mwindow, this));
+	add_item(new EditPopupMute(mwindow, this));
+	add_item(new EditPopupCopyPack(mwindow, this));
+	add_item(new EditPopupCutPack(mwindow, this));
+	add_item(new EditPopupMutePack(mwindow, this));
 	add_item(new EditPopupPaste(mwindow, this));
+	add_item(new EditPopupOverwrite(mwindow, this));
 	add_item(new EditPopupFindAsset(mwindow, this));
 	add_item(new EditPopupTitle(mwindow, this));
 	add_item(new EditPopupShow(mwindow, this));
 }
 
-int EditPopup::update(Edit *edit)
+int EditPopup::activate_menu(Track *track, Edit *edit,
+		PluginSet *pluginset, Plugin *plugin, double position)
 {
+	this->track = track;
 	this->edit = edit;
-	return 0;
+	this->pluginset = pluginset;
+	this->plugin = plugin;
+	this->position = position;
+	return BC_PopupMenu::activate_menu();
 }
 
-
-EditPopupClear::EditPopupClear(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Clear"),_("Ctrl-m"),'m')
+EditPopupClearSelect::EditPopupClearSelect(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Clear Select"),_("Ctrl-A"),'A')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 	set_ctrl(1);
+	set_shift(1);
 }
 
-int EditPopupClear::handle_event()
+int EditPopupClearSelect::handle_event()
 {
-	mwindow->delete_edits(0);
-	return 1;
-}
-
-EditPopupDelete::EditPopupDelete(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Delete"),_("Ctrl-DEL"),DELETE)
-{
-	this->mwindow = mwindow;
-	this->popup = popup;
-	set_ctrl(1);
-}
-
-int EditPopupDelete::handle_event()
-{
-	mwindow->delete_edits(1);
+	mwindow->edl->tracks->clear_selected_edits();
+	popup->gui->draw_overlays(1);
 	return 1;
 }
 
@@ -113,7 +114,22 @@ EditPopupCopy::EditPopupCopy(MWindow *mwindow, EditPopup *popup)
 
 int EditPopupCopy::handle_event()
 {
-	mwindow->selected_to_clipboard();
+	mwindow->selected_to_clipboard(0);
+	return 1;
+}
+
+EditPopupCopyPack::EditPopupCopyPack(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Copy pack"),_("Ctrl-C"),'C')
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	set_ctrl(1);
+	set_shift(1);
+}
+
+int EditPopupCopyPack::handle_event()
+{
+	mwindow->selected_to_clipboard(1);
 	return 1;
 }
 
@@ -127,21 +143,50 @@ EditPopupCut::EditPopupCut(MWindow *mwindow, EditPopup *popup)
 
 int EditPopupCut::handle_event()
 {
-	mwindow->cut_selected_edits(1);
+	mwindow->cut_selected_edits(1, 0);
 	return 1;
 }
 
-EditPopupCopyCut::EditPopupCopyCut(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("Copy cut"),_("Ctrl-z"),'z')
+EditPopupCutPack::EditPopupCutPack(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Cut pack"),_("Ctrl-z"),'z')
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 	set_ctrl(1);
 }
 
-int EditPopupCopyCut::handle_event()
+int EditPopupCutPack::handle_event()
 {
-	mwindow->cut_selected_edits(0);
+	mwindow->cut_selected_edits(1, 1);
+	return 1;
+}
+
+EditPopupMute::EditPopupMute(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Mute"),_("Ctrl-m"),'m')
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	set_ctrl(1);
+}
+
+int EditPopupMute::handle_event()
+{
+	mwindow->cut_selected_edits(0, 0);
+	return 1;
+}
+
+EditPopupMutePack::EditPopupMutePack(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Mute pack"),_("Ctrl-M"),'M')
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	set_ctrl(1);
+	set_shift(1);
+}
+
+int EditPopupMutePack::handle_event()
+{
+	mwindow->cut_selected_edits(0, 1);
 	return 1;
 }
 
@@ -155,7 +200,29 @@ EditPopupPaste::EditPopupPaste(MWindow *mwindow, EditPopup *popup)
 
 int EditPopupPaste::handle_event()
 {
-	mwindow->paste();
+	mwindow->paste(popup->position, popup->track, 0, 0);
+	if( mwindow->session->current_operation == DROP_TARGETING ) {
+		mwindow->session->current_operation = NO_OPERATION;
+		popup->gui->update_cursor();
+	}
+	return 1;
+}
+
+EditPopupOverwrite::EditPopupOverwrite(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Overwrite"),_("Ctrl-b"),'b')
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	set_ctrl(1);
+}
+
+int EditPopupOverwrite::handle_event()
+{
+	mwindow->paste(popup->position, popup->track, 0, -1);
+	if( mwindow->session->current_operation == DROP_TARGETING ) {
+		mwindow->session->current_operation = NO_OPERATION;
+		popup->gui->update_cursor();
+	}
 	return 1;
 }
 

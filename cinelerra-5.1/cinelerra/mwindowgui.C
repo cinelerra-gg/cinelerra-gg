@@ -1170,9 +1170,17 @@ int MWindowGUI::keypress_event()
 	int result = mbuttons->keypress_event();
 	if( result ) return result;
 
-	Track *this_track = 0;
+	Track *this_track = 0, *first_track = 0;
+	int collapse = 0, packed = 0, overwrite = 0;
+	double position = 0;
 
-	switch(get_keypress()) {
+	switch( get_keypress() ) {
+	case 'A':
+		if( !ctrl_down() || !shift_down() || alt_down() ) break;
+		mwindow->edl->tracks->clear_selected_edits();
+		draw_overlays(1);
+		result = 1;
+		break;
 	case 'e':
 		mwindow->toggle_editing_mode();
 		result = 1;
@@ -1186,23 +1194,48 @@ int MWindowGUI::keypress_event()
 		result = 1;
 		break;
 
+	case 'C':
+		packed = 1;
 	case 'c':
 		if( !ctrl_down() || alt_down() ) break;
-		mwindow->selected_to_clipboard();
+		mwindow->selected_to_clipboard(packed);
+		result = 1;
 		break;
+	case 'b':
+		overwrite = -1; // fall thru
 	case 'v':
 		if( !ctrl_down() || alt_down() ) break;
-		mwindow->paste();
+		if( mwindow->session->current_operation == DROP_TARGETING ) {
+			mwindow->session->current_operation = NO_OPERATION;
+			mwindow->gui->set_editing_mode(1);
+			int pane_no = 0;
+			for( ; pane_no<TOTAL_PANES; ++pane_no  ) {
+				if( !pane[pane_no] ) continue;
+				first_track = pane[pane_no]->over_track();
+				if( first_track ) break;
+			}
+			if( first_track ) {
+				int cursor_x = pane[pane_no]->canvas->get_relative_cursor_x();
+				position = mwindow->edl->get_cursor_position(cursor_x, pane_no);
+			}
+		}
+		else
+			position = mwindow->edl->local_session->get_selectionstart();
+		mwindow->paste(position, first_track, 0, overwrite);
+		result = 1;
+		break;
+	case 'M':
+		collapse = 1;
+	case 'm':
+		mwindow->cut_selected_edits(0, collapse);
+		result = 1;
 		break;
 	case 'z':
+		collapse = 1;
 	case 'x':
 		if( !ctrl_down() || alt_down() ) break;
-		mwindow->cut_selected_edits(get_keypress()=='x' ? 1 : 0);
-		break;
-	case 'm':
-	case DELETE:
-		if( !ctrl_down() || alt_down() ) break;
-		mwindow->delete_edits(get_keypress()==DELETE ? 1 : 0);
+		mwindow->cut_selected_edits(1, collapse);
+		result = 1;
 		break;
 
 	case '1': case '2': case '3': case '4':

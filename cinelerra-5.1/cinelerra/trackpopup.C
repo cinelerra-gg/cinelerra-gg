@@ -47,6 +47,11 @@ TrackPopup::TrackPopup(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	track = 0;
+	edit = 0;
+	pluginset = 0;
+	plugin = 0;
+	position = 0;
 }
 
 TrackPopup::~TrackPopup()
@@ -64,22 +69,25 @@ void TrackPopup::create_objects()
 	matchsize_option = 0;
 }
 
-int TrackPopup::update(Track *track)
+int TrackPopup::activate_menu(Track *track, Edit *edit,
+		PluginSet *pluginset, Plugin *plugin, double position)
 {
 	this->track = track;
+	this->edit = edit;
+	this->pluginset = pluginset;
+	this->plugin = plugin;
+	this->position = position;
 
-	if(track->data_type == TRACK_VIDEO && !resize_option)
-	{
+	if( track->data_type == TRACK_VIDEO && !resize_option ) {
 		add_item(resize_option = new TrackPopupResize(mwindow, this));
 		add_item(matchsize_option = new TrackPopupMatchSize(mwindow, this));
 	}
-	else
-	if(track->data_type == TRACK_AUDIO && resize_option)
-	{
+	else if( track->data_type == TRACK_AUDIO && resize_option ) {
 		del_item(resize_option);     resize_option = 0;
 		del_item(matchsize_option);  matchsize_option = 0;
 	}
-	return 0;
+
+	return BC_PopupMenu::activate_menu();
 }
 
 

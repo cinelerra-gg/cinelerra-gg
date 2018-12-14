@@ -27,8 +27,11 @@
 #include "editpopup.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "plugin.inc"
+#include "pluginset.inc"
 #include "plugindialog.inc"
 #include "resizetrackthread.inc"
+#include "track.inc"
 
 class EditPopup : public BC_PopupMenu
 {
@@ -37,28 +40,22 @@ public:
 	~EditPopup();
 
 	void create_objects();
-	int update(Edit *edit);
+	int activate_menu(Track *track, Edit *edit,
+		PluginSet *pluginset, Plugin *plugin, double position);
 
 	MWindow *mwindow;
 	MWindowGUI *gui;
+	Track *track;
 	Edit *edit;
+	Plugin *plugin;
+	PluginSet *pluginset;
+	double position;
 };
 
-
-class EditPopupClear : public BC_MenuItem
+class EditPopupClearSelect : public BC_MenuItem
 {
 public:
-	EditPopupClear(MWindow *mwindow, EditPopup *popup);
-	int handle_event();
-
-	MWindow *mwindow;
-	EditPopup *popup;
-};
-
-class EditPopupDelete : public BC_MenuItem
-{
-public:
-	EditPopupDelete(MWindow *mwindow, EditPopup *popup);
+	EditPopupClearSelect(MWindow *mwindow, EditPopup *popup);
 	int handle_event();
 
 	MWindow *mwindow;
@@ -75,6 +72,16 @@ public:
 	EditPopup *popup;
 };
 
+class EditPopupCopyPack : public BC_MenuItem
+{
+public:
+	EditPopupCopyPack(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
 class EditPopupCut : public BC_MenuItem
 {
 public:
@@ -85,10 +92,30 @@ public:
 	EditPopup *popup;
 };
 
-class EditPopupCopyCut : public BC_MenuItem
+class EditPopupCutPack : public BC_MenuItem
 {
 public:
-	EditPopupCopyCut(MWindow *mwindow, EditPopup *popup);
+	EditPopupCutPack(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
+class EditPopupMute : public BC_MenuItem
+{
+public:
+	EditPopupMute(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
+class EditPopupMutePack : public BC_MenuItem
+{
+public:
+	EditPopupMutePack(MWindow *mwindow, EditPopup *popup);
 	int handle_event();
 
 	MWindow *mwindow;
@@ -99,6 +126,16 @@ class EditPopupPaste : public BC_MenuItem
 {
 public:
 	EditPopupPaste(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
+class EditPopupOverwrite : public BC_MenuItem
+{
+public:
+	EditPopupOverwrite(MWindow *mwindow, EditPopup *popup);
 	int handle_event();
 
 	MWindow *mwindow;

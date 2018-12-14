@@ -23,12 +23,15 @@
 #define __EDITPOPUP_INC__
 
 class EditPopup;
-class EditClear;
-class EditDelete;
-class EditCopy;
-class EditCut;
-class EditCopyCut;
-class EditPaste;
+class EditPopupClearSelect;
+class EditPopupCopy;
+class EditPopupCopyPack;
+class EditPopupCut;
+class EditPopupCutPack;
+class EditPopupMute;
+class EditPopupMutePack;
+class EditPopupPaste;
+class EditPopupOverwrite;
 class EditPopupFindAsset;
 class EditPopupTitle;
 class EditTitleDialogThread;

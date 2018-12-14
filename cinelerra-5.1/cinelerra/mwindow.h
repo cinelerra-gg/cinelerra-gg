@@ -182,7 +182,7 @@ public:
 	void update_vwindow();
 // Fit selected time to horizontal display range
 	void fit_selection();
-	void selected_to_clipboard();
+	void selected_to_clipboard(int packed);
 // Fit selected autos to the vertical display range
 	void fit_autos(int doall);
 	void change_currentautorange(int autogrouptype, int increment, int changemax);
@@ -364,17 +364,13 @@ public:
 	int feather_edits(int64_t feather_samples, int audio, int video);
 	int64_t get_feather(int audio, int video);
 	float get_aspect_ratio();
-	void insert(double position,
-		FileXML *file,
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos,
-		EDL *parent_edl /* = 0 */);
+	void insert(double position, FileXML *file,
+		int edit_labels, int edit_plugins, int edit_autos,
+		EDL *parent_edl, Track *first_track, int overwrite);
 
 // TrackCanvas calls this to insert multiple effects from the drag_pluginservers
 // into pluginset_highlighted.
-	void insert_effects_canvas(double start,
-		double length);
+	void insert_effects_canvas(double start, double length);
 
 // CWindow calls this to insert multiple effects from
 // the drag_pluginservers array.
@@ -385,37 +381,27 @@ public:
 // other tracks
 	void insert_effect(char *title,
 		SharedLocation *shared_location,
-		int data_type,
-		int plugin_type,
-		int single_standalone);
+		int data_type, int plugin_type, int single_standalone);
 
 // This is called multiple times by the above functions.
 // It can't sync parameters.
 	void insert_effect(char *title,
 		SharedLocation *shared_location,
-		Track *track,
-		PluginSet *plugin_set,
-		double start,
-		double length,
-		int plugin_type);
+		Track *track, PluginSet *plugin_set,
+		double start, double length, int plugin_type);
 
 	void match_output_size(Track *track);
 	void delete_edit(Edit *edit, const char *msg, int collapse=0);
 	void delete_edits(ArrayList<Edit*> *edits, const char *msg, int collapse=0);
 	void delete_edits(int collapse=0);
-	void cut_selected_edits(int collapse=0);
+	void cut_selected_edits(int collapse, int packed);
 // Move edit to new position
-	void move_edits(ArrayList<Edit*> *edits,
-		Track *track,
-		double position,
-		int behaviour);       // behaviour: 0 - old style (cut and insert elswhere), 1- new style - (clear and overwrite elsewere)
+	void move_edits(ArrayList<Edit*> *edits, Track *track, double position,
+// 0 - old style (cut and insert elswhere), 1- new style - (clear and overwrite elsewere)
+		int behaviour);
 // Move effect to position
-	void move_effect(Plugin *plugin,
-		Track *track,
-		int64_t position);
-	void move_effect(Plugin *plugin,
-		PluginSet *plugin_set,
-		int64_t position);
+	void move_effect(Plugin *plugin, Track *track, int64_t position);
+	void move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t position);
 	void move_plugins_up(PluginSet *plugin_set);
 	void move_plugins_down(PluginSet *plugin_set);
 	void move_track_down(Track *track);
@@ -427,11 +413,13 @@ public:
 	void delete_folder(char *folder);
 // For clipboard commands
 	void paste();
+	void paste(double start, Track *first_track, int clear_selection, int overwrite);
 // For splice and overwrite
 	void overwrite(EDL *source, int all);
 	void splice(EDL *source, int all);
 	int paste(double start, double end, FileXML *file,
-		int edit_labels, int edit_plugins, int edit_autos);
+		int edit_labels, int edit_plugins, int edit_autos,
+		Track *first_track, int overwrite);
 	int paste_output(int64_t startproject, int64_t endproject,
 		int64_t startsource_sample, int64_t endsource_sample,
 		int64_t startsource_frame, int64_t endsource_frame,

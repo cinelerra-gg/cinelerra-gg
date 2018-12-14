@@ -514,6 +514,7 @@ void AssetViewPopup::draw_vframe(VFrame *vframe)
 	double total_length = edl->tracks->total_length();
 	if( !total_length ) total_length = 1;
 	for( Track *track=edl->tracks->first; track!=0; track=track->next ) {
+		if( !track->record ) continue;
 		for( Edit *edit=track->edits->first; edit!=0; edit=edit->next ) {
 			Indexable *indexable = (Indexable *)edit->asset;
 			if( !indexable ) indexable = (Indexable *)edit->nested_edl;

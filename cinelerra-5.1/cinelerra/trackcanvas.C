@@ -184,17 +184,27 @@ int TrackCanvas::drag_motion_event()
 	return gui->drag_motion();
 }
 
-int TrackCanvas::drag_motion(Track **over_track,
-	Edit **over_edit,
-	PluginSet **over_pluginset,
-	Plugin **over_plugin)
+int TrackCanvas::drag_motion(
+		Track **over_track, Edit **over_edit,
+		PluginSet **over_pluginset, Plugin **over_plugin)
 {
 	int cursor_x = get_relative_cursor_x();
 	int cursor_y = get_relative_cursor_y();
+	if( get_cursor_over_window() ) {
+		drag_cursor_motion(cursor_x, cursor_y,
+			over_track, over_edit, over_pluginset, over_plugin);
+	}
+        if( over_track && !*over_track )
+		*over_track = pane->over_patchbay();
+	return 0;
+}
 
-	if( get_cursor_over_window() &&
-		cursor_x >= 0 && cursor_y >= 0 &&
-		cursor_x < get_w() && cursor_y < get_h() )
+int TrackCanvas::drag_cursor_motion(int cursor_x, int cursor_y,
+		Track **over_track, Edit **over_edit,
+		PluginSet **over_pluginset, Plugin **over_plugin)
+{
+	if( cursor_x >= 0 && cursor_y >= 0 &&
+	    cursor_x < get_w() && cursor_y < get_h() )
 	{
 //printf("TrackCanvas::drag_motion %d %d\n", __LINE__, pane->number);
 // Find the edit and track the cursor is over
@@ -259,9 +269,6 @@ int TrackCanvas::drag_motion(Track **over_track,
 			}
 		}
 	}
-
-        if( !*over_track )
-		*over_track = pane->over_patchbay();
 
 	return 0;
 }
@@ -4193,6 +4200,10 @@ int TrackCanvas::cursor_update(int in_motion)
 			}
 			break;
 
+		case DROP_TARGETING:
+			new_cursor = GRABBED_CURSOR;
+			break;
+
 		default:
 			if(is_event_win() && cursor_inside()) {
 // Update clocks
@@ -4457,6 +4468,17 @@ int TrackCanvas::button_release_event()
 // Trap in drag stop
 			break;
 
+		case DROP_TARGETING: {
+			int cursor_x = get_cursor_x(), cursor_y = get_cursor_y();
+			Track *track=0;  Edit *edit=0;  PluginSet *pluginset=0;  Plugin *plugin=0;
+			drag_cursor_motion(cursor_x, cursor_y,
+				&track, &edit, &pluginset, &plugin);
+			double position =
+				mwindow->edl->get_cursor_position(cursor_x, pane->number);
+			gui->edit_menu->activate_menu(track, edit, pluginset, plugin, position);
+			mwindow->session->current_operation = NO_OPERATION;
+			result = 1;
+			break; }
 
 		default:
 			if(mwindow->session->current_operation) {
@@ -4680,25 +4702,24 @@ int TrackCanvas::do_tracks(int cursor_x, int cursor_y, int button_press)
 {
 	int result = 0;
 
-	for(Track *track = mwindow->edl->tracks->first;
-		track && !result;
-		track = track->next) {
-		int64_t track_x, track_y, track_w, track_h;
-		track_dimensions(track, track_x, track_y, track_w, track_h);
+	Track *track=0;  Edit *edit=0;  PluginSet *pluginset=0;  Plugin *plugin=0;
+	drag_cursor_motion(cursor_x, cursor_y,
+		&track, &edit, &pluginset, &plugin);
 
-		if( button_press && cursor_y >= track_y && cursor_y < track_y + track_h ) {
-			double pos = mwindow->edl->get_cursor_position(cursor_x, pane->number);
-			int64_t position = track->to_units(pos, 0);
-			if( get_buttonpress() == RIGHT_BUTTON ) {
-				gui->track_menu->update(track);
-				gui->track_menu->activate_menu();
-				result = 1;
-			}
-			else if( get_buttonpress() == MIDDLE_BUTTON ) {
-				gui->edit_menu->update(track->edits->editof(position, PLAY_FORWARD, 0));
-				gui->edit_menu->activate_menu();
-				result = 1;
-			}
+	if( button_press && track ) {
+		switch( get_buttonpress() ) {
+		case RIGHT_BUTTON: {
+			double position =
+				mwindow->edl->get_cursor_position(cursor_x, pane->number);
+			gui->track_menu->activate_menu(track, edit, pluginset, plugin, position);
+			mwindow->session->current_operation = NO_OPERATION;
+			result = 1;
+			break; }
+		case MIDDLE_BUTTON:
+			set_cursor(GRABBED_CURSOR, 0, 1);
+			mwindow->session->current_operation = DROP_TARGETING;
+			result = 1;
+			break;
 		}
 	}
 

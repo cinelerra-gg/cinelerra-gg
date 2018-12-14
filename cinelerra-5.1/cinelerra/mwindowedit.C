@@ -672,7 +672,7 @@ void MWindow::delete_track(Track *track)
 // Insert data from clipboard
 void MWindow::insert(double position, FileXML *file,
 	int edit_labels, int edit_plugins, int edit_autos,
-	EDL *parent_edl)
+	EDL *parent_edl, Track *first_track, int overwrite)
 {
 // For clipboard pasting make the new edl use a separate session
 // from the master EDL.  Then it can be resampled to the master rates.
@@ -699,8 +699,8 @@ void MWindow::insert(double position, FileXML *file,
 
 
 
-	paste_edls(&new_edls, LOADMODE_PASTE, 0, position,
-		edit_labels, edit_plugins, edit_autos, 0); // overwrite
+	paste_edls(&new_edls, LOADMODE_PASTE, first_track, position,
+		edit_labels, edit_plugins, edit_autos, overwrite);
 // if( vwindow->edl )
 // printf("MWindow::insert 5 %f %f\n",
 // vwindow->edl->local_session->in_point,
@@ -903,7 +903,7 @@ void MWindow::match_output_size(Track *track)
 }
 
 
-void MWindow::selected_to_clipboard()
+void MWindow::selected_to_clipboard(int packed)
 {
 	EDL *new_edl = new EDL();
 	new_edl->create_objects();
@@ -915,10 +915,29 @@ void MWindow::selected_to_clipboard()
 	new_edl->session->video_tracks = 0;
 	new_edl->session->audio_tracks = 0;
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
-		int64_t startproject = 0;
+		if( !track->record ) continue;
 		Track *new_track = 0;
+		if( !packed ) {
+			switch( track->data_type ) {
+			case TRACK_VIDEO:
+				++new_edl->session->video_tracks;
+				new_track = new_edl->tracks->add_video_track(0, 0);
+				break;
+			case TRACK_AUDIO:
+				++new_edl->session->audio_tracks;
+				new_track = new_edl->tracks->add_audio_track(0, 0);
+				break;
+			case TRACK_SUBTITLE:
+				new_track = new_edl->tracks->add_subttl_track(0, 0);
+				break;
+			}
+		}
+		int64_t startproject = 0, last_startproject = 0;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
-			if( !edit->is_selected ) continue;
+			if( !edit->is_selected || edit->silence() ) {
+				if( !packed ) startproject += edit->length;
+	 			continue;
+			}
 			if( !new_track ) {
 				switch( track->data_type ) {
 				case TRACK_VIDEO:
@@ -935,17 +954,25 @@ void MWindow::selected_to_clipboard()
 				}
 			}
 			if( new_track ) {
+				if( !packed && last_startproject > 0 &&
+				    startproject > last_startproject ) {
+					Edit *silence = new Edit(new_edl, new_track);
+					silence->startproject = last_startproject;
+					silence->length = startproject - last_startproject;
+					new_track->edits->append(silence);
+				}
 				Edit *clip_edit = new Edit(new_edl, new_track);
 				clip_edit->copy_from(edit);
 				clip_edit->startproject = startproject;
 				startproject += clip_edit->length;
+				last_startproject = startproject;
 				new_track->edits->append(clip_edit);
 			}
 		}
 	}
 	double length = new_edl->tracks->total_length();
 	FileXML file;
-	new_edl->copy(0, length, 0, &file, "", 1);
+	new_edl->copy(0, length, 1, &file, "", 1);
 	const char *file_string = file.string();
 	long file_length = strlen(file_string);
 	gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
@@ -992,9 +1019,11 @@ void MWindow::delete_edits(int collapse)
 	delete_edits(&edits,_("del edit"), collapse);
 }
 
-void MWindow::cut_selected_edits(int collapse)
+// collapse - delete from timeline, not collapse replace with silence
+// packed - omit unselected from selection, unpacked - replace unselected with silence
+void MWindow::cut_selected_edits(int collapse, int packed)
 {
-	selected_to_clipboard();
+	selected_to_clipboard(packed);
 	ArrayList<Edit*> edits;
 	edl->tracks->get_selected_edits(&edits);
 	delete_edits(&edits, _("cut edit"), collapse);
@@ -1187,8 +1216,7 @@ void MWindow::overwrite(EDL *source, int all)
 		edl->local_session->get_outpoint() < 0 )
 		edl->clear(dst_start, dst_start + overwrite_len, 0, 0, 0);
 
-	paste(dst_start, dst_start + overwrite_len,
-		&file, 0, 0, 0);
+	paste(dst_start, dst_start + overwrite_len, &file, 0, 0, 0, 0, 0);
 
 	edl->local_session->set_selectionstart(dst_start + overwrite_len);
 	edl->local_session->set_selectionend(dst_start + overwrite_len);
@@ -1203,19 +1231,16 @@ void MWindow::overwrite(EDL *source, int all)
 }
 
 // For splice and overwrite
-int MWindow::paste(double start,
-	double end,
-	FileXML *file,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos)
+int MWindow::paste(double start, double end, FileXML *file,
+	int edit_labels, int edit_plugins, int edit_autos,
+	Track *first_track, int overwrite)
 {
 	clear(0);
 
 // Want to insert with assets shared with the master EDL.
 	insert(start, file,
 		edit_labels, edit_plugins, edit_autos,
-		edl);
+		edl, first_track, overwrite);
 
 	return 0;
 }
@@ -1223,7 +1248,11 @@ int MWindow::paste(double start,
 // For editing using insertion point
 void MWindow::paste()
 {
-	double start = edl->local_session->get_selectionstart();
+	paste(edl->local_session->get_selectionstart(), 0, 1, 0);
+}
+
+void MWindow::paste(double start, Track *first_track, int clear_selection, int overwrite)
+{
 	//double end = edl->local_session->get_selectionend();
 	int64_t len = gui->clipboard_len(BC_PRIMARY_SELECTION);
 
@@ -1233,13 +1262,13 @@ void MWindow::paste()
 		gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);
-		clear(0);
+		if( clear_selection ) clear(0);
 
 		insert(start, &file,
 			edl->session->labels_follow_edits,
 			edl->session->plugins_follow_edits,
 			edl->session->autos_follow_edits,
-			0);
+			0, first_track, overwrite);
 
 		edl->optimize();
 		delete [] string;
@@ -1579,7 +1608,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 					edl_length,
 					edit_labels);
 //PRINT_TRACE
-
+			double total_length = new_edl->tracks->total_length();
 			for( Track *new_track=new_edl->tracks->first;
 			     new_track; new_track=new_track->next ) {
 // Get destination track of same type as new_track
@@ -1618,8 +1647,10 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 						break;
 					}
 					if( overwrite ) {
+						double length = overwrite >= 0 ?
+							new_track->get_length() : total_length;
 						track->clear(current_position,
-							current_position + new_track->get_length(),
+							current_position + length,
 							1, // edit edits
 							edit_labels, edit_plugins, edit_autos,
 							1, // convert units
@@ -2104,7 +2135,8 @@ void MWindow::splice(EDL *source, int all)
 	paste(start, start, &file,
 		edl->session->labels_follow_edits,
 		edl->session->plugins_follow_edits,
-		edl->session->autos_follow_edits);
+		edl->session->autos_follow_edits,
+		0, 0);
 
 // Position at end of clip
 	edl->local_session->set_selectionstart(start + source_end - source_start);

@@ -38,13 +38,19 @@ public:
 	~TrackPopup();
 
 	void create_objects();
-	int update(Track *track);
+	int activate_menu(Track *track, Edit *edit,
+		PluginSet *pluginset, Plugin *plugin, double position);
 
 	MWindow *mwindow;
 	MWindowGUI *gui;
-	Track *track;
 	TrackPopupResize *resize_option;
 	TrackPopupMatchSize *matchsize_option;
+
+	Track *track;
+	Edit *edit;
+	Plugin *plugin;
+	PluginSet *pluginset;
+	double position;
 };
 
 class TrackPopupMatchSize : public BC_MenuItem
