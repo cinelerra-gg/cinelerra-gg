@@ -939,28 +939,28 @@ void MWindow::selected_to_clipboard(int packed)
 		Track *new_track = 0;
 		if( !packed )
 			new_track = new_edl->add_new_track(track->data_type);
-		int64_t startproject = 0, last_startproject = start;
+		int64_t startproject = 0;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( edit->startproject < start ) continue;
 			if( edit->startproject >= end ) break;
-			if( !edit->is_selected || edit->silence() ) {
-				if( !packed ) startproject += edit->length;
-	 			continue;
-			}
+			if( !edit->is_selected || edit->silence() ) continue;
 			if( !new_track )
 				new_track = new_edl->add_new_track(track->data_type);
 			if( new_track ) {
-				if( !packed && startproject > last_startproject ) {
-					Edit *silence = new Edit(new_edl, new_track);
-					silence->startproject = last_startproject;
-					silence->length = startproject - last_startproject;
-					new_track->edits->append(silence);
+				if( !packed ) {
+					int64_t edit_position = edit->startproject - start;
+					if( edit_position > startproject ) {
+						Edit *silence = new Edit(new_edl, new_track);
+						silence->startproject = startproject;
+						silence->length = edit_position - startproject;
+						new_track->edits->append(silence);
+						startproject = edit_position;
+					}
 				}
 				Edit *clip_edit = new Edit(new_edl, new_track);
 				clip_edit->copy_from(edit);
 				clip_edit->startproject = startproject;
 				startproject += clip_edit->length;
-				last_startproject = startproject;
 				new_track->edits->append(clip_edit);
 			}
 		}
