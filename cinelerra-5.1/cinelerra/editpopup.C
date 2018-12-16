@@ -332,7 +332,22 @@ void EditUserTitleDialogThread::handle_done_event(int result)
 	if( result ) return;
 	MWindow *mwindow = edit_title->mwindow;
 	EditPopup *popup = edit_title->popup;
-	strcpy(popup->edit->user_title, window->title_text->get_text());
+	EDL *edl = mwindow->edl;
+	const char *text = window->title_text->get_text();
+	int count = 0;
+	for( Track *track=edl->tracks->first; track; track=track->next ) {
+		if( !track->record ) continue;
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->is_selected ) continue;
+			strcpy(edit->user_title, text);
+			++count;
+		}
+	}
+	if( count )
+		edl->tracks->clear_selected_edits();
+	else if( popup->edit ) {
+		strcpy(popup->edit->user_title, text);
+	}
 	mwindow->gui->lock_window("EditUserTitleDialogThread::handle_done_event");
 	mwindow->gui->draw_canvas(1, 0);
 	mwindow->gui->flash_canvas(1);
