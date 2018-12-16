@@ -42,7 +42,7 @@ ColorPicker::ColorPicker(int do_alpha, const char *title)
 {
 	this->title = title;
 	this->do_alpha = do_alpha;
-	this->do_okcancel = 0;
+	this->ok_cancel = 0;
 	this->output = this->orig_color = BLACK;
 	this->alpha = this->orig_alpha = 255;
 }
@@ -52,7 +52,7 @@ ColorPicker::~ColorPicker()
 	close_window();
 }
 
-void ColorPicker::start_window(int output, int alpha, int do_okcancel)
+void ColorPicker::start_window(int output, int alpha, int ok_cancel)
 {
 	if( running() ) {
 		ColorWindow *gui = (ColorWindow *)get_gui();
@@ -67,7 +67,7 @@ void ColorPicker::start_window(int output, int alpha, int do_okcancel)
 	this->orig_alpha = alpha;
 	this->output = output;
 	this->alpha = alpha;
-	this->do_okcancel = do_okcancel;
+	this->ok_cancel = ok_cancel;
 	start();
 }
 
@@ -80,7 +80,7 @@ BC_Window* ColorPicker::new_gui()
 	int x = display_info.get_abs_cursor_x() + 25;
 	int y = display_info.get_abs_cursor_y() - 100;
 	int w = 540, h = 330;
-	if( do_okcancel )
+	if( ok_cancel )
 		h += bmax(BC_OKButton::calculate_h(),BC_CancelButton::calculate_h());
 	int root_w = display_info.get_root_w(), root_h = display_info.get_root_h();
 	if( x+w > root_w ) x = root_w - w;
@@ -107,7 +107,7 @@ void ColorPicker::update_gui(int output, int alpha)
 int ColorPicker::handle_new_color(int output, int alpha)
 {
 	printf("ColorPicker::handle_new_color undefined.\n");
-	return 0;
+	return 1;
 }
 
 
@@ -221,10 +221,11 @@ void ColorWindow::create_objects()
 		aph_a = new PaletteAPH(this, x,y+=40, aph, 0, 1);
 		aph_a->create_objects();  aph_a->set_tooltip(_("Alpha"));
 	}
-	if( thread->do_okcancel ) {
+	if( thread->ok_cancel ) {
 		add_tool(new BC_OKButton(this));
 		add_tool(new BC_CancelButton(this));
 	}
+	thread->create_objects(this);
 
 	update_display();
 	update_history();
@@ -246,7 +247,7 @@ void ColorWindow::change_values()
 
 int ColorWindow::close_event()
 {
-	set_done(thread->do_okcancel ? 1 : 0);
+	set_done(thread->ok_cancel ? 1 : 0);
 	return 1;
 }
 
@@ -1158,5 +1159,272 @@ int PaletteHistory::repeat_event(int64_t duration)
 		result = 1;
 	}
 	return result;
+}
+
+
+ColorButton::ColorButton(const char *title,
+	int x, int y, int w, int h,
+	int color, int alpha, int ok_cancel)
+ : BC_Button(x, y, w, vframes)
+{
+	this->title = title;
+	this->color = this->orig_color = color;
+	this->alpha = this->orig_alpha = alpha;
+	this->ok_cancel = ok_cancel;
+
+	for( int i=0; i<3; ++i ) {
+		vframes[i] = new VFrame(w, h, BC_RGBA8888);
+		vframes[i]->clear_frame();
+	}
+	color_picker = 0;
+	color_thread = 0;
+}
+
+ColorButton::~ColorButton()
+{
+	delete color_thread;
+	delete color_picker;
+	for( int i=0; i<3; ++i )
+		delete vframes[i];
+}
+
+void ColorButton::set_color(int color)
+{
+	printf("ColorButton::set_color %06x\n", color);
+}
+void ColorButton::handle_done_event(int result)
+{
+	color_thread->stop();
+}
+int ColorButton::handle_new_color(int color, int alpha)
+{
+	printf("ColorButton::handle_new_color %02x%06x\n", alpha, color);
+	return 1;
+}
+
+int ColorButton::handle_event()
+{
+	unlock_window();
+	delete color_picker;
+	color_picker = new ColorButtonPicker(this);
+	orig_color = color;  orig_alpha = alpha;
+	color_picker->start_window(color, alpha, ok_cancel);
+	if( !color_thread )
+		color_thread = new ColorButtonThread(this);
+	color_thread->start();
+	lock_window("ColorButtonButton::start_color_thread");
+	return 1;
+}
+
+void ColorButton::close_picker()
+{
+	if( color_thread ) color_thread->stop();
+	delete color_thread;  color_thread = 0;
+	delete color_picker;  color_picker = 0;
+}
+
+void ColorButton::update_gui(int color)
+{
+	set_color(color);
+	draw_face();
+}
+
+ColorButtonPicker::ColorButtonPicker(ColorButton *color_button)
+ : ColorPicker(color_button->alpha >= 0 ? 1 : 0, color_button->title)
+{
+	this->color_button = color_button;
+}
+
+ColorButtonPicker::~ColorButtonPicker()
+{
+}
+
+void ColorButtonPicker::handle_done_event(int result)
+{
+	color_button->color_thread->stop();
+	color_button->handle_done_event(result);
+}
+
+int ColorButtonPicker::handle_new_color(int color, int alpha)
+{
+	color_button->color = color;
+	color_button->color_thread->update_lock->unlock();
+	color_button->handle_new_color(color, alpha);
+	return 1;
+}
+
+void ColorButtonPicker::update_gui()
+{
+	color_button->lock_window("ColorButtonPicker::update_gui");
+	color_button->update_gui(color_button->color);
+	color_button->unlock_window();
+}
+
+ColorButtonThread::ColorButtonThread(ColorButton *color_button)
+ : Thread(1, 0, 0)
+{
+	this->color_button = color_button;
+	this->update_lock = new Condition(0,"ColorButtonThread::update_lock");
+	done = 1;
+}
+
+ColorButtonThread::~ColorButtonThread()
+{
+	stop();
+	delete update_lock;
+}
+
+void ColorButtonThread::start()
+{
+	if( done ) {
+		done = 0;
+		Thread::start();
+	}
+}
+
+void ColorButtonThread::stop()
+{
+	if( !done ) {
+		done = 1;
+		update_lock->unlock();
+		join();
+	}
+}
+
+void ColorButtonThread::run()
+{
+	ColorButtonPicker *color_picker = color_button->color_picker;
+	color_picker->update_gui();
+	while( !done ) {
+		update_lock->lock("ColorButtonThread::run");
+		if( done ) break;
+		color_picker->update_gui();
+	}
+}
+
+
+ColorBoxButton::ColorBoxButton(const char *title,
+		int x, int y, int w, int h,
+		int color, int alpha, int ok_cancel)
+ : ColorButton(title, x, y, w, h, color, alpha, ok_cancel)
+{
+}
+ColorBoxButton::~ColorBoxButton()
+{
+}
+
+int ColorBoxButton::handle_new_color(int color, int alpha)
+{
+	return ColorButton::handle_new_color(color, alpha);
+}
+void ColorBoxButton::handle_done_event(int result)
+{
+	ColorButton::handle_done_event(result);
+}
+void ColorBoxButton::create_objects()
+{
+	update_gui(color);
+}
+
+void ColorBoxButton::set_color(int color)
+{
+	this->color = color;
+	int r = (color>>16) & 0xff;
+	int g = (color>> 8) & 0xff;
+	int b = (color>> 0) & 0xff;
+	int color_model = vframes[0]->get_color_model();
+	int bpp = BC_CModels::calculate_pixelsize(color_model);
+	for( int i=0; i<3; ++i ) {
+		VFrame *vframe = vframes[i];
+		int ww = vframe->get_w(), hh = vframe->get_h();
+		uint8_t **rows = vframe->get_rows();
+		int rr = r, gg = g, bb = b;
+		switch( i ) {
+		case BUTTON_UP:
+			break;
+		case BUTTON_UPHI:
+			if( (rr+=48) > 0xff ) rr = 0xff;
+			if( (gg+=48) > 0xff ) gg = 0xff;
+			if( (bb+=48) > 0xff ) bb = 0xff;
+			break;
+		case BUTTON_DOWNHI:
+			if( (rr-=48) < 0x00 ) rr = 0x00;
+			if( (gg-=48) < 0x00 ) gg = 0x00;
+			if( (bb-=48) < 0x00 ) bb = 0x00;
+			break;
+		}
+		for( int y=0; y<hh; ++y ) {
+			uint8_t *rp = rows[y];
+			for( int x=0; x<ww; ++x ) {
+				rp[0] = rr;  rp[1] = gg;  rp[2] = bb;
+				if( bpp > 3 ) rp[3] = 0xff;
+				rp += bpp;
+			}
+		}
+	}
+	set_images(vframes);
+}
+
+ColorCircleButton::ColorCircleButton(const char *title,
+		int x, int y, int w, int h,
+		int color, int alpha, int ok_cancel)
+ : ColorButton(title, x, y, w, h, color, alpha, ok_cancel)
+{
+}
+ColorCircleButton::~ColorCircleButton()
+{
+}
+int ColorCircleButton::handle_new_color(int color, int alpha)
+{
+	return ColorButton::handle_new_color(color, alpha);
+}
+void ColorCircleButton::handle_done_event(int result)
+{
+	ColorButton::handle_done_event(result);
+}
+void ColorCircleButton::create_objects()
+{
+	update_gui(color);
+}
+
+void ColorCircleButton::set_color(int color)
+{
+	this->color = color;
+	int r = (color>>16) & 0xff;
+	int g = (color>>8) & 0xff;
+	int b = (color>>0) & 0xff;
+	for( int i=0; i<3; ++i ) {
+		VFrame *vframe = vframes[i];
+		int ww = vframe->get_w(), hh = vframe->get_h();
+		int cx = (ww+1)/2, cy = hh/2;
+		double cc = (cx*cx + cy*cy) / 4.;
+		uint8_t *bp = vframe->get_data(), *dp = bp;
+		uint8_t *ep = dp + vframe->get_data_size();
+		int rr = r, gg = g, bb = b;
+		int bpl = vframe->get_bytes_per_line();
+		switch( i ) {
+		case BUTTON_UP:
+			break;
+		case BUTTON_UPHI:
+			if( (rr+=48) > 0xff ) rr = 0xff;
+			if( (gg+=48) > 0xff ) gg = 0xff;
+			if( (bb+=48) > 0xff ) bb = 0xff;
+			break;
+		case BUTTON_DOWNHI:
+			if( (rr-=48) < 0x00 ) rr = 0x00;
+			if( (gg-=48) < 0x00 ) gg = 0x00;
+			if( (bb-=48) < 0x00 ) bb = 0x00;
+			break;
+		}
+		while( dp < ep ) {
+			int yy = (dp-bp) / bpl, xx = ((dp-bp) % bpl) >> 2;
+			int dy = cy - yy, dx = cx - xx;
+			double s = dx*dx + dy*dy - cc;
+			double ss = s < 0 ? 1 : s >= cc ? 0 : 1 - s/cc;
+			int aa = ss * 0xff;
+			*dp++ = rr; *dp++ = gg; *dp++ = bb; *dp++ = aa;
+		}
+	}
+	set_images(vframes);
 }
 

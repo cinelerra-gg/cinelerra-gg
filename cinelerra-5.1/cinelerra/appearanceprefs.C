@@ -184,6 +184,9 @@ void AppearancePrefs::create_objects()
 	UseTipWindow *tip_win = new UseTipWindow(pwindow, x1, y1);
 	add_subwindow(tip_win);
 	y1 += tip_win->get_h() + 5;
+	AutocolorAssets *autocolor_assets = new AutocolorAssets(pwindow, x1, y1);
+	add_subwindow(autocolor_assets);
+	y1 += autocolor_assets->get_h() + 5;
 	UseWarnIndecies *idx_win = new UseWarnIndecies(pwindow, x1, y1);
 	add_subwindow(idx_win);
 	y1 += idx_win->get_h() + 5;
@@ -623,6 +626,19 @@ ForwardRenderDisplacement::ForwardRenderDisplacement(PreferencesWindow *pwindow,
 int ForwardRenderDisplacement::handle_event()
 {
 	pwindow->thread->preferences->forward_render_displacement = get_value();
+	return 1;
+}
+
+AutocolorAssets::AutocolorAssets(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->autocolor_assets,
+	_("Autocolor assets"))
+{
+	this->pwindow = pwindow;
+}
+
+int AutocolorAssets::handle_event()
+{
+	pwindow->thread->preferences->autocolor_assets = get_value();
 	return 1;
 }
 

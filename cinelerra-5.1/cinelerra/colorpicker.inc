@@ -23,5 +23,33 @@
 #define COLORPICKER_INC
 
 class ColorPicker;
+class ColorWindow;
+class PaletteWheel;
+class PaletteWheelValue;
+class PaletteOutput;
+class PaletteHue;
+class PaletteSat;
+class PaletteVal;
+class PaletteRed;
+class PaletteGrn;
+class PaletteBlu;
+class PaletteAlpha;
+class PaletteLum;
+class PaletteCr;
+class PaletteCb;
+class PaletteNum;
+class PaletteRGB;
+class PaletteYUV;
+class PaletteHSV;
+class PaletteAPH;
+class PaletteHexButton;
+class PaletteHex;
+class PaletteGrabButton;
+class PaletteHistory;
+class ColorButton;
+class ColorButtonPicker;
+class ColorButtonThread;
+class ColorBoxButton;
+class ColorCircleButton;
 
 #endif

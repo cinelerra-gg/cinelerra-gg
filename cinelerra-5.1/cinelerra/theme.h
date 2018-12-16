@@ -121,6 +121,7 @@ public:
 	virtual void draw_setformat_bg(SetFormatWindow *window);
 
 	virtual void build_menus();
+	virtual int get_color_title_bg();
 //	unsigned char* get_image(char *title);
 	void flush_images();
 

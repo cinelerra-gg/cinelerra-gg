@@ -290,6 +290,14 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class AutocolorAssets : public BC_CheckBox
+{
+public:
+	AutocolorAssets(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 class HighlightInverseColor : public BC_TextBox
 {
 public:

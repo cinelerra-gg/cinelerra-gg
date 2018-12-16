@@ -86,6 +86,7 @@ void Edit::reset()
 	is_selected = 0;
 	hard_left = 0;
 	hard_right = 0;
+	color = -1;
 }
 
 Indexable* Edit::get_source()
@@ -141,6 +142,7 @@ int Edit::copy(int64_t start,
 			file->tag.set_property("LENGTH", length_in_selection);
 			file->tag.set_property("HARD_LEFT", hard_left);
 			file->tag.set_property("HARD_RIGHT", hard_right);
+			file->tag.set_property("COLOR", color);
 			if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
 //printf("Edit::copy 5\n");
 
@@ -249,6 +251,7 @@ void Edit::copy_from(Edit *edit)
 	this->length = edit->length;
 	this->hard_left = edit->hard_left;
 	this->hard_right = edit->hard_right;
+	this->color = edit->color;
 	strcpy (this->user_title, edit->user_title);
 
 	if(edit->transition)
@@ -324,8 +327,6 @@ int Edit::identical(Edit &edit)
 		this->startsource == edit.startsource &&
 		this->startproject == edit.startproject &&
 		this->length == edit.length &&
-		this->hard_left == edit.hard_left &&
-		this->hard_right == edit.hard_right &&
 		this->transition == edit.transition &&
 		this->channel == edit.channel);
 	return result;
@@ -377,7 +378,7 @@ int Edit::dump(FILE *fp)
 		asset,
 		asset ? asset->path : "");
 	fflush(fp);
-	fprintf(fp,"      channel %d\n", channel);
+	fprintf(fp,"      channel %d, color %08x\n", channel, color);
 	if(transition)
 	{
 		fprintf(fp,"      TRANSITION %p\n", transition);
@@ -394,6 +395,7 @@ int Edit::load_properties(FileXML *file, int64_t &startproject)
 	length = file->tag.get_property("LENGTH", (int64_t)0);
 	hard_left = file->tag.get_property("HARD_LEFT", (int64_t)0);
 	hard_right = file->tag.get_property("HARD_RIGHT", (int64_t)0);
+	color = file->tag.get_property("COLOR", (int64_t)-1);
 	user_title[0] = 0;
 	file->tag.get_property("USER_TITLE", user_title);
 	this->startproject = startproject;
@@ -751,34 +753,6 @@ int Edit::shift_end_out(int edit_mode,
 	return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int Edit::popup_transition(float view_start, float zoom_units, int cursor_x, int cursor_y)
 {
 	int64_t left, right, left_unit, right_unit;
@@ -841,5 +815,23 @@ void Edit::get_title(char *title)
 		sprintf(number, " #%d", channel + 1);
 		strcat(title, number);
 	}
+}
+
+int Edit::get_hash_color()
+{
+	Indexable *idxbl = asset ? (Indexable*)asset : (Indexable*)nested_edl;
+	if( !idxbl ) return -1;
+	int v = 0;
+	for( uint8_t *bp=(uint8_t*)idxbl->path; *bp; ++bp ) v += *bp;
+	int color = 0x303030;
+	if( v & 0x01 ) color ^= 0x000040;
+	if( v & 0x02 ) color ^= 0x004000;
+	if( v & 0x04 ) color ^= 0x400000;
+	if( v & 0x08 ) color ^= 0x080000;
+	if( v & 0x10 ) color ^= 0x000800;
+	if( v & 0x20 ) color ^= 0x000008;
+	if( v & 0x40 ) color ^= 0x202020;
+	if( v & 0x80 ) color ^= 0x101010;
+	return color;
 }
 

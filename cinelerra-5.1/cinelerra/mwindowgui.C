@@ -1355,18 +1355,7 @@ int MWindowGUI::keypress_event()
 		result = 1;
 		break;
 
-	case KEY_F1:
-	case KEY_F2:
-	case KEY_F3:
-	case KEY_F4:
-	case KEY_F5:
-	case KEY_F6:
-	case KEY_F7:
-	case KEY_F8:
-	case KEY_F9:
-	case KEY_F10:
-	case KEY_F11:
-	case KEY_F12:
+	case KEY_F1 ... KEY_F12:
 		resend_event(mwindow->cwindow->gui);
 		return 1;
 	}

@@ -38,6 +38,7 @@
 #include "mwindowgui.h"
 #include "plugindialog.h"
 #include "resizetrackthread.h"
+#include "theme.h"
 #include "track.h"
 #include "tracks.h"
 #include "trackcanvas.h"
@@ -73,8 +74,9 @@ void EditPopup::create_objects()
 	add_item(new EditPopupPaste(mwindow, this));
 	add_item(new EditPopupOverwrite(mwindow, this));
 	add_item(new EditPopupFindAsset(mwindow, this));
-	add_item(new EditPopupTitle(mwindow, this));
 	add_item(new EditPopupShow(mwindow, this));
+	add_item(new EditPopupUserTitle(mwindow, this));
+	add_item(new EditPopupTitleColor(mwindow, this));
 }
 
 int EditPopup::activate_menu(Track *track, Edit *edit,
@@ -271,20 +273,20 @@ int EditPopupFindAsset::handle_event()
 }
 
 
-EditPopupTitle::EditPopupTitle(MWindow *mwindow, EditPopup *popup)
+EditPopupUserTitle::EditPopupUserTitle(MWindow *mwindow, EditPopup *popup)
  : BC_MenuItem(_("User title..."))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-	dialog_thread = new EditTitleDialogThread(this);
+	dialog_thread = new EditUserTitleDialogThread(this);
 }
 
-EditPopupTitle::~EditPopupTitle()
+EditPopupUserTitle::~EditPopupUserTitle()
 {
 	delete dialog_thread;
 }
 
-int EditPopupTitle::handle_event()
+int EditPopupUserTitle::handle_event()
 {
 	if( popup->edit ) {
 		dialog_thread->close_window();
@@ -295,49 +297,49 @@ int EditPopupTitle::handle_event()
 	return 1;
 }
 
-void EditTitleDialogThread::start(int wx, int wy)
+void EditUserTitleDialogThread::start(int wx, int wy)
 {
 	this->wx = wx;  this->wy = wy;
 	BC_DialogThread::start();
 }
 
-EditTitleDialogThread::EditTitleDialogThread(EditPopupTitle *edit_title)
+EditUserTitleDialogThread::EditUserTitleDialogThread(EditPopupUserTitle *edit_title)
 {
 	this->edit_title = edit_title;
 	window = 0;
 }
-EditTitleDialogThread::~EditTitleDialogThread()
+EditUserTitleDialogThread::~EditUserTitleDialogThread()
 {
 	close_window();
 }
 
-BC_Window* EditTitleDialogThread::new_gui()
+BC_Window* EditUserTitleDialogThread::new_gui()
 {
 	MWindow *mwindow = edit_title->mwindow;
 	EditPopup *popup = edit_title->popup;
-	window = new EditPopupTitleWindow(mwindow, popup, wx, wy);
+	window = new EditPopupUserTitleWindow(mwindow, popup, wx, wy);
 	window->create_objects();
 	return window;
 }
 
-void EditTitleDialogThread::handle_close_event(int result)
+void EditUserTitleDialogThread::handle_close_event(int result)
 {
 	window = 0;
 }
 
-void EditTitleDialogThread::handle_done_event(int result)
+void EditUserTitleDialogThread::handle_done_event(int result)
 {
 	if( result ) return;
 	MWindow *mwindow = edit_title->mwindow;
 	EditPopup *popup = edit_title->popup;
 	strcpy(popup->edit->user_title, window->title_text->get_text());
-	mwindow->gui->lock_window("EditTitleDialogThread::handle_done_event");
+	mwindow->gui->lock_window("EditUserTitleDialogThread::handle_done_event");
 	mwindow->gui->draw_canvas(1, 0);
 	mwindow->gui->flash_canvas(1);
 	mwindow->gui->unlock_window();
 }
 
-EditPopupTitleWindow::EditPopupTitleWindow(MWindow *mwindow,
+EditPopupUserTitleWindow::EditPopupUserTitleWindow(MWindow *mwindow,
 		EditPopup *popup, int wx, int wy)
  : BC_Window(_(PROGRAM_NAME ": Set edit title"), wx, wy,
 	300, 130, 300, 130, 0, 0, 1)
@@ -347,17 +349,19 @@ EditPopupTitleWindow::EditPopupTitleWindow(MWindow *mwindow,
 	strcpy(new_text, !popup->edit ? "" : popup->edit->user_title);
 }
 
-EditPopupTitleWindow::~EditPopupTitleWindow()
+EditPopupUserTitleWindow::~EditPopupUserTitleWindow()
 {
 }
 
-void EditPopupTitleWindow::create_objects()
+void EditPopupUserTitleWindow::create_objects()
 {
-	lock_window("EditPopupTitleWindow::create_objects");
-	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, _("User title:")));
-	title_text = new EditPopupTitleText(this, mwindow, x+15, y+20, new_text);
+	lock_window("EditPopupUserTitleWindow::create_objects");
+	int x = 10, y = 10, x1;
+	BC_Title *title = new BC_Title(x1=x, y, _("User title:"));
+	add_subwindow(title);  x1 += title->get_w() + 10;
+	title_text = new EditPopupUserTitleText(this, mwindow, x1, y, new_text);
 	add_subwindow(title_text);
+
 	add_tool(new BC_OKButton(this));
 	add_tool(new BC_CancelButton(this));
 
@@ -368,23 +372,108 @@ void EditPopupTitleWindow::create_objects()
 }
 
 
-EditPopupTitleText::EditPopupTitleText(EditPopupTitleWindow *window,
+EditPopupUserTitleText::EditPopupUserTitleText(EditPopupUserTitleWindow *window,
 	MWindow *mwindow, int x, int y, const char *text)
- : BC_TextBox(x, y, 250, 1, text)
+ : BC_TextBox(x, y, window->get_w()-x-15, 1, text)
 {
 	this->window = window;
 	this->mwindow = mwindow;
 }
 
-EditPopupTitleText::~EditPopupTitleText()
+EditPopupUserTitleText::~EditPopupUserTitleText()
 {
 }
 
-int EditPopupTitleText::handle_event()
+int EditPopupUserTitleText::handle_event()
 {
 	if( get_keypress() == RETURN )
 		window->set_done(0);
 	return 1;
+}
+
+
+EditPopupTitleColor::EditPopupTitleColor(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("Bar Color..."))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	color_picker = 0;
+}
+EditPopupTitleColor::~EditPopupTitleColor()
+{
+	delete color_picker;
+}
+
+int EditPopupTitleColor::handle_event()
+{
+	if( popup->edit ) {
+		int color = popup->mwindow->get_title_color(popup->edit);
+		if( color < 0 ) color = popup->mwindow->theme->get_color_title_bg();
+		delete color_picker;
+		color_picker = new EditTitleColorPicker(popup);
+		color_picker->start_window(color, -1, 1);
+	}
+	return 1;
+}
+
+EditTitleColorDefault::EditTitleColorDefault(
+	EditTitleColorPicker *color_picker, int x, int y)
+ : BC_GenericButton(x, y, _("default"))
+{
+	this->color_picker = color_picker;
+}
+
+int EditTitleColorDefault::handle_event()
+{
+	int color = color_picker->popup->mwindow->theme->get_color_title_bg();
+	color_picker->update_gui(color, -1);
+	return 1;
+}
+
+EditTitleColorPicker::EditTitleColorPicker(EditPopup *popup)
+ : ColorPicker(0, _("Bar Color"))
+{
+	this->popup = popup;
+	color = -1;
+}
+EditTitleColorPicker::~EditTitleColorPicker()
+{
+}
+void EditTitleColorPicker::create_objects(ColorWindow *gui)
+{
+	int y = gui->get_h() - BC_CancelButton::calculate_h() - 50;
+	int x = gui->get_w() - BC_GenericButton::calculate_w(gui, _("default")) - 15;
+	gui->add_subwindow(new EditTitleColorDefault(this, x, y));
+}
+
+int EditTitleColorPicker::handle_new_color(int color, int alpha)
+{
+	this->color = color;
+	return 1;
+}
+
+void EditTitleColorPicker::handle_done_event(int result)
+{
+	if( !result ) {
+		EDL *edl = popup->mwindow->edl;
+		int count = 0;
+		for( Track *track=edl->tracks->first; track; track=track->next ) {
+			if( !track->record ) continue;
+			for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+				if( !edit->is_selected ) continue;
+				edit->color = color;
+				++count;
+			}
+		}
+		if( count )
+			edl->tracks->clear_selected_edits();
+		else
+			popup->edit->color = color;
+	}
+	MWindowGUI *mwindow_gui = popup->mwindow->gui;
+	mwindow_gui->lock_window("GWindowColorUpdate::run");
+	mwindow_gui->draw_trackmovement();
+	mwindow_gui->unlock_window();
 }
 
 

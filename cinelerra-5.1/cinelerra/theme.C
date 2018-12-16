@@ -1334,8 +1334,18 @@ void Theme::draw_setformat_bg(SetFormatWindow *window)
 }
 
 
-
-
-
+int Theme::get_color_title_bg()
+{
+	VFrame *title_bg = get_image("title_bg_data");
+	int tw = title_bg->get_w(), th = title_bg->get_h();
+	int colormodel = title_bg->get_color_model();
+	int bpp = BC_CModels::calculate_pixelsize(colormodel);
+	uint8_t **rows = title_bg->get_rows();
+	int cx = tw / 2, cy = th / 2;
+	uint8_t *bp = rows[cy] + cx * bpp;
+	int br = bp[0], bg = bp[1], bb = bp[2];
+	int color = (br<<16) | (bg<<8) | (bb<<0);
+	return color;
+}
 
 

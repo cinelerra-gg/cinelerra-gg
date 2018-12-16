@@ -131,7 +131,8 @@ public:
 // yuv color space/range
  	int yuv_color_space;
 	int yuv_color_range;
-
+// autocolor asset edit title
+	int autocolor_assets;
 // Default positions for channels
 	int channel_positions[MAXCHANNELS][MAXCHANNELS];
 

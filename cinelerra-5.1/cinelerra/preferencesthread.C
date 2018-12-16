@@ -212,6 +212,9 @@ int PreferencesThread::apply_settings()
 		(*this_aconfig != *aconfig) || (*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1, edl);
 
+	if( preferences->autocolor_assets != mwindow->preferences->autocolor_assets )
+		redraw_indexes = 1;
+
 	if( preferences->yuv_color_space != mwindow->preferences->yuv_color_space ||
 	    preferences->yuv_color_range != mwindow->preferences->yuv_color_range ) {
 		YUV::yuv.yuv_set_colors(
@@ -343,9 +346,16 @@ int PreferencesThread::apply_settings()
 //printf("PreferencesThread::apply_settings 10\n");
 	}
 
-	if(redraw_times || redraw_overlays)
+	if(redraw_indexes)
 	{
 		mwindow->gui->lock_window("PreferencesThread::apply_settings 4");
+		mwindow->gui->draw_trackmovement();
+		mwindow->gui->unlock_window();
+	}
+
+	if(redraw_times || redraw_overlays || redraw_indexes)
+	{
+		mwindow->gui->lock_window("PreferencesThread::apply_settings 5");
 		mwindow->gui->flush();
 		mwindow->gui->unlock_window();
 	}

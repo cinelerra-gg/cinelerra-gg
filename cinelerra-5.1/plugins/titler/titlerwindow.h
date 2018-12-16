@@ -24,9 +24,7 @@
 
 #include "guicast.h"
 
-class TitleThread;
 class TitleWindow;
-class TitleInterlace;
 
 #include "colorpicker.h"
 #include "dragcheckbox.h"
@@ -64,7 +62,6 @@ class TitleCenter;
 class TitleRight;class TitleTop;
 class TitleMid;
 class TitleBottom;
-class TitleColorThread;
 class TitleSpeed;
 class TitleTimecode;
 class TitleTimecodeFormat;
@@ -143,10 +140,10 @@ public:
 	TitlePitch *pitch;
 	BC_Title *encoding_title;
 	TitleEncoding *encoding;
+	BC_Title *color_button_title;
 	TitleColorButton *color_button;
-	TitleColorThread *color_thread;
-	TitleOutlineColorButton *outline_color_button;
-	TitleColorThread *outline_color_thread;
+	BC_Title *outline_button_title;
+	TitleOutlineColorButton *outline_button;
 	BC_Title *motion_title;
 	TitleMotion *motion;
 	TitleLinePitch *line_pitch;
@@ -279,19 +276,21 @@ public:
 	TitleWindow *window;
 };
 
-class TitleColorButton : public BC_GenericButton
+class TitleColorButton : public ColorCircleButton
 {
 public:
 	TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y);
-	int handle_event();
+	int handle_new_color(int output, int alpha);
+	void handle_done_event(int result);
 	TitleMain *client;
 	TitleWindow *window;
 };
-class TitleOutlineColorButton : public BC_GenericButton
+class TitleOutlineColorButton : public ColorCircleButton
 {
 public:
 	TitleOutlineColorButton(TitleMain *client, TitleWindow *window, int x, int y);
-	int handle_event();
+	int handle_new_color(int output, int alpha);
+	void handle_done_event(int result);
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -497,16 +496,6 @@ public:
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;
-};
-class TitleColorThread : public ColorPicker
-{
-public:
-	TitleColorThread(TitleMain *client, TitleWindow *window, int is_outline);
-	virtual int handle_new_color(int output, int alpha);
-	void handle_done_event(int result);
-	TitleMain *client;
-	TitleWindow *window;
-	int is_outline;
 };
 class TitleBackground : public BC_CheckBox
 {

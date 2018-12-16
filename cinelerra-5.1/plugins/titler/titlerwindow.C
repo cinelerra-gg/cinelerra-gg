@@ -79,8 +79,6 @@ TitleWindow::TitleWindow(TitleMain *client)
 	fonts_popup = 0;
 	png_popup = 0;
 
-	color_x = color_y = 0;
-	outline_color_x = outline_color_y = 0;
 	drag_dx = drag_dy = dragging = 0;
 	cur_ibeam = -1;
 
@@ -92,10 +90,8 @@ TitleWindow::TitleWindow(TitleMain *client)
 	encoding_title = 0;
 	encoding = 0;
 	color_button = 0;
-	color_thread = 0;
+	outline_button = 0;
 	color_popup = 0;
-	outline_color_button = 0;
-	outline_color_thread = 0;
 	motion_title = 0;
 	motion = 0;
 	line_pitch = 0;
@@ -123,8 +119,6 @@ TitleWindow::TitleWindow(TitleMain *client)
 void TitleWindow::done_event(int result)
 {
 	drag->drag_deactivate();
-	delete color_thread;	color_thread = 0;
-	delete outline_color_thread;  outline_color_thread = 0;
 	delete color_popup;	color_popup = 0;
 	delete png_popup;	png_popup = 0;
 
@@ -132,8 +126,6 @@ void TitleWindow::done_event(int result)
 
 TitleWindow::~TitleWindow()
 {
-	delete color_thread;
-	delete outline_color_thread;
 	delete color_popup;
 	delete png_popup;
 	for( int i=0; i<fonts.size(); ++i )
@@ -141,7 +133,6 @@ TitleWindow::~TitleWindow()
 
 	sizes.remove_all_objects();
 	delete timecode_format;
-	delete color_thread;
 	delete title_x;
 	delete title_y;
 }
@@ -355,16 +346,12 @@ void TitleWindow::create_objects()
 	x += w1 + margin;
 	y2 = y + speed->get_h() + 10;
 
-	color_x = x3;  color_y = y = y1;
-	color_thread = new TitleColorThread(client, this, 0);
-	x1 = color_x + COLOR_W + 2*margin;
-	y1 = color_y + 5;
+	add_tool(color_button_title = new BC_Title(x3, y1+10, _("Color:")));
+	x1 = x3 + color_button_title->get_w() + 30;
 	add_tool(color_button = new TitleColorButton(client, this, x1, y1));
-	y += COLOR_H + 5;
-	outline_color_x = x3;  outline_color_y = y;
-	outline_color_thread = new TitleColorThread(client, this, 1);
-	y1 = outline_color_y + 5;
-	add_tool(outline_color_button = new TitleOutlineColorButton(client, this, x1, y1));
+	y1 += color_button->get_h() + 10;
+	add_tool(outline_button_title = new BC_Title(x3, y1+10, _("Outline:")));
+	add_tool(outline_button = new TitleOutlineColorButton(client, this, x1, y1));
 
 	x = 10;  y = y2;
 	add_tool(outline_title = new BC_Title(x, y, _("Outline:")));
@@ -447,8 +434,10 @@ int TitleWindow::resize_event(int w, int h)
 	pitch_title->reposition_window(pitch_title->get_x(), pitch_title->get_y());
 	pitch->reposition_window(pitch->get_x(), pitch->get_y());
 
+	color_button_title->reposition_window(color_button_title->get_x(), color_button_title->get_y());
 	color_button->reposition_window(color_button->get_x(), color_button->get_y());
-	outline_color_button->reposition_window(outline_color_button->get_x(), outline_color_button->get_y());
+	outline_button_title->reposition_window(outline_button_title->get_x(), outline_button_title->get_y());
+	outline_button->reposition_window(outline_button->get_x(), outline_button->get_y());
 	motion_title->reposition_window(motion_title->get_x(), motion_title->get_y());
 	motion->reposition_window(motion->get_x(), motion->get_y());
 	loop->reposition_window(loop->get_x(), loop->get_y());
@@ -546,16 +535,8 @@ int TitleWindow::insert_ibeam(const char *txt, int ofs)
 
 void TitleWindow::update_color()
 {
-//printf("TitleWindow::update_color %x\n", client->config.color);
-	set_color(client->config.color);
-	draw_box(color_x, color_y, COLOR_W, COLOR_H);
-	flash(color_x, color_y, COLOR_W, COLOR_H);
-	set_color(client->config.outline_color);
-	draw_box(outline_color_x, outline_color_y, COLOR_W, COLOR_H);
-	set_color(BLACK);
-	draw_rectangle(color_x, color_y, COLOR_W, COLOR_H);
-	draw_rectangle(outline_color_x, outline_color_y, COLOR_W, COLOR_H);
-	flash(outline_color_x, outline_color_y, COLOR_W, COLOR_H);
+	color_button->update_gui(client->config.color);
+	outline_button->update_gui(client->config.outline_color);
 }
 
 void TitleWindow::update_justification()
@@ -782,28 +763,47 @@ int TitlePitch::handle_event()
 }
 
 TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_GenericButton(x, y, _("Text Color..."))
+ : ColorCircleButton(_("Text Color"), x, y, COLOR_W, COLOR_H,
+		client->config.color, client->config.alpha, 1)
 {
 	this->client = client;
 	this->window = window;
 }
-int TitleColorButton::handle_event()
+int TitleColorButton::handle_new_color(int output, int alpha)
 {
-	window->color_thread->start_window(client->config.color,
-		client->config.alpha, 1);
+	client->config.color = output;
+	client->config.alpha = alpha;
+	window->send_configure_change();
 	return 1;
 }
+void TitleColorButton::handle_done_event(int result)
+{
+	if( result ) {
+		handle_new_color(orig_color, orig_alpha);
+		update_gui(orig_color);
+	}
+}
+
 TitleOutlineColorButton::TitleOutlineColorButton(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_GenericButton(x, y, _("Outline color..."))
+ : ColorCircleButton(_("Outline Color"), x, y, COLOR_W, COLOR_H,
+		client->config.outline_color, client->config.outline_alpha, 1)
 {
 	this->client = client;
 	this->window = window;
 }
-int TitleOutlineColorButton::handle_event()
+int TitleOutlineColorButton::handle_new_color(int output, int alpha)
 {
-	window->outline_color_thread->start_window(client->config.outline_color,
-		client->config.outline_alpha, 1);
+	client->config.outline_color = output;
+	client->config.outline_alpha = alpha;
+	window->send_configure_change();
 	return 1;
+}
+void TitleOutlineColorButton::handle_done_event(int result)
+{
+	if( result ) {
+		handle_new_color(orig_color, orig_alpha);
+		update_gui(orig_color);
+	}
 }
 
 
@@ -1207,47 +1207,6 @@ int TitleBottom::handle_event()
 	window->update_justification();
 	window->send_configure_change();
 	return 1;
-}
-
-
-
-TitleColorThread::TitleColorThread(TitleMain *client, TitleWindow *window, int is_outline)
- : ColorPicker(1, is_outline? _("Outline Color") : _("Text Color"))
-{
-	this->client = client;
-	this->window = window;
-	this->is_outline = is_outline;
-}
-
-int TitleColorThread::handle_new_color(int output, int alpha)
-{
-	if( is_outline ) {
-		client->config.outline_color = output;
-		client->config.outline_alpha = alpha;
-	}
-	else {
-		client->config.color = output;
-		client->config.alpha = alpha;
-	}
-
-	window->lock_window("TitleColorThread::handle_new_color");
-	window->update_color();
-	window->flush();
-	window->unlock_window();
-
-	window->send_configure_change();
-	return 1;
-}
-
-void TitleColorThread::handle_done_event(int result)
-{
-	if( result ) {
-		client->config.color = orig_color;
-		client->config.alpha = orig_alpha;
-		handle_new_color(orig_color, orig_alpha);
-		window->update_color();
-		window->send_configure_change();
-	}
 }
 
 TitleDrag::TitleDrag(TitleMain *client, TitleWindow *window, int x, int y)

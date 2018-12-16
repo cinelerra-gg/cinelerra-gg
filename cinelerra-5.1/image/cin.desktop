@@ -2,7 +2,8 @@
 Name=cin
 Comment=MultiMedia Editor
 Comment[fr]=Éditeur multimédia
-Categories=AudioVideo;AudioVideoEditing;X-Multimedia;
+Categories=AudioVideo;AudioVideoEditing;
+Encoding=UTF-8
 Exec=cin
 Icon=cin
 Terminal=false

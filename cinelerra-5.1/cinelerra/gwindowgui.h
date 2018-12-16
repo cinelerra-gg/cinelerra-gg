@@ -56,7 +56,6 @@ public:
 	int translation_event();
 	int close_event();
 	int keypress_event();
-	void start_color_thread(GWindowColorButton *color_button);
 	void update_toggles(int use_lock);
 	void toggle_camera_xyz();
 	void toggle_projector_xyz();
@@ -78,7 +77,6 @@ public:
 
 	MWindow *mwindow;
 	GWindowToggle *toggles[NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL];
-	GWindowColorThread *color_thread;
 	GWindowToggle *camera_xyz, *projector_xyz;
 };
 
@@ -101,50 +99,16 @@ public:
 	GWindowColorButton *color_button;
 };
 
-class GWindowColorButton : public BC_Button
+class GWindowColorButton : public ColorCircleButton
 {
 public:
-	GWindowColorButton(GWindowToggle *auto_toggle, int x, int y, int w);
+	GWindowColorButton(GWindowToggle *auto_toggle,
+		int x, int y, int w, int color);
 	~GWindowColorButton();
-
-	void set_color(int color);
-	void update_gui(int color);
-	int handle_event();
-
-	int color;
-	VFrame *vframes[3];
-	GWindowToggle *auto_toggle;
-};
-
-class GWindowColorThread : public ColorPicker
-{
-public:
-	GWindowColorThread(GWindowGUI *gui, GWindowColorButton *color_button);
-	~GWindowColorThread();
-	void start(int color);
 	int handle_new_color(int color, int alpha);
-	void update_gui();
 	void handle_done_event(int result);
 
-	GWindowGUI *gui;
-	int color;
-	GWindowColorButton *color_button;
-	GWindowColorUpdate *color_update;
-};
-
-class GWindowColorUpdate : public Thread
-{
-public:
-	GWindowColorUpdate(GWindowColorThread *color_thread);
-	~GWindowColorUpdate();
-
-	void start();
-	void stop();
-	void run();
-
-	int done;
-	Condition *update_lock;
-	GWindowColorThread *color_thread;
+	GWindowToggle *auto_toggle;
 };
 
 #endif

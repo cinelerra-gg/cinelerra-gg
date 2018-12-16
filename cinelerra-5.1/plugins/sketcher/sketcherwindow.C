@@ -96,8 +96,9 @@ void SketcherCurvePen::update(int pen)
 }
 
 
-SketcherCurveColor::SketcherCurveColor(SketcherWindow *gui, int x, int y, int w, int h)
- : BC_Button(x, y, w, vframes)
+SketcherCurveColor::SketcherCurveColor(SketcherWindow *gui,
+		int x, int y, int w, int h, int color, int alpha)
+ : ColorBoxButton(_("Curve Color"), x, y, w, h, color, alpha, 1)
 {
 	this->gui = gui;
 	this->color = CV_COLOR;
@@ -113,82 +114,9 @@ SketcherCurveColor::~SketcherCurveColor()
 		delete vframes[i];
 }
 
-void SketcherCurveColor::set_color(int color)
+void SketcherCurveColor::handle_done_event(int result)
 {
-	this->color = color;
-	int r = (color>>16) & 0xff;
-	int g = (color>>8) & 0xff;
-	int b = (color>>0) & 0xff;
-	for( int i=0; i<3; ++i ) {
-		VFrame *vframe = vframes[i];
-		int ww = vframe->get_w(), hh = vframe->get_h();
-		uint8_t **rows = vframe->get_rows();
-		int rr = r, gg = g, bb = b;
-		switch( i ) {
-		case BUTTON_UP:
-			break;
-		case BUTTON_UPHI:
-			if( (rr+=48) > 0xff ) rr = 0xff;
-			if( (gg+=48) > 0xff ) gg = 0xff;
-			if( (bb+=48) > 0xff ) bb = 0xff;
-			break;
-		case BUTTON_DOWNHI:
-			if( (rr-=48) < 0x00 ) rr = 0x00;
-			if( (gg-=48) < 0x00 ) gg = 0x00;
-			if( (bb-=48) < 0x00 ) bb = 0x00;
-			break;
-		}
-		for( int y=0; y<hh; ++y ) {
-			uint8_t *rp = rows[y];
-			for( int x=0; x<ww; ++x ) {
-				*rp++ = rr;  *rp++ = gg;  *rp++ = bb;
-			}
-		}
-	}
-	set_images(vframes);
-}
-
-void SketcherCurveColor::update_gui(int color)
-{
-	set_color(color);
-	draw_face();
-}
-
-int SketcherCurveColor::handle_event()
-{
-	gui->start_color_thread(this);
-	return 1;
-}
-
-SketcherCurveColorPicker::SketcherCurveColorPicker(SketcherWindow *gui, SketcherCurveColor *color_button)
- : ColorPicker(1, _("Color"))
-{
-	this->gui = gui;
-	this->color_button = color_button;
-	this->color = CV_COLOR;
-	color_update = new SketcherCurveColorThread(this);
-}
-
-SketcherCurveColorPicker::~SketcherCurveColorPicker()
-{
-	delete color_update;
-}
-
-void SketcherCurveColorPicker::start(int color)
-{
-	this->color = color;
-	int alpha = (~color>>24) & 0xff;
-	start_window(color & 0xffffff, alpha, 1);
-	color_update->start();
-}
-
-void SketcherCurveColorPicker::handle_done_event(int result)
-{
-	color_update->stop();
-	gui->lock_window("SketcherCurveColorPicker::handle_done_event");
-	if( result ) { color = orig_color | (~orig_alpha<<24); }
-	color_button->update_gui(color);
-	gui->unlock_window();
+	if( result ) color = orig_color | (~orig_alpha<<24);
 	SketcherConfig &config = gui->plugin->config;
 	int ci = config.cv_selected;
 	if( ci >= 0 && ci < config.curves.size() ) {
@@ -199,17 +127,11 @@ void SketcherCurveColorPicker::handle_done_event(int result)
 	}
 }
 
-int SketcherCurveColorPicker::handle_new_color(int color, int alpha)
+int SketcherCurveColor::handle_new_color(int color, int alpha)
 {
-	this->color = color | (~alpha<<24);
-	color_update->update_lock->unlock();
-	return 1;
-}
-
-void SketcherCurveColorPicker::update_gui()
-{
-	gui->lock_window("SketcherCurveColorPicker::update_gui");
-	color_button->update_gui(color);
+	color |= ~alpha<<24;  this->color = color;
+	gui->lock_window("SketcherCurveColor::update_gui");
+	update_gui(color);
 	SketcherConfig &config = gui->plugin->config;
 	int ci = config.cv_selected;
 	if( ci >= 0 ) {
@@ -219,46 +141,7 @@ void SketcherCurveColorPicker::update_gui()
 		gui->send_configure_change();
 	}
 	gui->unlock_window();
-}
-
-SketcherCurveColorThread::SketcherCurveColorThread(SketcherCurveColorPicker *color_picker)
- : Thread(1, 0, 0)
-{
-	this->color_picker = color_picker;
-	this->update_lock = new Condition(0,"SketcherCurveColorThread::update_lock");
-	done = 1;
-}
-
-SketcherCurveColorThread::~SketcherCurveColorThread()
-{
-	stop();
-	delete update_lock;
-}
-
-void SketcherCurveColorThread::start()
-{
-	if( done ) {
-		done = 0;
-		Thread::start();
-	}
-}
-
-void SketcherCurveColorThread::stop()
-{
-	if( !done ) {
-		done = 1;
-		update_lock->unlock();
-		join();
-	}
-}
-
-void SketcherCurveColorThread::run()
-{
-	while( !done ) {
-		update_lock->lock("SketcherCurveColorThread::run");
-		if( done ) break;
-		color_picker->update_gui();
-	}
+	return 1;
 }
 
 
@@ -382,7 +265,7 @@ SketcherWindow::SketcherWindow(Sketcher *plugin)
 	this->plugin = plugin;
 	this->title_pen = 0;  this->curve_pen = 0;
 	this->title_color = 0; this->curve_color = 0;
-	this->color_picker = 0; this->drag = 0;
+	this->drag = 0;
 	this->new_curve = 0;  this->del_curve = 0;
 	this->curve_up = 0;   this->curve_dn = 0;
 	this->title_x = 0;    this->point_x = 0;
@@ -410,7 +293,6 @@ SketcherWindow::~SketcherWindow()
 	delete curve_width;
 	delete point_x;
 	delete point_y;
-	delete color_picker;
 }
 
 void SketcherWindow::create_objects()
@@ -467,10 +349,9 @@ void SketcherWindow::create_objects()
 	curve_pen = new SketcherCurvePen(this, x1, y, cv->pen);
 	add_subwindow(curve_pen);	dy = bmax(dy,curve_pen->get_h());
 	curve_pen->create_objects();
-	curve_color = new SketcherCurveColor(this, x2, y, COLOR_W, COLOR_H);
+	curve_color = new SketcherCurveColor(this, x2, y, COLOR_W, COLOR_H,
+		cv->color&0xffffff, (~cv->color>>24)&0xff);
 	add_subwindow(curve_color);	dy = bmax(dy,curve_color->get_h());
-	curve_color->set_color(cv->color);
-	curve_color->draw_face();
 	y += dy + margin;  dy = 0;
 	curve_list->update(ci);
 
@@ -577,7 +458,6 @@ void SketcherWindow::create_objects()
 
 void SketcherWindow::done_event(int result)
 {
-	delete color_picker;  color_picker = 0;
 }
 
 void SketcherWindow::send_configure_change()
@@ -852,20 +732,6 @@ int SketcherWindow::keypress_event()
 			del_point->handle_event() ;
 	}
 	return 0;
-}
-
-void SketcherWindow::start_color_thread(SketcherCurveColor *color_button)
-{
-	unlock_window();
-	delete color_picker;
-	color_picker = new SketcherCurveColorPicker(this, color_button);
-	int color = CV_COLOR, ci = plugin->config.cv_selected;
-	if( ci >= 0 && ci < plugin->config.curves.size() ) {
-		SketcherCurve *cv = plugin->config.curves[ci];
-		color = cv->color;
-	}
-	color_picker->start(color);
-	lock_window("SketcherWindow::start_color_thread");
 }
 
 

@@ -3292,6 +3292,14 @@ void MWindow::hide_keyframe_gui(Plugin *plugin)
 	keyframe_gui_lock->unlock();
 }
 
+int MWindow::get_title_color(Edit *edit)
+{
+        int color = edit->color;
+	if( color < 0 && preferences->autocolor_assets )
+		color = edit->get_hash_color();
+	return color;
+}
+
 void MWindow::update_keyframe_guis()
 {
 // Send new configuration to keyframe GUI's

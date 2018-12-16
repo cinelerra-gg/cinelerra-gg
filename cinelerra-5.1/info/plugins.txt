@@ -281,7 +281,7 @@ F_eq:		Adjusts brightness, contrast, gamma and saturation.
 F_entropy:	Measure video frames entropy.
 F_erosion:	Applies erosion effect.
 F_fade:		Fade in/out input video.
-F_fftdnoiz:	Denoise rames using 3D FFT.
+F_fftdnoiz:	Denoise frames using 3D FFT.
 F_fftfilt:	Apply arbitrary expressions to pixels in frequency domain.
 F_field:	Extract a field from the input video.
 F_fieldorder:	Set the field order.
@@ -480,8 +480,8 @@ F_extrastereo:	Increases difference between stereo audio
 F_flanger:	Applies a flanging effect to the audio.
 F_haas:		Apply Haas Stereo Enhancer for a more natural sounding pan effect
 		or more clarity in the center of the mix.  With this filter
-		applied to mono signals it give some directionality and stretches
-		its stereo image
+		applied to mono signals it gives some directionality and stretches
+		its stereo image.
 F_highpass:	Applies a high-pass filter with 3dB point frequency.
 F_hilbert:	Generate a Hilbert transform FIR coefficients.
 F_loudnorm:	EBU R128 loudness normalization.

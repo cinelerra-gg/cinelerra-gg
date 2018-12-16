@@ -24,6 +24,7 @@
 
 #include "guicast.h"
 #include "edit.inc"
+#include "colorpicker.h"
 #include "editpopup.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
@@ -151,59 +152,96 @@ public:
 	EditPopup *popup;
 };
 
-class EditPopupTitle : public BC_MenuItem
+class EditPopupUserTitle : public BC_MenuItem
 {
 public:
-	EditPopupTitle(MWindow *mwindow, EditPopup *popup);
-	~EditPopupTitle();
+	EditPopupUserTitle(MWindow *mwindow, EditPopup *popup);
+	~EditPopupUserTitle();
 
 	int handle_event();
 
 	MWindow *mwindow;
 	EditPopup *popup;
-	EditTitleDialogThread *dialog_thread;
+	EditUserTitleDialogThread *dialog_thread;
 };
 
-class EditTitleDialogThread : public BC_DialogThread
+class EditPopupUserTitleText : public BC_TextBox
 {
 public:
-	EditTitleDialogThread(EditPopupTitle *edit_title);
-	~EditTitleDialogThread();
-	BC_Window* new_gui();
-	void start(int wx, int wy);
-	void handle_close_event(int result);
-	void handle_done_event(int result);
-
-	int wx, wy;
-	EditPopupTitle *edit_title;
-	EditPopupTitleWindow *window;
-};
-
-class EditPopupTitleText : public BC_TextBox
-{
-public:
-	EditPopupTitleText(EditPopupTitleWindow *window,
+	EditPopupUserTitleText(EditPopupUserTitleWindow *window,
 		MWindow *mwindow, int x, int y, const char *text);
-	~EditPopupTitleText();
+	~EditPopupUserTitleText();
 	int handle_event();
 
 	MWindow *mwindow;
-	EditPopupTitleWindow *window;
+	EditPopupUserTitleWindow *window;
 };
 
-class EditPopupTitleWindow : public BC_Window
+class EditPopupUserTitleWindow : public BC_Window
 {
 public:
-	EditPopupTitleWindow(MWindow *mwindow, EditPopup *popup, int wx, int wy);
-	~EditPopupTitleWindow();
+	EditPopupUserTitleWindow(MWindow *mwindow, EditPopup *popup, int wx, int wy);
+	~EditPopupUserTitleWindow();
 
 	void create_objects();
 	void handle_close_event(int result);
 
-	EditPopupTitleText *title_text;
+	EditPopupUserTitleText *title_text;
 	MWindow *mwindow;
 	EditPopup *popup;
 	char new_text[BCTEXTLEN];
+};
+
+class EditUserTitleDialogThread : public BC_DialogThread
+{
+public:
+	EditUserTitleDialogThread(EditPopupUserTitle *edit_title);
+	~EditUserTitleDialogThread();
+
+	void handle_close_event(int result);
+	void handle_done_event(int result);
+	BC_Window* new_gui();
+	void start(int wx, int wy);
+
+	int wx, wy;
+	EditPopupUserTitle *edit_title;
+	EditPopupUserTitleWindow *window;
+};
+
+
+class EditPopupTitleColor : public BC_MenuItem
+{
+public:
+	EditPopupTitleColor(MWindow *mwindow, EditPopup *popup);
+	~EditPopupTitleColor();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+	EditTitleColorPicker *color_picker;
+};
+
+class EditTitleColorDefault : public BC_GenericButton
+{
+public:
+	EditTitleColorDefault(EditTitleColorPicker *color_picker, int x, int y);
+	int handle_event();
+
+	EditTitleColorPicker *color_picker;
+};
+
+class EditTitleColorPicker : public ColorPicker
+{
+public:
+	EditTitleColorPicker(EditPopup *popup);
+	~EditTitleColorPicker();
+	void create_objects(ColorWindow *gui);
+	int handle_new_color(int color, int alpha);
+	void handle_done_event(int result);
+
+	EditPopup *popup;
+	int color;
 };
 
 

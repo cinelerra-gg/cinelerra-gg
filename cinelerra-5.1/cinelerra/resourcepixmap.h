@@ -60,6 +60,8 @@ public:
 // Called by ResourceThread to update pixmap
 	void draw_wave(TrackCanvas *canvas,
 		int x, double high, double low);
+	VFrame *change_title_color(VFrame *title_bg,
+		int color, int bg_color);
 	void draw_title(TrackCanvas *canvas,
 		Edit *edit, int64_t edit_x, int64_t edit_w,
 		int64_t pixmap_x, int64_t pixmap_w);

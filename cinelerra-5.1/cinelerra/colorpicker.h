@@ -27,6 +27,7 @@
 #include "bctextbox.h"
 #include "bcsubwindow.h"
 #include "clip.h"
+#include "colorpicker.inc"
 #include "condition.inc"
 #include "guicast.h"
 #include "mutex.inc"
@@ -35,28 +36,6 @@
 
 #define PALLETTE_HISTORY_SIZE 16
 
-class ColorWindow;
-class PaletteWheel;
-class PaletteWheelValue;
-class PaletteOutput;
-class PaletteHue;
-class PaletteSat;
-class PaletteVal;
-class PaletteRed;
-class PaletteGrn;
-class PaletteBlu;
-class PaletteLum;
-class PaletteCr;
-class PaletteCb;
-class PaletteAlpha;
-class PaletteHSV;
-class PaletteRGB;
-class PaletteYUV;
-class PaletteAPH;
-class PaletteHexButton;
-class PaletteHex;
-class PaletteGrabButton;
-class PaletteHistory;
 
 class ColorPicker : public BC_DialogThread
 {
@@ -64,14 +43,15 @@ public:
 	ColorPicker(int do_alpha = 0, const char *title = 0);
 	~ColorPicker();
 
-	void start_window(int output, int alpha, int do_okcancel=0);
+	void start_window(int output, int alpha, int ok_cancel=0);
 	virtual int handle_new_color(int output, int alpha);
 	void update_gui(int output, int alpha);
 	BC_Window* new_gui();
+	virtual void create_objects(ColorWindow *gui) {}
 
 	int orig_color, orig_alpha;
 	int output, alpha;
-	int do_alpha, do_okcancel;
+	int do_alpha, ok_cancel;
 	const char *title;
 };
 
@@ -369,6 +349,86 @@ public:
 
 	ColorWindow *window;
 	int button_down;
+};
+
+class ColorButton : public BC_Button
+{
+public:
+	ColorButton(const char *title,
+		int x, int y, int w, int h,
+		int color, int alpha, int ok_cancel);
+	~ColorButton();
+
+	virtual void set_color(int color);
+	virtual int handle_new_color(int color, int alpha);
+	virtual void handle_done_event(int result);
+
+	void close_picker();
+	void update_gui(int color);
+	int handle_event();
+
+	const char *title;
+	int color, alpha, ok_cancel;
+	int orig_color, orig_alpha;
+
+	VFrame *vframes[3];
+	ColorButtonPicker *color_picker;
+	ColorButtonThread *color_thread;
+};
+
+class ColorButtonPicker : public ColorPicker
+{
+public:
+	ColorButtonPicker(ColorButton *color_button);
+	~ColorButtonPicker();
+	int handle_new_color(int color, int alpha);
+	void handle_done_event(int result);
+	void update_gui();
+
+	ColorButton *color_button;
+};
+
+class ColorButtonThread : public Thread
+{
+public:
+	ColorButtonThread(ColorButton *color_button);
+	~ColorButtonThread();
+
+	void start();
+	void stop();
+	void run();
+
+	ColorButton *color_button;
+	Condition *update_lock;
+	int done;
+};
+
+class ColorBoxButton : public ColorButton
+{
+public:
+	ColorBoxButton(const char *title,
+		int x, int y, int w, int h,
+		int color, int alpha, int ok_cancel);
+	~ColorBoxButton();
+	void create_objects();
+
+	virtual int handle_new_color(int color, int alpha);
+	virtual void handle_done_event(int result);
+	void set_color(int color);
+};
+
+class ColorCircleButton : public ColorButton
+{
+public:
+	ColorCircleButton(const char *title,
+		int x, int y, int w, int h,
+		int color, int alpha, int ok_cancel);
+	~ColorCircleButton();
+	void create_objects();
+
+	virtual int handle_new_color(int color, int alpha);
+	virtual void handle_done_event(int result);
+	void set_color(int color);
 };
 
 #endif

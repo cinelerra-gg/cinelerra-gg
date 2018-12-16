@@ -134,7 +134,8 @@ public:
 	int is_plugin, is_selected;
 // edge cannot be optimized
 	int hard_left, hard_right;
-
+// title bar color
+	int color;
 // Transition if one is present at the beginning of this edit
 // This stores the length of the transition
 	Transition *transition;
@@ -168,6 +169,10 @@ public:
 		float zoom_units) { return 0; }
 	virtual int64_t get_source_end(int64_t default_);
 	void get_title(char *title);
+// edit title bar color
+	int get_title_color();
+// default edit title bar color
+	int get_hash_color();
 
 	int dump(FILE *fp=stdout);
 	virtual int dump_derived() { return 0; }

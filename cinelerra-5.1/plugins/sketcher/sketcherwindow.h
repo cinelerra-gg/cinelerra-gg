@@ -33,8 +33,6 @@ class SketcherCurveType;
 class SketcherCurvePenItem;
 class SketcherCurvePen;
 class SketcherCurveColor;
-class SketcherCurveColorPicker;
-class SketcherCurveColorThread;
 class SketcherNewCurve;
 class SketcherDelCurve;
 class SketcherCurveUp;
@@ -98,50 +96,19 @@ public:
 	int pen;
 };
 
-class SketcherCurveColor : public BC_Button
+class SketcherCurveColor : public ColorBoxButton
 {
 public:
-	SketcherCurveColor(SketcherWindow *gui, int x, int y, int w, int h);
+	SketcherCurveColor(SketcherWindow *gui,
+		int x, int y, int w, int h, int color, int alpha);
 	~SketcherCurveColor();
 
-	void set_color(int color);
-	void update_gui(int color);
-	int handle_event();
+	int handle_new_color(int color, int alpha);
+	void handle_done_event(int result);
 
 	int color;
 	VFrame *vframes[3];
 	SketcherWindow *gui;
-};
-
-class SketcherCurveColorPicker : public ColorPicker
-{
-public:
-	SketcherCurveColorPicker(SketcherWindow *gui, SketcherCurveColor *curve_color);
-	~SketcherCurveColorPicker();
-	void start(int color);
-	int handle_new_color(int color, int alpha);
-	void update_gui();
-	void handle_done_event(int result);
-
-	SketcherWindow *gui;
-	int color;
-	SketcherCurveColor *color_button;
-	SketcherCurveColorThread *color_update;
-};
-
-class SketcherCurveColorThread : public Thread
-{
-public:
-	SketcherCurveColorThread(SketcherCurveColorPicker *color_picker);
-	~SketcherCurveColorThread();
-
-	void start();
-	void stop();
-	void run();
-
-	SketcherCurveColorPicker *color_picker;
-	int done;
-	Condition *update_lock;
 };
 
 class SketcherNewCurve : public BC_GenericButton
@@ -391,7 +358,6 @@ public:
 	void create_objects();
 	void done_event(int result);
 	void update_gui();
-	void start_color_thread(SketcherCurveColor *curve_color);
 	int grab_event(XEvent *event);
 	int do_grab_event(XEvent *event);
 	int grab_button_press(XEvent *event);
@@ -405,7 +371,6 @@ public:
 	SketcherCurveType *curve_type;
 	SketcherCurvePen *curve_pen;
 	SketcherCurveColor *curve_color;
-	SketcherCurveColorPicker *color_picker;
 	SketcherNewCurve *new_curve;
 	SketcherDelCurve *del_curve;
 	SketcherCurveUp *curve_up;

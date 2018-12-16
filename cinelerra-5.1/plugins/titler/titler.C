@@ -2465,7 +2465,6 @@ void TitleMain::update_gui()
 			window->lock_window("TitleMain::update_gui");
 			window->update();
 			window->unlock_window();
-			window->color_thread->update_gui(config.color, 0);
 		}
 	}
 }

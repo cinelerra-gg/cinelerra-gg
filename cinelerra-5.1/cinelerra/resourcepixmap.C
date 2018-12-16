@@ -46,6 +46,7 @@
 #include "localsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "preferences.h"
 #include "renderengine.h"
 #include "resourcethread.h"
 #include "resourcepixmap.h"
@@ -241,6 +242,32 @@ void ResourcePixmap::draw_data(TrackCanvas *canvas,
 SET_TRACE
 }
 
+
+VFrame *ResourcePixmap::change_title_color(VFrame *title_bg, int color, int bg_color)
+{
+	if( color < 0 || color == bg_color ) return title_bg;
+	int colormodel = title_bg->get_color_model();
+	int bpp = BC_CModels::calculate_pixelsize(colormodel);
+	int tw = title_bg->get_w(), th = title_bg->get_h();
+	VFrame *title_bar = new VFrame(tw, th, colormodel);
+	uint8_t br = (bg_color>>16), cr = (color>>16);
+	uint8_t bg = (bg_color>>8),  cg = (color>>8);
+	uint8_t bb = (bg_color>>0),  cb = (color>>0);
+	int dr = cr-br, dg = cg-bg, db = cb-bb;
+	uint8_t **bar_rows = title_bar->get_rows();
+	uint8_t **rows = title_bg->get_rows();
+	for( int y=0; y<th; ++y ) {
+		uint8_t *bp = rows[y], *cp = bar_rows[y];
+		for( int x=0; x<tw; ++x ) {
+			*cp++ = *bp++ + dr;
+			*cp++ = *bp++ + dg;
+			*cp++ = *bp++ + db;
+			if( bpp > 3 ) *cp++ = *bp++;
+		}
+	}
+	return title_bar;
+}
+
 void ResourcePixmap::draw_title(TrackCanvas *canvas,
 	Edit *edit, int64_t edit_x, int64_t edit_w,
 	int64_t pixmap_x, int64_t pixmap_w)
@@ -253,8 +280,17 @@ void ResourcePixmap::draw_title(TrackCanvas *canvas,
 	if( x < 0 ) { w -= -x; x = 0; }
 	if( w > pixmap_w ) w -= w - pixmap_w;
 
-	canvas->draw_3segmenth(x, 0, w, total_x, total_w,
-		mwindow->theme->get_image("title_bg_data"), this);
+	VFrame *title_bg = mwindow->theme->get_image("title_bg_data");
+	VFrame *title_bar = title_bg;
+	int color = mwindow->get_title_color(edit), bg_color = -1;
+	if( color >= 0 ) {
+		bg_color = mwindow->theme->get_color_title_bg();
+		if( bg_color == color ) color = -1;
+	}
+	if( color >= 0 && color != bg_color )
+		title_bar = change_title_color(title_bg, color, bg_color);
+	canvas->draw_3segmenth(x, 0, w, total_x, total_w, title_bar, this);
+	if( title_bar != title_bg ) delete title_bar;
 
 //	if( total_x > -BC_INFINITY ) {
 		char title[BCTEXTLEN];
@@ -332,22 +368,6 @@ SET_TRACE
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void ResourcePixmap::draw_audio_source(TrackCanvas *canvas, Edit *edit, int x, int w)

@@ -97,6 +97,7 @@ Preferences::Preferences()
 	highlight_inverse = 0xffffff;
 	yuv_color_space = BC_COLORS_BT601;
 	yuv_color_range = BC_COLORS_JPEG;
+	autocolor_assets = 0;
 
 // Default brender asset
 	brender_asset = new Asset;
@@ -214,6 +215,7 @@ void Preferences::copy_from(Preferences *that)
 	highlight_inverse = that->highlight_inverse;
 	yuv_color_space = that->yuv_color_space;
 	yuv_color_range = that->yuv_color_range;
+	autocolor_assets = that->autocolor_assets;
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
 	renderfarm_enabled.remove_all();
@@ -352,6 +354,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	highlight_inverse = defaults->get("HIGHLIGHT_INVERSE", highlight_inverse);
 	yuv_color_space = defaults->get("YUV_COLOR_SPACE", yuv_color_space);
 	yuv_color_range = defaults->get("YUV_COLOR_RANGE", yuv_color_range);
+	autocolor_assets = defaults->get("AUTOCOLOR_ASSETS", autocolor_assets);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
 	cache_size = defaults->get("CACHE_SIZE", cache_size);
@@ -491,6 +494,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("HIGHLIGHT_INVERSE", highlight_inverse);
 	defaults->update("YUV_COLOR_SPACE", yuv_color_space);
 	defaults->update("YUV_COLOR_RANGE", yuv_color_range);
+	defaults->update("AUTOCOLOR_ASSETS", autocolor_assets);
 	brender_asset->save_defaults(defaults, "BRENDER_", 1, 1, 1, 0, 0);
 	defaults->update("USE_BRENDER", use_brender);
 	defaults->update("BRENDER_FRAGMENT", brender_fragment);
