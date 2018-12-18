@@ -905,15 +905,16 @@ void MWindow::match_output_size(Track *track)
 
 void MWindow::selected_to_clipboard(int packed)
 {
-	int64_t start = INT64_MAX, end = -INT64_MAX, pos = 0;
+	double start = DBL_MAX, end = DBL_MIN;
 	Track *first_track=0, *last_track = 0;
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
 		if( !track->record ) continue;
 		int empty = 1;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( !edit->is_selected || edit->silence() ) continue;
-			if( start > (pos=edit->startproject) ) start = pos;
-			if( end < (pos+=edit->length) ) end = pos;
+			double edit_pos = track->from_units(edit->startproject);
+			if( start > edit_pos ) start = edit_pos;
+			if( end < (edit_pos+=edit->length) ) end = edit_pos;
 			empty = 0;
 		}
 		if( empty ) continue;
@@ -939,16 +940,18 @@ void MWindow::selected_to_clipboard(int packed)
 		Track *new_track = 0;
 		if( !packed )
 			new_track = new_edl->add_new_track(track->data_type);
+		int64_t start_pos = track->to_units(start, 0);
+		int64_t end_pos = track->to_units(end, 0);
 		int64_t startproject = 0;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
-			if( edit->startproject < start ) continue;
-			if( edit->startproject >= end ) break;
+			if( edit->startproject < start_pos ) continue;
+			if( edit->startproject >= end_pos ) break;
 			if( !edit->is_selected || edit->silence() ) continue;
 			if( !new_track )
 				new_track = new_edl->add_new_track(track->data_type);
 			if( new_track ) {
 				if( !packed ) {
-					int64_t edit_position = edit->startproject - start;
+					int64_t edit_position = edit->startproject - start_pos;
 					if( edit_position > startproject ) {
 						Edit *silence = new Edit(new_edl, new_track);
 						silence->startproject = startproject;
