@@ -67,7 +67,7 @@ public:
 	~alsa_leaks() { snd_config_update_free_global(); }
 } alsa_leak;
 
-void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
+void AudioALSA::list_devices(ArrayList<char*> *names, ArrayList<char*> *pcm_names, int mode)
 {
 	snd_ctl_t *handle;
 	int card, err, dev;
@@ -92,24 +92,22 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 
 	card = -1;
 #define DEFAULT_DEVICE "default"
-	char *result = new char[strlen(DEFAULT_DEVICE) + 1];
-	devices->append(result);
-	strcpy(result, DEFAULT_DEVICE);
+	if( names )
+		names->append(cstrdup(DEFAULT_DEVICE));
+	if( pcm_names )
+		pcm_names->append(cstrdup(DEFAULT_DEVICE));
 
-	while(snd_card_next(&card) >= 0)
-	{
+	while(snd_card_next(&card) >= 0) {
 		char name[BCTEXTLEN];
 		if(card < 0) break;
 		sprintf(name, "hw:%i", card);
 
-		if((err = snd_ctl_open(&handle, name, 0)) < 0)
-		{
+		if((err = snd_ctl_open(&handle, name, 0)) < 0) {
 			printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
 			continue;
 		}
 
-		if((err = snd_ctl_card_info(handle, info)) < 0)
-		{
+		if((err = snd_ctl_card_info(handle, info)) < 0) {
 			printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
 			snd_ctl_close(handle);
 			continue;
@@ -117,42 +115,33 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 
 		dev = -1;
 
-		while(1)
-		{
+		while(1) {
 			if(snd_ctl_pcm_next_device(handle, &dev) < 0)
 				printf("AudioALSA::list_devices: snd_ctl_pcm_next_device\n");
 
-			if (dev < 0)
-				break;
+			if (dev < 0) break;
 
 			snd_pcm_info_set_device(pcminfo, dev);
 			snd_pcm_info_set_subdevice(pcminfo, 0);
 			snd_pcm_info_set_stream(pcminfo, stream);
 
-			if((err = snd_ctl_pcm_info(handle, pcminfo)) < 0)
-			{
+			if((err = snd_ctl_pcm_info(handle, pcminfo)) < 0) {
 				if(err != -ENOENT)
 					printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
 				continue;
 			}
 
-			if(pcm_title)
-			{
+			if( pcm_names ) {
 				sprintf(string, "plughw:%d,%d", card, dev);
 //				strcpy(string, "cards.pcm.front");
+				pcm_names->append(cstrdup(string));
 			}
-			else
-			{
+			if( names ) {
 				sprintf(string, "%s #%d",
-					snd_ctl_card_info_get_name(info),
-					dev);
+					snd_ctl_card_info_get_name(info), dev);
+				names->append(cstrdup(string));
 			}
-
-			char *result = devices->append(new char[strlen(string) + 1]);
-			strcpy(result, string);
 		}
-
-
 
 		snd_ctl_close(handle);
 	}
@@ -175,11 +164,11 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 	FILE *pactl = 0;
 	char line[BCTEXTLEN];
 	if( arg ) {
-		sprintf(line, "pactl list %ss", arg);
+		sprintf(line, "LANGUAGE=en_US.UTF-8 pactl list %ss", arg);
 		pactl = popen(line,"r");
 	}
 	if( pactl ) {
-		if( pcm_title ) snd_config_update();
+		snd_config_update();
 		char name[BCTEXTLEN], pa_name[BCTEXTLEN], device[BCTEXTLEN];
 		name[0] = pa_name[0] = device[0] = 0;
 		int arg_len = strlen(arg);
@@ -191,14 +180,14 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 						(*cp>='a' && *cp<='z') ||
 						(*cp>='0' && *cp<='9') ? *cp : '_';
 				*sp++ = 0;  *id = 0;
-				if( !pcm_title )
-					devices->append(strcpy(new char[sp-name], name));
+				if( names )
+					names->append(cstrdup(name));
 				continue;
 			}
-			if( !pcm_title ) continue;
 			if( sscanf(line, " Name: %s", device) != 1 ) continue;
 			int len = strlen(pa_name);
-			devices->append(strcpy(new char[len+1], pa_name));
+			if( pcm_names )
+				pcm_names->append(cstrdup(pa_name));
 			char alsa_config[BCTEXTLEN];
 			len = snprintf(alsa_config, sizeof(alsa_config),
 				"pcm.!%s {\n type pulse\n device %s\n}\n"
@@ -224,8 +213,7 @@ void AudioALSA::translate_name(char *output, char *input, int mode)
 	ArrayList<char*> pcm_titles;
 	pcm_titles.set_array_delete();
 
-	list_devices(&titles, 0, mode);
-	list_devices(&pcm_titles, 1, mode);
+	list_devices(&titles, &pcm_titles, mode);
 
 	sprintf(output, "default");
 	for(int i = 0; i < titles.total; i++)
