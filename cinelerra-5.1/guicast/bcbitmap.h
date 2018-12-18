@@ -178,8 +178,6 @@ class BC_Bitmap
 	long best_buffer_size();
 	int need_shm();
 
-// Background color for using pngs
-	int bg_color;
 // Override top_level for small bitmaps
 	int use_shm;
 	BC_WindowBase *top_level;
@@ -203,10 +201,13 @@ public:
 // transfer VFrame
 	int read_frame(VFrame *frame,
 		int in_x, int in_y, int in_w, int in_h,
-		int out_x, int out_y, int out_w, int out_h);
+		int out_x, int out_y, int out_w, int out_h,
+		int bg_color);
 // x1, y1, x2, y2 dimensions of output area
 	int read_frame(VFrame *frame,
 		int x1, int y1, int x2, int y2);
+	int read_frame(VFrame *frame,
+		int x1, int y1, int x2, int y2, int bg_color);
 // Reset bitmap to match the new parameters
 	int match_params(int w, int h, int color_model, int use_shm);
 // Test if bitmap already matches parameters
@@ -258,7 +259,6 @@ public:
 	int is_unshared() { return type==bmXvImage  || type==bmXImage; }
 	int is_zombie() { return cur_bfr()->is_zombie(); }
 
-	int set_bg_color(int color);
 	int invert();
 };
 

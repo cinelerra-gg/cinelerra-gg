@@ -22,22 +22,12 @@
 #ifndef ZOOMBAR_H
 #define ZOOMBAR_H
 
-class FromTextBox;
-class LengthTextBox;
-class ToTextBox;
-
-
-class SampleZoomPanel;
-class AmpZoomPanel;
-class TrackZoomPanel;
-class AutoZoom;
-class AutoTypeMenu;
-class ZoomTextBox;
-
 #include "guicast.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "zoombar.inc"
 #include "zoompanel.h"
+
 
 class ZoomBar : public BC_SubWindow
 {
@@ -66,12 +56,11 @@ public:
 	AutoTypeMenu *auto_type;
 	ZoomTextBox *auto_zoom_text;
 
-	BC_Title *zoom_value, *playback_value;
 	LengthTextBox *length_value;
 	FromTextBox *from_value;
 	ToTextBox *to_value;
+	TitleBarAlpha *title_alpha;
 	char string[256], string2[256];
-	int64_t old_position;
 };
 
 class SampleZoomPanel : public ZoomPanel
@@ -138,12 +127,6 @@ public:
 };
 
 
-
-
-
-
-
-
 class FromTextBox : public BC_TextBox
 {
 public:
@@ -178,7 +161,13 @@ public:
 	ZoomBar *zoombar;
 };
 
-
-
+class TitleBarAlpha : public BC_FSlider
+{
+public:
+	TitleBarAlpha(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	ZoomBar *zoombar;
+};
 
 #endif

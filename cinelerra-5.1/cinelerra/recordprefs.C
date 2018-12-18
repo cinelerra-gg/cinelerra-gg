@@ -205,7 +205,7 @@ void RecordPrefs::create_objects()
 
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Positioning:")));
-	x1 += 100;
+	x1 += 120;
 	add_subwindow(textbox = new BC_TextBox(x1, y, 200, 1, ""));
 	RecordPositioning *positioning = new RecordPositioning(pwindow,textbox);
 	add_subwindow(positioning);

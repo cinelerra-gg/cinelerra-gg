@@ -114,6 +114,9 @@ public:
 // filename of the current project for window titling and saving
 	char filename[BCTEXTLEN];
 
+// title bar background blend
+	float title_bar_alpha;
+
 	int batchrender_x, batchrender_y, batchrender_w, batchrender_h;
 
 // Window positions

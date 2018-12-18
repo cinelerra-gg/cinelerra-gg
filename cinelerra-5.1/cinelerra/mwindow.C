@@ -3292,12 +3292,44 @@ void MWindow::hide_keyframe_gui(Plugin *plugin)
 	keyframe_gui_lock->unlock();
 }
 
+int MWindow::get_hash_color(Edit *edit)
+{
+	Indexable *idxbl = edit->asset ?
+		(Indexable*)edit->asset : (Indexable*)edit->nested_edl;
+	if( !idxbl ) return 0;
+	char path[BCTEXTLEN];
+	if( !edit->asset || edit->track->data_type != TRACK_VIDEO ||
+	    edl->session->proxy_scale == 1 ||
+	    ProxyRender::from_proxy_path(path, idxbl, edl->session->proxy_scale) )
+		strcpy(path, idxbl->path);
+	char *cp = strrchr(path, '/');
+	cp = !cp ? path : cp+1;
+	uint8_t *bp = (uint8_t*)cp;
+	int v = 0;
+	while( *bp ) v += *bp++;
+	int hash = 0x303030;
+	if( v & 0x01 ) hash ^= 0x000040;
+	if( v & 0x02 ) hash ^= 0x004000;
+	if( v & 0x04 ) hash ^= 0x400000;
+	if( v & 0x08 ) hash ^= 0x080000;
+	if( v & 0x10 ) hash ^= 0x000800;
+	if( v & 0x20 ) hash ^= 0x000008;
+	if( v & 0x40 ) hash ^= 0x404040;
+	if( v & 0x80 ) hash ^= 0x080808;
+	return hash;
+}
+
 int MWindow::get_title_color(Edit *edit)
 {
-        int color = edit->color;
-	if( color < 0 && preferences->autocolor_assets )
-		color = edit->get_hash_color();
-	return color;
+        unsigned color = edit->color;
+	if( !color ) {
+		if( !preferences->autocolor_assets ) return 0;
+		color = get_hash_color(edit);
+	}
+	unsigned alpha = (~edit->color>>24) & 0xff;
+	if( alpha == 0xff )
+		alpha = session->title_bar_alpha*255;
+	return color | (~alpha<<24);
 }
 
 void MWindow::update_keyframe_guis()

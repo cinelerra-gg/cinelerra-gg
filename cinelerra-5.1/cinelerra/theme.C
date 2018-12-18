@@ -896,36 +896,34 @@ void Theme::draw_rwindow_bg(RecordGUI *gui)
 }
 
 
-void Theme::draw_resource_bg(TrackCanvas *canvas,
-	ResourcePixmap *pixmap,
-	int edit_x,
-	int edit_w,
-	int pixmap_x,
-	int x1,
-	int y1,
-	int x2,
-	int y2)
+void Theme::draw_resource_bg(TrackCanvas *canvas, ResourcePixmap *pixmap, int color,
+	int edit_x, int edit_w, int pixmap_x, int x1, int y1, int x2, int y2)
 {
-	VFrame *image;
+	VFrame *image = 0;
 
-	switch(mwindow->edl->local_session->zoom_track)
-	{
+	switch(mwindow->edl->local_session->zoom_track) {
 		case 1024: image = get_image("resource1024");  break;
 		case 512: image = get_image("resource512");  break;
 		case 256: image = get_image("resource256");  break;
 		case 128: image = get_image("resource128");  break;
 		case 64:  image = get_image("resource64");   break;
-		default:
-		case 32:  image = get_image("resource32");   break;
 	}
+	if( !image )
+		image = get_image("resource32");
 
-	canvas->draw_3segmenth(x1,
-		y1,
-		x2 - x1,
-		edit_x - pixmap_x,
-		edit_w,
-		image,
-		pixmap);
+	VFrame *frame = image;
+	int bg_color = canvas->get_bg_color();
+	if( color ) {
+		int alpha = (~color >> 24) & 0xff;
+		frame = pixmap->change_picon_alpha(image, alpha);
+		canvas->set_bg_color(color & 0xffffff);
+	}
+	canvas->draw_3segmenth(x1, y1, x2 - x1,
+		edit_x - pixmap_x, edit_w, frame, pixmap);
+	if( frame != image ) {
+		delete frame;
+		canvas->set_bg_color(bg_color);
+	}
 }
 
 

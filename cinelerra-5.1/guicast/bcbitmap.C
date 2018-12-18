@@ -329,7 +329,6 @@ int BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	this->use_shm = !use_shm ? 0 : need_shm();
         this->shm_reply = this->use_shm && resources->shm_reply ? 1 : 0;
 	// dont use shm for less than one page
-	this->bg_color = parent_window->bg_color;
 	if( !this->avail_lock )
 		this->avail_lock = new Mutex("BC_Bitmap::avail_lock");
 	else
@@ -483,12 +482,6 @@ int BC_Bitmap::need_shm()
 		parent_window->get_resources()->use_shm > 0 ? 1 : 0;
 }
 
-int BC_Bitmap::set_bg_color(int color)
-{
-	this->bg_color = color;
-	return 0;
-}
-
 int BC_Bitmap::invert()
 {
 	for( int j=0; j<buffer_count; ++j ) {
@@ -621,15 +614,20 @@ int BC_Bitmap::read_drawable(Drawable &pixmap, int source_x, int source_y, VFram
 
 int BC_Bitmap::read_frame(VFrame *frame, int x1, int y1, int x2, int y2)
 {
+	return read_frame(frame, x1, y1, x2, y2, parent_window->get_bg_color());
+}
+
+int BC_Bitmap::read_frame(VFrame *frame, int x1, int y1, int x2, int y2, int bg_color)
+{
 	return read_frame(frame,
 		0, 0, frame->get_w(), frame->get_h(),
-		x1, y1, x2 - x1, y2 - y1);
+		x1, y1, x2 - x1, y2 - y1, bg_color);
 }
 
 
 int BC_Bitmap::read_frame(VFrame *frame,
 	int in_x, int in_y, int in_w, int in_h,
-	int out_x, int out_y, int out_w, int out_h)
+	int out_x, int out_y, int out_w, int out_h, int bg_color)
 {
 	BC_BitmapImage *bfr = cur_bfr();
 	if( hardware_scaling() && frame->get_color_model() == color_model ) {

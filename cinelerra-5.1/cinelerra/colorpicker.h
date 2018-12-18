@@ -83,6 +83,7 @@ public:
 	void update_yuv(float y, float u, float v);
 	void update_rgb_hex(const char *hex);
 	int rgb888();
+	int alpha8();
 
 	ColorPicker *thread;
 	PaletteWheel *wheel;

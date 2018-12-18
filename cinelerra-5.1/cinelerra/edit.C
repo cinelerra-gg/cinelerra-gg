@@ -86,7 +86,7 @@ void Edit::reset()
 	is_selected = 0;
 	hard_left = 0;
 	hard_right = 0;
-	color = -1;
+	color = 0;
 }
 
 Indexable* Edit::get_source()
@@ -815,23 +815,5 @@ void Edit::get_title(char *title)
 		sprintf(number, " #%d", channel + 1);
 		strcat(title, number);
 	}
-}
-
-int Edit::get_hash_color()
-{
-	Indexable *idxbl = asset ? (Indexable*)asset : (Indexable*)nested_edl;
-	if( !idxbl ) return -1;
-	int v = 0;
-	for( uint8_t *bp=(uint8_t*)idxbl->path; *bp; ++bp ) v += *bp;
-	int color = 0x303030;
-	if( v & 0x01 ) color ^= 0x000040;
-	if( v & 0x02 ) color ^= 0x004000;
-	if( v & 0x04 ) color ^= 0x400000;
-	if( v & 0x08 ) color ^= 0x080000;
-	if( v & 0x10 ) color ^= 0x000800;
-	if( v & 0x20 ) color ^= 0x000008;
-	if( v & 0x40 ) color ^= 0x202020;
-	if( v & 0x80 ) color ^= 0x101010;
-	return color;
 }
 

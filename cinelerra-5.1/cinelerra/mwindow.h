@@ -310,6 +310,7 @@ public:
 	void hide_keyframe_guis();
 	void hide_keyframe_gui(Plugin *plugin);
 	void update_keyframe_guis();
+	int get_hash_color(Edit *edit);
 	int get_title_color(Edit *edit);
 
 // ============================= editing commands ========================

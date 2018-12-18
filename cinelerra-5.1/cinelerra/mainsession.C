@@ -68,6 +68,7 @@ MainSession::MainSession(MWindow *mwindow)
 	zwindow_fullscreen = 0;
 	selected_zwindow = -1;
 	actual_frame_rate = 0;
+	title_bar_alpha = 0;
 	window_config = 0;
 	a_x11_host[0] = 0;
 	b_x11_host[0] = 0;
@@ -450,6 +451,7 @@ int MainSession::load_defaults(BC_Hash *defaults)
 
 	current_tip = defaults->get("CURRENT_TIP", current_tip);
 	actual_frame_rate = defaults->get("ACTUAL_FRAME_RATE", (float)-1);
+	title_bar_alpha = defaults->get("TITLE_BAR_ALPHA", (float)0);
 
 	boundaries();
 	return 0;
@@ -569,6 +571,7 @@ int MainSession::save_defaults(BC_Hash *defaults)
 	defaults->update("TRANSITIONDIALOG_H", transitiondialog_h);
 
 	defaults->update("ACTUAL_FRAME_RATE", actual_frame_rate);
+	defaults->update("TITLE_BAR_ALPHA", title_bar_alpha);
 	defaults->update("CURRENT_TIP", current_tip);
 
 

@@ -194,16 +194,13 @@ void ResourcePixmap::draw_data(TrackCanvas *canvas,
 	refresh_w = pixmap_w;
 
 // Draw background image
-	if( refresh_w > 0 )
-		mwindow->theme->draw_resource_bg(canvas,
-			this,
-			edit_x,
-			edit_w,
-			pixmap_x,
-			refresh_x,
-			y,
-			refresh_x + refresh_w,
-			mwindow->edl->local_session->zoom_track + y);
+	if( refresh_w > 0 ) {
+		int x1 = refresh_x, x2 = x1 + refresh_w;
+		int y1 = y, y2 = y1 + mwindow->edl->local_session->zoom_track;
+		int color = mwindow->get_title_color(edit);
+		mwindow->theme->draw_resource_bg(canvas, this, color,
+			edit_x, edit_w, pixmap_x, x1,y1, x2,y2);
+	}
 //printf("ResourcePixmap::draw_data 70\n");
 
 
@@ -214,28 +211,18 @@ void ResourcePixmap::draw_data(TrackCanvas *canvas,
 		{
 			case TRACK_AUDIO:
 				draw_audio_resource(canvas,
-					edit,
-					refresh_x,
-					refresh_w);
+					edit, refresh_x, refresh_w);
 				break;
 
 			case TRACK_VIDEO:
-				draw_video_resource(canvas,
-					edit,
-					edit_x,
-					edit_w,
-					pixmap_x,
-					pixmap_w,
-					refresh_x,
-					refresh_w,
+				draw_video_resource(canvas, edit, edit_x, edit_w,
+					pixmap_x, pixmap_w, refresh_x, refresh_w,
 					mode);
 				break;
 
 			case TRACK_SUBTITLE:
-				draw_subttl_resource(canvas,
-					edit,
-					refresh_x,
-					refresh_w);
+				draw_subttl_resource(canvas, edit,
+					refresh_x, refresh_w);
 				break;
 		}
 	}
@@ -245,22 +232,55 @@ SET_TRACE
 
 VFrame *ResourcePixmap::change_title_color(VFrame *title_bg, int color)
 {
-	if( color < 0 ) return title_bg;
 	int colormodel = title_bg->get_color_model();
 	int bpp = BC_CModels::calculate_pixelsize(colormodel);
-	int tw = title_bg->get_w(), th = title_bg->get_h();
+	int tw = title_bg->get_w(), tw1 = tw-1, th = title_bg->get_h();
 	VFrame *title_bar = new VFrame(tw, th, colormodel);
 	uint8_t cr = (color>>16), cg = (color>>8), cb = (color>>0);
 	uint8_t **bar_rows = title_bar->get_rows();
-	for( int y=0; y<th; ++y ) {
-		uint8_t *cp = bar_rows[y];
+	if( th > 0 ) {
+		uint8_t *cp = bar_rows[0];
 		for( int x=0; x<tw; ++x ) {
-			cp[0] = cr; cp[1] = cg; cp[2] = cb;
+			cp[0] = cp[1] = cp[2] = 0;
 			if( bpp > 3 ) cp[3] = 0xff;
 			cp += bpp;
 		}
 	}
+	for( int y=1; y<th; ++y ) {
+		uint8_t *cp = bar_rows[y];
+		if( tw > 0 ) {
+			cp[0] = cp[1] = cp[2] = 0;
+			if( bpp > 3 ) cp[3] = 0xff;
+			cp += bpp;
+		}
+		for( int x=1; x<tw1; ++x ) {
+			cp[0] = cr; cp[1] = cg; cp[2] = cb;
+			if( bpp > 3 ) cp[3] = 0xff;
+			cp += bpp;
+		}
+		if( tw > 1 ) {
+			cp[0] = cp[1] = cp[2] = 0;
+			if( bpp > 3 ) cp[3] = 0xff;
+		}
+	}
 	return title_bar;
+}
+
+VFrame *ResourcePixmap::change_picon_alpha(VFrame *picon_frame, int alpha)
+{
+	uint8_t **picon_rows = picon_frame->get_rows();
+	int w = picon_frame->get_w(), h = picon_frame->get_h();
+	VFrame *frame = new VFrame(w, h, BC_RGBA8888);
+	uint8_t **rows = frame->get_rows();
+	for( int y=0; y<h; ++y ) {
+		uint8_t *bp = picon_rows[y], *rp = rows[y];
+		for( int x=0; x<w; ++x ) {
+			rp[0] = bp[0];	rp[1] = bp[1];
+			rp[2] = bp[2];	bp += 3;
+			rp[3] = alpha;  rp += 4;
+		}
+	}
+	return frame;
 }
 
 void ResourcePixmap::draw_title(TrackCanvas *canvas,
@@ -277,7 +297,7 @@ void ResourcePixmap::draw_title(TrackCanvas *canvas,
 
 	VFrame *title_bg = mwindow->theme->get_image("title_bg_data");
 	int color = mwindow->get_title_color(edit);
-	VFrame *title_bar = color < 0 ? title_bg :
+	VFrame *title_bar = !color ? title_bg :
 		change_title_color(title_bg, color);
 	canvas->draw_3segmenth(x, 0, w, total_x, total_w, title_bar, this);
 	if( title_bar != title_bg ) delete title_bar;
@@ -592,8 +612,20 @@ void ResourcePixmap::draw_video_resource(TrackCanvas *canvas,
 			mwindow->frame_cache->get_frame_ptr(speed_position, edit->channel,
 				mwindow->edl->session->frame_rate, BC_RGB888,
 				picon_w, picon_h, indexable->id);
+		int bg_color = gui->get_bg_color();
 		if( picon_frame ) {
-			draw_vframe(picon_frame, x, y, picon_w, picon_h, 0, 0);
+			VFrame *frame = picon_frame;
+			int color = mwindow->get_title_color(edit);
+			if( color ) {
+				int alpha = (~color >> 24) & 0xff;
+				frame = change_picon_alpha(picon_frame, alpha);
+				gui->set_bg_color(color & 0xffffff);
+			}
+			draw_vframe(frame, x, y, picon_w, picon_h, 0, 0);
+			if( frame != picon_frame ) {
+				delete frame;
+				gui->set_bg_color(bg_color);
+			}
 			mwindow->frame_cache->unlock();
 		}
 		else if( mode != IGNORE_THREAD ) {

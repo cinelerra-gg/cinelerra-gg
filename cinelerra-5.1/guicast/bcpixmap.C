@@ -46,16 +46,10 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 	if(use_opaque())
 	{
 		opaque_bitmap = new BC_Bitmap(parent_window,
-					frame->get_w(),
-					frame->get_h(),
-					parent_window->get_color_model(),
-					0);
-		opaque_bitmap->set_bg_color(parent_window->get_bg_color());
+			frame->get_w(), frame->get_h(),
+			parent_window->get_color_model(), 0);
 		opaque_bitmap->read_frame(frame,
-			0,
-			0,
-			frame->get_w(),
-			frame->get_h());
+			0, 0, frame->get_w(), frame->get_h());
 
 	}
 

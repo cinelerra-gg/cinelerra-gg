@@ -423,10 +423,11 @@ int EditPopupTitleColor::handle_event()
 {
 	if( popup->edit ) {
 		int color = popup->mwindow->get_title_color(popup->edit);
-		if( color < 0 ) color = popup->mwindow->theme->get_color_title_bg();
+		if( !color ) color = popup->mwindow->theme->get_color_title_bg();
 		delete color_picker;
-		color_picker = new EditTitleColorPicker(popup);
-		color_picker->start_window(color, -1, 1);
+		color_picker = new EditTitleColorPicker(popup, color);
+		int alpha = (~color>>24) & 0xff;
+		color_picker->start_window(color & 0xffffff, alpha, 1);
 	}
 	return 1;
 }
@@ -440,30 +441,31 @@ EditTitleColorDefault::EditTitleColorDefault(
 
 int EditTitleColorDefault::handle_event()
 {
-	int color = color_picker->popup->mwindow->theme->get_color_title_bg();
-	color_picker->update_gui(color, -1);
+	color_picker->color = 0;
+	color_picker->update_gui(0, 0);
 	return 1;
 }
 
-EditTitleColorPicker::EditTitleColorPicker(EditPopup *popup)
- : ColorPicker(0, _("Bar Color"))
+EditTitleColorPicker::EditTitleColorPicker(EditPopup *popup, int color)
+ : ColorPicker(1, _("Bar Color"))
 {
 	this->popup = popup;
-	color = -1;
+	this->color = color;
 }
 EditTitleColorPicker::~EditTitleColorPicker()
 {
 }
 void EditTitleColorPicker::create_objects(ColorWindow *gui)
 {
-	int y = gui->get_h() - BC_CancelButton::calculate_h() - 50;
-	int x = gui->get_w() - BC_GenericButton::calculate_w(gui, _("default")) - 15;
+	int y = gui->get_h() - BC_CancelButton::calculate_h() + 10;
+	int x = gui->get_w() - BC_CancelButton::calculate_w() - 10;
+	x -= BC_GenericButton::calculate_w(gui, _("default")) + 15;
 	gui->add_subwindow(new EditTitleColorDefault(this, x, y));
 }
 
 int EditTitleColorPicker::handle_new_color(int color, int alpha)
 {
-	this->color = color;
+	this->color = color | (~alpha << 24);
 	return 1;
 }
 

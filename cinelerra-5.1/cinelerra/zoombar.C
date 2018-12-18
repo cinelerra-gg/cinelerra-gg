@@ -39,8 +39,6 @@
 #include "zoombar.h"
 
 
-
-
 ZoomBar::ZoomBar(MWindow *mwindow, MWindowGUI *gui)
  : BC_SubWindow(mwindow->theme->mzoom_x,
  	mwindow->theme->mzoom_y,
@@ -49,7 +47,6 @@ ZoomBar::ZoomBar(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
-	old_position = 0;
 }
 
 ZoomBar::~ZoomBar()
@@ -107,14 +104,12 @@ void ZoomBar::create_objects()
 	x += length_value->get_w() + 5;
 	add_subwindow(to_value = new ToTextBox(mwindow, this, x, y));
 	x += to_value->get_w() + 5;
+	add_subwindow(title_alpha = new TitleBarAlpha(mwindow, this, x, y));
 
 	update_formatting(from_value);
 	update_formatting(length_value);
 	update_formatting(to_value);
 
-	add_subwindow(playback_value = new BC_Title(x, 100, "--", MEDIUMFONT, RED));
-
-	add_subwindow(zoom_value = new BC_Title(x, 100, "--", MEDIUMFONT, BLACK));
 	update();
 }
 
@@ -198,19 +193,21 @@ int ZoomBar::update_clocks()
 	return 0;
 }
 
-int ZoomBar::update_playback(int64_t new_position)
+TitleBarAlpha::TitleBarAlpha(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
+ : BC_FSlider(x, y, 0, 150, 200, 0, 1.0, mwindow->session->title_bar_alpha, 0)
 {
-	if(new_position != old_position)
-	{
-		Units::totext(string, new_position,
-				mwindow->edl->session->sample_rate,
-				mwindow->edl->session->time_format,
-				mwindow->edl->session->frame_rate,
-				mwindow->edl->session->frames_per_foot);
-		playback_value->update(string);
-		old_position = new_position;
-	}
-	return 0;
+	this->mwindow = mwindow;
+	this->zoombar = zoombar;
+	set_precision(0.01);
+	set_tooltip(_("TitleBar Alpha"));
+}
+
+int TitleBarAlpha::handle_event()
+{
+	mwindow->session->title_bar_alpha = get_value();
+	mwindow->gui->draw_trackmovement();
+	mwindow->gui->flush();
+	return 1;
 }
 
 int ZoomBar::resize_event(int w, int h)

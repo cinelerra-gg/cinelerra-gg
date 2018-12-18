@@ -104,15 +104,8 @@ public:
 	virtual void draw_lwindow_bg(LevelWindowGUI *gui);
 	virtual void draw_mwindow_bg(MWindowGUI *gui);
 	virtual void draw_vwindow_bg(VWindowGUI *gui);
-	virtual void draw_resource_bg(TrackCanvas *canvas,
-		ResourcePixmap *pixmap,
-		int edit_x,
-		int edit_w,
-		int pixmap_x,
-		int x1,
-		int y1,
-		int x2,
-		int y2);
+	virtual void draw_resource_bg(TrackCanvas *canvas, ResourcePixmap *pixmap, int color,
+		int edit_x, int edit_w, int pixmap_x, int x1, int y1, int x2, int y2);
 
 	virtual void get_preferences_sizes();
 	virtual void draw_preferences_bg(PreferencesWindow *gui);

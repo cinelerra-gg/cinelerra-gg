@@ -157,7 +157,7 @@ SET_TRACE
 SET_TRACE
  	add_subwindow(title1 = new BC_Title(x, y, _("Scaling equation: Enlarge / Reduce ")));
 	VScalingEquation *vscaling_equation =
-		new VScalingEquation(x + title1->get_w() + 10, y,
+		new VScalingEquation(x + title1->get_w() + 65, y,
 			&pwindow->thread->edl->session->interpolation_type);
 	add_subwindow(vscaling_equation);
 	vscaling_equation->create_objects();
@@ -170,7 +170,7 @@ SET_TRACE
 	subtitle_number = new PlaybackSubtitleNumber(x1, y, pwindow, this);
 	subtitle_number->create_objects();
 
-	x2 = x + title1->get_w() + 10 + subtitle_number->get_w() + 30;
+	x2 = x + title1->get_w() + 10 + subtitle_number->get_w() + 85;
 	PlaybackSubtitle *subtitle_toggle;
 	x1 += subtitle_number->get_w() + margin;
 	add_subwindow(subtitle_toggle = new PlaybackSubtitle(x2, y, pwindow, this));

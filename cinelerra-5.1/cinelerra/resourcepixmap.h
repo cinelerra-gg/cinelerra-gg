@@ -61,6 +61,7 @@ public:
 	void draw_wave(TrackCanvas *canvas,
 		int x, double high, double low);
 	VFrame *change_title_color(VFrame *title_bg, int color);
+	VFrame *change_picon_alpha(VFrame *picon_frame, int alpha);
 	void draw_title(TrackCanvas *canvas,
 		Edit *edit, int64_t edit_x, int64_t edit_w,
 		int64_t pixmap_x, int64_t pixmap_w);

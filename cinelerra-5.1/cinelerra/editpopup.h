@@ -234,7 +234,7 @@ public:
 class EditTitleColorPicker : public ColorPicker
 {
 public:
-	EditTitleColorPicker(EditPopup *popup);
+	EditTitleColorPicker(EditPopup *popup, int color);
 	~EditTitleColorPicker();
 	void create_objects(ColorWindow *gui);
 	int handle_new_color(int color, int alpha);

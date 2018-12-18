@@ -311,7 +311,7 @@ void ColorWindow::update_display()
 
 int ColorWindow::handle_event()
 {
-	thread->handle_new_color(rgb888(), (int)(255*aph + 0.5));
+	thread->handle_new_color(rgb888(), alpha8());
 	return 1;
 }
 
@@ -360,8 +360,12 @@ int ColorWindow::button_release_event()
 
 void ColorWindow::update_rgb_hex(const char *hex)
 {
-	int color;
+	unsigned color;
 	if( sscanf(hex,"%x",&color) == 1 ) {
+		if( thread->do_alpha ) {
+			aph = ((color>>24) & 0xff) / 255.;
+			aph_a->update(aph);
+		}
 		float r = ((color>>16) & 0xff) / 255.;
 		float g = ((color>>8)  & 0xff) / 255.;
 		float b = ((color>>0)  & 0xff) / 255.;
@@ -807,6 +811,7 @@ int PaletteAlpha::handle_event()
 {
 	window->aph = get_value();
 	window->aph_a->update(window->aph);
+	window->hex_box->update();
 	window->handle_event();
 	return 1;
 }
@@ -973,6 +978,12 @@ int ColorWindow::rgb888()
 	bclamp(r, 0, 255);  bclamp(g, 0, 255);  bclamp(b, 0, 255);
 	return (r<<16) | (g<<8) | (b<<0);
 }
+int ColorWindow::alpha8()
+{
+	int a = 255*aph + 0.5;
+	bclamp(a, 0, 255);
+	return a;
+}
 
 PaletteNum::PaletteNum(ColorWindow *window, int x, int y,
 	float &output, float min, float max)
@@ -1047,7 +1058,10 @@ PaletteHex::~PaletteHex()
 }
 void PaletteHex::update()
 {
-	char hex[BCSTRLEN];  sprintf(hex,"%06x",window->rgb888());
+	char hex[BCSTRLEN], *cp = hex;
+	if( window->thread->do_alpha )
+		cp += sprintf(cp,"%02x", window->alpha8());
+	sprintf(cp,"%06x",window->rgb888());
 	BC_TextBox::update(hex);
 }
 

@@ -23,6 +23,17 @@
 #define ZOOMBAR_INC
 
 class ZoomBar;
+class SampleZoomPanel;
+class AmpZoomPanel;
+class TrackZoomPanel;
+class AutoZoom;
+class AutoTypeMenu;
+class ZoomTextBox;
+class FromTextBox;
+class LengthTextBox;
+class ToTextBox;
+class TitleBarAlpha;
+
 #define ZOOMBAR_PIXELS 24
 
 #endif
