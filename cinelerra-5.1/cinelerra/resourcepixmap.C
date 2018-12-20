@@ -270,13 +270,15 @@ VFrame *ResourcePixmap::change_picon_alpha(VFrame *picon_frame, int alpha)
 {
 	uint8_t **picon_rows = picon_frame->get_rows();
 	int w = picon_frame->get_w(), h = picon_frame->get_h();
+	int color_model = picon_frame->get_color_model();
+	int bpp = BC_CModels::calculate_pixelsize(color_model);
 	VFrame *frame = new VFrame(w, h, BC_RGBA8888);
 	uint8_t **rows = frame->get_rows();
 	for( int y=0; y<h; ++y ) {
 		uint8_t *bp = picon_rows[y], *rp = rows[y];
 		for( int x=0; x<w; ++x ) {
 			rp[0] = bp[0];	rp[1] = bp[1];
-			rp[2] = bp[2];	bp += 3;
+			rp[2] = bp[2];	bp += bpp;
 			rp[3] = alpha;  rp += 4;
 		}
 	}

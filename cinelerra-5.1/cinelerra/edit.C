@@ -87,6 +87,7 @@ void Edit::reset()
 	hard_left = 0;
 	hard_right = 0;
 	color = 0;
+	group_id = 0;
 }
 
 Indexable* Edit::get_source()
@@ -143,6 +144,7 @@ int Edit::copy(int64_t start,
 			file->tag.set_property("HARD_LEFT", hard_left);
 			file->tag.set_property("HARD_RIGHT", hard_right);
 			file->tag.set_property("COLOR", color);
+			file->tag.set_property("GROUP_ID", group_id);
 			if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
 //printf("Edit::copy 5\n");
 
@@ -240,7 +242,15 @@ int Edit::silence()
 		asset || nested_edl :
 		*((SEdit *)this)->get_text()) ? 0 : 1;
 }
-
+void Edit::mute()
+{
+	if( track->data_type != TRACK_SUBTITLE ) {
+		asset = 0;
+		nested_edl = 0;
+	}
+	else
+		*((SEdit *)this)->get_text() = 0;
+}
 
 void Edit::copy_from(Edit *edit)
 {
@@ -252,6 +262,7 @@ void Edit::copy_from(Edit *edit)
 	this->hard_left = edit->hard_left;
 	this->hard_right = edit->hard_right;
 	this->color = edit->color;
+	this->group_id = edit->group_id;
 	strcpy (this->user_title, edit->user_title);
 
 	if(edit->transition)
@@ -378,7 +389,7 @@ int Edit::dump(FILE *fp)
 		asset,
 		asset ? asset->path : "");
 	fflush(fp);
-	fprintf(fp,"      channel %d, color %08x\n", channel, color);
+	fprintf(fp,"      channel %d, color %08x, group_id %d\n", channel, color, group_id);
 	if(transition)
 	{
 		fprintf(fp,"      TRANSITION %p\n", transition);
@@ -396,6 +407,7 @@ int Edit::load_properties(FileXML *file, int64_t &startproject)
 	hard_left = file->tag.get_property("HARD_LEFT", (int64_t)0);
 	hard_right = file->tag.get_property("HARD_RIGHT", (int64_t)0);
 	color = file->tag.get_property("COLOR", (int64_t)-1);
+	group_id = file->tag.get_property("GROUP_ID", group_id);
 	user_title[0] = 0;
 	file->tag.get_property("USER_TITLE", user_title);
 	this->startproject = startproject;

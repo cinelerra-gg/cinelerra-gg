@@ -1676,3 +1676,27 @@ int EDL::in_use(Indexable *indexable)
 	return 0;
 }
 
+int EDL::regroup(int next_id)
+{
+	ArrayList<int> new_groups;
+	for( Track *track=tracks->first; track; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->group_id ) continue;
+			int k = new_groups.size();
+			while( --k >= 0 && new_groups[k] != edit->group_id );
+			if( k >= 0 ) continue;
+			new_groups.append(edit->group_id);
+		}
+	}
+	for( Track *track=tracks->first; track; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->group_id ) continue;
+			int k = new_groups.size();
+			while( --k >= 0 && new_groups[k] != edit->group_id );
+			if( k < 0 ) continue;
+			edit->group_id = k + next_id;
+		}
+	}
+	return new_groups.size();
+}
+

@@ -903,7 +903,7 @@ void MWindow::match_output_size(Track *track)
 }
 
 
-void MWindow::selected_to_clipboard(int packed)
+EDL *MWindow::selected_edits_to_clip(int packed, double *start_position, Track **start_track)
 {
 	double start = DBL_MAX, end = DBL_MIN;
 	Track *first_track=0, *last_track = 0;
@@ -921,7 +921,9 @@ void MWindow::selected_to_clipboard(int packed)
 		if( !first_track ) first_track = track;
 		last_track = track;
 	}
-	if( !first_track ) return;
+	if( start_position ) *start_position = start;
+	if( start_track ) *start_track = first_track;
+	if( !first_track ) return 0;
 	EDL *new_edl = new EDL();
 	new_edl->create_objects();
 	new_edl->copy_session(edl);
@@ -969,6 +971,13 @@ void MWindow::selected_to_clipboard(int packed)
 		}
 		if( last_track == track ) break;
 	}
+	return new_edl;
+}
+
+void MWindow::selected_edits_to_clipboard(int packed)
+{
+	EDL *new_edl = MWindow::selected_edits_to_clip(packed);
+	if( !new_edl ) return;
 	double length = new_edl->tracks->total_length();
 	FileXML file;
 	new_edl->copy(0, length, 1, &file, "", 1);
@@ -1022,7 +1031,7 @@ void MWindow::delete_edits(int collapse)
 // packed - omit unselected from selection, unpacked - replace unselected with silence
 void MWindow::cut_selected_edits(int collapse, int packed)
 {
-	selected_to_clipboard(packed);
+	selected_edits_to_clipboard(packed);
 	ArrayList<Edit*> edits;
 	edl->tracks->get_selected_edits(&edits);
 	delete_edits(&edits, _("cut edit"), collapse);
@@ -1047,6 +1056,19 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	save_backup();
 	undo->update_undo_after(_("move edit"), LOAD_ALL);
 
+	restart_brender();
+	cwindow->refresh_frame(CHANGE_EDL);
+
+	update_plugin_guis();
+	gui->update(1, NORMAL_DRAW, 1, 0, 0, 0, 0);
+}
+
+void MWindow::move_group(EDL *group, Track *first_track, double position)
+{
+	undo->update_undo_before();
+	edl->tracks->move_group(group, first_track, position);
+	save_backup();
+	undo->update_undo_after(_("move group"), LOAD_ALL);
 	restart_brender();
 	cwindow->refresh_frame(CHANGE_EDL);
 

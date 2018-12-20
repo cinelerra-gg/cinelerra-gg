@@ -260,6 +260,7 @@ public:
 	void draw_loop_points();
 	void draw_transitions();
 	void draw_drag_handle();
+	void draw_selected_edits(EDL *edl, int dx, int dy, int color0, int color1);
 	void draw_plugins();
 	void refresh_plugintoggles();
 	void update_edit_handles(Edit *edit, int64_t edit_x, int64_t edit_y, int64_t edit_w, int64_t edit_h);
@@ -304,6 +305,7 @@ public:
 	int do_tracks(int cursor_x,
 		int cursor_y,
 		int button_press);
+	int test_track_group(EDL *group, Track *first_track);
 	int test_resources(int cursor_x, int cursor_y);
 	int do_plugins(int cursor_x,
 		int cursor_y,

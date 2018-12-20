@@ -131,6 +131,7 @@ void Tracks::get_selected_edits(ArrayList<Edit*> *drag_edits)
 {
 	drag_edits->remove_all();
 	for( Track *track=first; track; track=track->next ) {
+		if( !track->record ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( !edit->is_selected ) continue;
 			drag_edits->append(edit);
@@ -651,6 +652,46 @@ int Tracks::track_exists(Track *track)
 	return 0;
 }
 
+int Tracks::new_group(int id)
+{
+	int count = 0;
+	for( Track *track=first; track; track=track->next ) {
+		if( !track->record ) continue;
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->is_selected ) continue;
+			edit->group_id = id;
+			++count;
+		}
+	}
+	return count;
+}
+
+int Tracks::set_group_selected(int id, int v)
+{
+	int count = 0;
+	for( Track *track=first; track; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( edit->group_id != id ) continue;
+			edit->is_selected = v;
+			++count;
+		}
+	}
+	return count;
+}
+
+int Tracks::del_group(int id)
+{
+	int count = 0;
+	for( Track *track=first; track; track=track->next ) {
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( edit->group_id != id ) continue;
+			edit->is_selected = 1;
+			edit->group_id = 0;
+			++count;
+		}
+	}
+	return count;
+}
 
 Track *Tracks::get(int idx, int data_type)
 {
@@ -661,5 +702,4 @@ Track *Tracks::get(int idx, int data_type)
 	}
 	return 0;
 }
-
 

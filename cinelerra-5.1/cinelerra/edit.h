@@ -114,6 +114,7 @@ public:
 	void detach_transition();
 // Determine if silence depending on existance of asset or plugin title
 	virtual int silence();
+	void mute();
 
 // Media edit information
 // Units are native units for the track.
@@ -129,6 +130,8 @@ public:
 	int channel;
 // ID for resource pixmaps
 	int id;
+// ID for selection groups
+	int group_id;
 // User defined title for timeline
 	char user_title[BCTEXTLEN];
 	int is_plugin, is_selected;

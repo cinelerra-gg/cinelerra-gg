@@ -56,6 +56,11 @@ MainSession::MainSession(MWindow *mwindow)
 	drag_clips = new ArrayList<EDL*>;
 	drag_edits = new ArrayList<Edit*>;
 	drag_edit = 0;
+	drag_group = 0;
+	drag_group_edit = 0;
+	drag_group_position = 0;
+	drag_group_first_track = 0;
+	group_number = 1;
 	clip_number = 1;
 	brender_end = 0;
 	cwindow_controls = 1;
@@ -125,6 +130,8 @@ MainSession::~MainSession()
 	delete drag_auto_gang;
 	delete drag_clips;
 	delete drag_edits;
+	if( drag_group )
+		drag_group->remove_user();
 }
 
 void MainSession::boundaries()
@@ -451,7 +458,7 @@ int MainSession::load_defaults(BC_Hash *defaults)
 
 	current_tip = defaults->get("CURRENT_TIP", current_tip);
 	actual_frame_rate = defaults->get("ACTUAL_FRAME_RATE", (float)-1);
-	title_bar_alpha = defaults->get("TITLE_BAR_ALPHA", (float)0);
+	title_bar_alpha = defaults->get("TITLE_BAR_ALPHA", (float)1);
 
 	boundaries();
 	return 0;

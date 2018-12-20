@@ -82,6 +82,14 @@ public:
 
 // Edit whose handle is being dragged
 	Edit *drag_edit;
+// Selected edits clip of grouped drag
+	EDL *drag_group;
+// drag edit of selected edits
+	Edit *drag_group_edit;
+// cursor position in selected edits at start of drag
+	double drag_group_position;
+// top track of selected edits
+	Track *drag_group_first_track;
 // Edits who are being dragged
 	ArrayList<Edit*> *drag_edits;
 // Button pressed during drag
@@ -107,6 +115,8 @@ public:
 
 // Clip number for automatic title generation
 	int clip_number;
+// Next group id index
+	int group_number;
 
 // Audio session
 	int changes_made;

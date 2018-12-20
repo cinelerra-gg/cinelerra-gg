@@ -2021,6 +2021,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				EDL *nested_edl = new EDL;
 				nested_edl->create_objects();
 				nested_edl->load_xml(&xml_file, LOAD_ALL);
+				int groups = nested_edl->regroup(session->group_number);
+				session->group_number += groups;
 //printf("MWindow::load_filenames %p %s\n", nested_edl, nested_edl->project_path);
 				new_edl->create_nested(nested_edl);
 				new_edl->set_path(filenames->get(i));
@@ -2029,6 +2031,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 			else {
 // Load EDL for pasting
 				new_edl->load_xml(&xml_file, LOAD_ALL);
+				int groups = new_edl->regroup(session->group_number);
+				session->group_number += groups;
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				test_plugins(new_edl, filenames->get(i));
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
@@ -3307,6 +3311,11 @@ int MWindow::get_hash_color(Edit *edit)
 	uint8_t *bp = (uint8_t*)cp;
 	int v = 0;
 	while( *bp ) v += *bp++;
+	return get_hash_color(v);
+}
+
+int MWindow::get_hash_color(int v)
+{
 	int hash = 0x303030;
 	if( v & 0x01 ) hash ^= 0x000040;
 	if( v & 0x02 ) hash ^= 0x004000;
@@ -3319,15 +3328,33 @@ int MWindow::get_hash_color(Edit *edit)
 	return hash;
 }
 
+int MWindow::get_group_color(int v)
+{
+	int color = 0x606060;
+	if( v & 0x01 ) color ^= 0x000080;
+	if( v & 0x02 ) color ^= 0x008000;
+	if( v & 0x04 ) color ^= 0x800000;
+	if( v & 0x08 ) color ^= 0x100000;
+	if( v & 0x10 ) color ^= 0x001000;
+	if( v & 0x20 ) color ^= 0x000010;
+	if( v & 0x40 ) color ^= 0x080808;
+	if( v & 0x80 ) color ^= 0x909090;
+	return color;
+}
+
 int MWindow::get_title_color(Edit *edit)
 {
-        unsigned color = edit->color;
-	if( !color ) {
-		if( !preferences->autocolor_assets ) return 0;
-		color = get_hash_color(edit);
-	}
+        unsigned color = edit->color & 0xffffff;
 	unsigned alpha = (~edit->color>>24) & 0xff;
-	if( alpha == 0xff )
+	if( !color ) {
+		if( edit->group_id )
+			color = get_group_color(edit->group_id);
+		else if( preferences->autocolor_assets )
+			color = get_hash_color(edit);
+		else
+			return 0;
+	}
+	if( !alpha )
 		alpha = session->title_bar_alpha*255;
 	return color | (~alpha<<24);
 }

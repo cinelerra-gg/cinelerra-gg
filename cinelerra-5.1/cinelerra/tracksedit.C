@@ -740,6 +740,36 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 	}
 }
 
+void Tracks::move_group(EDL *group, Track *first_track, double position)
+{
+	for( Track *track=first; track; track=track->next ) {
+		if( !track->record ) continue;
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->is_selected ) continue;
+			edit->mute();  edit->is_selected = 0;
+		}
+	}
+	Track *src = group->tracks->first;
+	for( Track *track=first_track; track && src; track=track->next ) {
+		if( !track->record ) continue;
+		int64_t pos = track->to_units(position, 0);
+		for( Edit *edit=src->edits->first; edit; edit=edit->next ) {
+			if( edit->silence() ) continue;
+			int64_t start = pos + edit->startproject;
+			int64_t end = start + edit->length;
+			track->edits->clear(start, end);
+			Edit *dst = track->edits->insert_new_edit(start);
+			dst->copy_from(edit);
+			dst->startproject = start;
+			dst->is_selected = 1;
+			while( (dst=dst->next) != 0 )
+				dst->startproject += edit->length;
+		}
+		track->optimize();
+		src = src->next;
+	}
+}
+
 void Tracks::move_effect(Plugin *plugin, Track *track, int64_t position)
 {
 	Track *source_track = plugin->track;

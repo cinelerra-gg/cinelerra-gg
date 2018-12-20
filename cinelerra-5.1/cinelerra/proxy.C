@@ -50,6 +50,7 @@
 #define WIDTH 400
 #define HEIGHT 330
 #define MAX_SCALE 16
+#define PROXY_DEFAULT_VCODEC "h265.mp4"
 
 ProxyMenuItem::ProxyMenuItem(MWindow *mwindow)
  : BC_MenuItem(_("Proxy settings..."),  _("Alt-r"), 'r')
@@ -82,6 +83,7 @@ ProxyDialog::ProxyDialog(MWindow *mwindow)
 	this->mwindow = mwindow;
 	gui = 0;
 	asset = new Asset;
+	strcpy(asset->vcodec, PROXY_DEFAULT_VCODEC);
 	bzero(size_text, sizeof(char*) * MAX_SIZES);
 	bzero(size_factors, sizeof(int) * MAX_SIZES);
 	size_text[0] = cstrdup(_("Original size"));

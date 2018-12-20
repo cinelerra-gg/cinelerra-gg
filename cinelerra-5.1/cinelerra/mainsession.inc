@@ -62,6 +62,7 @@ enum
 	DRAG_PLUGINHANDLE1,        // Waiting to move out of drag threshold
 	DRAG_PLUGINHANDLE2,         // Dragging outside drag threshold
 	DRAG_SPEED,
+	DRAG_GROUP,
 	DROP_TARGETING,
 };
 

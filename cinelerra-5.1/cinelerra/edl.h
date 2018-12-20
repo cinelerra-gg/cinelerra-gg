@@ -223,6 +223,8 @@ public:
 	int insert_clips(ArrayList<EDL*> *new_edls, int load_mode, Track *first_track = 0);
 // Add a copy of EDL* to the clip array.  Returns the copy.
 	EDL* add_clip(EDL *edl);
+// resequence group ids starting at next_id
+	int regroup(int next_id);
 
 	void get_shared_plugins(Track *source, ArrayList<SharedLocation*> *plugin_locations,
 		int omit_recordable, int data_type);

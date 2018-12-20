@@ -116,7 +116,7 @@ EditPopupCopy::EditPopupCopy(MWindow *mwindow, EditPopup *popup)
 
 int EditPopupCopy::handle_event()
 {
-	mwindow->selected_to_clipboard(0);
+	mwindow->selected_edits_to_clipboard(0);
 	return 1;
 }
 
@@ -131,7 +131,7 @@ EditPopupCopyPack::EditPopupCopyPack(MWindow *mwindow, EditPopup *popup)
 
 int EditPopupCopyPack::handle_event()
 {
-	mwindow->selected_to_clipboard(1);
+	mwindow->selected_edits_to_clipboard(1);
 	return 1;
 }
 
@@ -441,8 +441,9 @@ EditTitleColorDefault::EditTitleColorDefault(
 
 int EditTitleColorDefault::handle_event()
 {
-	color_picker->color = 0;
-	color_picker->update_gui(0, 0);
+	const int color = 0, alpha = 0;
+	color_picker->color = color | (~alpha << 24);
+	color_picker->update_gui(color, alpha);
 	return 1;
 }
 

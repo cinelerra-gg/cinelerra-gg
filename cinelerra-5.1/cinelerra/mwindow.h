@@ -182,7 +182,8 @@ public:
 	void update_vwindow();
 // Fit selected time to horizontal display range
 	void fit_selection();
-	void selected_to_clipboard(int packed);
+	EDL *selected_edits_to_clip(int packed, double *start_position=0, Track **start_track=0);
+	void selected_edits_to_clipboard(int packed);
 // Fit selected autos to the vertical display range
 	void fit_autos(int doall);
 	void change_currentautorange(int autogrouptype, int increment, int changemax);
@@ -311,6 +312,8 @@ public:
 	void hide_keyframe_gui(Plugin *plugin);
 	void update_keyframe_guis();
 	int get_hash_color(Edit *edit);
+	int get_hash_color(int v);
+	int get_group_color(int v);
 	int get_title_color(Edit *edit);
 
 // ============================= editing commands ========================
@@ -400,6 +403,7 @@ public:
 	void move_edits(ArrayList<Edit*> *edits, Track *track, double position,
 // 0 - old style (cut and insert elswhere), 1- new style - (clear and overwrite elsewere)
 		int behaviour);
+	void move_group(EDL *group, Track *first_track, double position);
 // Move effect to position
 	void move_effect(Plugin *plugin, Track *track, int64_t position);
 	void move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t position);

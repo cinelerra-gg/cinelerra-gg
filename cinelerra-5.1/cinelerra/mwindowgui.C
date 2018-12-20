@@ -1007,6 +1007,7 @@ int MWindowGUI::drag_motion()
 
 	if( mwindow->session->current_operation == DRAG_ASSET ||
 	    mwindow->session->current_operation == DRAG_EDIT ||
+	    mwindow->session->current_operation == DRAG_GROUP ||
 	    mwindow->session->current_operation == DRAG_AEFFECT_COPY ||
 	    mwindow->session->current_operation == DRAG_VEFFECT_COPY )
         {
@@ -1198,7 +1199,7 @@ int MWindowGUI::keypress_event()
 		packed = 1;
 	case 'c':
 		if( !ctrl_down() || alt_down() ) break;
-		mwindow->selected_to_clipboard(packed);
+		mwindow->selected_edits_to_clipboard(packed);
 		result = 1;
 		break;
 	case 'b':
