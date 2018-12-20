@@ -106,6 +106,7 @@ void NEOPHYTETHEME::initialize()
 	/* Something own, fitting to the theme and independent of
 	   the integrated splash screen/about */
 	// Preferences: About (logo)
+	delete about_bg;
 	about_bg = new VFramePng(get_image_data("about_bg.png"));
 	
 	/* Replacement for the heroine icon. Everyone has his 

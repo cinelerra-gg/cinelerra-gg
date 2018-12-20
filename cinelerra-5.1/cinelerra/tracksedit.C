@@ -746,7 +746,9 @@ void Tracks::move_group(EDL *group, Track *first_track, double position)
 		if( !track->record ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( !edit->is_selected ) continue;
-			edit->mute();  edit->is_selected = 0;
+			edit->mute();
+			edit->is_selected = 0;
+			edit->group_id = 0;
 		}
 	}
 	Track *src = group->tracks->first;

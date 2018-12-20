@@ -304,21 +304,20 @@ void ResourcePixmap::draw_title(TrackCanvas *canvas,
 	canvas->draw_3segmenth(x, 0, w, total_x, total_w, title_bar, this);
 	if( title_bar != title_bg ) delete title_bar;
 
-//	if( total_x > -BC_INFINITY ) {
-		char title[BCTEXTLEN];
-		edit->get_title(title);
-		canvas->set_color(mwindow->theme->title_color);
-		canvas->set_font(mwindow->theme->title_font);
+	char title[BCTEXTLEN];
+	edit->get_title(title);
+	color = color ? ~color & 0xffffff : mwindow->theme->title_color;
+	canvas->set_color(color);
+	canvas->set_font(mwindow->theme->title_font);
 
 // Justify the text on the left boundary of the edit if it is visible.
 // Otherwise justify it on the left side of the screen.
-		int text_x = total_x + left_margin;
-		text_x = MAX(left_margin, text_x);
+	int text_x = total_x + left_margin;
+	text_x = MAX(left_margin, text_x);
 //printf("ResourcePixmap::draw_title 1 %d\n", text_x);
-		canvas->draw_text(text_x,
-			canvas->get_text_ascent(mwindow->theme->title_font) + 2,
-			title, strlen(title), this);
-//	}
+	canvas->draw_text(text_x, // 2,
+		canvas->get_text_ascent(mwindow->theme->title_font) + 2,
+		title, strlen(title), this);
 }
 
 

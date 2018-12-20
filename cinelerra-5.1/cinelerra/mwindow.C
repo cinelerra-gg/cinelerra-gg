@@ -3354,7 +3354,7 @@ int MWindow::get_title_color(Edit *edit)
 		else
 			return 0;
 	}
-	if( !alpha )
+	if( alpha == 0xff )
 		alpha = session->title_bar_alpha*255;
 	return color | (~alpha<<24);
 }
