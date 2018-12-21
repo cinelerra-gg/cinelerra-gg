@@ -441,7 +441,7 @@ EditTitleColorDefault::EditTitleColorDefault(
 
 int EditTitleColorDefault::handle_event()
 {
-	const int color = 0, alpha = 0;
+	const int color = 0, alpha = 0xff;
 	color_picker->color = color | (~alpha << 24);
 	color_picker->update_gui(color, alpha);
 	return 1;

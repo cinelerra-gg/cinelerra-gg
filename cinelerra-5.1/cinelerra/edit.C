@@ -406,7 +406,7 @@ int Edit::load_properties(FileXML *file, int64_t &startproject)
 	length = file->tag.get_property("LENGTH", (int64_t)0);
 	hard_left = file->tag.get_property("HARD_LEFT", (int64_t)0);
 	hard_right = file->tag.get_property("HARD_RIGHT", (int64_t)0);
-	color = file->tag.get_property("COLOR", (int64_t)-1);
+	color = file->tag.get_property("COLOR", 0);
 	group_id = file->tag.get_property("GROUP_ID", group_id);
 	user_title[0] = 0;
 	file->tag.get_property("USER_TITLE", user_title);
