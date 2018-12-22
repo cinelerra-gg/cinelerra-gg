@@ -403,7 +403,7 @@ public:
 	void move_edits(ArrayList<Edit*> *edits, Track *track, double position,
 // 0 - old style (cut and insert elswhere), 1- new style - (clear and overwrite elsewere)
 		int behaviour);
-	void move_group(EDL *group, Track *first_track, double position);
+	void move_group(EDL *group, Track *first_track, double position, int overwrite);
 // Move effect to position
 	void move_effect(Plugin *plugin, Track *track, int64_t position);
 	void move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t position);

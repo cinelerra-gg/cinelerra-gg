@@ -389,7 +389,8 @@ int Edit::dump(FILE *fp)
 		asset,
 		asset ? asset->path : "");
 	fflush(fp);
-	fprintf(fp,"      channel %d, color %08x, group_id %d\n", channel, color, group_id);
+	fprintf(fp,"      channel %d, color %08x, group_id %d, is_selected %d\n",
+		channel, color, group_id, is_selected);
 	if(transition)
 	{
 		fprintf(fp,"      TRANSITION %p\n", transition);

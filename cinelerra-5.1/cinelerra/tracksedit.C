@@ -208,7 +208,8 @@ void Tracks::set_edit_length(double start, double end, double length)
 					int64_t length_units = current_track->to_units(end_time, 0) -
 						total_units;
 					if(length_units < 1) length_units = 1;
-printf("Tracks::set_edit_length %d %f %f\n", __LINE__, end_time, current_track->from_units(total_units));
+//printf("Tracks::set_edit_length %d %f %f\n", __LINE__,
+// end_time, current_track->from_units(total_units));
 					total_units += length_units;
 
 // Go in using the edit handle interface
@@ -740,7 +741,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 	}
 }
 
-void Tracks::move_group(EDL *group, Track *first_track, double position)
+void Tracks::move_group(EDL *group, Track *first_track, double position, int overwrite)
 {
 	for( Track *track=first; track; track=track->next ) {
 		if( !track->record ) continue;
@@ -759,7 +760,8 @@ void Tracks::move_group(EDL *group, Track *first_track, double position)
 			if( edit->silence() ) continue;
 			int64_t start = pos + edit->startproject;
 			int64_t end = start + edit->length;
-			track->edits->clear(start, end);
+			if( overwrite )
+				track->edits->clear(start, end);
 			Edit *dst = track->edits->insert_new_edit(start);
 			dst->copy_from(edit);
 			dst->startproject = start;

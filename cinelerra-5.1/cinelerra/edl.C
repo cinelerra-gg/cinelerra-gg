@@ -1656,6 +1656,11 @@ double EDL::get_cursor_position(int cursor_x, int pane_no)
 		(double)local_session->view_start[pane_no] *
 			local_session->zoom_sample / session->sample_rate;
 }
+int64_t EDL::get_position_cursorx(double position, int pane_no)
+{
+	return (int64_t)(position * session->sample_rate / local_session->zoom_sample)
+			- local_session->view_start[pane_no];
+}
 
 int EDL::in_use(Indexable *indexable)
 {

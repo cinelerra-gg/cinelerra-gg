@@ -113,14 +113,15 @@ void Tracks::clear_selected_edits()
 	}
 }
 
-void Tracks::select_affected_edits(double position, Track *start_track)
+void Tracks::select_affected_edits(double position, Track *start_track, int sense)
 {
 	for( Track *track=start_track; track; track=track->next ) {
 		if( !track->record ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			double startproject = track->from_units(edit->startproject);
 			if( edl->equivalent(startproject, position) ) {
-				edit->is_selected = 1;
+				edit->is_selected = sense >= 0 ? sense :
+					edit->is_selected ? 0 : 1;
 				break;
 			}
 		}
@@ -672,7 +673,7 @@ int Tracks::set_group_selected(int id, int v)
 	for( Track *track=first; track; track=track->next ) {
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 			if( edit->group_id != id ) continue;
-			edit->is_selected = v;
+			edit->is_selected = v >= 0 ? v : !edit->is_selected ? 1 : 0;
 			++count;
 		}
 	}

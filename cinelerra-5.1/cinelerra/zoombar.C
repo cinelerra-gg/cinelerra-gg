@@ -104,7 +104,9 @@ void ZoomBar::create_objects()
 	x += length_value->get_w() + 5;
 	add_subwindow(to_value = new ToTextBox(mwindow, this, x, y));
 	x += to_value->get_w() + 5;
-	add_subwindow(title_alpha = new TitleBarAlpha(mwindow, this, x, y));
+	add_subwindow(title_alpha_bar = new TitleAlphaBar(mwindow, this, x, y));
+	x += title_alpha_bar->get_w() + 5;
+	add_subwindow(title_alpha_text = new TitleAlphaText(mwindow, this, x, y));
 
 	update_formatting(from_value);
 	update_formatting(length_value);
@@ -193,18 +195,38 @@ int ZoomBar::update_clocks()
 	return 0;
 }
 
-TitleBarAlpha::TitleBarAlpha(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
+TitleAlphaBar::TitleAlphaBar(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : BC_FSlider(x, y, 0, 150, 200, 0, 1.0, mwindow->session->title_bar_alpha, 0)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
 	set_precision(0.01);
-	set_tooltip(_("TitleBar Alpha"));
+	set_tooltip(_("Title Alpha"));
 }
 
-int TitleBarAlpha::handle_event()
+int TitleAlphaBar::handle_event()
 {
-	mwindow->session->title_bar_alpha = get_value();
+	float v = get_value();
+	mwindow->session->title_bar_alpha = v;
+	zoombar->title_alpha_text->update(v);
+	mwindow->gui->draw_trackmovement();
+	mwindow->gui->flush();
+	return 1;
+}
+
+TitleAlphaText::TitleAlphaText(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
+ : BC_TextBox(x, y, 48, 1, mwindow->session->title_bar_alpha, 0, MEDIUMFONT, 2)
+{
+	this->mwindow = mwindow;
+	this->zoombar = zoombar;
+	set_tooltip(_("Title Alpha"));
+}
+
+int TitleAlphaText::handle_event()
+{
+	float v = atof(get_text())*100;
+	mwindow->session->title_bar_alpha = v;
+	zoombar->title_alpha_bar->update(v);
 	mwindow->gui->draw_trackmovement();
 	mwindow->gui->flush();
 	return 1;

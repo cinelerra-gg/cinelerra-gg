@@ -305,7 +305,8 @@ public:
 	int do_tracks(int cursor_x,
 		int cursor_y,
 		int button_press);
-	int test_track_group(EDL *group, Track *first_track);
+	int test_track_group(EDL *group, Track *first_track, double &pos);
+	int edit_intersects(Track *track, Edit *src_edit, double &pos);
 	int test_resources(int cursor_x, int cursor_y);
 	int do_plugins(int cursor_x,
 		int cursor_y,

@@ -97,8 +97,9 @@ public:
 	double frame_align(double position, int round);
 // frame align if cursor alignment is enabled
 	double align_to_frame(double position, int round);
-// get position under cursor in pane
+// get position under cursor in pane, and inverse
 	double get_cursor_position(int cursor_x, int pane_no);
+	int64_t get_position_cursorx(double position, int pane_no);
 
 // increase track w/h to at least session w/h
 	void retrack();

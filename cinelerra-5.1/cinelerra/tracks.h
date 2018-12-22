@@ -51,13 +51,13 @@ public:
 		uint32_t load_flags);
 	void move_edits(ArrayList<Edit*> *edits, Track *track, double position,
 		int edit_labels, int edit_plugins, int edit_autos, int behaviour);
-	void move_group(EDL *group, Track *first_track, double position);
+	void move_group(EDL *group, Track *first_track, double position, int overwrite);
 	void move_effect(Plugin *plugin, Track *track, int64_t position);
 	void move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t position);
 
 // Construct a list of all the recordable edits which start on position
 	void clear_selected_edits();
-	void select_affected_edits(double position, Track *start_track);
+	void select_affected_edits(double position, Track *start_track, int sense);
 	void get_selected_edits(ArrayList<Edit*> *drag_edits);
 	int next_group_id();
 	int new_group(int id);

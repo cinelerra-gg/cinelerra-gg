@@ -59,7 +59,8 @@ public:
 	LengthTextBox *length_value;
 	FromTextBox *from_value;
 	ToTextBox *to_value;
-	TitleBarAlpha *title_alpha;
+	TitleAlphaBar *title_alpha_bar;
+	TitleAlphaText *title_alpha_text;
 	char string[256], string2[256];
 };
 
@@ -161,10 +162,19 @@ public:
 	ZoomBar *zoombar;
 };
 
-class TitleBarAlpha : public BC_FSlider
+class TitleAlphaBar : public BC_FSlider
 {
 public:
-	TitleBarAlpha(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+	TitleAlphaBar(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	ZoomBar *zoombar;
+};
+
+class TitleAlphaText : public BC_TextBox
+{
+public:
+	TitleAlphaText(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
 	int handle_event();
 	MWindow *mwindow;
 	ZoomBar *zoombar;

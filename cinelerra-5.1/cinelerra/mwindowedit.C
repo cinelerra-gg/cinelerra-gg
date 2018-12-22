@@ -1063,10 +1063,10 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	gui->update(1, NORMAL_DRAW, 1, 0, 0, 0, 0);
 }
 
-void MWindow::move_group(EDL *group, Track *first_track, double position)
+void MWindow::move_group(EDL *group, Track *first_track, double position, int overwrite)
 {
 	undo->update_undo_before();
-	edl->tracks->move_group(group, first_track, position);
+	edl->tracks->move_group(group, first_track, position, overwrite);
 	save_backup();
 	undo->update_undo_after(_("move group"), LOAD_ALL);
 	restart_brender();

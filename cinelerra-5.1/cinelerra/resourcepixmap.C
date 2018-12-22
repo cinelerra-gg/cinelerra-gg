@@ -306,8 +306,7 @@ void ResourcePixmap::draw_title(TrackCanvas *canvas,
 
 	char title[BCTEXTLEN];
 	edit->get_title(title);
-	color = color ? ~color & 0xffffff : mwindow->theme->title_color;
-	canvas->set_color(color);
+	canvas->set_color(mwindow->theme->title_color);
 	canvas->set_font(mwindow->theme->title_font);
 
 // Justify the text on the left boundary of the edit if it is visible.

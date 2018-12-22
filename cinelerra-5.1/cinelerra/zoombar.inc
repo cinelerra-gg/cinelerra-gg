@@ -32,7 +32,8 @@ class ZoomTextBox;
 class FromTextBox;
 class LengthTextBox;
 class ToTextBox;
-class TitleBarAlpha;
+class TitleAlphaBar;
+class TitleAlphaText;
 
 #define ZOOMBAR_PIXELS 24
 

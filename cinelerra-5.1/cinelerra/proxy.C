@@ -50,7 +50,6 @@
 #define WIDTH 400
 #define HEIGHT 330
 #define MAX_SCALE 16
-#define PROXY_DEFAULT_VCODEC "h265.mp4"
 
 ProxyMenuItem::ProxyMenuItem(MWindow *mwindow)
  : BC_MenuItem(_("Proxy settings..."),  _("Alt-r"), 'r')
@@ -83,7 +82,13 @@ ProxyDialog::ProxyDialog(MWindow *mwindow)
 	this->mwindow = mwindow;
 	gui = 0;
 	asset = new Asset;
-	strcpy(asset->vcodec, PROXY_DEFAULT_VCODEC);
+
+// quicker than some, not as good as others
+	asset->format = FILE_FFMPEG;
+	strcpy(asset->fformat, "mpeg");
+	strcpy(asset->vcodec, "mpeg.mpeg");
+	asset->ff_video_bitrate = 2000000;
+
 	bzero(size_text, sizeof(char*) * MAX_SIZES);
 	bzero(size_factors, sizeof(int) * MAX_SIZES);
 	size_text[0] = cstrdup(_("Original size"));
@@ -631,6 +636,11 @@ void ProxyClient::process_package(LoadPackage *ptr)
 	VRender *vrender = 0;
 	int jobs = proxy_render->needed_proxies.size();
 	int processors = preferences->project_smp / jobs + 1, result = 0;
+
+// each cpu should process at least about 1 MB, or it thrashes
+	int size = edl->session->output_w * edl->session->output_h * 4;
+	int cpus = size / 0x100000 + 1;
+	if( processors > cpus ) processors = cpus;
 
 	if( orig->is_asset ) {
 		src_file = new File;
