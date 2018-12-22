@@ -201,7 +201,7 @@ TitleAlphaBar::TitleAlphaBar(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
 	set_precision(0.01);
-	set_tooltip(_("Title Alpha"));
+	enable_show_value(0);
 }
 
 int TitleAlphaBar::handle_event()
@@ -224,7 +224,7 @@ TitleAlphaText::TitleAlphaText(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 
 int TitleAlphaText::handle_event()
 {
-	float v = atof(get_text())*100;
+	float v = atof(get_text());
 	mwindow->session->title_bar_alpha = v;
 	zoombar->title_alpha_bar->update(v);
 	mwindow->gui->draw_trackmovement();

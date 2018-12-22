@@ -3996,7 +3996,7 @@ msgstr "Keyframe reticle:"
 
 #: cinelerra//interfaceprefs.C:209
 msgid "PIN:"
-msgstr "ÉPINGLE:"
+msgstr "PIN:"
 
 #: cinelerra//interfaceprefs.C:232
 msgid "Clicking on edit boundaries does what:"
@@ -4019,8 +4019,8 @@ msgid "Min DB for meter:"
 msgstr "Valeur minimale en dB de l'indicateur :"
 
 #: cinelerra//interfaceprefs.C:267
-msgid "Max DB:"
-msgstr "Valeur max en dB :"
+#msgid "Max:"
+#msgstr "Valeur max en dB :"
 
 #: cinelerra//interfaceprefs.C:275
 msgid "Theme:"

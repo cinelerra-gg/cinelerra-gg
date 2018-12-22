@@ -51,6 +51,7 @@ public:
 	int initialize();
 	void enable();
 	void disable();
+	void enable_show_value(int v);
 	static int get_span(int vertical);
 	int get_button_pixels();
 	virtual int value_to_pixel() { return 0; };

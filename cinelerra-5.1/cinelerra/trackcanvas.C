@@ -2283,13 +2283,13 @@ void TrackCanvas::draw_keyframe_reticle()
 	int autoidx = dragging && keyframe_hairline != HAIRLINE_ALWAYS ?
 		mwindow->session->drag_auto->autos->autoidx : -1;
 
-	if( get_buttonpress() == 1 && dragging &&
+	if( get_buttonpress() == LEFT_BUTTON && dragging &&
             keyframe_hairline == HAIRLINE_DRAGGING ) {
 		draw_hairline(mwindow->session->drag_auto, RED, 1);
 		return;
 	}
 
-	if( keyframe_hairline == HAIRLINE_ALWAYS || ( get_buttonpress() == 2 &&
+	if( keyframe_hairline == HAIRLINE_ALWAYS || ( get_buttonpress() == MIDDLE_BUTTON &&
 	    keyframe_hairline == HAIRLINE_DRAGGING && dragging ) ) {
 		int show = dragging || keyframe_hairline == HAIRLINE_ALWAYS ? 1 : 0;
 		for( Track *track = mwindow->edl->tracks->first; track; track=track->next ) {
@@ -4841,7 +4841,7 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 // Cursor inside an edit
 			if(cursor_x >= edit_x && cursor_x < edit_x + edit_w &&
 				cursor_y >= edit_y && cursor_y < edit_y + edit_h) {
-				if( button_press ) {
+				if( button_press && get_buttonpress() == LEFT_BUTTON ) {
 					if( mwindow->edl->session->editing_mode == EDITING_IBEAM &&
 					    get_double_click() ) {
 // Select duration of edit
@@ -4857,9 +4857,12 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 							edit->track, 1);
 						result = 1;
 					}
-					else if( mwindow->edl->session->editing_mode == EDITING_ARROW ) {
+					else if( mwindow->edl->session->editing_mode == EDITING_ARROW ||
+						(mwindow->edl->session->editing_mode == EDITING_IBEAM &&
+						 ctrl_down()) ) {
 						mwindow->session->drag_edit = edit;
 						mwindow->session->current_operation = DRAG_BUTTON_DOWN;
+						result = 1;
 					}
 					if( result ) {
 						rerender = 1;
@@ -4867,7 +4870,9 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 					}
 				}
 				else if( drag_start && track->record ) {
-					if( mwindow->edl->session->editing_mode == EDITING_ARROW ) {
+					if( mwindow->edl->session->editing_mode == EDITING_ARROW ||
+					    ( mwindow->edl->session->editing_mode == EDITING_IBEAM &&
+					      ctrl_down() ) ) {
 // Need to create drag window
 						mwindow->session->drag_edit = edit;
 						mwindow->session->drag_origin_x = cursor_x;
@@ -4925,6 +4930,7 @@ int TrackCanvas::test_track_group(EDL *group, Track *first_track, double &pos)
 
 int TrackCanvas::edit_intersects(Track *track, Edit *src_edit, double &pos)
 {
+	if( pos < 0 ) { pos = 0;  return 1; }
 	int64_t src_start = src_edit->startproject;
 	int64_t src_end = src_start + src_edit->length;
 	double new_start = src_edit->track->from_units(src_start) + pos;
@@ -4992,7 +4998,7 @@ int TrackCanvas::do_plugins(int cursor_x, int cursor_y, int drag_start,
 	if(plugin) {
 // Start plugin popup
 		if(button_press) {
-			if(get_buttonpress() == 3) {
+			if(get_buttonpress() == RIGHT_BUTTON ) {
 				gui->plugin_menu->update(plugin);
 				gui->plugin_menu->activate_menu();
 				result = 1;
@@ -5100,7 +5106,7 @@ int TrackCanvas::do_transitions(int cursor_x, int cursor_y,
 		if(!button_press) {
 			new_cursor = UPRIGHT_ARROW_CURSOR;
 		}
-		else if(get_buttonpress() == 3) {
+		else if(get_buttonpress() == RIGHT_BUTTON ) {
 			gui->transition_menu->update(transition);
 			gui->transition_menu->activate_menu();
 		}

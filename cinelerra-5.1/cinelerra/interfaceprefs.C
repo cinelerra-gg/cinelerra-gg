@@ -176,12 +176,12 @@ void InterfacePrefs::create_objects()
 	y += 30;
 
 	add_subwindow(title = new BC_Title(x1=x, y + 5, _("Min DB for meter:")));
-	x1 += title->get_w() + 10;
+	x1 += title->get_w() + 4;
 	sprintf(string, "%d", pwindow->thread->edl->session->min_meter_db);
 	add_subwindow(min_db = new MeterMinDB(pwindow, string, x1, y));
-	x1 += min_db->get_w() + 10;
+	x1 += min_db->get_w() + 4;
 	add_subwindow(title = new BC_Title(x1, y + 5, _("Max:")));
-	x1 += title->get_w() + 10;
+	x1 += title->get_w() + 4;
 	sprintf(string, "%d", pwindow->thread->edl->session->max_meter_db);
 	add_subwindow(max_db = new MeterMaxDB(pwindow, string, x1, y));
 	y += 30;

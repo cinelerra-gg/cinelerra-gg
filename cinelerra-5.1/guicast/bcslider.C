@@ -171,6 +171,7 @@ int BC_Slider::get_button_pixels()
 
 void BC_Slider::show_value_tooltip()
 {
+	if( !show_number ) return;
 //printf("BC_Slider::show_value_tooltip %s\n", get_caption());
 	set_tooltip(get_caption());
 	keypress_tooltip_timer = 2000;
@@ -195,7 +196,7 @@ int BC_Slider::repeat_event(int64_t duration)
 			}
 		}
 		else
-		if(status == SLIDER_HI && tooltip_text)
+		if(status == SLIDER_HI && tooltip_text && show_number)
 		{
 			if(!tooltip_text[0] || isdigit(tooltip_text[0]))
 			{
@@ -296,6 +297,11 @@ void BC_Slider::disable()
 {
 	enabled = 0;
 	draw_face(1);
+}
+
+void BC_Slider::enable_show_value(int v)
+{
+	show_number = v;
 }
 
 int BC_Slider::button_press_event()

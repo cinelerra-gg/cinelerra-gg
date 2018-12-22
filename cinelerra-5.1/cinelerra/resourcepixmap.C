@@ -238,10 +238,11 @@ VFrame *ResourcePixmap::change_title_color(VFrame *title_bg, int color)
 	VFrame *title_bar = new VFrame(tw, th, colormodel);
 	uint8_t cr = (color>>16), cg = (color>>8), cb = (color>>0);
 	uint8_t **bar_rows = title_bar->get_rows();
+	const uint8_t gap_grey = 0x4a;
 	if( th > 0 ) {
 		uint8_t *cp = bar_rows[0];
 		for( int x=0; x<tw; ++x ) {
-			cp[0] = cp[1] = cp[2] = 0;
+			cp[0] = cp[1] = cp[2] = gap_grey;
 			if( bpp > 3 ) cp[3] = 0xff;
 			cp += bpp;
 		}
@@ -249,7 +250,7 @@ VFrame *ResourcePixmap::change_title_color(VFrame *title_bg, int color)
 	for( int y=1; y<th; ++y ) {
 		uint8_t *cp = bar_rows[y];
 		if( tw > 0 ) {
-			cp[0] = cp[1] = cp[2] = 0;
+			cp[0] = cp[1] = cp[2] = gap_grey;
 			if( bpp > 3 ) cp[3] = 0xff;
 			cp += bpp;
 		}
@@ -259,7 +260,7 @@ VFrame *ResourcePixmap::change_title_color(VFrame *title_bg, int color)
 			cp += bpp;
 		}
 		if( tw > 1 ) {
-			cp[0] = cp[1] = cp[2] = 0;
+			cp[0] = cp[1] = cp[2] = gap_grey;
 			if( bpp > 3 ) cp[3] = 0xff;
 		}
 	}
