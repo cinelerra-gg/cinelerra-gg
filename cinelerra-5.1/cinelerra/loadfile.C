@@ -202,8 +202,8 @@ int LoadFileWindow::resize_event(int w, int h)
 		LoadMode::calculate_h(this, mwindow->theme);
 	loadmode->reposition_window(x, y);
 
-	x = (get_w() - BC_GenericButton::calculate_w(this, _("Apply")))/2;
-	y = get_h() - BC_GenericButton::calculate_h() - 15;
+	x = (w - BC_GenericButton::calculate_w(this, _("Apply")))/2;
+	y = h - BC_GenericButton::calculate_h() - 15;
 	load_file_apply->reposition_window(x, y);
 
 	return BC_FileBox::resize_event(w, h);
