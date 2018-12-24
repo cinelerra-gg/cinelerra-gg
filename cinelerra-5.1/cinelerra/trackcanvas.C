@@ -278,6 +278,7 @@ int TrackCanvas::drag_stop_event()
 {
 	int result = gui->drag_stop();
 	if( !result && mwindow->session->current_operation ) {
+		mwindow->edl->tracks->clear_selected_edits();
 		mwindow->session->current_operation = NO_OPERATION;
 		drag_scroll = 0;
 	}
@@ -526,7 +527,6 @@ int TrackCanvas::drag_stop(int *redraw)
 						mwindow->move_group(drag_group, drop_track, new_pos, 1);
 					drag_group->remove_user();
 					mwindow->session->drag_group = 0;
-					mwindow->edl->tracks->clear_selected_edits();
 				}
 			}
 			result = 1;
@@ -4878,14 +4878,30 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 // Where the drag started, so we know relative position inside the edit later
 					mwindow->session->drag_position =
 						mwindow->edl->get_cursor_position(cursor_x, pane->number);
-					if( ctrl_down() ) {
-						mwindow->session->current_operation = DRAG_EDIT;
+					drag_start = 0; // if unselected "fast" drag
+					if( !ctrl_down() && !edit->silence() && !edit->is_selected ) {
+						mwindow->edl->tracks->clear_selected_edits();
+						mwindow->edl->tracks->select_affected_edits(
+							edit->track->from_units(edit->startproject),
+							edit->track, 1);
+						drag_start = 1;
+					}
 // Construct list of all affected edits
+					if( ctrl_down() || drag_start ) {
 						mwindow->edl->tracks->get_selected_edits(mwindow->session->drag_edits);
+						if( mwindow->session->drag_edits->size() > 0 ) {
+							mwindow->session->current_operation = DRAG_EDIT;
 // Need to create drag window
-						int cx, cy;  get_abs_cursor(cx, cy);
-						gui->drag_popup = new BC_DragWindow(gui,
-							mwindow->theme->get_image("clip_icon"), cx, cy);
+							int cx, cy;  get_abs_cursor(cx, cy);
+							gui->drag_popup = new BC_DragWindow(gui,
+								mwindow->theme->get_image("clip_icon"), cx, cy);
+							result = 1;
+						}
+						else {
+							rerender = start_selection(mwindow->session->drag_position);
+							mwindow->session->current_operation = SELECT_REGION;
+							update_cursor = 1;
+						}
 					}
 					else if( edit->is_selected ) {
 						if( mwindow->session->drag_group )
@@ -4899,9 +4915,9 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 							mwindow->session->drag_group_position = start_position;
 							mwindow->session->drag_group_edit = edit;
 							mwindow->session->drag_origin_y = edit_y;
+							result = 1;
 						}
 					}
-					result = 1;
 				}
 			}
 		}
