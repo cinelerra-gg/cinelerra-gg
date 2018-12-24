@@ -544,7 +544,7 @@ int TrackCanvas::drag_start_event()
 	int rerender = 0;
 	int new_cursor, update_cursor;
 
-	if( mwindow->session->current_operation == DRAG_BUTTON_DOWN )
+	if( mwindow->session->current_operation == GROUP_TOGGLE )
 		mwindow->session->current_operation = NO_OPERATION;
 	else if( mwindow->session->current_operation != NO_OPERATION )
 		return 0;
@@ -4554,7 +4554,7 @@ int TrackCanvas::button_release_event()
 			result = 1;
 			break; }
 
-		case DRAG_BUTTON_DOWN: {
+		case GROUP_TOGGLE: {
 			Edit *edit = mwindow->session->drag_edit;
 			if( edit ) {
 				if( shift_down() && edit->is_selected ) {
@@ -4569,10 +4569,9 @@ int TrackCanvas::button_release_event()
 					redraw = 0;
 				}
 				else {
-					if( edit->group_id )
-						mwindow->edl->tracks->set_group_selected(edit->group_id, -1);
-					else
-						edit->is_selected = !edit->is_selected ? 1 : 0;
+					if( mwindow->preferences->ctrl_toggle && !ctrl_down() )
+						mwindow->edl->tracks->clear_selected_edits();
+					edit->set_selected(-1);
 				}
 			}
 			mwindow->session->current_operation = NO_OPERATION;
@@ -4842,26 +4841,29 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 			if(cursor_x >= edit_x && cursor_x < edit_x + edit_w &&
 				cursor_y >= edit_y && cursor_y < edit_y + edit_h) {
 				if( button_press && get_buttonpress() == LEFT_BUTTON ) {
-					if( mwindow->edl->session->editing_mode == EDITING_IBEAM &&
-					    get_double_click() ) {
-// Select duration of edit
+					if( get_double_click() ) {
+						mwindow->edl->tracks->clear_selected_edits();
 						double start = edit->track->from_units(edit->startproject);
 						start =	mwindow->edl->align_to_frame(start, 0);
 						mwindow->edl->local_session->set_selectionstart(start);
-						double end = edit->track->from_units(edit->startproject+edit->length);
-						end = mwindow->edl->align_to_frame(end, 0);
-						mwindow->edl->local_session->set_selectionend(end);
-						mwindow->edl->tracks->clear_selected_edits();
-						mwindow->edl->tracks->select_affected_edits(
-							edit->track->from_units(edit->startproject),
-							edit->track, 1);
+						if( ctrl_down() ) {
+// Select duration of edit
+							double end = edit->track->from_units(edit->startproject+edit->length);
+							end = mwindow->edl->align_to_frame(end, 0);
+							mwindow->edl->local_session->set_selectionend(end);
+							mwindow->edl->tracks->select_affected_edits(
+								edit->track->from_units(edit->startproject),
+								edit->track, 1);
+						}
+						else {
+							mwindow->edl->local_session->set_selectionend(start);
+							edit->set_selected(1);
+						}
 						result = 1;
 					}
-					else if( mwindow->edl->session->editing_mode == EDITING_ARROW ||
-						(mwindow->edl->session->editing_mode == EDITING_IBEAM &&
-						 ctrl_down()) ) {
+					else if( mwindow->edl->session->editing_mode == EDITING_ARROW ) {
 						mwindow->session->drag_edit = edit;
-						mwindow->session->current_operation = DRAG_BUTTON_DOWN;
+						mwindow->session->current_operation = GROUP_TOGGLE;
 						result = 1;
 					}
 					if( result ) {
@@ -4870,41 +4872,36 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 					}
 				}
 				else if( drag_start && track->record ) {
-					if( mwindow->edl->session->editing_mode == EDITING_ARROW ||
-					    ( mwindow->edl->session->editing_mode == EDITING_IBEAM &&
-					      ctrl_down() ) ) {
-// Need to create drag window
-						mwindow->session->drag_edit = edit;
-						mwindow->session->drag_origin_x = cursor_x;
-						mwindow->session->drag_origin_y = cursor_y;
-						// Where the drag started, so we know relative position inside the edit later
-						mwindow->session->drag_position =
-							mwindow->edl->get_cursor_position(cursor_x, pane->number);
+					mwindow->session->drag_edit = edit;
+					mwindow->session->drag_origin_x = cursor_x;
+					mwindow->session->drag_origin_y = cursor_y;
+// Where the drag started, so we know relative position inside the edit later
+					mwindow->session->drag_position =
+						mwindow->edl->get_cursor_position(cursor_x, pane->number);
+					if( ctrl_down() ) {
+						mwindow->session->current_operation = DRAG_EDIT;
 // Construct list of all affected edits
-						if( ctrl_down() ) {
-							mwindow->session->current_operation = DRAG_EDIT;
-							mwindow->edl->tracks->get_selected_edits(mwindow->session->drag_edits);
-							int cx, cy;  get_abs_cursor(cx, cy);
-							gui->drag_popup = new BC_DragWindow(gui,
-								mwindow->theme->get_image("clip_icon"), cx, cy);
-
-						}
-						else if( edit->is_selected ) {
-							if( mwindow->session->drag_group )
-								mwindow->session->drag_group->remove_user();
-							double start_position = 0;
-							mwindow->session->drag_group =
-								mwindow->selected_edits_to_clip(0, &start_position,
-									&mwindow->session->drag_group_first_track);
-							if( mwindow->session->drag_group ) {
-								mwindow->session->current_operation = DRAG_GROUP;
-								mwindow->session->drag_group_position = start_position;
-								mwindow->session->drag_group_edit = edit;
-								mwindow->session->drag_origin_y = edit_y;
-							}
-						}
-						result = 1;
+						mwindow->edl->tracks->get_selected_edits(mwindow->session->drag_edits);
+// Need to create drag window
+						int cx, cy;  get_abs_cursor(cx, cy);
+						gui->drag_popup = new BC_DragWindow(gui,
+							mwindow->theme->get_image("clip_icon"), cx, cy);
 					}
+					else if( edit->is_selected ) {
+						if( mwindow->session->drag_group )
+							mwindow->session->drag_group->remove_user();
+						double start_position = 0;
+						mwindow->session->drag_group =
+							mwindow->selected_edits_to_clip(0, &start_position,
+								&mwindow->session->drag_group_first_track);
+						if( mwindow->session->drag_group ) {
+							mwindow->session->current_operation = DRAG_GROUP;
+							mwindow->session->drag_group_position = start_position;
+							mwindow->session->drag_group_edit = edit;
+							mwindow->session->drag_origin_y = edit_y;
+						}
+					}
+					result = 1;
 				}
 			}
 		}

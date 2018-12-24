@@ -133,6 +133,8 @@ public:
 	int yuv_color_range;
 // autocolor asset edit title
 	int autocolor_assets;
+// ctrl_toggle && !ctrl_down() clears selection before toggle
+	int ctrl_toggle;
 // Default positions for channels
 	int channel_positions[MAXCHANNELS][MAXCHANNELS];
 

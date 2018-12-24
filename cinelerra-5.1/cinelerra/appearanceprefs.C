@@ -216,6 +216,9 @@ void AppearancePrefs::create_objects()
 	PerpetualSession *perpetual = new PerpetualSession(x1, y1, pwindow);
 	add_subwindow(perpetual);
 	y1 += perpetual->get_h() + 5;
+	CtrlToggle *ctrl_toggle = new CtrlToggle(x1, y1, pwindow);
+	add_subwindow(ctrl_toggle);
+	y1 += ctrl_toggle->get_h() + 5;
 	if( y < y1 ) y = y1;
 }
 
@@ -758,6 +761,19 @@ PerpetualSession::PerpetualSession(int x, int y, PreferencesWindow *pwindow)
 int PerpetualSession::handle_event()
 {
 	pwindow->thread->preferences->perpetual_session = get_value();
+	return 1;
+}
+
+CtrlToggle::CtrlToggle(int x, int y, PreferencesWindow *pwindow)
+ : BC_CheckBox(x, y,
+	pwindow->thread->preferences->ctrl_toggle, _("Clears before toggle"))
+{
+	this->pwindow = pwindow;
+}
+
+int CtrlToggle::handle_event()
+{
+	pwindow->thread->preferences->ctrl_toggle = get_value();
 	return 1;
 }
 

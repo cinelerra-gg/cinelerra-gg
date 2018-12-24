@@ -252,6 +252,14 @@ void Edit::mute()
 		*((SEdit *)this)->get_text() = 0;
 }
 
+void Edit::set_selected(int v)
+{
+	if( group_id )
+		edl->tracks->set_group_selected(group_id, v);
+	else
+		is_selected = v >= 0 ? v : !is_selected ? 1 : 0;
+}
+
 void Edit::copy_from(Edit *edit)
 {
 	this->nested_edl = edl->nested_edls.get_nested(edit->nested_edl);

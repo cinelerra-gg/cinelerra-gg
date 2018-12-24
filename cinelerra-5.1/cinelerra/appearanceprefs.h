@@ -358,4 +358,12 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class CtrlToggle : public BC_CheckBox
+{
+public:
+	CtrlToggle(int x, int y, PreferencesWindow *pwindow);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 #endif
