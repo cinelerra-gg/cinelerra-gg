@@ -794,6 +794,103 @@ int EDL::clear(double start, double end,
 	return 0;
 }
 
+void EDL::delete_edits(ArrayList<Edit*> *edits, int collapse)
+{
+	if( session->labels_follow_edits )
+		delete_edit_labels(edits, collapse);
+	for( int i=0; i<edits->size(); ++i ) {
+		Edit *edit = edits->get(i);
+		Track *track = edit->track;
+		int64_t start = edit->startproject;
+		int end = start + edit->length;
+		track->clear(start, end, 1, 0,
+			session->plugins_follow_edits,
+			session->autos_follow_edits, 0);
+		if( !collapse )
+			track->paste_silence(start, end,
+				session->plugins_follow_edits,
+				session->autos_follow_edits);
+	}
+	optimize();
+}
+
+class Range {
+public:
+	static int cmp(Range *ap, Range *bp);
+	double start, end;
+	bool operator ==(Range &that) { return this->start == that.start; }
+	bool operator >(Range &that) { return this->start > that.start; }
+};
+int Range::cmp(Range *ap, Range *bp) {
+	return ap->start < bp->start ? -1 : ap->start == bp->start ? 0 : 1;
+}
+
+static void get_edit_regions(ArrayList<Edit*> *edits, ArrayList<Range> &regions)
+{
+// move edit inclusive labels by regions
+	for( int i=0; i<edits->size(); ++i ) {
+		Edit *edit = edits->get(i);
+		double pos = edit->track->from_units(edit->startproject);
+		double end = edit->track->from_units(edit->startproject + edit->length);
+		int n = regions.size(), k = n;
+		while( --k >= 0 ) {
+			Range &range = regions[k];
+			if( pos >= range.end ) continue;
+			if( range.start >= end ) continue;
+			int expand = 0;
+			if( range.start > pos ) { range.start = pos;  expand = 1; }
+			if( range.end < end ) { range.end = end;  expand = 1; }
+			if( !expand ) break;
+			k = n;
+		}
+		if( k < 0 ) {
+			Range &range = regions.append();
+			range.start = pos;  range.end = end;
+		}
+	}
+	regions.sort(Range::cmp);
+}
+
+void EDL::delete_edit_labels(ArrayList<Edit*> *edits, int collapse)
+{
+	ArrayList<Range> regions;
+	get_edit_regions(edits, regions);
+	int n = regions.size(), k = n;
+	while( --k >= 0 ) {
+		Range &range = regions[k];
+		labels->clear(range.start, range.end, collapse);
+	}
+}
+
+void EDL::move_edit_labels(ArrayList<Edit*> *edits, double dist)
+{
+	ArrayList<Range> regions;
+	get_edit_regions(edits, regions);
+	int n = regions.size(), k = n;
+	Labels moved(this, 0);
+	while( --k >= 0 ) {
+		Range &range = regions[k];
+		Label *label = labels->label_of(range.start);
+		for( Label *next=0; label && label->position <= range.end; label=next ) {
+			next = label->next;
+			labels->remove_pointer(label);
+			label->position += dist;
+			moved.append(label);
+		}
+		Label *current = labels->first;
+		while( (label=moved.first) ) {
+			moved.remove_pointer(label);
+			while( current && current->position < label->position )
+				current = current->next;
+			if( current && current->position == label->position ) {
+				delete label;  continue;
+			}
+			labels->insert_before(current, label);
+		}
+	}
+}
+
+
 void EDL::modify_edithandles(double oldposition,
 	double newposition,
 	int currentend,

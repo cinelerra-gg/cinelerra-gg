@@ -74,6 +74,7 @@ public:
 	virtual int operator==(Plugin& that);
 	virtual int operator==(Edit& that);
 
+	void copy_base(Edit *edit);
 	virtual void copy_from(Edit *edit);
 
 

@@ -242,15 +242,6 @@ int Edit::silence()
 		asset || nested_edl :
 		*((SEdit *)this)->get_text()) ? 0 : 1;
 }
-void Edit::mute()
-{
-	if( track->data_type != TRACK_SUBTITLE ) {
-		asset = 0;
-		nested_edl = 0;
-	}
-	else
-		*((SEdit *)this)->get_text() = 0;
-}
 
 void Edit::set_selected(int v)
 {

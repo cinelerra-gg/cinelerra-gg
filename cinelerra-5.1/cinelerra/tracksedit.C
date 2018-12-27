@@ -72,7 +72,6 @@ int Tracks::clear(double start, double end, int clear_plugins, int edit_autos)
 				1, // labels
 				clear_plugins, // edit_plugins
 				edit_autos,
-				1, // convert_units
 				0); // trim_edits
 		}
 	}
@@ -738,39 +737,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				dest_track->optimize();
 			}
 		}
-	}
-}
-
-void Tracks::move_group(EDL *group, Track *first_track, double position, int overwrite)
-{
-	for( Track *track=first; track; track=track->next ) {
-		if( !track->record ) continue;
-		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
-			if( !edit->is_selected ) continue;
-			edit->mute();
-			edit->is_selected = 0;
-			edit->group_id = 0;
-		}
-	}
-	Track *src = group->tracks->first;
-	for( Track *track=first_track; track && src; track=track->next ) {
-		if( !track->record ) continue;
-		int64_t pos = track->to_units(position, 0);
-		for( Edit *edit=src->edits->first; edit; edit=edit->next ) {
-			if( edit->silence() ) continue;
-			int64_t start = pos + edit->startproject;
-			int64_t end = start + edit->length;
-			if( overwrite )
-				track->edits->clear(start, end);
-			Edit *dst = track->edits->insert_new_edit(start);
-			dst->copy_from(edit);
-			dst->startproject = start;
-			dst->is_selected = 1;
-			while( (dst=dst->next) != 0 )
-				dst->startproject += edit->length;
-		}
-		track->optimize();
-		src = src->next;
 	}
 }
 

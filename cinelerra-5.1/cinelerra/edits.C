@@ -646,8 +646,7 @@ void Edits::clear_recursive(int64_t start, int64_t end,
 {
 //printf("Edits::clear_recursive 1\n");
 	track->clear(start, end,
-		edit_edits, edit_labels, edit_plugins, edit_autos, 0,
-		trim_edits);
+		edit_edits, edit_labels, edit_plugins, edit_autos, trim_edits);
 }
 
 

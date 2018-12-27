@@ -182,7 +182,9 @@ public:
 	void update_vwindow();
 // Fit selected time to horizontal display range
 	void fit_selection();
-	EDL *selected_edits_to_clip(int packed, double *start_position=0, Track **start_track=0);
+	EDL *selected_edits_to_clip(int packed,
+		double *start_position, Track **start_track,
+		int edit_labels, int edit_autos, int edit_plugins);
 	void selected_edits_to_clipboard(int packed);
 // Fit selected autos to the vertical display range
 	void fit_autos(int doall);
@@ -403,7 +405,7 @@ public:
 	void move_edits(ArrayList<Edit*> *edits, Track *track, double position,
 // 0 - old style (cut and insert elswhere), 1- new style - (clear and overwrite elsewere)
 		int behaviour);
-	void move_group(EDL *group, Track *first_track, double position, int overwrite);
+	void move_group(EDL *group, Track *first_track, double position);
 // Move effect to position
 	void move_effect(Plugin *plugin, Track *track, int64_t position);
 	void move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t position);

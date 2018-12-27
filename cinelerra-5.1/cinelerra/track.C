@@ -1178,32 +1178,27 @@ int Track::blade(double position)
 
 int Track::clear(double start, double end,
 	int edit_edits, int edit_labels, int edit_plugins,
-	int edit_autos, int convert_units, Edits *trim_edits)
+	int edit_autos, Edits *trim_edits)
 {
-// Edits::move_auto calls this routine after the units are converted to the track
-// format.
+	return clear(to_units(start, 0), to_units(end, 1),
+		edit_edits, edit_labels, edit_plugins, edit_autos, trim_edits);
+}
+
+int Track::clear(int64_t start, int64_t end,
+	int edit_edits, int edit_labels, int edit_plugins,
+	int edit_autos, Edits *trim_edits)
+{
 //printf("Track::clear 1 %d %d %d\n", edit_edits, edit_labels, edit_plugins);
-	if(convert_units)
-	{
-		start = to_units(start, 0);
-		end = to_units(end, 1);
-	}
-
-
-	if(edit_autos)
-		automation->clear((int64_t)start, (int64_t)end, 0, 1);
-
-	if(edit_plugins)
-	{
-		for(int i = 0; i < plugin_set.total; i++)
-		{
+	if( edit_autos )
+		automation->clear(start, end, 0, 1);
+	if( edit_plugins ) {
+		for(int i = 0; i < plugin_set.total; i++) {
 			if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
-				plugin_set.values[i]->clear((int64_t)start, (int64_t)end, edit_autos);
+				plugin_set.values[i]->clear(start, end, edit_autos);
 		}
 	}
-
-	if(edit_edits)
-		edits->clear((int64_t)start, (int64_t)end);
+	if( edit_edits )
+		edits->clear(start, end);
 	return 0;
 }
 
@@ -1275,13 +1270,17 @@ int Track::modify_pluginhandles(double oldposition,
 
 int Track::paste_silence(double start, double end, int edit_plugins, int edit_autos)
 {
-	int64_t start_i = to_units(start, 0);
-	int64_t end_i = to_units(end, 1);
+	return paste_silence(to_units(start, 0), to_units(end, 1),
+			edit_plugins, edit_autos);
+}
 
-	edits->paste_silence(start_i, end_i);
-	if(edit_autos) shift_keyframes(start_i, end_i - start_i);
-	if(edit_plugins) shift_effects(start_i, end_i - start_i, edit_autos);
-
+int Track::paste_silence(int64_t start, int64_t end, int edit_plugins, int edit_autos)
+{
+	edits->paste_silence(start, end);
+	if( edit_autos )
+		shift_keyframes(start, end - start);
+	if( edit_plugins )
+		shift_effects(start, end - start, edit_autos);
 	edits->optimize();
 	return 0;
 }

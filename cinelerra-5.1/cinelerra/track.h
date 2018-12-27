@@ -204,7 +204,10 @@ public:
 	int blade(double position);
 	int clear(double start, double end,
 		int edit_edits, int edit_labels, int clear_plugins,
-		int edit_autos, int convert_units, Edits *trim_edits);
+		int edit_autos, Edits *trim_edits);
+	int clear(int64_t start, int64_t end,
+		int edit_edits, int edit_labels, int clear_plugins,
+		int edit_autos, Edits *trim_edits);
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
 	void clear_automation(double selectionstart, double selectionend,
@@ -238,6 +241,7 @@ public:
 		int clear_labels, int clear_plugins, int edit_autos,
 		double &distance);
 	int paste_silence(double start, double end, int edit_plugins, int edit_autos);
+	int paste_silence(int64_t start, int64_t end, int edit_plugins, int edit_autos);
 	virtual int select_translation(int cursor_x, int cursor_y) { return 0; };  // select video coordinates for frame
 	virtual int update_translation(int cursor_x, int cursor_y, int shift_down) { return 0; };  // move video coordinates
 	int select_auto(AutoConf *auto_conf, int cursor_x, int cursor_y);

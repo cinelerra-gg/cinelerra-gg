@@ -168,6 +168,9 @@ public:
 	const char *get_folder_name(int no);
 	int new_folder(const char *title, int is_clips);
 	int delete_folder(const char *title);
+	void delete_edits(ArrayList<Edit*>*, int);
+	void delete_edit_labels(ArrayList<Edit*> *edits, int collapse);
+	void move_edit_labels(ArrayList<Edit*> *edits, double dist);
 
 	void modify_edithandles(double oldposition,
 		double newposition,

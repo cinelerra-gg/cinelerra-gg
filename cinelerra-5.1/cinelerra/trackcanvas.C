@@ -194,7 +194,7 @@ int TrackCanvas::drag_motion(
 		drag_cursor_motion(cursor_x, cursor_y,
 			over_track, over_edit, over_pluginset, over_plugin);
 	}
-        if( over_track && !*over_track )
+	if( over_track && !*over_track )
 		*over_track = pane->over_patchbay();
 	return 0;
 }
@@ -524,7 +524,7 @@ int TrackCanvas::drag_stop(int *redraw)
 						ret = test_track_group(drag_group, drop_track, new_pos);
 					}
 					if( ret )
-						mwindow->move_group(drag_group, drop_track, new_pos, 1);
+						mwindow->move_group(drag_group, drop_track, new_pos);
 					drag_group->remove_user();
 					mwindow->session->drag_group = 0;
 				}
@@ -2284,7 +2284,7 @@ void TrackCanvas::draw_keyframe_reticle()
 		mwindow->session->drag_auto->autos->autoidx : -1;
 
 	if( get_buttonpress() == LEFT_BUTTON && dragging &&
-            keyframe_hairline == HAIRLINE_DRAGGING ) {
+	    keyframe_hairline == HAIRLINE_DRAGGING ) {
 		draw_hairline(mwindow->session->drag_auto, RED, 1);
 		return;
 	}
@@ -3571,6 +3571,9 @@ int TrackCanvas::draw_hairline(Auto *auto_keyframe, int color, int show)
 
 	calculate_viewport(track, view_start, unit_start, view_end, unit_end,
 			yscale, center_pixel, zoom_sample, zoom_units);
+	if( auto_keyframe->position < unit_start ||
+	    auto_keyframe->position >= unit_end )
+		return 0;
 
 	double ax = 0, ay = 0;
 	calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
@@ -4909,7 +4912,10 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 						double start_position = 0;
 						mwindow->session->drag_group =
 							mwindow->selected_edits_to_clip(0, &start_position,
-								&mwindow->session->drag_group_first_track);
+								&mwindow->session->drag_group_first_track,
+								mwindow->edl->session->labels_follow_edits,
+								mwindow->edl->session->autos_follow_edits,
+								mwindow->edl->session->plugins_follow_edits);
 						if( mwindow->session->drag_group ) {
 							mwindow->session->current_operation = DRAG_GROUP;
 							mwindow->session->drag_group_position = start_position;
@@ -5359,7 +5365,7 @@ void TrackCanvas::show_message(Auto *current, int show_curve_type, const char *f
 	va_list ap;
 	va_start(ap, fmt);
 	vsnprintf(cp, ep-cp, fmt, ap);
-        va_end(ap);
+	va_end(ap);
 	gui->show_message(string);
 }
 

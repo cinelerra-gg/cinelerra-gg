@@ -100,10 +100,7 @@ int Plugin::operator==(Edit& that)
 
 int Plugin::silence()
 {
-	if(plugin_type != PLUGIN_NONE)
-		return 0;
-	else
-		return 1;
+	return plugin_type == PLUGIN_NONE ? 1 : 0;
 }
 
 void Plugin::clear_keyframes(int64_t start, int64_t end)
@@ -112,7 +109,7 @@ void Plugin::clear_keyframes(int64_t start, int64_t end)
 }
 
 
-void Plugin::copy_from(Edit *edit)
+void Plugin::copy_base(Edit *edit)
 {
 	Plugin *plugin = (Plugin*)edit;
 
@@ -129,8 +126,12 @@ void Plugin::copy_from(Edit *edit)
 // Should reconfigure this based on where the first track is now.
 	this->shared_location = plugin->shared_location;
 	strcpy(this->title, plugin->title);
+}
 
-	copy_keyframes(plugin);
+void Plugin::copy_from(Edit *edit)
+{
+	copy_base(edit);
+	copy_keyframes((Plugin*)edit);
 }
 
 void Plugin::copy_keyframes(Plugin *plugin)
