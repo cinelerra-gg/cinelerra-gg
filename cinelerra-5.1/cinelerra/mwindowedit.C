@@ -1023,7 +1023,7 @@ EDL *MWindow::selected_edits_to_clip(int packed,
 						new_track->plugin_set[i] = new_plugin_set;
 					}
 					Plugin *plugin = (Plugin*)plugin_set->first;
-					int64_t startplugin = 0;
+					int64_t startplugin = new_plugin_set->length();
 					for( ; plugin ; plugin=(Plugin*)plugin->next ) {
 						if( plugin->silence() ) continue;
 						int64_t plugin_start_pos = plugin->startproject;
@@ -1156,31 +1156,9 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 void MWindow::move_group(EDL *group, Track *first_track, double position)
 {
 	undo->update_undo_before();
-	if( edl->session->labels_follow_edits ) {
-		ArrayList<Edit *>edits;
-		edl->tracks->get_selected_edits(&edits);
-		double dist = position - session->drag_group_position;
-		edl->move_edit_labels(&edits, dist);
-	}
-	for( Track *track=edl->tracks->first; track; track=track->next ) {
-		if( !track->record ) continue;
-		Edit *edit = track->edits->first;
-		for( Edit *next=0; edit; edit=next ) {
-			next = edit->next;
-			if( !edit->is_selected ) continue;
-			edit->is_selected = 0;
-			edit->group_id = 0;
-			int64_t start = edit->startproject;
-			int64_t end = start + edit->length;
-			track->clear(start, end, 1, 0,
-				edl->session->plugins_follow_edits,
-				edl->session->autos_follow_edits, 0);
-			track->paste_silence(start, end,
-				edl->session->plugins_follow_edits,
-					edl->session->autos_follow_edits);
-			next = track->edits->first;
-		}
-	}
+	ArrayList<Edit *>edits;
+	edl->tracks->get_selected_edits(&edits);
+	edl->delete_edits(&edits, 0);
 	Track *src = group->tracks->first;
 	for( Track *track=first_track; track && src; track=track->next ) {
 		if( !track->record ) continue;
@@ -1212,7 +1190,7 @@ void MWindow::move_group(EDL *group, Track *first_track, double position)
 			for( int i=0; i<src->plugin_set.size(); ++i ) {
 				PluginSet *plugin_set = src->plugin_set[i];
 				if( !plugin_set ) continue;
-				while( track->plugin_set.size() < i )
+				while( i >= track->plugin_set.size() )
 					track->plugin_set.append(0);
 				PluginSet *dst_plugin_set = track->plugin_set[i];
 				if( !dst_plugin_set ) {

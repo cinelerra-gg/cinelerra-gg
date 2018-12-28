@@ -49,6 +49,7 @@
 #include "playbackconfig.h"
 #include "playabletracks.h"
 #include "plugin.h"
+#include "pluginset.h"
 #include "preferences.h"
 #include "recordconfig.h"
 #include "recordlabel.h"
@@ -798,18 +799,36 @@ void EDL::delete_edits(ArrayList<Edit*> *edits, int collapse)
 {
 	if( session->labels_follow_edits )
 		delete_edit_labels(edits, collapse);
+	typedef struct { Track *track; int64_t start, end; } Zone;
+	ArrayList<Zone> zones;
 	for( int i=0; i<edits->size(); ++i ) {
 		Edit *edit = edits->get(i);
 		Track *track = edit->track;
 		int64_t start = edit->startproject;
-		int end = start + edit->length;
-		track->clear(start, end, 1, 0,
-			session->plugins_follow_edits,
-			session->autos_follow_edits, 0);
+		int64_t end = start + edit->length;
+		Zone &zone = zones.append();
+		zone.track = track;  zone.start = start;  zone.end = end;
+		if( session->autos_follow_edits ) {
+			track->automation->clear(start, end, 0, collapse);
+		}
+		if( session->plugins_follow_edits ) {
+			for( int k=0; k<track->plugin_set.size(); ++k ) {
+				PluginSet *plugin_set = track->plugin_set[k];
+				plugin_set->clear(start, end, 1);
+				if( !collapse )
+					plugin_set->paste_silence(start, end);
+			}
+		}
+		track->optimize();
+	}
+	for( int i=0; i<zones.size(); ++i ) {
+		Zone &zone = zones[i];
+		Track *track = zone.track;
+		int64_t start = zone.start, end = zone.end;
+		track->edits->clear(start, end);
 		if( !collapse )
-			track->paste_silence(start, end,
-				session->plugins_follow_edits,
-				session->autos_follow_edits);
+			track->edits->paste_silence(start, end);
+		track->optimize();
 	}
 	optimize();
 }
@@ -1276,13 +1295,15 @@ void EDL::get_shared_tracks(Track *track,
 	}
 }
 
-// aligned frame time
+// aligned frame time, account for sample truncation
 double EDL::frame_align(double position, int round)
 {
-	double frame_pos = position * session->frame_rate;
-	frame_pos = (int64_t)(frame_pos + (round ? 0.5 : 1e-6));
-	position = frame_pos / session->frame_rate;
-	return position;
+	if( !round && session->sample_rate > 0 ) {
+		int64_t sample_pos = position * session->sample_rate;
+		position = (sample_pos+2.) / session->sample_rate;
+	}
+	int64_t frame_pos = (position * session->frame_rate + (round ? 0.5 : 1e-6));
+	return frame_pos / session->frame_rate;
 }
 
 // Convert position to frames if alignment is enabled.
