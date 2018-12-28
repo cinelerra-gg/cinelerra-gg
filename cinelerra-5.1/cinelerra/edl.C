@@ -795,11 +795,12 @@ int EDL::clear(double start, double end,
 	return 0;
 }
 
+class Zone { public: Track *track; int64_t start, end; };
+
 void EDL::delete_edits(ArrayList<Edit*> *edits, int collapse)
 {
 	if( session->labels_follow_edits )
 		delete_edit_labels(edits, collapse);
-	typedef struct { Track *track; int64_t start, end; } Zone;
 	ArrayList<Zone> zones;
 	for( int i=0; i<edits->size(); ++i ) {
 		Edit *edit = edits->get(i);
