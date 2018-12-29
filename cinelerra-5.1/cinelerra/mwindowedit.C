@@ -1198,6 +1198,7 @@ void MWindow::move_group(EDL *group, Track *first_track, double position)
 					track->plugin_set[i] = dst_plugin_set;
 				}
 				Plugin *plugin = (Plugin *)plugin_set->first;
+				if( plugin ) track->expand_view = 1;
 				for( ; plugin; plugin=(Plugin *)plugin->next ) {
 					int64_t start = pos + plugin->startproject;
 					int64_t end = start + plugin->length;
@@ -1217,7 +1218,8 @@ void MWindow::move_group(EDL *group, Track *first_track, double position)
 		track->optimize();
 		src = src->next;
 	}
-	edl->tracks->clear_selected_edits();
+// big debate over whether to do this, must either clear selected, or no tweaking
+//	edl->tracks->clear_selected_edits();
 
 	save_backup();
 	undo->update_undo_after(_("move group"), LOAD_ALL);

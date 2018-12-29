@@ -5040,11 +5040,11 @@ int TrackCanvas::do_plugins(int cursor_x, int cursor_y, int drag_start,
 		}
 		else
 // Move plugin
-		if(drag_start && plugin->track->record) {
-			if(mwindow->edl->session->editing_mode == EDITING_ARROW) {
-				if(plugin->track->data_type == TRACK_AUDIO)
+		if( drag_start && plugin->track->record && !plugin->silence() ) {
+			if( mwindow->edl->session->editing_mode == EDITING_ARROW ) {
+				if( plugin->track->data_type == TRACK_AUDIO )
 					mwindow->session->current_operation = DRAG_AEFFECT_COPY;
-				else if(plugin->track->data_type == TRACK_VIDEO)
+				else if( plugin->track->data_type == TRACK_VIDEO )
 					mwindow->session->current_operation = DRAG_VEFFECT_COPY;
 
 				mwindow->session->drag_plugin = plugin;
