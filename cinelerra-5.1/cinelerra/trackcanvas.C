@@ -4844,27 +4844,23 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 			if(cursor_x >= edit_x && cursor_x < edit_x + edit_w &&
 				cursor_y >= edit_y && cursor_y < edit_y + edit_h) {
 				if( button_press && get_buttonpress() == LEFT_BUTTON ) {
-					if( get_double_click() ) {
-						mwindow->edl->tracks->clear_selected_edits();
+					if( get_double_click() && (ctrl_down() ||
+					     mwindow->edl->session->editing_mode == EDITING_IBEAM) ) {
+// Select duration of edit
 						double start = edit->track->from_units(edit->startproject);
 						start =	mwindow->edl->align_to_frame(start, 0);
 						mwindow->edl->local_session->set_selectionstart(start);
-						if( ctrl_down() ) {
-// Select duration of edit
-							double end = edit->track->from_units(edit->startproject+edit->length);
-							end = mwindow->edl->align_to_frame(end, 0);
-							mwindow->edl->local_session->set_selectionend(end);
-							mwindow->edl->tracks->select_affected_edits(
-								edit->track->from_units(edit->startproject),
-								edit->track, 1);
-						}
-						else {
-							mwindow->edl->local_session->set_selectionend(start);
-							edit->set_selected(1);
-						}
+						double end = edit->track->from_units(edit->startproject+edit->length);
+						end = mwindow->edl->align_to_frame(end, 0);
+						mwindow->edl->local_session->set_selectionend(end);
+						mwindow->edl->tracks->clear_selected_edits();
+						mwindow->edl->tracks->select_affected_edits(
+							edit->track->from_units(edit->startproject),
+							edit->track, 1);
 						result = 1;
 					}
-					else if( mwindow->edl->session->editing_mode == EDITING_ARROW ) {
+					else if( mwindow->edl->session->editing_mode == EDITING_ARROW ||
+					         ctrl_down() ) {
 						mwindow->session->drag_edit = edit;
 						mwindow->session->current_operation = GROUP_TOGGLE;
 						result = 1;
@@ -4882,11 +4878,17 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 					mwindow->session->drag_position =
 						mwindow->edl->get_cursor_position(cursor_x, pane->number);
 					drag_start = 0; // if unselected "fast" drag
-					if( !ctrl_down() && !edit->silence() && !edit->is_selected ) {
+					if( !edit->silence() && !edit->is_selected ) {
 						mwindow->edl->tracks->clear_selected_edits();
-						mwindow->edl->tracks->select_affected_edits(
-							edit->track->from_units(edit->startproject),
-							edit->track, 1);
+						if( ctrl_down() ) {
+							double start = edit->track->from_units(edit->startproject);
+							mwindow->edl->local_session->set_selectionend(start);
+							edit->set_selected(1);
+						}
+						else
+							mwindow->edl->tracks->select_affected_edits(
+								edit->track->from_units(edit->startproject),
+								edit->track, 1);
 						drag_start = 1;
 					}
 // Construct list of all affected edits

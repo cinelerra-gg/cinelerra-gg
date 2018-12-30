@@ -795,20 +795,24 @@ int EDL::clear(double start, double end,
 	return 0;
 }
 
-class Zone { public: Track *track; int64_t start, end; };
+static int dead_edit_cmp(Edit**ap, Edit**bp)
+{
+	Edit *a = *ap, *b = *bp;
+	if( a->track != b->track ) return 0;
+	return a->startproject > b->startproject ? -1 : 1;
+}
 
 void EDL::delete_edits(ArrayList<Edit*> *edits, int collapse)
 {
+	edits->sort(dead_edit_cmp);
 	if( session->labels_follow_edits )
 		delete_edit_labels(edits, collapse);
-	ArrayList<Zone> zones;
 	for( int i=0; i<edits->size(); ++i ) {
 		Edit *edit = edits->get(i);
 		Track *track = edit->track;
 		int64_t start = edit->startproject;
-		int64_t end = start + edit->length;
-		Zone &zone = zones.append();
-		zone.track = track;  zone.start = start;  zone.end = end;
+		int64_t length = edit->length;
+		int64_t end = start + length;
 		if( session->autos_follow_edits ) {
 			track->automation->clear(start, end, 0, collapse);
 		}
@@ -820,15 +824,12 @@ void EDL::delete_edits(ArrayList<Edit*> *edits, int collapse)
 					plugin_set->paste_silence(start, end);
 			}
 		}
-		track->optimize();
-	}
-	for( int i=0; i<zones.size(); ++i ) {
-		Zone &zone = zones[i];
-		Track *track = zone.track;
-		int64_t start = zone.start, end = zone.end;
-		track->edits->clear(start, end);
-		if( !collapse )
-			track->edits->paste_silence(start, end);
+		Edit *dead_edit = edit;
+		if( collapse ) {
+			while( (edit=edit->next) )
+				edit->startproject -= length;
+		}
+		delete dead_edit;
 		track->optimize();
 	}
 	optimize();

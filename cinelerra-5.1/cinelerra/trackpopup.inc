@@ -29,7 +29,19 @@ class TrackPopupDeleteTrack;
 class TrackPopupAddTrack;
 class TrackPopupFindAsset;
 class TrackAttachEffect;
-class TrackMoveTrackUp;
-class TrackMoveTrackDown;
+class TrackMoveUp;
+class TrackMoveDown;
+class TrackPopupFindAsset;
+class TrackPopupUserTitle;
+class TrackPopupUserTitleText;
+class TrackPopupUserTitleWindow;
+class TrackUserTitleDialogThread;
+class TrackPopupTitleColor;
+class TrackTitleColorDefault;
+class TrackTitleColorPicker;
+class TrackPopupShow;
+class TrackShowDialogThread;
+class TrackPopupShowText;
+class TrackPopupShowWindow;
 
 #endif

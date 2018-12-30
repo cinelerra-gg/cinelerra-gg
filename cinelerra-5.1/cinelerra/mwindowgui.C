@@ -36,6 +36,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"
+#include "filexml.h"
 #include "keyframepopup.h"
 #include "keys.h"
 #include "language.h"
@@ -1172,7 +1173,7 @@ int MWindowGUI::keypress_event()
 	if( result ) return result;
 
 	Track *this_track = 0, *first_track = 0;
-	int collapse = 0, packed = 0, overwrite = 0;
+	int collapse = 0, packed = 0, overwrite = 0, plugins = 0;
 	double position = 0;
 
 	switch( get_keypress() ) {
@@ -1202,6 +1203,8 @@ int MWindowGUI::keypress_event()
 		mwindow->selected_edits_to_clipboard(packed);
 		result = 1;
 		break;
+	case 'P':
+		plugins = 1;
 	case 'b':
 		overwrite = -1; // fall thru
 	case 'v':
@@ -1222,7 +1225,10 @@ int MWindowGUI::keypress_event()
 		}
 		else
 			position = mwindow->edl->local_session->get_selectionstart();
-		mwindow->paste(position, first_track, 0, overwrite);
+		if( !plugins )
+			mwindow->paste(position, first_track, 0, overwrite);
+		else
+			mwindow->paste_clipboard(first_track, position, 1, 0, 1, 1, 1);
 		mwindow->edl->tracks->clear_selected_edits();
 		draw_overlays(1);
 		result = 1;
@@ -1241,8 +1247,7 @@ int MWindowGUI::keypress_event()
 		result = 1;
 		break;
 
-	case '1': case '2': case '3': case '4':
-	case '5': case '6': case '7': case '8':
+	case '1' ... '8':
 		if( !alt_down() || shift_down() ) break;
 		if( !mwindow->select_asset(get_keypress()-'1',1) )
 			result = 1;

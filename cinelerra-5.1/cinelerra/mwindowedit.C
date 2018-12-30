@@ -958,14 +958,12 @@ EDL *MWindow::selected_edits_to_clip(int packed,
 			if( !new_track )
 				new_track = new_edl->add_new_track(track->data_type);
 			int64_t edit_pos = edit_start_pos - start_pos;
-			if( !packed ) {
-				if( edit_pos > startproject ) {
-					Edit *silence = new Edit(new_edl, new_track);
-					silence->startproject = startproject;
-					silence->length = edit_pos - startproject;
-					new_track->edits->append(silence);
-					startproject = edit_pos;
-				}
+			if( !packed && edit_pos > startproject ) {
+				Edit *silence = new Edit(new_edl, new_track);
+				silence->startproject = startproject;
+				silence->length = edit_pos - startproject;
+				new_track->edits->append(silence);
+				startproject = edit_pos;
 			}
 			int64_t clip_start_pos = startproject;
 			Edit *clip_edit = new Edit(new_edl, new_track);
@@ -1036,7 +1034,7 @@ EDL *MWindow::selected_edits_to_clip(int packed,
 							plugin_end_pos = edit_end_pos;
 						if( plugin_start_pos >= plugin_end_pos ) continue;
 						int64_t plugin_pos = plugin_start_pos - start_pos;
-						if( plugin_pos > startplugin ) {
+						if( !packed && plugin_pos > startplugin ) {
 							Plugin *silence = new Plugin(new_edl, new_track, "");
 							silence->startproject = startplugin;
 							silence->length = plugin_pos - startplugin;
@@ -1052,15 +1050,17 @@ EDL *MWindow::selected_edits_to_clip(int packed,
 						KeyFrames *keyframes = plugin->keyframes;
 						KeyFrames *new_keyframes = new_plugin->keyframes;
 						new_keyframes->default_auto->copy_from(keyframes->default_auto);
-						new_keyframes->default_auto->position = startplugin;
+						new_keyframes->default_auto->position = new_plugin->startproject;
 						KeyFrame *keyframe = (KeyFrame*)keyframes->first;
 						for( ; keyframe; keyframe=(KeyFrame*)keyframe->next ) {
 							if( keyframe->position < edit_start_pos ) continue;
 							if( keyframe->position >= edit_end_pos ) break;
 							KeyFrame *clip_keyframe = new KeyFrame(new_edl, new_keyframes);
 							clip_keyframe->copy_from(keyframe);
-							int64_t clip_position = keyframe->position - start_pos;
-							clip_keyframe->position = clip_position;
+							int64_t key_position = keyframe->position - start_pos;
+							if( packed )
+								key_position += new_plugin->startproject - plugin_pos;
+							clip_keyframe->position = key_position;
 							new_keyframes->append(clip_keyframe);
 						}
 					}
@@ -1153,40 +1153,56 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	gui->update(1, NORMAL_DRAW, 1, 0, 0, 0, 0);
 }
 
-void MWindow::move_group(EDL *group, Track *first_track, double position)
+void MWindow::paste_edits(EDL *clip, Track *first_track, double position, int overwrite,
+		int edit_edits, int edit_labels, int edit_autos, int edit_plugins)
 {
-	undo->update_undo_before();
-	ArrayList<Edit *>edits;
-	edl->tracks->get_selected_edits(&edits);
-	edl->delete_edits(&edits, 0);
-	Track *src = group->tracks->first;
+	if( edit_labels ) {
+		Label *edl_label = edl->labels->first;
+		for( Label *label=clip->labels->first; label; label=label->next ) {
+			double label_pos = position + label->position;
+			int exists = 0;
+			while( edl_label &&
+				!(exists=edl->equivalent(edl_label->position, label_pos)) &&
+				edl_label->position < position ) edl_label = edl_label->next;
+			if( exists ) continue;
+			edl->labels->insert_before(edl_label,
+				new Label(edl, edl->labels, label_pos, label->textstr));
+		}
+	}
+
+	if( !first_track )
+		first_track = edl->tracks->first;
+	Track *src = clip->tracks->first;
 	for( Track *track=first_track; track && src; track=track->next ) {
 		if( !track->record ) continue;
 		int64_t pos = track->to_units(position, 0);
-		for( Edit *edit=src->edits->first; edit; edit=edit->next ) {
-			if( edit->silence() ) continue;
-			int64_t start = pos + edit->startproject;
-			int64_t end = start + edit->length;
-			track->edits->clear(start, end);
-			Edit *dst = track->edits->insert_new_edit(start);
-			dst->copy_from(edit);
-			dst->startproject = start;
-			dst->is_selected = 1;
-			while( (dst=dst->next) != 0 )
-				dst->startproject += edit->length;
+		if( edit_edits ) {
+			for( Edit *edit=src->edits->first; edit; edit=edit->next ) {
+				if( edit->silence() ) continue;
+				int64_t start = pos + edit->startproject;
+				int64_t end = start + edit->length;
+				if( overwrite )
+					track->edits->clear(start, end);
+				Edit *dst = track->edits->insert_new_edit(start);
+				dst->copy_from(edit);
+				dst->startproject = start;
+				dst->is_selected = 1;
+				while( (dst=dst->next) != 0 )
+					dst->startproject += edit->length;
+			}
 		}
-		if( edl->session->autos_follow_edits ) {
+		if( edit_autos ) {
 			for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
 				Autos *src_autos = src->automation->autos[i];
 				if( !src_autos ) continue;
 				Autos *autos = track->automation->autos[i];
 				for( Auto *aut0=src_autos->first; aut0; aut0=aut0->next ) {
-					int64_t position = pos + aut0->position;
-					autos->insert_auto(position, aut0);
+					int64_t auto_pos = pos + aut0->position;
+					autos->insert_auto(auto_pos, aut0);
 				}
 			}
 		}
-		if( edl->session->plugins_follow_edits ) {
+		if( edit_plugins ) {
 			for( int i=0; i<src->plugin_set.size(); ++i ) {
 				PluginSet *plugin_set = src->plugin_set[i];
 				if( !plugin_set ) continue;
@@ -1202,15 +1218,16 @@ void MWindow::move_group(EDL *group, Track *first_track, double position)
 				for( ; plugin; plugin=(Plugin *)plugin->next ) {
 					int64_t start = pos + plugin->startproject;
 					int64_t end = start + plugin->length;
-					dst_plugin_set->clear(start, end, 1);
+					if( overwrite )
+						dst_plugin_set->clear(start, end, 1);
 					Plugin *dst = dst_plugin_set->insert_plugin(
 						plugin->title, start, end-start,
 						plugin->plugin_type, &plugin->shared_location,
 						(KeyFrame*)plugin->keyframes->default_auto, 0);
 					KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
 					for( ; keyframe; keyframe=(KeyFrame*)keyframe->next ) {
-						int64_t position = pos + keyframe->position;
-						dst->keyframes->insert_auto(position, keyframe);
+						int64_t keyframe_pos = pos + keyframe->position;
+						dst->keyframes->insert_auto(keyframe_pos, keyframe);
 					}
 				}
 			}
@@ -1218,6 +1235,43 @@ void MWindow::move_group(EDL *group, Track *first_track, double position)
 		track->optimize();
 		src = src->next;
 	}
+}
+
+void MWindow::paste_clipboard(Track *first_track, double position, int overwrite,
+		int edit_edits, int edit_labels, int edit_autos, int edit_plugins)
+{
+	int64_t len = gui->clipboard_len(BC_PRIMARY_SELECTION);
+	if( !len ) return;
+	char *string = new char[len];
+	gui->from_clipboard(string, len, BC_PRIMARY_SELECTION);
+	FileXML file;
+	file.read_from_string(string);
+	delete [] string;
+	EDL *clip = new EDL();
+	clip->create_objects();
+	if( !clip->load_xml(&file, LOAD_ALL) ) {
+		undo->update_undo_before();
+		paste_edits(clip, first_track, position, overwrite,
+			edit_edits, edit_labels, edit_autos, edit_plugins);
+		save_backup();
+		undo->update_undo_after(_("paste clip"), LOAD_ALL);
+		restart_brender();
+		cwindow->refresh_frame(CHANGE_EDL);
+
+		update_plugin_guis();
+		gui->update(1, NORMAL_DRAW, 1, 0, 0, 0, 0);
+	}
+	clip->remove_user();
+}
+
+void MWindow::move_group(EDL *group, Track *first_track, double position)
+{
+	undo->update_undo_before();
+
+	ArrayList<Edit *>edits;
+	edl->tracks->get_selected_edits(&edits);
+	edl->delete_edits(&edits, 0);
+	paste_edits(group, first_track, position, 1, 1, 1, 1, 1);
 // big debate over whether to do this, must either clear selected, or no tweaking
 //	edl->tracks->clear_selected_edits();
 

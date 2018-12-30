@@ -405,6 +405,10 @@ public:
 	void move_edits(ArrayList<Edit*> *edits, Track *track, double position,
 // 0 - old style (cut and insert elswhere), 1- new style - (clear and overwrite elsewere)
 		int behaviour);
+	void paste_edits(EDL *clip, Track *first_track, double position, int overwrite,
+		int edit_edits, int edit_labels, int edit_autos, int edit_plugins);
+	void paste_clipboard(Track *first_track, double position, int overwrite,
+		int edit_edits, int edit_labels, int edit_autos, int edit_plugins);
 	void move_group(EDL *group, Track *first_track, double position);
 // Move effect to position
 	void move_effect(Plugin *plugin, Track *track, int64_t position);

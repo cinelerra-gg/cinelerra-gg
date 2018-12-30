@@ -23,6 +23,7 @@
 #define __TRACKPOPUP_H__
 
 #include "guicast.h"
+#include "colorpicker.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "plugindialog.inc"
@@ -92,16 +93,6 @@ public:
 	TrackPopup *popup;
 };
 
-class TrackPopupFindAsset : public BC_MenuItem
-{
-public:
-	TrackPopupFindAsset(MWindow *mwindow, TrackPopup *popup);
-	int handle_event();
-	MWindow *mwindow;
-	TrackPopup *popup;
-};
-
-
 class TrackAttachEffect : public BC_MenuItem
 {
 public:
@@ -139,5 +130,157 @@ public:
 	TrackPopup *popup;
 };
 
+class TrackPopupFindAsset : public BC_MenuItem
+{
+public:
+	TrackPopupFindAsset(MWindow *mwindow, TrackPopup *popup);
+	int handle_event();
+	MWindow *mwindow;
+	TrackPopup *popup;
+};
+
+class TrackPopupUserTitle : public BC_MenuItem
+{
+public:
+	TrackPopupUserTitle(MWindow *mwindow, TrackPopup *popup);
+	~TrackPopupUserTitle();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	TrackPopup *popup;
+	TrackUserTitleDialogThread *dialog_thread;
+};
+
+class TrackPopupUserTitleText : public BC_TextBox
+{
+public:
+	TrackPopupUserTitleText(TrackPopupUserTitleWindow *window,
+		MWindow *mwindow, int x, int y, const char *text);
+	~TrackPopupUserTitleText();
+	int handle_event();
+
+	MWindow *mwindow;
+	TrackPopupUserTitleWindow *window;
+};
+
+class TrackPopupUserTitleWindow : public BC_Window
+{
+public:
+	TrackPopupUserTitleWindow(MWindow *mwindow, TrackPopup *popup, int wx, int wy);
+	~TrackPopupUserTitleWindow();
+
+	void create_objects();
+	void handle_close_event(int result);
+
+	TrackPopupUserTitleText *title_text;
+	MWindow *mwindow;
+	TrackPopup *popup;
+	char new_text[BCTEXTLEN];
+};
+
+class TrackUserTitleDialogThread : public BC_DialogThread
+{
+public:
+	TrackUserTitleDialogThread(TrackPopupUserTitle *edit_title);
+	~TrackUserTitleDialogThread();
+
+	void handle_close_event(int result);
+	void handle_done_event(int result);
+	BC_Window* new_gui();
+	void start(int wx, int wy);
+
+	int wx, wy;
+	TrackPopupUserTitle *edit_title;
+	TrackPopupUserTitleWindow *window;
+};
+
+
+class TrackPopupTitleColor : public BC_MenuItem
+{
+public:
+	TrackPopupTitleColor(MWindow *mwindow, TrackPopup *popup);
+	~TrackPopupTitleColor();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	TrackPopup *popup;
+	TrackTitleColorPicker *color_picker;
+};
+
+class TrackTitleColorDefault : public BC_GenericButton
+{
+public:
+	TrackTitleColorDefault(TrackTitleColorPicker *color_picker, int x, int y);
+	int handle_event();
+
+	TrackTitleColorPicker *color_picker;
+};
+
+class TrackTitleColorPicker : public ColorPicker
+{
+public:
+	TrackTitleColorPicker(TrackPopup *popup, int color);
+	~TrackTitleColorPicker();
+	void create_objects(ColorWindow *gui);
+	int handle_new_color(int color, int alpha);
+	void handle_done_event(int result);
+
+	TrackPopup *popup;
+	int color;
+};
+
+
+class TrackPopupShow : public BC_MenuItem
+{
+public:
+	TrackPopupShow(MWindow *mwindow, TrackPopup *popup);
+	~TrackPopupShow();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	TrackPopup *popup;
+	TrackShowDialogThread *dialog_thread;
+};
+
+class TrackShowDialogThread : public BC_DialogThread
+{
+public:
+	TrackShowDialogThread(TrackPopupShow *edit_show);
+	~TrackShowDialogThread();
+	BC_Window* new_gui();
+	void start(int wx, int wy);
+	void handle_close_event(int result);
+
+	int wx, wy;
+	TrackPopupShow *edit_show;
+	TrackPopupShowWindow *window;
+};
+
+class TrackPopupShowText : public BC_TextBox
+{
+public:
+	TrackPopupShowText(TrackPopupShowWindow *window,
+		MWindow *mwindow, int x, int y, const char *text);
+	~TrackPopupShowText();
+
+	TrackPopupShowWindow *window;
+	MWindow *mwindow;
+};
+
+class TrackPopupShowWindow : public BC_Window
+{
+public:
+	TrackPopupShowWindow(MWindow *mwindow, TrackPopup *popup, int wx, int wy);
+	~TrackPopupShowWindow();
+
+	void create_objects();
+
+	TrackPopupShowText *show_text;
+	MWindow *mwindow;
+	TrackPopup *popup;
+};
 
 #endif

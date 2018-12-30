@@ -32,16 +32,6 @@ class EditPopupMute;
 class EditPopupMutePack;
 class EditPopupPaste;
 class EditPopupOverwrite;
-class EditPopupFindAsset;
-class EditPopupUserTitle;
-class EditPopupUserTitleText;
-class EditPopupUserTitleWindow;
-class EditUserTitleDialogThread;
-class EditPopupTitleColor;
-class EditTitleColorPicker;
-class EditPopupShow;
-class EditShowDialogThread;
-class EditPopupShowText;
-class EditPopupShowWindow;
+class EditPopupOverwritePlugins;
 
 #endif
