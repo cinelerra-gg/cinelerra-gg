@@ -1,4 +1,4 @@
-%define ver 20181129
+%define ver 20181231
 %define cin cinelerra
 Summary: Multimedia Editing and construction
 
@@ -78,6 +78,19 @@ Multimedia editing and construction
 
 %clean
 %{__rm} -rf %{buildroot}
+
+%post
+if [ -d /etc/yum.repos.d ]; then
+ echo  > /etc/yum.repos.d/cin.repo "[cin]"
+ echo >> /etc/yum.repos.d/cin.repo name=cinelerra-gg
+ echo >> /etc/yum.repos.d/cin.repo baseurl=https://cinelerra-gg.org/download/pkgs/fedora$releasever/
+ echo >> /etc/yum.repos.d/cin.repo enabled=1
+ echo >> /etc/yum.repos.d/cin.repo gpgcheck=0
+fi
+%postun
+if [ -d /etc/yum.repos.d ]; then
+ rm -f /etc/yum.repos.d/cin.repo
+fi
 
 %files
 %defattr(-, root, root, -)
