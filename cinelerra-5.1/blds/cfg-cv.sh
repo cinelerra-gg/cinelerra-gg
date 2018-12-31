@@ -1,6 +1,6 @@
 #!/bin/bash -x
 # cd cincv;  cfg_cv.sh /path/cin5
-# used git clone "git://git.cinelerra-cv.org/goodguy/cinelerra.git" "cinelerra5"
+# used git clone "git://git.cinelerra-gg.org/goodguy/cinelerra.git" "cinelerra5"
 # ver: git checkout 135eb5f052a2f75e4df6c86511a94ec9586e096d (dec 30, 2016)
 cin="$1"
 THIRDPARTY=`pwd`/thirdparty

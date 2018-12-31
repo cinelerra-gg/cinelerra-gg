@@ -4,7 +4,7 @@ pkgver=5.1
 pkgrel=20181129
 pkgdesc="Cinelerra git://git.cinelerra-gg.org/goodguy/cinelerra.git ($pkgrel)"
 arch=('x86_64')
-url="http://www.cinelerra-gg.org"
+url="https://www.cinelerra-gg.org"
 license=('GPL')
 DEPENDS=( 'alsa-lib' 'atk' 'bzip2' 'cairo' 'expat' 'fftw' 'flac'
  'fontconfig' 'freetype2' 'fribidi' 'gcc-libs' 'gdk-pixbuf2'

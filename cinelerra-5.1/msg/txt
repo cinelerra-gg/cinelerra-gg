@@ -12,6 +12,14 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Neophyte theme selected in Preferences by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+Dec 2018 New Features of note:
+  Inter-View mode / Identifying Source Targets added.
+  Cut and Paste behavior added; right mouse button on clip.
+  Grouping and ungrouping possibilities in Arrow mode,
+  Color titles and media with changable colors and alpha.
+  Change thumbnail size, vicon memory usage and color mode.
+  Preview window zoom scale for vicons in Resources window.
+  New improved drag arrow that does not block the media.
 Nov 2018 New features of note:
   FFmpeg is now at version 4.1 with a few more plugins.
   Sketcher plugin newly added to "pencil in" lines/curves.

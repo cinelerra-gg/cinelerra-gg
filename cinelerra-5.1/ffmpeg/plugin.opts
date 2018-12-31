@@ -364,3 +364,8 @@ vibrance
 #sr ###Input/output error
 #xstack ###Operation not permitted
 #agraphmonitor ###Input/output error
+; the ffmpeg system library on Arch has these errors:
+#ladspa
+#ass
+#drawtext
+#subtitles

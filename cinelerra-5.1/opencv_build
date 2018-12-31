@@ -40,7 +40,7 @@ $(foreach p,$(params),\
 src?=git
 bld?=sys
 git_url?=https://github.com/opencv
-tar_url?=https://cinelerra-cv.org/five/src/opencv-20170916.tgz
+tar_url?=https://www.cinelerra-gg.org/download/opencv/opencv-20180401.tgz
 opencv_tar:=$(notdir $(tar_url))
 
 cpus:=$(shell grep -c "^proc" /proc/cpuinfo)

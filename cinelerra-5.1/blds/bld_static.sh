@@ -16,7 +16,7 @@ cd "$path/$dir/$bld"
 rm -rf "$proj.sta"
 mkdir "$proj.sta"
 
-git clone "git://git.cinelerra-cv.org/goodguy/cinelerra.git" "$proj.sta"
+git clone "git://git.cinelerra-gg.org/goodguy/cinelerra.git" "$proj.sta"
 #rsh host tar -C "/mnt0/$proj" -cf - "$base" | tar -C "$proj.sta" -xf -
 if [ $? -ne 0 ]; then
   echo "git clone $proj failed"

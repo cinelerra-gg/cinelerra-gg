@@ -12,7 +12,7 @@ Version: 5.1
 Release: %{ver}
 License: GPL
 Group: Applications/Multimedia
-URL: http://cinelerra-cv.org/
+URL: https://cinelerra-gg.org/
 
 # Obtained from :
 # git clone git://git.cinelerra.org/goodguy/cinelerra.git cinelerra5

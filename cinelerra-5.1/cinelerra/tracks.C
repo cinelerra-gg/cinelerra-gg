@@ -118,6 +118,7 @@ void Tracks::select_affected_edits(double position, Track *start_track, int sens
 	for( Track *track=start_track; track; track=track->next ) {
 		if( !track->record ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( edit->silence() ) continue;
 			double startproject = track->from_units(edit->startproject);
 			if( edl->equivalent(startproject, position) ) {
 				edit->is_selected = sense >= 0 ? sense :
