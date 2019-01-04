@@ -277,6 +277,10 @@ public:
 	void get_pixmap_size(Edit *edit, int64_t edit_x, int64_t edit_w, int64_t &pixmap_x, int64_t &pixmap_w, int64_t &pixmap_h);
 	ResourcePixmap* create_pixmap(Edit *edit, int64_t edit_x, int64_t pixmap_x, int64_t pixmap_w, int64_t pixmap_h);
 	void update_cursor(int flush);
+	void draw_selected(int x, int y, int w, int h);
+	int arrow_mode();
+	int ibeam_mode();
+
 // Get edit and handle the cursor is over
 	int do_edit_handles(int cursor_x,
 		int cursor_y,

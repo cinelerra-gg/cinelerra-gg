@@ -278,7 +278,6 @@ int TrackCanvas::drag_stop_event()
 {
 	int result = gui->drag_stop();
 	if( !result && mwindow->session->current_operation ) {
-		mwindow->edl->tracks->clear_selected_edits();
 		mwindow->session->current_operation = NO_OPERATION;
 		drag_scroll = 0;
 	}
@@ -521,10 +520,12 @@ int TrackCanvas::drag_stop(int *redraw)
 					double drop_position = new_pos;
 					int ret = test_track_group(drag_group, drop_track, new_pos);
 					if( !ret && new_pos != drop_position ) {
+						drop_position = new_pos;
 						ret = test_track_group(drag_group, drop_track, new_pos);
 					}
-					if( ret )
-						mwindow->move_group(drag_group, drop_track, new_pos);
+					if( ret >= 0 )
+						mwindow->move_group(drag_group, drop_track, drop_position,
+							ret > 0 ? !shift_down() : shift_down());
 					drag_group->remove_user();
 					mwindow->session->drag_group = 0;
 				}
@@ -716,19 +717,16 @@ void TrackCanvas::draw(int mode, int hide_cursor)
 
 void TrackCanvas::update_cursor(int flush)
 {
-	switch(mwindow->edl->session->editing_mode)
-	{
-		case EDITING_ARROW: set_cursor(ARROW_CURSOR, 0, flush); break;
-		case EDITING_IBEAM: set_cursor(IBEAM_CURSOR, 0, flush); break;
-	}
+	if( arrow_mode() )
+		set_cursor(ARROW_CURSOR, 0, flush);
+	else if( ibeam_mode() )
+		set_cursor(IBEAM_CURSOR, 0, flush);
 }
 
 
 void TrackCanvas::test_timer()
 {
-	if(resource_timer->get_difference() > 1000 &&
-		!hourglass_enabled)
-	{
+	if( resource_timer->get_difference() > 1000 && !hourglass_enabled ) {
 		start_hourglass();
 		hourglass_enabled = 1;
 	}
@@ -1591,15 +1589,17 @@ void TrackCanvas::draw_highlighting()
 				double drop_position = new_pos;
 				int color = GREEN;
 				int ret = test_track_group(drag_group, track, new_pos);
-				if( !ret && new_pos != drop_position ) {
-					double pos = new_pos;
-					pos += mwindow->session->drag_position - cur_pos;
-					cx = mwindow->edl->get_position_cursorx(pos, pane->number);
-					ret = test_track_group(drag_group, track, new_pos);
-					color = ret ? YELLOW : RED;
+				if( ret < 0 )
+					color = ORANGE;
+				else if( !ret ) {
+					if( new_pos != drop_position ) {
+						double pos = new_pos;
+						pos += mwindow->session->drag_position - cur_pos;
+						cx = mwindow->edl->get_position_cursorx(pos, pane->number);
+						ret = test_track_group(drag_group, track, new_pos);
+					}
+					color = ret > 0 ? YELLOW : shift_down() ? RED : BLUE;
 				}
-				else if( !ret )
-					color = RED;
 				track_dimensions(mwindow->session->track_highlighted, x, y, w, h);
 				int dx = cx - mwindow->session->drag_origin_x;
 				int dy = y - mwindow->session->drag_origin_y;
@@ -1672,6 +1672,19 @@ void TrackCanvas::draw_highlighting()
 	draw_selected_edits(mwindow->edl, 0, 0, GREEN+BLUE, RED);
 }
 
+// x does not reliably draw a really big rectangle
+void TrackCanvas::draw_selected(int x, int y, int w, int h)
+{
+	int x1 = bmax(x, 0), x2 = bmin(x+w, get_w());
+	if( x1 > x2 ) return;
+	int y1 = bmax(y, 0), y2 = bmin(y+h, get_h());
+	if( y1 > y2 ) return;
+	if( x   >= 0 && x   < get_w() ) draw_line(x,y1,   x,y2);
+	if( x+w >= 0 && x+w < get_w() ) draw_line(x+w,y1, x+w,y2);
+	if( y   >= 0 && y   < get_h() ) draw_line(x1,y,   x2,y);
+	if( y+h >= 0 && y+h < get_h() ) draw_line(x1,y+h, x2,y+h);
+}
+
 void TrackCanvas::draw_selected_edits(EDL *edl, int dx, int dy, int color0, int color1)
 {
 	for( Track *track=edl->tracks->first; track; track=track->next ) {
@@ -1686,11 +1699,11 @@ void TrackCanvas::draw_selected_edits(EDL *edl, int dx, int dy, int color0, int 
 			int inner = color1 < 0 ? color0 : !edit->group_id ? color0 :
 				mwindow->get_group_color(edit->group_id);
 			set_color(inner);
-			draw_rectangle(x, y, w, h);
+			draw_selected(x, y, w, h);
 			int outer = color1 < 0 ? color0 : !edit->group_id ? color1 : inner;
 			set_color(outer);
-			draw_rectangle(x-1, y-1, w+2, h+2);
-			draw_rectangle(x-2, y-2, w+1, h+1);
+			draw_selected(x-1, y-1, w+2, h+2);
+			draw_selected(x-2, y-2, w+1, h+1);
 		}
 	}
 }
@@ -4130,17 +4143,14 @@ int TrackCanvas::cursor_update(int in_motion)
 	int update_scroll = 0;
 	int update_overlay = 0;
 	int update_cursor = 0;
-	int new_cursor = 0;
 	int rerender = 0;
 	double position = 0.;
 //printf("TrackCanvas::cursor_update %d\n", __LINE__);
 
 // Default cursor
-	switch(mwindow->edl->session->editing_mode)
-	{
-		case EDITING_ARROW: new_cursor = ARROW_CURSOR; break;
-		case EDITING_IBEAM: new_cursor = IBEAM_CURSOR; break;
-	}
+	int new_cursor =
+		arrow_mode() ? ARROW_CURSOR :
+		ibeam_mode() ? IBEAM_CURSOR : 0;
 
 	switch(mwindow->session->current_operation)
 	{
@@ -4829,6 +4839,15 @@ int TrackCanvas::do_tracks(int cursor_x, int cursor_y, int button_press)
 	return result;
 }
 
+int TrackCanvas::arrow_mode()
+{
+	return mwindow->edl->session->editing_mode == EDITING_ARROW ? 1 : 0;
+}
+int TrackCanvas::ibeam_mode()
+{
+	return mwindow->edl->session->editing_mode == EDITING_IBEAM ? 1 : 0;
+}
+
 int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag_start,
 	int &redraw, int &rerender, int &new_cursor, int &update_cursor)
 {
@@ -4841,26 +4860,23 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 
 // Cursor inside a track
 // Cursor inside an edit
-			if(cursor_x >= edit_x && cursor_x < edit_x + edit_w &&
-				cursor_y >= edit_y && cursor_y < edit_y + edit_h) {
+			if( cursor_x >= edit_x && cursor_x < edit_x + edit_w &&
+			    cursor_y >= edit_y && cursor_y < edit_y + edit_h ) {
 				if( button_press && get_buttonpress() == LEFT_BUTTON ) {
-					if( get_double_click() && (ctrl_down() ||
-					     mwindow->edl->session->editing_mode == EDITING_IBEAM) ) {
-// Select duration of edit
+					if( get_double_click() ) {
+						mwindow->edl->tracks->clear_selected_edits();
+						mwindow->edl->tracks->select_affected_edits(
+							edit->track->from_units(edit->startproject),
+							edit->track, 1);
 						double start = edit->track->from_units(edit->startproject);
 						start =	mwindow->edl->align_to_frame(start, 0);
 						mwindow->edl->local_session->set_selectionstart(start);
 						double end = edit->track->from_units(edit->startproject+edit->length);
 						end = mwindow->edl->align_to_frame(end, 0);
 						mwindow->edl->local_session->set_selectionend(end);
-						mwindow->edl->tracks->clear_selected_edits();
-						mwindow->edl->tracks->select_affected_edits(
-							edit->track->from_units(edit->startproject),
-							edit->track, 1);
-						result = 1;
+						result = 1; // Select edit duration or select_region
 					}
-					else if( mwindow->edl->session->editing_mode == EDITING_ARROW ||
-					         ctrl_down() ) {
+					else if( arrow_mode() || (ibeam_mode() && ctrl_down()) ) {
 						mwindow->session->drag_edit = edit;
 						mwindow->session->current_operation = GROUP_TOGGLE;
 						result = 1;
@@ -4880,8 +4896,9 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 					drag_start = 0; // if unselected "fast" drag
 					if( !edit->silence() && !edit->is_selected ) {
 						mwindow->edl->tracks->clear_selected_edits();
-						if( ctrl_down() ) {
+						if( ibeam_mode() ) {
 							double start = edit->track->from_units(edit->startproject);
+							mwindow->edl->local_session->set_selectionstart(start);
 							mwindow->edl->local_session->set_selectionend(start);
 							edit->set_selected(1);
 						}
@@ -4892,7 +4909,7 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 						drag_start = 1;
 					}
 // Construct list of all affected edits
-					if( ctrl_down() || drag_start ) {
+					if( drag_start || ibeam_mode() ) {
 						mwindow->edl->tracks->get_selected_edits(mwindow->session->drag_edits);
 						if( mwindow->session->drag_edits->size() > 0 ) {
 							mwindow->session->current_operation = DRAG_EDIT;
@@ -4908,7 +4925,7 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 							update_cursor = 1;
 						}
 					}
-					else if( edit->is_selected ) {
+					else if( edit->is_selected && arrow_mode() ) {
 						if( mwindow->session->drag_group )
 							mwindow->session->drag_group->remove_user();
 						double start_position = 0;
@@ -4939,7 +4956,7 @@ int TrackCanvas::test_track_group(EDL *group, Track *first_track, double &pos)
 	Track *src = group->tracks->first;
 	for( Track *track=first_track; track && src; track=track->next ) {
 		if( !track->record ) continue;
-		if( src->data_type != track->data_type ) return 0;
+		if( src->data_type != track->data_type ) return -1;
 		for( Edit *src_edit=src->edits->first; src_edit; src_edit=src_edit->next ) {
 			if( src_edit->silence() ) continue;
 			if( edit_intersects(track, src_edit, pos) ) return 0;
@@ -4956,23 +4973,32 @@ int TrackCanvas::edit_intersects(Track *track, Edit *src_edit, double &pos)
 	int64_t src_end = src_start + src_edit->length;
 	double new_start = src_edit->track->from_units(src_start) + pos;
 	double new_end = src_edit->track->from_units(src_end) + pos;
-	int64_t trk_start = track->to_units(new_start, 0);
-	int64_t trk_end = track->to_units(new_end, 0);
+	int64_t trk_start = track->to_units(new_start, 1);
+	int64_t trk_end = track->to_units(new_end, 1);
 	for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
 		if( edit->is_selected || edit->silence() ) continue;
 		int64_t edit_start = edit->startproject;
 		if( edit_start >= trk_end ) continue;
 		int64_t edit_end = edit_start + edit->length;
 		if( trk_start >= edit_end ) continue;
-		int lt_dist = abs(trk_end - edit_start);
-		int rt_dist = abs(edit_end - trk_start);
+		int64_t lt_dist = labs(trk_end - edit_start);
+		int64_t rt_dist = labs(edit_end - trk_start);
+		int64_t position;
 		if( lt_dist < rt_dist ) {
-			pos = edit->track->from_units(edit_start) -
-				src_edit->track->from_units(src_end);
+			position = edit_start;
+			lt_dist = abs(trk_start - edit_start);
+			rt_dist = abs(trk_end - edit_start);
+			if( lt_dist > rt_dist )
+				position -= src_end;
 		}
 		else {
-			pos = edit->track->from_units(edit_end);
+			position = edit_end;
+			lt_dist = abs(trk_start - edit_end);
+			rt_dist = abs(trk_end - edit_end);
+			if( lt_dist > rt_dist )
+				position -= src_end;
 		}
+		pos = edit->track->from_units(position);
 		return 1;
 	}
 	return 0;
@@ -5193,9 +5219,8 @@ int TrackCanvas::button_press_event()
 				mwindow->move_right(get_w() / 5);
 		}
 		else {
-			switch(mwindow->edl->session->editing_mode) {
+			if( arrow_mode() ) do {
 // Test handles and resource boundaries and highlight a track
-			case EDITING_ARROW: {
 				if( do_transitions(cursor_x, cursor_y,
 						1, new_cursor, update_cursor) ) break;
 
@@ -5223,10 +5248,9 @@ int TrackCanvas::button_press_event()
 				if( do_tracks(cursor_x, cursor_y, 1) ) break;
 
 				result = 0;
-				break; }
-
+			} while(0);
+			else if( ibeam_mode() ) do {
 // Test handles only and select a region
-			case EDITING_IBEAM: {
 				double position = mwindow->edl->get_cursor_position(cursor_x, pane->number);
 //printf("TrackCanvas::button_press_event %d\n", position);
 
@@ -5256,8 +5280,7 @@ int TrackCanvas::button_press_event()
 				rerender = start_selection(position);
 				mwindow->session->current_operation = SELECT_REGION;
 				update_cursor = 1;
-				break; }
-			}
+			} while(0);
 		}
 
 		if( rerender ) {

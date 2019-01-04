@@ -66,7 +66,7 @@
 #define MNGREY              0xe6e6e6
 #define FGGREY              0xe3e3e3
 #define MNBLUE              0x003cff
-#define ORANGE              0xffdd76
+#define ORANGE              0xff8000
 #define FTGREY              0xbcbcbc
 
 #endif

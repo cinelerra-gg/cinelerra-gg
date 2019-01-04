@@ -26,6 +26,7 @@
 
 #include "bccolors.inc"
 #include "clip.h"
+#include "colors.h"
 #include "vframe.inc"
 
 #include <stdint.h>
@@ -334,53 +335,5 @@ public:
 	static int yuv_to_hsv(float y, float u, float v, float &h, float &s, float &va, float max) { return 0; };
 	static int hsv_to_yuv(float &y, float &u, float &v, float h, float s, float va, float max) { return 0; };
 };
-
-
-// standard colors
-#define BLACK	0x000000
-#define WHITE	0xFFFFFF
-
-#define LTBLUE	0x9090FF
-#define BLUE	0x0000FF
-#define DKBLUE	0x000090
-
-#define LTPINK	0xFFC0C0
-#define PINK	0xFF8080
-#define RED	0xFF0000
-
-#define LTGREEN	0xC0FFC0
-#define GREEN	0x00FF00
-#define DKGREEN	0x009000
-
-#define YELLOW	0xFFFF00
-#define LTYELLOW 0xFFFFA0
-#define MEYELLOW 0xFFFF00
-#define MDYELLOW 0xFFFFD2
-#define DKYELLOW 0xFFFFB4
-
-#define LTCYAN	0x00CBCB
-#define MECYAN	0x009696
-#define MDCYAN	0x007E7E
-#define DKCYAN	0x004949
-
-#define LTPURPLE 0xFFC0FF
-#define MEPURPLE 0xFF00FF
-#define MDPURPLE 0xC000C0
-#define DKPURPLE 0xA000A0
-
-#define LTGREY	0xE0E0E0
-#define MEGREY	0xAFAFAF
-#define DMGREY	0x999999
-#define MDGREY	0x7D7D7D
-#define DKGREY	0x4B4B4B
-
-#define BLOND	0xb4b487
-#define SLBLUE	0x6040c0
-
-#define MNGREY	0xe6e6e6
-#define FGGREY	0xe3e3e3
-#define MNBLUE	0x003cff
-#define ORANGE	0xffdd76
-#define FTGREY	0xbcbcbc
 
 #endif

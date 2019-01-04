@@ -409,7 +409,7 @@ public:
 		int edit_edits, int edit_labels, int edit_autos, int edit_plugins);
 	void paste_clipboard(Track *first_track, double position, int overwrite,
 		int edit_edits, int edit_labels, int edit_autos, int edit_plugins);
-	void move_group(EDL *group, Track *first_track, double position);
+	void move_group(EDL *group, Track *first_track, double position, int overwrite);
 // Move effect to position
 	void move_effect(Plugin *plugin, Track *track, int64_t position);
 	void move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t position);

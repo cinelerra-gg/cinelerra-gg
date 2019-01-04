@@ -19,8 +19,13 @@ URL: https://cinelerra-gg.org/
 Source0: %{cin}-%{version}-%{ver}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
-%if 0%{?fedora}%{?centos}
+%if 0%{?fedora}
 %define rhat 1
+%define distro fedora
+%endif
+%if 0%{?centos}
+%define rhat 1
+%define distro centos
 %endif
 
 BuildRequires: autoconf
@@ -79,27 +84,26 @@ Multimedia editing and construction
 %clean
 %{__rm} -rf %{buildroot}
 
+%if 0%{?rhat}
 %post
 if [ -d /etc/yum.repos.d ]; then
  echo  > /etc/yum.repos.d/cin.repo "[cin]"
- echo >> /etc/yum.repos.d/cin.repo name=cinelerra-gg
- echo >> /etc/yum.repos.d/cin.repo baseurl=https://cinelerra-gg.org/download/pkgs/fedora$releasever/
- echo >> /etc/yum.repos.d/cin.repo enabled=1
- echo >> /etc/yum.repos.d/cin.repo gpgcheck=0
+ echo >> /etc/yum.repos.d/cin.repo "name=cinelerra-gg"
+ echo >> /etc/yum.repos.d/cin.repo "baseurl=https://cinelerra-gg.org/download/pkgs/%{distro}\$releasever/"
+ echo >> /etc/yum.repos.d/cin.repo "enabled=1"
+ echo >> /etc/yum.repos.d/cin.repo "gpgcheck=0"
 fi
 %postun
 if [ -d /etc/yum.repos.d ]; then
  rm -f /etc/yum.repos.d/cin.repo
 fi
+%endif
 
 %files
 %defattr(-, root, root, -)
 %{_bindir}/*
 %{_libdir}/*
 %{_datadir}/*
-
-%exclude /usr/src/debug
-%exclude /usr/lib/debug
 
 %changelog
 

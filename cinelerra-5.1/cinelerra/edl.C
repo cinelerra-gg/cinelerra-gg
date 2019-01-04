@@ -830,7 +830,6 @@ void EDL::delete_edits(ArrayList<Edit*> *edits, int collapse)
 				edit->startproject -= length;
 		}
 		delete dead_edit;
-		track->optimize();
 	}
 	optimize();
 }

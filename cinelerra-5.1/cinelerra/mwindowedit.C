@@ -1264,14 +1264,17 @@ void MWindow::paste_clipboard(Track *first_track, double position, int overwrite
 	clip->remove_user();
 }
 
-void MWindow::move_group(EDL *group, Track *first_track, double position)
+void MWindow::move_group(EDL *group, Track *first_track, double position, int overwrite)
 {
 	undo->update_undo_before();
 
 	ArrayList<Edit *>edits;
 	edl->tracks->get_selected_edits(&edits);
 	edl->delete_edits(&edits, 0);
-	paste_edits(group, first_track, position, 1, 1, 1, 1, 1);
+	paste_edits(group, first_track, position, overwrite, 1,
+		edl->session->labels_follow_edits,
+		edl->session->plugins_follow_edits,
+		edl->session->autos_follow_edits);
 // big debate over whether to do this, must either clear selected, or no tweaking
 //	edl->tracks->clear_selected_edits();
 

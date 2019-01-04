@@ -22,36 +22,11 @@
 #ifndef MAINMENU_H
 #define MAINMENU_H
 
-class AEffectMenu;
-class LabelsFollowEdits;
-class PluginsFollowEdits;
-class KeyframesFollowEdits;
-class CursorOnFrames;
-class TypelessKeyframes;
-class SetBRenderActive;
-class LoopPlayback;
-
-class Redo;
-class ShowVWindow;
-class ShowAWindow;
-class ShowGWindow;
-class ShowCWindow;
-class ShowLWindow;
-class Undo;
-class KeyframeCurveType;
-class KeyframeCurveTypeMenu;
-class KeyframeCurveTypeItem;
-class SplitX;
-class SplitY;
-class MixerViewer;
-class LoadLayoutItem;
-class LoadLayout;
-
-
 #include "arraylist.h"
 #include "guicast.h"
 #include "bchash.inc"
 #include "loadfile.inc"
+#include "mainmenu.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "maxchannels.h"
@@ -115,6 +90,7 @@ public:
 	MenuAEffectItem *aeffect[TOTAL_EFFECTS];
 	MenuVEffectItem *veffect[TOTAL_EFFECTS];
 	Quit *quit_program;              // affected by save
+	MainDumpsMenu *dump_menu;
 	Undo *undo;
 	Redo *redo;
 	int total_aeffects;
@@ -168,7 +144,25 @@ public:
 	MWindow *mwindow;
 };
 
+class MainDumpsSubMenu : public BC_SubMenu
+{
+public:
+	MainDumpsSubMenu(BC_MenuItem *menu_item);
+	~MainDumpsSubMenu();
 
+	BC_MenuItem *menu_item;
+};
+
+class MainDumpsMenu : public BC_MenuItem
+{
+public:
+	MainDumpsMenu(MWindow *mwindow);
+	~MainDumpsMenu();
+	void create_objects();
+
+	MWindow *mwindow;
+	MainDumpsSubMenu *dumps_menu;
+};
 
 class DumpCICache : public BC_MenuItem
 {
@@ -198,6 +192,14 @@ class DumpAssets : public BC_MenuItem
 {
 public:
 	DumpAssets(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class DumpUndo : public BC_MenuItem
+{
+public:
+	DumpUndo(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

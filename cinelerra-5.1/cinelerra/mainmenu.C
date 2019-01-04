@@ -134,8 +134,8 @@ void MainMenu::create_objects()
 	filemenu->add_item(new BC_MenuItem("-"));
 	filemenu->add_item(quit_program = new Quit(mwindow));
 	quit_program->create_objects(save);
-	filemenu->add_item(new DumpEDL(mwindow));
-	filemenu->add_item(new DumpPlugins(mwindow));
+	filemenu->add_item(dump_menu = new MainDumpsMenu(mwindow));
+	dump_menu->create_objects();
 	filemenu->add_item(new LoadBackup(mwindow));
 	filemenu->add_item(new SaveBackup(mwindow));
 
@@ -585,6 +585,36 @@ int MainMenu::add_load(char *path)
 
 // ================================== menu items
 
+MainDumpsSubMenu::MainDumpsSubMenu(BC_MenuItem *menu_item)
+ : BC_SubMenu()
+{
+	this->menu_item = menu_item;
+}
+MainDumpsSubMenu::~MainDumpsSubMenu()
+{
+}
+
+
+MainDumpsMenu::MainDumpsMenu(MWindow *mwindow)
+ : BC_MenuItem(_("Dumps..."))
+{
+	this->mwindow = mwindow;
+	this->dumps_menu = 0;
+}
+MainDumpsMenu::~MainDumpsMenu()
+{
+}
+
+void MainDumpsMenu::create_objects()
+{
+	add_submenu(dumps_menu = new MainDumpsSubMenu(this));
+//	dumps_menu->add_item(new DumpCICache(mwindow));
+	dumps_menu->add_item(new DumpEDL(mwindow));
+	dumps_menu->add_item(new DumpPlugins(mwindow));
+	dumps_menu->add_item(new DumpAssets(mwindow));
+	dumps_menu->add_item(new DumpUndo(mwindow));
+};
+
 
 DumpCICache::DumpCICache(MWindow *mwindow)
  : BC_MenuItem(_("Dump CICache"))
@@ -604,9 +634,7 @@ DumpEDL::DumpEDL(MWindow *mwindow)
 
 int DumpEDL::handle_event()
 {
-//printf("DumpEDL::handle_event 1\n");
 	mwindow->dump_edl();
-//printf("DumpEDL::handle_event 2\n");
 	return 1;
 }
 
@@ -618,12 +646,9 @@ DumpPlugins::DumpPlugins(MWindow *mwindow)
 
 int DumpPlugins::handle_event()
 {
-//printf("DumpEDL::handle_event 1\n");
 	mwindow->dump_plugins();
-//printf("DumpEDL::handle_event 2\n");
 	return 1;
 }
-
 
 DumpAssets::DumpAssets(MWindow *mwindow)
  : BC_MenuItem(_("Dump Assets"))
@@ -631,7 +656,19 @@ DumpAssets::DumpAssets(MWindow *mwindow)
 
 int DumpAssets::handle_event()
 {
-	mwindow->assets->dump();
+	mwindow->edl->assets->dump();
+	return 1;
+}
+
+DumpUndo::DumpUndo(MWindow *mwindow)
+ : BC_MenuItem(_("Dump Undo"))
+{
+	this->mwindow = mwindow;
+}
+
+int DumpUndo::handle_event()
+{
+	mwindow->dump_undo();
 	return 1;
 }
 
