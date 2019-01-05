@@ -43,6 +43,11 @@ REGISTER_PLUGIN(GammaMain)
 
 GammaConfig::GammaConfig()
 {
+	reset();
+}
+
+void GammaConfig::reset()
+{
 	max = 1;
 	gamma = 0.6;
 	automatic = 1;

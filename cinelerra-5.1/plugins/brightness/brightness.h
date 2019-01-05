@@ -36,6 +36,7 @@ public:
 	BrightnessConfig();
 
 	int equivalent(BrightnessConfig &that);
+	void reset();
 	void copy_from(BrightnessConfig &that);
 	void interpolate(BrightnessConfig &prev,
 		BrightnessConfig &next,

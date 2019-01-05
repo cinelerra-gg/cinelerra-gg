@@ -23,6 +23,7 @@
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
+#include "reframert.h"
 #include "guicast.h"
 #include "language.h"
 #include "pluginvclient.h"
@@ -30,124 +31,6 @@
 #include "transportque.h"
 
 #include <string.h>
-
-class ReframeRT;
-class ReframeRTWindow;
-
-class ReframeRTConfig
-{
-public:
-	ReframeRTConfig();
-	void boundaries();
-	int equivalent(ReframeRTConfig &src);
-	void copy_from(ReframeRTConfig &src);
-	void interpolate(ReframeRTConfig &prev,
-		ReframeRTConfig &next,
-		int64_t prev_frame,
-		int64_t next_frame,
-		int64_t current_frame);
-// was scale
-	double num;
-	double denom;
-	int stretch;
-	int interp;
-	int optic_flow;
-};
-
-
-class ReframeRTNum : public BC_TumbleTextBox
-{
-public:
-	ReframeRTNum(ReframeRT *plugin,
-		ReframeRTWindow *gui,
-		int x,
-		int y);
-	int handle_event();
-	ReframeRT *plugin;
-};
-
-class ReframeRTDenom : public BC_TumbleTextBox
-{
-public:
-	ReframeRTDenom(ReframeRT *plugin,
-		ReframeRTWindow *gui,
-		int x,
-		int y);
-	int handle_event();
-	ReframeRT *plugin;
-};
-
-class ReframeRTStretch : public BC_Radial
-{
-public:
-	ReframeRTStretch(ReframeRT *plugin,
-		ReframeRTWindow *gui,
-		int x,
-		int y);
-	int handle_event();
-	ReframeRT *plugin;
-	ReframeRTWindow *gui;
-};
-
-class ReframeRTDownsample : public BC_Radial
-{
-public:
-	ReframeRTDownsample(ReframeRT *plugin,
-		ReframeRTWindow *gui,
-		int x,
-		int y);
-	int handle_event();
-	ReframeRT *plugin;
-	ReframeRTWindow *gui;
-};
-
-class ReframeRTInterpolate : public BC_CheckBox
-{
-public:
-	ReframeRTInterpolate(ReframeRT *plugin,
-		ReframeRTWindow *gui,
-		int x,
-		int y);
-	int handle_event();
-	ReframeRT *plugin;
-	ReframeRTWindow *gui;
-};
-
-class ReframeRTWindow : public PluginClientWindow
-{
-public:
-	ReframeRTWindow(ReframeRT *plugin);
-	~ReframeRTWindow();
-	void create_objects();
-	ReframeRT *plugin;
-	ReframeRTNum *num;
-	ReframeRTDenom *denom;
-	ReframeRTStretch *stretch;
-	ReframeRTDownsample *downsample;
-	ReframeRTInterpolate *interpolate;
-};
-
-
-class ReframeRT : public PluginVClient
-{
-public:
-	ReframeRT(PluginServer *server);
-	~ReframeRT();
-
-	PLUGIN_CLASS_MEMBERS(ReframeRTConfig)
-
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int is_realtime();
-	int is_synthesis();
-	int process_buffer(VFrame *frame,
-		int64_t start_position,
-		double frame_rate);
-};
-
-
-
 
 
 
@@ -157,6 +40,11 @@ REGISTER_PLUGIN(ReframeRT);
 
 
 ReframeRTConfig::ReframeRTConfig()
+{
+	reset();
+}
+
+void ReframeRTConfig::reset()
 {
 	num = 1.0;
 	denom = 1.0;
@@ -220,7 +108,7 @@ void ReframeRTConfig::boundaries()
 
 
 ReframeRTWindow::ReframeRTWindow(ReframeRT *plugin)
- : PluginClientWindow(plugin, 230, 190, 230, 190, 0)
+ : PluginClientWindow(plugin, 230, 235, 230, 235, 0)
 {
 	this->plugin = plugin;
 }
@@ -260,14 +148,19 @@ void ReframeRTWindow::create_objects()
 	add_subwindow(downsample = new ReframeRTDownsample(plugin, this, x, y));
 	y += 30;
 	add_subwindow(interpolate = new ReframeRTInterpolate(plugin, this, x, y));
-	y += 30;
-	add_subwindow(stretch = new ReframeRTStretch(plugin, this, x, y));
-	y += stretch->get_h() + plugin->get_theme()->widget_border;
-	add_subwindow(downsample = new ReframeRTDownsample(plugin, this, x, y));
+	y += 40;
+	add_subwindow(reset = new ReframeRTReset(plugin, this, x, y));
 	show_window();
 }
 
-
+void ReframeRTWindow::update()
+{
+	num->update((float)plugin->config.num);
+	denom->update((float)plugin->config.denom);
+	stretch->update(plugin->config.stretch);
+	downsample->update(!plugin->config.stretch);
+	interpolate->update(plugin->config.interp);
+}
 
 
 
@@ -376,6 +269,26 @@ int ReframeRTInterpolate::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
+
+
+ReframeRTReset::ReframeRTReset(ReframeRT *plugin, ReframeRTWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+ReframeRTReset::~ReframeRTReset()
+{
+}
+int ReframeRTReset::handle_event()
+{
+	plugin->config.reset();
+	gui->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
 
 ReframeRT::ReframeRT(PluginServer *server)
  : PluginVClient(server)

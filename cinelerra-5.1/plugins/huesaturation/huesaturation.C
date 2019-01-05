@@ -24,6 +24,7 @@
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
+#include "huesaturation.h"
 #include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
@@ -36,142 +37,19 @@
 #include <string.h>
 
 
-class HueEffect;
 
-#define MINHUE -180
-#define MAXHUE 180
-#define MINSATURATION -100
-#define MAXSATURATION 100
-#define MINVALUE -100
-#define MAXVALUE 100
-
-
-
-
-
-
-class HueConfig
-{
-public:
-	HueConfig();
-
-	void copy_from(HueConfig &src);
-	int equivalent(HueConfig &src);
-	void interpolate(HueConfig &prev,
-		HueConfig &next,
-		long prev_frame,
-		long next_frame,
-		long current_frame);
-	float hue, saturation, value;
-};
-
-class HueSlider : public BC_FSlider
-{
-public:
-	HueSlider(HueEffect *plugin, int x, int y, int w);
-	int handle_event();
-	HueEffect *plugin;
-};
-
-class SaturationSlider : public BC_FSlider
-{
-public:
-	SaturationSlider(HueEffect *plugin, int x, int y, int w);
-	int handle_event();
-	char* get_caption();
-	HueEffect *plugin;
-	char string[BCTEXTLEN];
-};
-
-class ValueSlider : public BC_FSlider
-{
-public:
-	ValueSlider(HueEffect *plugin, int x, int y, int w);
-	int handle_event();
-	char* get_caption();
-	HueEffect *plugin;
-	char string[BCTEXTLEN];
-};
-
-class HueWindow : public PluginClientWindow
-{
-public:
-	HueWindow(HueEffect *plugin);
-	void create_objects();
-	HueEffect *plugin;
-	HueSlider *hue;
-	SaturationSlider *saturation;
-	ValueSlider *value;
-};
-
-
-
-class HueEngine : public LoadServer
-{
-public:
-	HueEngine(HueEffect *plugin, int cpus);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	HueEffect *plugin;
-};
-
-class HuePackage : public LoadPackage
-{
-public:
-	HuePackage();
-	int row1, row2;
-};
-
-class HueUnit : public LoadClient
-{
-public:
-	HueUnit(HueEffect *plugin, HueEngine *server);
-	void process_package(LoadPackage *package);
-	HueEffect *plugin;
-};
-
-class HueEffect : public PluginVClient
-{
-public:
-	HueEffect(PluginServer *server);
-	~HueEffect();
-
-
-	PLUGIN_CLASS_MEMBERS(HueConfig);
-	int process_buffer(VFrame *frame,
-		int64_t start_position,
-		double frame_rate);
-	int is_realtime();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int handle_opengl();
-
-	VFrame *input, *output;
-	HueEngine *engine;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+REGISTER_PLUGIN(HueEffect)
 
 
 
 
 
 HueConfig::HueConfig()
+{
+	reset();
+}
+
+void HueConfig::reset()
 {
 	hue = saturation = value = 0;
 }
@@ -294,13 +172,28 @@ char* ValueSlider::get_caption()
 }
 
 
-
+HueReset::HueReset(HueEffect *plugin, HueWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+HueReset::~HueReset()
+{
+}
+int HueReset::handle_event()
+{
+	plugin->config.reset();
+	gui->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 
 
 HueWindow::HueWindow(HueEffect *plugin)
- : PluginClientWindow(plugin, 345, 100, 345, 100, 0)
+ : PluginClientWindow(plugin, 345, 145, 345, 145, 0)
 {
 	this->plugin = plugin;
 }
@@ -315,12 +208,20 @@ void HueWindow::create_objects()
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Value:")));
 	add_subwindow(value = new ValueSlider(plugin, x1, y, 200));
+	y += 40;
+	add_subwindow(reset = new HueReset(plugin, this, x, y));
 	show_window();
 	flush();
 }
 
 
-
+// for Reset button
+void HueWindow::update()
+{
+	hue->update(plugin->config.hue);
+	saturation->update(plugin->config.saturation);
+	value->update(plugin->config.value);
+}
 
 
 
@@ -519,7 +420,6 @@ void HueUnit::process_package(LoadPackage *package)
 
 
 
-REGISTER_PLUGIN(HueEffect)
 
 
 HueEffect::HueEffect(PluginServer *server)

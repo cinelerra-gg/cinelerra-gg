@@ -25,13 +25,6 @@
 
 
 
-
-
-
-
-
-
-
 GammaWindow::GammaWindow(GammaMain *client)
  : PluginClientWindow(client,
 	400,
@@ -45,7 +38,7 @@ GammaWindow::GammaWindow(GammaMain *client)
 
 void GammaWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = 10, y = 10, x1 = x;
 	add_subwindow(histogram = new BC_SubWindow(x,
 		y,
 		get_w() - x * 2,
@@ -56,6 +49,7 @@ void GammaWindow::create_objects()
 	BC_Title *title;
 	add_tool(title = new BC_Title(x, y, _("Maximum:")));
 	x += title->get_w() + 10;
+	x1 = x; // save x to align the two sliders
 	add_tool(max_slider = new MaxSlider(client,
 		this,
 		x,
@@ -70,10 +64,10 @@ void GammaWindow::create_objects()
 	y += max_text->get_h() + 10;
 	x = 10;
 	add_tool(automatic = new GammaAuto(client, x, y));
-
 	y += automatic->get_h() + 10;
 	add_tool(title = new BC_Title(x, y, _("Gamma:")));
 	x += title->get_w() + 10;
+	x = x1; // recover x of the "MaxSlider" to align the "GammaSlider"
 	add_tool(gamma_slider = new GammaSlider(client,
 		this,
 		x,
@@ -92,6 +86,8 @@ void GammaWindow::create_objects()
 	y += plot->get_h() + 10;
 
 	add_tool(new GammaColorPicker(client, this, x, y));
+
+	add_tool(reset = new GammaReset(client, this, get_w()-110, y));
 
 	show_window();
 	flush();
@@ -314,4 +310,19 @@ int GammaColorPicker::handle_event()
 	return 1;
 }
 
+
+GammaReset::GammaReset(GammaMain *plugin, GammaWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int GammaReset::handle_event()
+{
+	plugin->config.reset();
+	gui->update();
+	plugin->send_configure_change();
+	return 1;
+}
 

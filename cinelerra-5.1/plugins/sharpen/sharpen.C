@@ -40,6 +40,11 @@ REGISTER_PLUGIN(SharpenMain)
 
 SharpenConfig::SharpenConfig()
 {
+	reset();
+}
+
+void SharpenConfig::reset()
+{
 	horizontal = 0;
 	interlace = 0;
 	sharpness = 50;

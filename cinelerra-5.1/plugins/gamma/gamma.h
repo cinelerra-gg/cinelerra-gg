@@ -40,6 +40,7 @@ public:
 	GammaConfig();
 
 	int equivalent(GammaConfig &that);
+	void reset();
 	void copy_from(GammaConfig &that);
 	void interpolate(GammaConfig &prev,
 		GammaConfig &next,

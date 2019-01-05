@@ -32,6 +32,7 @@ class GammaText;
 class GammaAuto;
 class GammaPlot;
 class GammaColorPicker;
+class GammaReset;
 
 #include "filexml.h"
 #include "guicast.h"
@@ -59,6 +60,7 @@ public:
 	GammaText *gamma_text;
 	GammaAuto *automatic;
 	GammaPlot *plot;
+	GammaReset *reset;
 };
 
 class MaxSlider : public BC_FSlider
@@ -136,6 +138,15 @@ public:
 		GammaWindow *gui,
 		int x,
 		int y);
+	int handle_event();
+	GammaMain *plugin;
+	GammaWindow *gui;
+};
+
+class GammaReset : public BC_GenericButton
+{
+public:
+	GammaReset(GammaMain *plugin, GammaWindow *gui, int x, int y);
 	int handle_event();
 	GammaMain *plugin;
 	GammaWindow *gui;

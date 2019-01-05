@@ -39,6 +39,7 @@ class SharpenInterlace;
 class SharpenSlider;
 class SharpenHorizontal;
 class SharpenLuminance;
+class SharpenReset;
 
 class SharpenWindow : public PluginClientWindow
 {
@@ -47,12 +48,14 @@ public:
 	~SharpenWindow();
 
 	void create_objects();
+	void update();
 
 	SharpenMain *client;
 	SharpenSlider *sharpen_slider;
 	SharpenInterlace *sharpen_interlace;
 	SharpenHorizontal *sharpen_horizontal;
 	SharpenLuminance *sharpen_luminance;
+	SharpenReset *reset;
 };
 
 class SharpenSlider : public BC_ISlider
@@ -96,5 +99,14 @@ public:
 	SharpenMain *client;
 };
 
+class SharpenReset : public BC_GenericButton
+{
+public:
+	SharpenReset(SharpenMain *client, SharpenWindow *gui, int x, int y);
+	~SharpenReset();
+	int handle_event();
+	SharpenMain *client;
+	SharpenWindow *gui;
+};
 
 #endif

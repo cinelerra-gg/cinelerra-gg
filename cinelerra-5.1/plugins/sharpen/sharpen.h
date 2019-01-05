@@ -44,6 +44,7 @@ public:
 
 	void copy_from(SharpenConfig &that);
 	int equivalent(SharpenConfig &that);
+	void reset();
 	void interpolate(SharpenConfig &prev,
 		SharpenConfig &next,
 		long prev_frame,

@@ -68,10 +68,21 @@ void BrightnessWindow::create_objects()
 	add_tool(luma = new BrightnessLuma(client,
 		x,
 		y));
+
+	y += 35;
+	add_subwindow(reset = new BrightnessReset(client, this, x, y));
+
 	show_window();
 	flush();
 }
 
+// for Reset button
+void BrightnessWindow::update()
+{
+	brightness->update(client->config.brightness);
+	contrast->update(client->config.contrast);
+	luma->update(client->config.luma);
+}
 
 BrightnessSlider::BrightnessSlider(BrightnessMain *client,
 	float *output,
@@ -138,3 +149,22 @@ int BrightnessLuma::handle_event()
 	client->send_configure_change();
 	return 1;
 }
+
+
+BrightnessReset::BrightnessReset(BrightnessMain *client, BrightnessWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->client = client;
+	this->window = window;
+}
+BrightnessReset::~BrightnessReset()
+{
+}
+int BrightnessReset::handle_event()
+{
+	client->config.reset();
+	window->update();
+	client->send_configure_change();
+	return 1;
+}
+

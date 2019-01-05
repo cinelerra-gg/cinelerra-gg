@@ -35,8 +35,13 @@
 REGISTER_PLUGIN(BrightnessMain)
 
 
-
 BrightnessConfig::BrightnessConfig()
+{
+	reset();
+}
+
+void BrightnessConfig::reset()
+
 {
 	brightness = 0;
 	contrast = 0;

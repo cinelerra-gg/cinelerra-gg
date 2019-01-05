@@ -27,6 +27,7 @@ class BrightnessThread;
 class BrightnessWindow;
 class BrightnessSlider;
 class BrightnessLuma;
+class BrightnessReset;
 
 #include "brightness.h"
 #include "guicast.h"
@@ -40,13 +41,14 @@ class BrightnessWindow : public PluginClientWindow
 public:
 	BrightnessWindow(BrightnessMain *client);
 	~BrightnessWindow();
-
+	void update();
 	void create_objects();
 
 	BrightnessMain *client;
 	BrightnessSlider *brightness;
 	BrightnessSlider *contrast;
 	BrightnessLuma *luma;
+	BrightnessReset *reset;
 };
 
 class BrightnessSlider : public BC_FSlider
@@ -71,6 +73,16 @@ public:
 	int handle_event();
 
 	BrightnessMain *client;
+};
+
+class BrightnessReset : public BC_GenericButton
+{
+public:
+	BrightnessReset(BrightnessMain *client, BrightnessWindow *window, int x, int y);
+	~BrightnessReset();
+	int handle_event();
+	BrightnessMain *client;
+	BrightnessWindow *window;
 };
 
 #endif
