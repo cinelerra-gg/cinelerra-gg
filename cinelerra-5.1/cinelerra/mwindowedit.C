@@ -1135,13 +1135,16 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 {
 	undo->update_undo_before();
 
-	edl->tracks->move_edits(edits,
-		track,
-		position,
+	EDL *clip = selected_edits_to_clip(1, 0, 0,
 		edl->session->labels_follow_edits,
-		edl->session->plugins_follow_edits,
 		edl->session->autos_follow_edits,
-		behaviour);
+		edl->session->plugins_follow_edits);
+	edl->delete_edits(edits, 0);
+	paste_edits(clip, track, position, behaviour, 1,
+		edl->session->labels_follow_edits,
+		edl->session->autos_follow_edits,
+		edl->session->plugins_follow_edits);
+	edl->tracks->clear_selected_edits();
 
 	save_backup();
 	undo->update_undo_after(_("move edit"), LOAD_ALL);
