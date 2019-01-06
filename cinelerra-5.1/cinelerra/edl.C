@@ -831,7 +831,10 @@ void EDL::delete_edits(ArrayList<Edit*> *edits, int collapse)
 		}
 		delete dead_edit;
 	}
-	optimize();
+// optimize edits only.
+//  full optimize deletes pluginsets, mistargeting drag and drop
+	for( Track *track=tracks->first; track; track=track->next )
+		track->edits->optimize();
 }
 
 class Range {

@@ -1101,6 +1101,7 @@ void MWindow::delete_edits(ArrayList<Edit*> *edits, const char *msg, int collaps
 	if( !edits->size() ) return;
 	undo->update_undo_before();
 	edl->delete_edits(edits, collapse);
+	edl->optimize();
 	save_backup();
 	undo->update_undo_after(msg, LOAD_EDITS);
 
@@ -1159,20 +1160,6 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 void MWindow::paste_edits(EDL *clip, Track *first_track, double position, int overwrite,
 		int edit_edits, int edit_labels, int edit_autos, int edit_plugins)
 {
-	if( edit_labels ) {
-		Label *edl_label = edl->labels->first;
-		for( Label *label=clip->labels->first; label; label=label->next ) {
-			double label_pos = position + label->position;
-			int exists = 0;
-			while( edl_label &&
-				!(exists=edl->equivalent(edl_label->position, label_pos)) &&
-				edl_label->position < position ) edl_label = edl_label->next;
-			if( exists ) continue;
-			edl->labels->insert_before(edl_label,
-				new Label(edl, edl->labels, label_pos, label->textstr));
-		}
-	}
-
 	if( !first_track )
 		first_track = edl->tracks->first;
 	Track *src = clip->tracks->first;
@@ -1183,7 +1170,7 @@ void MWindow::paste_edits(EDL *clip, Track *first_track, double position, int ov
 			for( Edit *edit=src->edits->first; edit; edit=edit->next ) {
 				if( edit->silence() ) continue;
 				int64_t start = pos + edit->startproject;
-				int64_t end = start + edit->length;
+				int64_t len = edit->length, end = start + len;
 				if( overwrite )
 					track->edits->clear(start, end);
 				Edit *dst = track->edits->insert_new_edit(start);
@@ -1192,6 +1179,43 @@ void MWindow::paste_edits(EDL *clip, Track *first_track, double position, int ov
 				dst->is_selected = 1;
 				while( (dst=dst->next) != 0 )
 					dst->startproject += edit->length;
+				if( overwrite ) continue;
+				if( edit_labels && track == first_track ) {
+					double dst_pos = track->from_units(start);
+					double dst_len = track->from_units(len);
+					for( Label *label=edl->labels->first; label; label=label->next ) {
+						if( label->position >= dst_pos )
+							label->position += dst_len;
+					}
+				}
+				if( edit_autos ) {
+					for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
+						Autos *autos = track->automation->autos[i];
+						if( !autos ) continue;
+						for( Auto *aut0=autos->first; aut0; aut0=aut0->next ) {
+							if( aut0->position >= start )
+								aut0->position += edit->length;
+						}
+					}
+				}
+				if( edit_plugins ) {
+					for( int i=0; i<track->plugin_set.size(); ++i ) {
+						PluginSet *plugin_set = track->plugin_set[i];
+						Plugin *plugin = (Plugin *)plugin_set->first;
+						for( ; plugin; plugin=(Plugin *)plugin->next ) {
+							if( plugin->startproject >= start )
+								plugin->startproject += edit->length;
+							Auto *default_keyframe = plugin->keyframes->default_auto;
+							if( default_keyframe->position >= start )
+								default_keyframe->position += edit->length;
+							KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+							for( ; keyframe; keyframe=(KeyFrame*)keyframe->next ) {
+								if( keyframe->position >= start )
+									keyframe->position += edit->length;
+							}
+						}
+					}
+				}
 			}
 		}
 		if( edit_autos ) {
@@ -1235,9 +1259,22 @@ void MWindow::paste_edits(EDL *clip, Track *first_track, double position, int ov
 				}
 			}
 		}
-		track->optimize();
 		src = src->next;
 	}
+	if( edit_labels ) {
+		Label *edl_label = edl->labels->first;
+		for( Label *label=clip->labels->first; label; label=label->next ) {
+			double label_pos = position + label->position;
+			int exists = 0;
+			while( edl_label &&
+				!(exists=edl->equivalent(edl_label->position, label_pos)) &&
+				edl_label->position < position ) edl_label = edl_label->next;
+			if( exists ) continue;
+			edl->labels->insert_before(edl_label,
+				new Label(edl, edl->labels, label_pos, label->textstr));
+		}
+	}
+	edl->optimize();
 }
 
 void MWindow::paste_clipboard(Track *first_track, double position, int overwrite,
@@ -1276,8 +1313,8 @@ void MWindow::move_group(EDL *group, Track *first_track, double position, int ov
 	edl->delete_edits(&edits, 0);
 	paste_edits(group, first_track, position, overwrite, 1,
 		edl->session->labels_follow_edits,
-		edl->session->plugins_follow_edits,
-		edl->session->autos_follow_edits);
+		edl->session->autos_follow_edits,
+		edl->session->plugins_follow_edits);
 // big debate over whether to do this, must either clear selected, or no tweaking
 //	edl->tracks->clear_selected_edits();
 

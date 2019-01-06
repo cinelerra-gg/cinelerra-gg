@@ -126,7 +126,7 @@ void AndroidControl::run()
 		else if( is_msg("key E") ) press('e');
 		else if( is_msg("key F") ) press('f');
 		else if( is_msg("suspend") ) {
-			system("sync; sleep 1; pm-suspend");
+			system("sync; sleep 1; acpitool -s");
 		}
 		else if( is_msg("power") ) {
 			system("sync; sleep 1; poweroff");
