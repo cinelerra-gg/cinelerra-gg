@@ -1136,7 +1136,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 {
 	undo->update_undo_before();
 
-	EDL *clip = selected_edits_to_clip(1, 0, 0,
+	EDL *clip = selected_edits_to_clip(0, 0, 0,
 		edl->session->labels_follow_edits,
 		edl->session->autos_follow_edits,
 		edl->session->plugins_follow_edits);
