@@ -1227,58 +1227,31 @@ int Tracks::move_auto(int cursor_x, int cursor_y, int shift_down)
 	return 0;
 }
 
-int Tracks::modify_edithandles(double &oldposition,
-	double &newposition,
-	int currentend,
-	int handle_mode,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos)
+int Tracks::modify_edithandles(double &oldposition, double &newposition,
+	int currentend, int handle_mode, int edit_labels,
+	int edit_plugins, int edit_autos, int group_id)
 {
-	Track *current;
-
-	for(current = first; current; current = NEXT)
-	{
-		if(current->record)
-		{
-			current->modify_edithandles(oldposition,
-				newposition,
-				currentend,
-				handle_mode,
-				edit_labels,
-				edit_plugins,
-				edit_autos);
-		}
+	for( Track *track=first; track; track=track->next ) {
+		if( !track->record ) continue;
+		track->modify_edithandles(oldposition, newposition,
+			currentend, handle_mode, edit_labels,
+			edit_plugins, edit_autos, group_id);
 	}
 	return 0;
 }
 
-int Tracks::modify_pluginhandles(double &oldposition,
-	double &newposition,
-	int currentend,
-	int handle_mode,
-	int edit_labels,
-	int edit_autos,
-	Edits *trim_edits)
+int Tracks::modify_pluginhandles(double &oldposition, double &newposition,
+	int currentend, int handle_mode, int edit_labels,
+	int edit_autos, Edits *trim_edits)
 {
-	Track *current;
-
-	for(current = first; current; current = NEXT)
-	{
-		if(current->record)
-		{
-			current->modify_pluginhandles(oldposition,
-				newposition,
-				currentend,
-				handle_mode,
-				edit_labels,
-				edit_autos,
-				trim_edits);
-		}
+	for( Track *track=first; track; track=track->next ) {
+		if( !track->record ) continue;
+		track->modify_pluginhandles(oldposition, newposition,
+			currentend, handle_mode, edit_labels,
+			edit_autos, trim_edits);
 	}
 	return 0;
 }
-
 
 
 int Tracks::purge_asset(Asset *asset)

@@ -703,23 +703,37 @@ int Edits::clear_handle(double start, double end,
 
 int Edits::modify_handles(double oldposition, double newposition, int currentend,
 	int edit_mode, int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
-	Edits *trim_edits)
+	Edits *trim_edits, int group_id)
 {
 	int result = 0;
 	Edit *current_edit;
+	Edit *left = 0, *right = 0;
+	if( group_id > 0 ) {
+		double start = DBL_MAX, end = DBL_MIN;
+		for( Edit *edit=first; edit; edit=edit->next ) {
+			if( edit->group_id != group_id ) continue;
+			double edit_start = edit->track->from_units(edit->startproject);
+			if( edit_start < start ) { start = edit_start;  left = edit; }
+			double edit_end = edit->track->from_units(edit->startproject+edit->length);
+			if( edit_end > end ) { end = edit_end;  right = edit; }
+		}
+	}
 
 //printf("Edits::modify_handles 1 %d %f %f\n", currentend, newposition, oldposition);
 	if(currentend == 0) {
 // left handle
 		for(current_edit = first; current_edit && !result;) {
-			if(edl->equivalent(track->from_units(current_edit->startproject),
-				oldposition)) {
+			if( group_id > 0 ? current_edit == left :
+			    edl->equivalent(track->from_units(current_edit->startproject),
+				oldposition) ) {
 // edit matches selection
 //printf("Edits::modify_handles 3 %f %f\n", newposition, oldposition);
+				double delta = newposition - oldposition;
 				oldposition = track->from_units(current_edit->startproject);
+				if( group_id > 0 ) newposition = oldposition + delta;
 				result = 1;
 
-				if(newposition >= oldposition) {
+				if( newposition >= oldposition ) {
 //printf("Edits::modify_handle 1 %s %f %f\n", track->title, oldposition, newposition);
 // shift start of edit in
 					current_edit->shift_start_in(edit_mode,
@@ -731,8 +745,7 @@ int Edits::modify_handles(double oldposition, double newposition, int currentend
 						edit_autos,
 						trim_edits);
 				}
-				else
-				{
+				else {
 //printf("Edits::modify_handle 2 %s\n", track->title);
 // move start of edit out
 					current_edit->shift_start_out(edit_mode,
@@ -752,10 +765,13 @@ int Edits::modify_handles(double oldposition, double newposition, int currentend
 	else {
 // right handle selected
 		for(current_edit = first; current_edit && !result;) {
-			if(edl->equivalent(track->from_units(current_edit->startproject) +
-				track->from_units(current_edit->length), oldposition)) {
-            	oldposition = track->from_units(current_edit->startproject) +
+			if( group_id > 0 ? current_edit == right :
+			    edl->equivalent(track->from_units(current_edit->startproject) +
+					track->from_units(current_edit->length), oldposition) ) {
+				double delta = newposition - oldposition;
+				oldposition = track->from_units(current_edit->startproject) +
 					track->from_units(current_edit->length);
+				if( group_id > 0 ) newposition = oldposition + delta;
 				result = 1;
 
 //printf("Edits::modify_handle 3\n");
@@ -796,7 +812,6 @@ int Edits::modify_handles(double oldposition, double newposition, int currentend
 	optimize();
 	return 0;
 }
-
 
 void Edits::paste_silence(int64_t start, int64_t end)
 {

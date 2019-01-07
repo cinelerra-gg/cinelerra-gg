@@ -1220,25 +1220,13 @@ int Track::popup_transition(int cursor_x, int cursor_y)
 
 
 
-int Track::modify_edithandles(double oldposition,
-	double newposition,
-	int currentend,
-	int handle_mode,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos)
+int Track::modify_edithandles(double oldposition, double newposition,
+	int currentend, int handle_mode, int edit_labels,
+	int edit_plugins, int edit_autos, int group_id)
 {
-	edits->modify_handles(oldposition,
-		newposition,
-		currentend,
-		handle_mode,
-		1,
-		edit_labels,
-		edit_plugins,
-		edit_autos,
-		0);
-
-
+	edits->modify_handles(oldposition, newposition,
+		currentend, handle_mode, 1, edit_labels, edit_plugins,
+		edit_autos, 0, group_id);
 	return 0;
 }
 
@@ -1253,16 +1241,10 @@ int Track::modify_pluginhandles(double oldposition,
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
-			plugin_set.values[i]->modify_handles(oldposition,
-				newposition,
-				currentend,
-				handle_mode,
+			plugin_set.values[i]->modify_handles(oldposition, newposition,
 // Don't allow plugin tweeks to affect edits.
-				0,
-				edit_labels,
-				1,
-				edit_autos,
-				trim_edits);
+				currentend, handle_mode, 0,
+				edit_labels, 1, edit_autos, trim_edits, 0);
 	}
 	return 0;
 }

@@ -217,13 +217,9 @@ public:
 	int popup_transition(int cursor_x, int cursor_y);
 	int select_auto(int cursor_x, int cursor_y);
 	int move_auto(int cursor_x, int cursor_y, int shift_down);
-	int modify_edithandles(double &oldposition,
-		double &newposition,
-		int currentend,
-		int handle_mode,
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos);
+	int modify_edithandles(double &oldposition, double &newposition,
+		int currentend, int handle_mode, int edit_labels,
+		int edit_plugins, int edit_autos, int group_id);
 	int modify_pluginhandles(double &oldposition,
 		double &newposition,
 		int currentend,

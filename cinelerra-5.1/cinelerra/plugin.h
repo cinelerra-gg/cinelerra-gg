@@ -74,6 +74,9 @@ public:
 	virtual int operator==(Plugin& that);
 	virtual int operator==(Edit& that);
 
+	void init(const char *title,
+		int64_t unit_position, int64_t unit_length, int plugin_type,
+		SharedLocation *shared_location, KeyFrame *default_keyframe);
 	void copy_base(Edit *edit);
 	virtual void copy_from(Edit *edit);
 

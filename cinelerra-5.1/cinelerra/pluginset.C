@@ -138,24 +138,15 @@ void PluginSet::synchronize_params(PluginSet *plugin_set)
 }
 
 Plugin* PluginSet::insert_plugin(const char *title,
-	int64_t unit_position,
-	int64_t unit_length,
-	int plugin_type,
-	SharedLocation *shared_location,
-	KeyFrame *default_keyframe,
+	int64_t unit_position, int64_t unit_length, int plugin_type,
+	SharedLocation *shared_location, KeyFrame *default_keyframe,
 	int do_optimize)
 {
 	Plugin *plugin = (Plugin*)create_silence(unit_position, unit_position + unit_length);
-	if(title) strcpy(plugin->title, title);
-	if(shared_location) plugin->shared_location = *shared_location;
-	plugin->plugin_type = plugin_type;
-
-	if(default_keyframe)
-		*plugin->keyframes->default_auto = *default_keyframe;
-	plugin->keyframes->default_auto->position = unit_position;
-
+	plugin->init(title, unit_position, unit_length, plugin_type,
+			shared_location, default_keyframe);
 // May delete the plugin we just added so not desirable while loading.
-	if(do_optimize) optimize();
+	if( do_optimize ) optimize();
 	return plugin;
 }
 

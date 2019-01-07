@@ -503,9 +503,6 @@ int Autos::copy(int64_t start,
 	if(active_only || (!default_only && !active_only))
 	{
 		Auto *current = autoof(start);
-// need the last one if past the end
-		if( !current && last )
-			last->copy(start, end, file, default_only);
 
 		while( current && current->position <= end ) {
 // Want to copy single keyframes by putting the cursor on them

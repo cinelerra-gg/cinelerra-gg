@@ -257,13 +257,9 @@ public:
 	int popup_transition(int cursor_x, int cursor_y);
 
 // Return 1 if the left handle was selected 2 if the right handle was selected 3 if the track isn't recordable
-	int modify_edithandles(double oldposition,
-		double newposition,
-		int currentend,
-		int handle_mode,
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos);
+	int modify_edithandles(double oldposition, double newposition,
+		int currentend, int handle_mode, int edit_labels,
+		int edit_plugins, int edit_autos, int group_id);
 	int modify_pluginhandles(double oldposition,
 		double newposition,
 		int currentend,

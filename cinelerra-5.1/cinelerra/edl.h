@@ -172,27 +172,16 @@ public:
 	void delete_edit_labels(ArrayList<Edit*> *edits, int collapse);
 	void move_edit_labels(ArrayList<Edit*> *edits, double dist);
 
-	void modify_edithandles(double oldposition,
-		double newposition,
-		int currentend,
-		int handle_mode,
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos);
+	void modify_edithandles(double oldposition, double newposition,
+		int currentend, int handle_mode, int edit_labels,
+		int edit_plugins, int edit_autos, int group_id);
 
-	void modify_pluginhandles(double oldposition,
-		double newposition,
-		int currentend,
-		int handle_mode,
-		int edit_labels,
-		int edit_autos,
-		Edits *trim_edits);
+	void modify_pluginhandles(double oldposition, double newposition,
+		int currentend, int handle_mode, int edit_labels,
+		int edit_autos, Edits *trim_edits);
 
-	int trim_selection(double start,
-		double end,
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos);
+	int trim_selection(double start, double end,
+		int edit_labels, int edit_plugins, int edit_autos);
 
 // Editing functions
 	int copy_assets(double start, double end,

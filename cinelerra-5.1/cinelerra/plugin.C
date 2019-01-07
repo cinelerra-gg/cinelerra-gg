@@ -109,6 +109,20 @@ void Plugin::clear_keyframes(int64_t start, int64_t end)
 }
 
 
+void Plugin::init(const char *title,
+	int64_t unit_position, int64_t unit_length, int plugin_type,
+	SharedLocation *shared_location, KeyFrame *default_keyframe)
+{
+	if( title ) strcpy(this->title, title);
+	if( shared_location ) this->shared_location = *shared_location;
+	this->plugin_type = plugin_type;
+	if( default_keyframe )
+		*this->keyframes->default_auto = *default_keyframe;
+	this->keyframes->default_auto->position = unit_position;
+	this->startproject = unit_position;
+	this->length = unit_length;
+}
+
 void Plugin::copy_base(Edit *edit)
 {
 	Plugin *plugin = (Plugin*)edit;

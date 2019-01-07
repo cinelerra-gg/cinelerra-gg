@@ -831,7 +831,8 @@ int MWindow::modify_edithandles()
 		edl->session->edit_handle_mode[session->drag_button],
 		edl->session->labels_follow_edits,
 		edl->session->plugins_follow_edits,
-		edl->session->autos_follow_edits);
+		edl->session->autos_follow_edits,
+		session->drag_edit->group_id);
 
 	finish_modify_handles();
 //printf("MWindow::modify_handles 1\n");
@@ -1205,6 +1206,8 @@ void MWindow::paste_edits(EDL *clip, Track *first_track, double position, int ov
 						for( ; plugin; plugin=(Plugin *)plugin->next ) {
 							if( plugin->startproject >= start )
 								plugin->startproject += edit->length;
+							else if( plugin->startproject+plugin->length > end )
+								plugin->length += end - start;
 							Auto *default_keyframe = plugin->keyframes->default_auto;
 							if( default_keyframe->position >= start )
 								default_keyframe->position += edit->length;
@@ -1214,6 +1217,7 @@ void MWindow::paste_edits(EDL *clip, Track *first_track, double position, int ov
 									keyframe->position += edit->length;
 							}
 						}
+						plugin_set->optimize();
 					}
 				}
 			}
@@ -1245,16 +1249,15 @@ void MWindow::paste_edits(EDL *clip, Track *first_track, double position, int ov
 				for( ; plugin; plugin=(Plugin *)plugin->next ) {
 					int64_t start = pos + plugin->startproject;
 					int64_t end = start + plugin->length;
-					if( overwrite )
+					if( overwrite || edit_edits )
 						dst_plugin_set->clear(start, end, 1);
-					Plugin *dst = dst_plugin_set->insert_plugin(
-						plugin->title, start, end-start,
-						plugin->plugin_type, &plugin->shared_location,
+					Plugin *new_plugin = dst_plugin_set->insert_plugin(plugin->title,
+						start, end-start, plugin->plugin_type, &plugin->shared_location,
 						(KeyFrame*)plugin->keyframes->default_auto, 0);
 					KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
 					for( ; keyframe; keyframe=(KeyFrame*)keyframe->next ) {
 						int64_t keyframe_pos = pos + keyframe->position;
-						dst->keyframes->insert_auto(keyframe_pos, keyframe);
+						new_plugin->keyframes->insert_auto(keyframe_pos, keyframe);
 					}
 				}
 			}
