@@ -576,168 +576,114 @@ int Tracks::delete_tracks()
 	return total_deleted;
 }
 
-void Tracks::move_edits(ArrayList<Edit*> *edits,
-	Track *track,
-	double position,
-	int edit_labels,  // Ignored
-	int edit_plugins,  // Ignored
-	int edit_autos, // Ignored
-	int behaviour)
+void Tracks::move_edits(ArrayList<Edit*> *in_edits, Track *track, double position,
+	int edit_labels, int edit_plugins, int edit_autos, int mode)
 {
+// have to make a copy, optimize kills edits
+	ArrayList<Edit*> edits;
+	for( int i=0; i<in_edits->size(); ++i ) {
+		Edit *edit = in_edits->get(i);
+		Edit *new_edit = new Edit(edit->edl, edit->track);
+		new_edit->copy_from(edit);
+		edits.append(new_edit);
+	}
+
+	int current_aedit = 0, current_vedit = 0;
 //printf("Tracks::move_edits 1\n");
-	for(Track *dest_track = track; dest_track; dest_track = dest_track->next)
-	{
-		if(dest_track->record)
-		{
+	for( Track *dest_track=track; dest_track; dest_track=dest_track->next ) {
+		if( !dest_track->record ) continue;
 // Need a local copy of the source edit since the original source edit may
 // change in the editing operation.
-			Edit *source_edit = 0;
-			Track *source_track = 0;
-
-
-// Get source track
-			if(dest_track->data_type == TRACK_AUDIO)
-			{
-				int current_aedit = 0;
-
-				while(current_aedit < edits->total &&
-					edits->values[current_aedit]->track->data_type != TRACK_AUDIO)
-					current_aedit++;
-
-				if(current_aedit < edits->total)
-				{
-					source_edit = edits->values[current_aedit];
-					source_track = source_edit->track;
-					edits->remove_number(current_aedit);
+// Get source edit
+		Edit *source_edit = 0;
+		Track *clip_track = 0;
+		switch( dest_track->data_type ) {
+		case TRACK_AUDIO: {
+			while( current_aedit < edits.size() ) {
+				Edit *edit = edits[current_aedit++];
+				if( edit->track->data_type == TRACK_AUDIO ) {
+					source_edit = edit;
+					ATrack *atrack = new ATrack(dest_track->edl, 0);
+					atrack->create_objects();
+					clip_track = atrack;
+					break;
 				}
 			}
-			else
-			if(dest_track->data_type == TRACK_VIDEO)
-			{
-				int current_vedit = 0;
-				while(current_vedit < edits->total &&
-					edits->values[current_vedit]->track->data_type != TRACK_VIDEO)
-					current_vedit++;
-
-				if(current_vedit < edits->total)
-				{
-					source_edit = edits->values[current_vedit];
-					source_track = source_edit->track;
-					edits->remove_number(current_vedit);
+			break; }
+		case TRACK_VIDEO: {
+			while( current_vedit < edits.size() ) {
+				Edit *edit = edits[current_vedit++];
+				if( edit->track->data_type == TRACK_VIDEO ) {
+					source_edit = edit;
+					VTrack *vtrack = new VTrack(dest_track->edl, 0);
+					vtrack->create_objects();
+					clip_track = vtrack;
+					break;
 				}
 			}
-
-//printf("Tracks::move_edits 2 %s %s %d\n", source_track->title, dest_track->title, source_edit->length);
-			if(source_edit)
-			{
-				int64_t position_i = source_track->to_units(position, 0);
-// Source edit changes
-				int64_t source_length = source_edit->length;
-				int64_t source_startproject = source_edit->startproject;
-
-				if (behaviour == 0)
-				{
-				// This works like this: CUT edit, INSERT edit at final position, keyframes also follow
-				// FIXME: there should be a GUI way to tell whenever user also wants to move autos or not
-// this is all screwed up
-//  inserts defaults/bogus everywhere
-#if 0
-// Copy keyframes
-					FileXML temp;
-					AutoConf temp_autoconf;
-
-					temp_autoconf.set_all(1);
-
-					source_track->automation->copy(source_edit->startproject,
-						source_edit->startproject + source_edit->length,
-						&temp,
-						0,
-						0);
-					temp.terminate_string();
-					temp.rewind();
-// Insert new keyframes
-//printf("Tracks::move_edits 2 %d %p\n", result->startproject, result->asset);
-					source_track->automation->clear(source_edit->startproject,
-						source_edit->startproject + source_edit->length,
-						&temp_autoconf,
-						1);
-					int64_t position_a = position_i;
-					if (dest_track == source_track)
-					{
-						if (position_a > source_edit->startproject)
-							position_a -= source_length;
-					}
-
-					dest_track->automation->paste_silence(position_a,
-						position_a + source_length);
-					while(!temp.read_tag())
-						dest_track->automation->paste(position_a,
-							source_length, 1.0, &temp, 0, 1,
-							&temp_autoconf);
-#endif
-// Insert new edit
-					Edit *dest_edit = dest_track->edits->shift(position_i,
-						source_length);
-					Edit *result = dest_track->edits->insert_before(dest_edit,
-						dest_track->edits->create_edit());
-					result->copy_from(source_edit);
-					result->startproject = position_i;
-					result->length = source_length;
-
-// Clear source
-					source_track->edits->clear(source_edit->startproject,
-						source_edit->startproject + source_length);
-
-	/*
-//this is outline for future thinking how it is supposed to be done trough C&P mechanisms
-					temp.reset_tag();
-					source_track->cut(source_edit->startproject,
-						source_edit->startproject + source_edit->length,
-						&temp,
-						NULL);
-					temp.terminate_string();
-					temp.rewind();
-					dest_track->paste_silence(position_a,
-						position_a + source_length,
-						edit_plugins);
-					while(!temp.read_tag())
-						dest_track->paste(position_a,          // MISSING PIECE OF FUNCTIONALITY
-							source_length,
-							1.0,
-							&temp,
-							0,
-							&temp_autoconf);
-	*/
-
-
-				} else
-				if (behaviour == 1)
-				// ONLY edit is moved, all other edits stay where they are
-				{
-					// Copy edit to temp, delete the edit, insert the edit
-					Edit *temp_edit = dest_track->edits->create_edit();
-					temp_edit->copy_from(source_edit);
-					// we call the edits directly since we do not want to move keyframes or anything else
-					source_track->edits->clear(source_startproject,
-						source_startproject + source_length);
-					source_track->edits->paste_silence(source_startproject,
-						source_startproject + source_length);
-
-					dest_track->edits->clear(position_i,
-						position_i + source_length);
-					Edit *dest_edit = dest_track->edits->shift(position_i,  source_length);
-					Edit *result = dest_track->edits->insert_before(dest_edit,
-						dest_track->edits->create_edit());
-					result->copy_from(temp_edit);
-					result->startproject = position_i;
-					result->length = source_length;
-					delete temp_edit;
-				}
-				source_track->optimize();
-				dest_track->optimize();
-			}
+			break; }
 		}
+		if( !source_edit ) continue;
+
+		Track *source_track = source_edit->track;
+		int64_t start = source_edit->startproject;
+		int64_t length = source_edit->length, end = start + length;
+		double source_start = source_track->from_units(start);
+		double source_end = source_track->from_units(start+length);
+		double len = source_end - source_start;
+		double dest_start = position;
+		double dest_end = dest_start + len;
+
+		if( edit_labels && dest_track == track ) {
+			FileXML label_xml;
+			Labels labels(0, "LABELS");
+			source_edit->edl->labels->copy(source_start, source_end, &label_xml);
+			source_edit->edl->labels->clear(source_start, source_end, mode);
+			if( !label_xml.read_tag() )
+				labels.load(&label_xml, LOAD_ALL);
+			double pos = dest_start;
+			if( mode && source_start < dest_start ) pos -= len;
+			edl->labels->insert_labels(&labels, pos, len, mode);
+			edit_labels = 0;
+		}
+
+		FileXML track_xml;
+		source_track->copy(source_start, source_end, &track_xml, "");
+		if( !track_xml.read_tag() )
+			clip_track->load(&track_xml, 0, LOAD_ALL);
+
+		if( !mode ) { // mute and overwrite
+			source_track->clear(start, end, 1, 0,
+				edit_plugins, edit_autos, 0);
+			source_track->edits->paste_silence(start, end);
+			if( edit_autos )
+				source_track->shift_keyframes(start, length);
+			if( edit_plugins ) {
+				int n = source_track->plugin_set.size();
+				if( n > 0 ) dest_track->expand_view = 1;
+				for( int k=0; k<n; ++k )
+					source_track->plugin_set[k]->paste_silence(start, end, 1);
+			}
+			dest_track->clear(dest_start, dest_end, 1, 0,
+				edit_plugins, edit_autos, 0);
+			dest_track->insert_track(clip_track, dest_start, 0,
+				edit_plugins, edit_autos, len);
+		}
+		else { // cut and paste
+			dest_track->insert_track(clip_track, dest_start, 0,
+				edit_plugins, edit_autos, len);
+			if( source_track == dest_track && dest_start < source_start ) {
+				source_start += len;   source_end += len;
+			}
+			source_track->clear(source_start, source_end, 1, 0,
+				edit_plugins, edit_autos, 0);
+		}
+
+		delete clip_track;
+		dest_track->optimize();
 	}
+
+	edits.remove_all_objects();
 }
 
 void Tracks::move_effect(Plugin *plugin, Track *track, int64_t position)

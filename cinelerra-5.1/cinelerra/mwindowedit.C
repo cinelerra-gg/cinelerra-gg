@@ -1101,6 +1101,8 @@ void MWindow::delete_edits(ArrayList<Edit*> *edits, const char *msg, int collaps
 {
 	if( !edits->size() ) return;
 	undo->update_undo_before();
+	if( edl->session->labels_follow_edits )
+		edl->delete_edit_labels(edits, collapse);
 	edl->delete_edits(edits, collapse);
 	edl->optimize();
 	save_backup();
@@ -1131,22 +1133,18 @@ void MWindow::cut_selected_edits(int collapse, int packed)
 
 
 void MWindow::move_edits(ArrayList<Edit*> *edits,
-		Track *track,
-		double position,
-		int behaviour)
+		Track *track, double position, int mode)
 {
 	undo->update_undo_before();
-
-	EDL *clip = selected_edits_to_clip(0, 0, 0,
+// lockout timebar labels update
+//  labels can be deleted with tooltip repeater running
+	cwindow->gui->lock_window("Tracks::move_edits");
+	edl->tracks->move_edits(edits, track, position,
 		edl->session->labels_follow_edits,
-		edl->session->autos_follow_edits,
-		edl->session->plugins_follow_edits);
-	edl->delete_edits(edits, 0);
-	paste_edits(clip, track, position, behaviour, 1,
-		edl->session->labels_follow_edits,
-		edl->session->autos_follow_edits,
-		edl->session->plugins_follow_edits);
-	edl->tracks->clear_selected_edits();
+		edl->session->plugins_follow_edits,
+		edl->session->autos_follow_edits, mode);
+	cwindow->gui->timebar->update(1);
+	cwindow->gui->unlock_window();
 
 	save_backup();
 	undo->update_undo_after(_("move edit"), LOAD_ALL);
@@ -1207,7 +1205,7 @@ void MWindow::paste_edits(EDL *clip, Track *first_track, double position, int ov
 							if( plugin->startproject >= start )
 								plugin->startproject += edit->length;
 							else if( plugin->startproject+plugin->length > end )
-								plugin->length += end - start;
+								plugin->length += edit->length;
 							Auto *default_keyframe = plugin->keyframes->default_auto;
 							if( default_keyframe->position >= start )
 								default_keyframe->position += edit->length;
@@ -1258,6 +1256,11 @@ void MWindow::paste_edits(EDL *clip, Track *first_track, double position, int ov
 					for( ; keyframe; keyframe=(KeyFrame*)keyframe->next ) {
 						int64_t keyframe_pos = pos + keyframe->position;
 						new_plugin->keyframes->insert_auto(keyframe_pos, keyframe);
+					}
+					while( (new_plugin=(Plugin *)new_plugin->next) ) {
+						KeyFrame *keyframe = (KeyFrame*)new_plugin->keyframes->first;
+						for( ; keyframe; keyframe=(KeyFrame*)keyframe->next )
+							keyframe->position += plugin->length;
 					}
 				}
 			}
@@ -1310,14 +1313,21 @@ void MWindow::paste_clipboard(Track *first_track, double position, int overwrite
 void MWindow::move_group(EDL *group, Track *first_track, double position, int overwrite)
 {
 	undo->update_undo_before();
+// lockout timebar labels update
+//  labels can be deleted with tooltip repeater running
+	cwindow->gui->lock_window("Tracks::move_group");
 
 	ArrayList<Edit *>edits;
 	edl->tracks->get_selected_edits(&edits);
+	if( edl->session->labels_follow_edits )
+		edl->delete_edit_labels(&edits, 0);
 	edl->delete_edits(&edits, 0);
 	paste_edits(group, first_track, position, overwrite, 1,
 		edl->session->labels_follow_edits,
 		edl->session->autos_follow_edits,
 		edl->session->plugins_follow_edits);
+	cwindow->gui->timebar->update(1);
+	cwindow->gui->unlock_window();
 // big debate over whether to do this, must either clear selected, or no tweaking
 //	edl->tracks->clear_selected_edits();
 

@@ -50,7 +50,7 @@ public:
 		int &track_offset,
 		uint32_t load_flags);
 	void move_edits(ArrayList<Edit*> *edits, Track *track, double position,
-		int edit_labels, int edit_plugins, int edit_autos, int behaviour);
+		int edit_labels, int edit_plugins, int edit_autos, int mode);
 	void move_group(EDL *group, Track *first_track, double position, int overwrite);
 	void move_effect(Plugin *plugin, Track *track, int64_t position);
 	void move_effect(Plugin *plugin, PluginSet *plugin_set, int64_t position);

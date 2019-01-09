@@ -343,6 +343,19 @@ void PluginSet::shift_effects(int64_t start, int64_t length, int edit_autos)
 	}
 }
 
+void PluginSet::paste_silence(int64_t start, int64_t end, int edit_autos)
+{
+	Plugin *new_plugin = (Plugin *) insert_new_edit(start);
+	int64_t length = end - start;
+	new_plugin->length = length;
+	while( (new_plugin=(Plugin *)new_plugin->next) != 0 ) {
+		new_plugin->startproject += length;
+		if( !edit_autos ) continue;
+		new_plugin->keyframes->default_auto->position += length;
+		new_plugin->keyframes->paste_silence(start, end);
+	}
+}
+
 void PluginSet::copy(int64_t start, int64_t end, FileXML *file)
 {
 	file->tag.set_title("PLUGINSET");

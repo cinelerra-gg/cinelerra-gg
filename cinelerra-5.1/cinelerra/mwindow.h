@@ -403,8 +403,7 @@ public:
 	void cut_selected_edits(int collapse, int packed);
 // Move edit to new position
 	void move_edits(ArrayList<Edit*> *edits, Track *track, double position,
-// 0 - old style (cut and insert elswhere), 1- new style - (clear and overwrite elsewere)
-		int behaviour);
+		int mode); // mode: 0 - mute and overwrite,  1 - cut and paste
 	void paste_edits(EDL *clip, Track *first_track, double position, int overwrite,
 		int edit_edits, int edit_labels, int edit_autos, int edit_plugins);
 	void paste_clipboard(Track *first_track, double position, int overwrite,

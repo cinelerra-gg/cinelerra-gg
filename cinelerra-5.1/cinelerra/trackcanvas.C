@@ -493,7 +493,7 @@ int TrackCanvas::drag_stop(int *redraw)
 					double track_position = track->from_units(drop_position);
 					track_position = mwindow->edl->align_to_frame(track_position, 0);
 					mwindow->move_edits(mwindow->session->drag_edits,
-							track, track_position, !insertion);
+							track, track_position, insertion);
 				}
 
 				result = 1;
@@ -1928,22 +1928,72 @@ void TrackCanvas::draw_inout_points()
 
 void TrackCanvas::draw_drag_handle()
 {
-	if(mwindow->session->current_operation == DRAG_EDITHANDLE2 ||
-		mwindow->session->current_operation == DRAG_PLUGINHANDLE2)
-	{
-//printf("TrackCanvas::draw_drag_handle 1 %ld %ld\n", mwindow->session->drag_sample, mwindow->edl->local_session->view_start);
-		int64_t pixel1 = Units::round(mwindow->session->drag_position *
-			mwindow->edl->session->sample_rate /
-			mwindow->edl->local_session->zoom_sample -
-			mwindow->edl->local_session->view_start[pane->number]);
-//printf("TrackCanvas::draw_drag_handle 2 %d %jd\n", pane->number, pixel1);
-		set_color(!snapped ? GREEN : (snapped=0, YELLOW));
-		set_inverse();
-//printf("TrackCanvas::draw_drag_handle 3\n");
-		draw_line(pixel1, 0, pixel1, get_h());
-		set_opaque();
-//printf("TrackCanvas::draw_drag_handle 4\n");
+	if( mwindow->session->current_operation != DRAG_EDITHANDLE2 &&
+	    mwindow->session->current_operation != DRAG_PLUGINHANDLE2 ) return;
+	int64_t pixel1 = Units::round(mwindow->session->drag_position *
+		mwindow->edl->session->sample_rate /
+		mwindow->edl->local_session->zoom_sample -
+		mwindow->edl->local_session->view_start[pane->number]);
+	set_color(!snapped ? GREEN : (snapped=0, YELLOW));
+	set_inverse();
+	draw_line(pixel1, 0, pixel1, get_h());
+	set_opaque();
+
+	if( mwindow->session->current_operation != DRAG_EDITHANDLE2 ) return;
+	if( !mwindow->session->drag_edit ) return;
+	int group_id = mwindow->session->drag_edit->group_id;
+        if( !group_id ) return;
+	int drag_handle = mwindow->session->drag_handle;
+	set_color(RED);
+	set_line_width(3);
+
+	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
+		Edit *left = 0, *right = 0;
+		double start = DBL_MAX, end = DBL_MIN;
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( edit->group_id != group_id ) continue;
+			double edit_start = edit->track->from_units(edit->startproject);
+			if( edit_start < start ) { start = edit_start;  left = edit; }
+			double edit_end = edit->track->from_units(edit->startproject+edit->length);
+			if( edit_end > end ) { end = edit_end;  right = edit; }
+		}
+		Edit *edit = !drag_handle ? left : right;
+		if( !edit ) continue;
+		Indexable *idxbl = edit->asset;
+		if( !idxbl ) idxbl = edit->nested_edl;
+		int can_drag = idxbl ? 1 : 0;
+		if( drag_handle ) {
+			int64_t source_len = !idxbl ? -1 :
+				edit->track->data_type == TRACK_AUDIO ?
+					idxbl->get_audio_samples() :
+				edit->track->data_type == TRACK_VIDEO ?
+					idxbl->get_video_frames() : -1;
+			if( edit->startsource + edit->length >= source_len )
+				can_drag = 0;
+		}
+		else if( !edit->startsource )
+			can_drag = 0;
+		int64_t x, y, w, h;
+		edit_dimensions(edit, x, y, w, h);
+		int edge_x = !drag_handle ? x : x + w;
+		int edge_y = y + h/2, k = 10;
+		if( edge_x >= 0 && edge_x < get_w() &&
+		    edge_y >= 0 && edge_y < get_h() ) {
+			if( !can_drag ) {
+				draw_line(edge_x-k,edge_y-k, edge_x+k,edge_y+k);
+				draw_line(edge_x-k,edge_y+k, edge_x+k,edge_y-k);
+			}
+			else if( !drag_handle ) {
+				draw_line(edge_x+k,edge_y-k, edge_x,edge_y);
+				draw_line(edge_x+k,edge_y+k, edge_x,edge_y);
+			}
+			else {
+				draw_line(edge_x,edge_y, edge_x-k,edge_y-k);
+				draw_line(edge_x,edge_y, edge_x-k,edge_y+k);
+			}
+		}
 	}
+	set_line_width(1);
 }
 
 
@@ -4661,6 +4711,25 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 						result = 1;
 				}
 			}
+		}
+	}
+
+	if( result > 0 ) {
+		int group_id = edit_result->group_id;
+		if( group_id > 0 ) {
+			Track *track = edit_result->track;
+			Edit *left = 0, *right = 0;
+			double start = DBL_MAX, end = DBL_MIN;
+			for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+				if( edit->group_id != group_id ) continue;
+				double edit_start = edit->track->from_units(edit->startproject);
+				if( edit_start < start ) { start = edit_start;  left = edit; }
+				double edit_end = edit->track->from_units(edit->startproject+edit->length);
+				if( edit_end > end ) { end = edit_end;  right = edit; }
+			}
+			Edit *edit = !handle_result ? left : right;
+			if( edit != edit_result )
+				result = 0;
 		}
 	}
 

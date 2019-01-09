@@ -805,8 +805,6 @@ static int dead_edit_cmp(Edit**ap, Edit**bp)
 void EDL::delete_edits(ArrayList<Edit*> *edits, int collapse)
 {
 	edits->sort(dead_edit_cmp);
-	if( session->labels_follow_edits )
-		delete_edit_labels(edits, collapse);
 	for( int i=0; i<edits->size(); ++i ) {
 		Edit *edit = edits->get(i);
 		Track *track = edit->track;
@@ -821,7 +819,8 @@ void EDL::delete_edits(ArrayList<Edit*> *edits, int collapse)
 				PluginSet *plugin_set = track->plugin_set[k];
 				plugin_set->clear(start, end, 1);
 				if( !collapse )
-					plugin_set->paste_silence(start, end);
+					plugin_set->paste_silence(start, end, 1);
+				plugin_set->optimize();
 			}
 		}
 		Edit *dead_edit = edit;
@@ -830,11 +829,8 @@ void EDL::delete_edits(ArrayList<Edit*> *edits, int collapse)
 				edit->startproject -= length;
 		}
 		delete dead_edit;
-	}
-// optimize edits only.
-//  full optimize deletes pluginsets, mistargeting drag and drop
-	for( Track *track=tracks->first; track; track=track->next )
 		track->edits->optimize();
+	}
 }
 
 class Range {
