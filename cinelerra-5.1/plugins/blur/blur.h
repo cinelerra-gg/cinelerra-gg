@@ -47,6 +47,7 @@ class BlurConfig
 {
 public:
 	BlurConfig();
+	void reset();
 
 	int equivalent(BlurConfig &that);
 	void copy_from(BlurConfig &that);

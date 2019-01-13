@@ -38,6 +38,7 @@
 class WhirlEffect;
 class WhirlWindow;
 class WhirlEngine;
+class WhirlReset;
 
 #define MAXRADIUS 100
 #define MAXPINCH 100
@@ -51,6 +52,7 @@ class WhirlConfig
 {
 public:
 	WhirlConfig();
+	void reset();
 
 	void copy_from(WhirlConfig &src);
 	int equivalent(WhirlConfig &src);
@@ -94,15 +96,29 @@ public:
 	WhirlEffect *plugin;
 };
 
+
+class WhirlReset : public BC_GenericButton
+{
+public:
+	WhirlReset(WhirlEffect *plugin, WhirlWindow *window, int x, int y);
+	~WhirlReset();
+	int handle_event();
+	WhirlEffect *plugin;
+	WhirlWindow *window;
+};
+
+
 class WhirlWindow : public PluginClientWindow
 {
 public:
 	WhirlWindow(WhirlEffect *plugin);
 	void create_objects();
+	void update();
 	WhirlEffect *plugin;
 	WhirlRadius *radius;
 	WhirlPinch *pinch;
 	WhirlAngle *angle;
+	WhirlReset *reset;
 };
 
 
@@ -178,13 +194,16 @@ REGISTER_PLUGIN(WhirlEffect)
 
 
 
-
-
 WhirlConfig::WhirlConfig()
 {
-	angle = 0.0;
-	pinch = 0.0;
-	radius = 0.0;
+	reset();
+}
+
+void WhirlConfig::reset()
+{
+	angle = 180.0;	// 0.0;
+	pinch = 10.0;	// 0.0;
+	radius = 50.0;	// 0.0;
 }
 
 void WhirlConfig::copy_from(WhirlConfig &src)
@@ -227,9 +246,9 @@ void WhirlConfig::interpolate(WhirlConfig &prev,
 WhirlWindow::WhirlWindow(WhirlEffect *plugin)
  : PluginClientWindow(plugin,
 	220,
-	200,
+	195,
 	220,
-	200,
+	195,
 	0)
 {
 	this->plugin = plugin;
@@ -243,21 +262,29 @@ void WhirlWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Radius")));
 	y += 20;
 	add_subwindow(radius = new WhirlRadius(plugin, x, y));
-	y += 40;
+	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Pinch")));
 	y += 20;
 	add_subwindow(pinch = new WhirlPinch(plugin, x, y));
-	y += 40;
+	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Angle")));
 	y += 20;
 	add_subwindow(angle = new WhirlAngle(plugin, x, y));
+	y += 35;
+	add_subwindow(reset = new WhirlReset(plugin, this, x, y));
 
 	show_window();
 	flush();
 }
 
 
-
+// for Reset button
+void WhirlWindow::update()
+{
+	radius->update(plugin->config.radius);
+	pinch->update(plugin->config.pinch);
+	angle->update(plugin->config.angle);
+}
 
 
 
@@ -333,6 +360,23 @@ int WhirlRadius::handle_event()
 }
 
 
+
+WhirlReset::WhirlReset(WhirlEffect *plugin, WhirlWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+WhirlReset::~WhirlReset()
+{
+}
+int WhirlReset::handle_event()
+{
+	plugin->config.reset();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 

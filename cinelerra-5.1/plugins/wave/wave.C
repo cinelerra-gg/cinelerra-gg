@@ -19,187 +19,7 @@
  *
  */
 
-#include "bcdisplayinfo.h"
-#include "clip.h"
-#include "bchash.h"
-#include "filexml.h"
-#include "guicast.h"
-#include "keyframe.h"
-#include "language.h"
-#include "loadbalance.h"
-#include "pluginvclient.h"
-#include "vframe.h"
-
-#include <math.h>
-#include <stdint.h>
-#include <string.h>
-
-
-
-
-#define SMEAR 0
-#define BLACKEN 1
-
-
-
-class WaveEffect;
-class WaveWindow;
-
-
-class WaveConfig
-{
-public:
-	WaveConfig();
-	void copy_from(WaveConfig &src);
-	int equivalent(WaveConfig &src);
-	void interpolate(WaveConfig &prev,
-		WaveConfig &next,
-		long prev_frame,
-		long next_frame,
-		long current_frame);
-	int mode;
-	int reflective;
-	float amplitude;
-	float phase;
-	float wavelength;
-};
-
-class WaveSmear : public BC_Radial
-{
-public:
-	WaveSmear(WaveEffect *plugin, WaveWindow *window, int x, int y);
-	int handle_event();
-	WaveEffect *plugin;
-	WaveWindow *window;
-};
-
-class WaveBlacken : public BC_Radial
-{
-public:
-	WaveBlacken(WaveEffect *plugin, WaveWindow *window, int x, int y);
-	int handle_event();
-	WaveEffect *plugin;
-	WaveWindow *window;
-};
-
-
-class WaveReflective : public BC_CheckBox
-{
-public:
-	WaveReflective(WaveEffect *plugin, int x, int y);
-	int handle_event();
-	WaveEffect *plugin;
-};
-
-class WaveAmplitude : public BC_FSlider
-{
-public:
-	WaveAmplitude(WaveEffect *plugin, int x, int y);
-	int handle_event();
-	WaveEffect *plugin;
-};
-
-class WavePhase : public BC_FSlider
-{
-public:
-	WavePhase(WaveEffect *plugin, int x, int y);
-	int handle_event();
-	WaveEffect *plugin;
-};
-
-class WaveLength : public BC_FSlider
-{
-public:
-	WaveLength(WaveEffect *plugin, int x, int y);
-	int handle_event();
-	WaveEffect *plugin;
-};
-
-
-
-
-
-
-
-
-
-class WaveWindow : public PluginClientWindow
-{
-public:
-	WaveWindow(WaveEffect *plugin);
-	~WaveWindow();
-	void create_objects();
-	void update_mode();
-	WaveEffect *plugin;
-//	WaveSmear *smear;
-//	WaveBlacken *blacken;
-//	WaveReflective *reflective;
-	WaveAmplitude *amplitude;
-	WavePhase *phase;
-	WaveLength *wavelength;
-};
-
-
-
-
-
-
-
-class WaveServer : public LoadServer
-{
-public:
-	WaveServer(WaveEffect *plugin, int cpus);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	WaveEffect *plugin;
-};
-
-class WavePackage : public LoadPackage
-{
-public:
-	WavePackage();
-	int row1, row2;
-};
-
-class WaveUnit : public LoadClient
-{
-public:
-	WaveUnit(WaveEffect *plugin, WaveServer *server);
-	void process_package(LoadPackage *package);
-	WaveEffect *plugin;
-};
-
-
-
-
-
-
-
-
-
-class WaveEffect : public PluginVClient
-{
-public:
-	WaveEffect(PluginServer *server);
-	~WaveEffect();
-
-	PLUGIN_CLASS_MEMBERS(WaveConfig)
-	int process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-
-	VFrame *temp_frame;
-	VFrame *input, *output;
-	WaveServer *engine;
-};
-
-
-
-
-
+#include "wave.h"
 
 
 
@@ -209,6 +29,12 @@ public:
 
 
 WaveConfig::WaveConfig()
+{
+	reset();
+}
+
+
+void WaveConfig::reset()
 {
 	mode = SMEAR;
 	reflective = 0;
@@ -367,7 +193,22 @@ int WaveLength::handle_event()
 	return 1;
 }
 
-
+WaveReset::WaveReset(WaveEffect *plugin, WaveWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+WaveReset::~WaveReset()
+{
+}
+int WaveReset::handle_event()
+{
+	plugin->config.reset();
+	gui->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 
@@ -376,7 +217,7 @@ int WaveLength::handle_event()
 
 
 WaveWindow::WaveWindow(WaveEffect *plugin)
- : PluginClientWindow(plugin, 335, 150, 335, 150, 0)
+ : PluginClientWindow(plugin, 335, 140, 335, 140, 0)
 {
 	this->plugin = plugin;
 }
@@ -404,6 +245,8 @@ void WaveWindow::create_objects()
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Wavelength:")));
 	add_subwindow(wavelength = new WaveLength(plugin, x1, y));
+	y += 40;
+	add_subwindow(reset = new WaveReset(plugin, this, x, y));
 
 	show_window();
 	flush();
@@ -414,6 +257,16 @@ void WaveWindow::update_mode()
 //	smear->update(plugin->config.mode == SMEAR);
 //	blacken->update(plugin->config.mode == BLACKEN);
 }
+
+// for Reset button
+void WaveWindow::update()
+{
+	amplitude->update(plugin->config.amplitude);
+	phase->update(plugin->config.phase);
+	wavelength->update(plugin->config.wavelength);
+}
+
+
 
 
 

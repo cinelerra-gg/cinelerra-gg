@@ -42,6 +42,7 @@
 class PolarEffect;
 class PolarEngine;
 class PolarWindow;
+class PolarReset;
 
 
 class PolarConfig
@@ -49,6 +50,7 @@ class PolarConfig
 public:
 	PolarConfig();
 
+	void reset();
 	void copy_from(PolarConfig &src);
 	int equivalent(PolarConfig &src);
 	void interpolate(PolarConfig &prev,
@@ -82,14 +84,26 @@ public:
 	PolarEffect *plugin;
 };
 
+class PolarReset : public BC_GenericButton
+{
+public:
+	PolarReset(PolarEffect *plugin, PolarWindow *window, int x, int y);
+	~PolarReset();
+	int handle_event();
+	PolarEffect *plugin;
+	PolarWindow *window;
+};
+
 class PolarWindow : public PluginClientWindow
 {
 public:
 	PolarWindow(PolarEffect *plugin);
 	void create_objects();
+	void update();
 	PolarEffect *plugin;
 	PolarDepth *depth;
 	PolarAngle *angle;
+	PolarReset *reset;
 };
 
 
@@ -148,13 +162,17 @@ REGISTER_PLUGIN(PolarEffect)
 
 PolarConfig::PolarConfig()
 {
-	angle = 0.0;
-	depth = 0.0;
+	reset();
+}
+
+void PolarConfig::reset()
+{
+	angle = 1.0;	// 0.0;
+	depth = 1.0;	// 0.0;
 	backwards = 0;
 	invert = 0;
 	polar_to_rectangular = 1;
 }
-
 
 void PolarConfig::copy_from(PolarConfig &src)
 {
@@ -191,9 +209,9 @@ void PolarConfig::interpolate(PolarConfig &prev,
 PolarWindow::PolarWindow(PolarEffect *plugin)
  : PluginClientWindow(plugin,
 	270,
-	100,
+	122,
 	270,
-	100,
+	122,
 	0)
 {
 	this->plugin = plugin;
@@ -207,12 +225,19 @@ void PolarWindow::create_objects()
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Angle:")));
 	add_subwindow(angle = new PolarAngle(plugin, x + 50, y));
+	y += 40;
+	add_subwindow(reset = new PolarReset(plugin, this, x, y));
 
 	show_window();
 	flush();
 }
 
-
+// for Reset button
+void PolarWindow::update()
+{
+	depth->update(plugin->config.depth);
+	angle->update(plugin->config.angle);
+}
 
 
 
@@ -260,6 +285,24 @@ int PolarAngle::handle_event()
 	return 1;
 }
 
+
+
+PolarReset::PolarReset(PolarEffect *plugin, PolarWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+PolarReset::~PolarReset()
+{
+}
+int PolarReset::handle_event()
+{
+	plugin->config.reset();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 

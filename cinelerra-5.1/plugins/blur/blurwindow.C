@@ -32,9 +32,9 @@
 BlurWindow::BlurWindow(BlurMain *client)
  : PluginClientWindow(client,
 	200,
-	330,
+	360,
 	200,
-	330,
+	360,
 	0)
 {
 	this->client = client;
@@ -70,10 +70,27 @@ void BlurWindow::create_objects()
 	add_subwindow(g = new BlurG(client, x, y));
 	y += 30;
 	add_subwindow(b = new BlurB(client, x, y));
+	y += 40;
+	add_subwindow(reset = new BlurReset(client, this, x, y));
 
 	show_window();
 	flush();
 }
+
+// for Reset button
+void BlurWindow::update()
+{
+	horizontal->update(client->config.horizontal);
+	vertical->update(client->config.vertical);
+	radius->update(client->config.radius);
+	radius_text->update((int64_t)client->config.radius);
+	a_key->update(client->config.a_key);
+	a->update(client->config.a);
+	r->update(client->config.r);
+	g->update(client->config.g);
+	b->update(client->config.b);
+}
+
 
 BlurRadius::BlurRadius(BlurMain *client, BlurWindow *gui, int x, int y)
  : BC_IPot(x,
@@ -225,4 +242,19 @@ int BlurB::handle_event()
 	return 1;
 }
 
-
+BlurReset::BlurReset(BlurMain *client, BlurWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->client = client;
+	this->window = window;
+}
+BlurReset::~BlurReset()
+{
+}
+int BlurReset::handle_event()
+{
+	client->config.reset();
+	window->update();
+	client->send_configure_change();
+	return 1;
+}

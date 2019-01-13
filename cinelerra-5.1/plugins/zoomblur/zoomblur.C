@@ -19,180 +19,8 @@
  *
  */
 
-#include <math.h>
-#include <stdint.h>
-#include <string.h>
 
-#include "bcdisplayinfo.h"
-#include "bcsignals.h"
-#include "clip.h"
-#include "bchash.h"
-#include "filexml.h"
-#include "keyframe.h"
-#include "language.h"
-#include "loadbalance.h"
-#include "pluginvclient.h"
-#include "vframe.h"
-
-
-
-class ZoomBlurMain;
-class ZoomBlurEngine;
-
-
-
-
-
-class ZoomBlurConfig
-{
-public:
-	ZoomBlurConfig();
-
-	int equivalent(ZoomBlurConfig &that);
-	void copy_from(ZoomBlurConfig &that);
-	void interpolate(ZoomBlurConfig &prev,
-		ZoomBlurConfig &next,
-		long prev_frame,
-		long next_frame,
-		long current_frame);
-
-	int x;
-	int y;
-	int radius;
-	int steps;
-	int r;
-	int g;
-	int b;
-	int a;
-};
-
-
-
-class ZoomBlurSize : public BC_ISlider
-{
-public:
-	ZoomBlurSize(ZoomBlurMain *plugin,
-		int x,
-		int y,
-		int *output,
-		int min,
-		int max);
-	int handle_event();
-	ZoomBlurMain *plugin;
-	int *output;
-};
-
-class ZoomBlurToggle : public BC_CheckBox
-{
-public:
-	ZoomBlurToggle(ZoomBlurMain *plugin,
-		int x,
-		int y,
-		int *output,
-		char *string);
-	int handle_event();
-	ZoomBlurMain *plugin;
-	int *output;
-};
-
-class ZoomBlurWindow : public PluginClientWindow
-{
-public:
-	ZoomBlurWindow(ZoomBlurMain *plugin);
-	~ZoomBlurWindow();
-
-	void create_objects();
-
-	ZoomBlurSize *x, *y, *radius, *steps;
-	ZoomBlurToggle *r, *g, *b, *a;
-	ZoomBlurMain *plugin;
-};
-
-
-
-
-
-// Output coords for a layer of blurring
-// Used for OpenGL only
-class ZoomBlurLayer
-{
-public:
-	ZoomBlurLayer() {};
-	float x1, y1, x2, y2;
-};
-
-class ZoomBlurMain : public PluginVClient
-{
-public:
-	ZoomBlurMain(PluginServer *server);
-	~ZoomBlurMain();
-
-	int process_buffer(VFrame *frame,
-		int64_t start_position,
-		double frame_rate);
-	int is_realtime();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int handle_opengl();
-
-	PLUGIN_CLASS_MEMBERS(ZoomBlurConfig)
-
-	void delete_tables();
-	VFrame *input, *output, *temp;
-	ZoomBlurEngine *engine;
-	int **scale_y_table;
-	int **scale_x_table;
-	ZoomBlurLayer *layer_table;
-	int table_entries;
-	int need_reconfigure;
-// The accumulation buffer is needed because 8 bits isn't precise enough
-	unsigned char *accum;
-};
-
-class ZoomBlurPackage : public LoadPackage
-{
-public:
-	ZoomBlurPackage();
-	int y1, y2;
-};
-
-class ZoomBlurUnit : public LoadClient
-{
-public:
-	ZoomBlurUnit(ZoomBlurEngine *server, ZoomBlurMain *plugin);
-	void process_package(LoadPackage *package);
-	ZoomBlurEngine *server;
-	ZoomBlurMain *plugin;
-};
-
-class ZoomBlurEngine : public LoadServer
-{
-public:
-	ZoomBlurEngine(ZoomBlurMain *plugin,
-		int total_clients,
-		int total_packages);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	ZoomBlurMain *plugin;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#include "zoomblur.h"
 
 
 
@@ -201,6 +29,11 @@ REGISTER_PLUGIN(ZoomBlurMain)
 
 
 ZoomBlurConfig::ZoomBlurConfig()
+{
+	reset();
+}
+
+void ZoomBlurConfig::reset()
 {
 	x = 50;
 	y = 50;
@@ -269,9 +102,9 @@ void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
 ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin)
  : PluginClientWindow(plugin,
 	230,
-	340,
+	370,
 	230,
-	340,
+	370,
 	0)
 {
 	this->plugin = plugin;
@@ -308,13 +141,25 @@ void ZoomBlurWindow::create_objects()
 	add_subwindow(b = new ZoomBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
 	y += 30;
 	add_subwindow(a = new ZoomBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
-	y += 30;
+	y += 40;
+	add_subwindow(reset = new ZoomBlurReset(plugin, this, x, y));
 
 	show_window();
 	flush();
 }
 
-
+// for Reset button
+void ZoomBlurWindow::update()
+{
+	this->x->update(plugin->config.x);
+	this->y->update(plugin->config.x);
+	radius->update(plugin->config.radius);
+	steps->update(plugin->config.steps);
+	r->update(plugin->config.r);
+	g->update(plugin->config.g);
+	b->update(plugin->config.b);
+	a->update(plugin->config.a);
+}
 
 
 
@@ -368,8 +213,22 @@ int ZoomBlurSize::handle_event()
 }
 
 
-
-
+ZoomBlurReset::ZoomBlurReset(ZoomBlurMain *plugin, ZoomBlurWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+ZoomBlurReset::~ZoomBlurReset()
+{
+}
+int ZoomBlurReset::handle_event()
+{
+	plugin->config.reset();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 

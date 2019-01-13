@@ -1,0 +1,6 @@
+mp4 libx264
+cin_pix_fmt=yuv420p10le
+# use framerate for 1 keyframe/sec, needed for seeks
+keyint_min=25
+profile=high10
+x264opts keyint=25

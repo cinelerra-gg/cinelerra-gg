@@ -19,6 +19,7 @@
  *
  */
 
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -27,167 +28,12 @@
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
+#include "linearblur.h"
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
 #include "vframe.h"
-
-
-
-class LinearBlurMain;
-class LinearBlurEngine;
-
-
-
-
-
-class LinearBlurConfig
-{
-public:
-	LinearBlurConfig();
-
-	int equivalent(LinearBlurConfig &that);
-	void copy_from(LinearBlurConfig &that);
-	void interpolate(LinearBlurConfig &prev,
-		LinearBlurConfig &next,
-		long prev_frame,
-		long next_frame,
-		long current_frame);
-
-	int radius;
-	int steps;
-	int angle;
-	int r;
-	int g;
-	int b;
-	int a;
-};
-
-
-
-class LinearBlurSize : public BC_ISlider
-{
-public:
-	LinearBlurSize(LinearBlurMain *plugin,
-		int x,
-		int y,
-		int *output,
-		int min,
-		int max);
-	int handle_event();
-	LinearBlurMain *plugin;
-	int *output;
-};
-
-class LinearBlurToggle : public BC_CheckBox
-{
-public:
-	LinearBlurToggle(LinearBlurMain *plugin,
-		int x,
-		int y,
-		int *output,
-		char *string);
-	int handle_event();
-	LinearBlurMain *plugin;
-	int *output;
-};
-
-class LinearBlurWindow : public PluginClientWindow
-{
-public:
-	LinearBlurWindow(LinearBlurMain *plugin);
-	~LinearBlurWindow();
-
-	void create_objects();
-
-	LinearBlurSize *angle, *steps, *radius;
-	LinearBlurToggle *r, *g, *b, *a;
-	LinearBlurMain *plugin;
-};
-
-
-
-
-
-// Output coords for a layer of blurring
-// Used for OpenGL only
-class LinearBlurLayer
-{
-public:
-	LinearBlurLayer() {};
-	int x, y;
-};
-
-class LinearBlurMain : public PluginVClient
-{
-public:
-	LinearBlurMain(PluginServer *server);
-	~LinearBlurMain();
-
-	int process_buffer(VFrame *frame,
-		int64_t start_position,
-		double frame_rate);
-	int is_realtime();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int handle_opengl();
-
-	PLUGIN_CLASS_MEMBERS(LinearBlurConfig)
-
-	void delete_tables();
-	VFrame *input, *output, *temp;
-	LinearBlurEngine *engine;
-	int **scale_y_table;
-	int **scale_x_table;
-	LinearBlurLayer *layer_table;
-	int table_entries;
-	int need_reconfigure;
-// The accumulation buffer is needed because 8 bits isn't precise enough
-	unsigned char *accum;
-};
-
-class LinearBlurPackage : public LoadPackage
-{
-public:
-	LinearBlurPackage();
-	int y1, y2;
-};
-
-class LinearBlurUnit : public LoadClient
-{
-public:
-	LinearBlurUnit(LinearBlurEngine *server, LinearBlurMain *plugin);
-	void process_package(LoadPackage *package);
-	LinearBlurEngine *server;
-	LinearBlurMain *plugin;
-};
-
-class LinearBlurEngine : public LoadServer
-{
-public:
-	LinearBlurEngine(LinearBlurMain *plugin,
-		int total_clients,
-		int total_packages);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	LinearBlurMain *plugin;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -198,7 +44,13 @@ REGISTER_PLUGIN(LinearBlurMain)
 
 
 
+
 LinearBlurConfig::LinearBlurConfig()
+{
+	reset();
+}
+
+void LinearBlurConfig::reset()
 {
 	radius = 10;
 	angle = 0;
@@ -263,9 +115,9 @@ void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
 LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin)
  : PluginClientWindow(plugin,
 	230,
-	290,
+	320,
 	230,
-	290,
+	320,
 	0)
 {
 	this->plugin = plugin;
@@ -298,12 +150,25 @@ void LinearBlurWindow::create_objects()
 	add_subwindow(b = new LinearBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
 	y += 30;
 	add_subwindow(a = new LinearBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
-	y += 30;
+	y += 40;
+	add_subwindow(reset = new LinearBlurReset(plugin, this, x, y));
 
 	show_window();
 	flush();
 }
 
+
+// for Reset button
+void LinearBlurWindow::update()
+{
+	radius->update(plugin->config.radius);
+	angle->update(plugin->config.angle);
+	steps->update(plugin->config.steps);
+	r->update(plugin->config.r);
+	g->update(plugin->config.g);
+	b->update(plugin->config.b);
+	a->update(plugin->config.a);
+}
 
 
 
@@ -357,6 +222,22 @@ int LinearBlurSize::handle_event()
 }
 
 
+LinearBlurReset::LinearBlurReset(LinearBlurMain *plugin, LinearBlurWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+LinearBlurReset::~LinearBlurReset()
+{
+}
+int LinearBlurReset::handle_event()
+{
+	plugin->config.reset();
+	gui->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 

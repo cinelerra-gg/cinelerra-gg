@@ -168,7 +168,7 @@ lame.cfg_params?=--enable-shared=no
 lame.mak_params?= ; cd $(call bld_path,lame,include); ln -sf . lame
 mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"
 mjpegtools.mak_params?=; ln -s . $(call bld_path,mjpegtools,utils)/mjpegtools 
-mjpegtools.cfg_params?= --enable-shared=no --without-libsdl
+mjpegtools.cfg_params?= --enable-shared=no --without-libsdl --without-v4l
 ladspa.cfg_vars?= CFLAGS+=' -Dinline="" '
 ladspa.mak_params?=; $(MAKE) -C ladspa* install DESTDIR=$(call bld_path,ladspa)
 libavc1394.cfg_vars?=PKG_CONFIG_PATH=$(call bld_path,libraw1394)

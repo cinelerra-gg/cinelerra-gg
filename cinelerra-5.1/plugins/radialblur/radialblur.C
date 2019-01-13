@@ -19,167 +19,8 @@
  *
  */
 
-#include <math.h>
-#include <stdint.h>
-#include <string.h>
 
-
-#include "affine.h"
-#include "bcdisplayinfo.h"
-#include "clip.h"
-#include "bchash.h"
-#include "filexml.h"
-#include "keyframe.h"
-#include "language.h"
-#include "loadbalance.h"
-#include "pluginvclient.h"
-#include "vframe.h"
-
-
-class RadialBlurMain;
-class RadialBlurEngine;
-
-
-
-
-
-class RadialBlurConfig
-{
-public:
-	RadialBlurConfig();
-
-	int equivalent(RadialBlurConfig &that);
-	void copy_from(RadialBlurConfig &that);
-	void interpolate(RadialBlurConfig &prev,
-		RadialBlurConfig &next,
-		long prev_frame,
-		long next_frame,
-		long current_frame);
-
-	int x;
-	int y;
-	int steps;
-	int angle;
-	int r;
-	int g;
-	int b;
-	int a;
-};
-
-
-
-class RadialBlurSize : public BC_ISlider
-{
-public:
-	RadialBlurSize(RadialBlurMain *plugin,
-		int x,
-		int y,
-		int *output,
-		int min,
-		int max);
-	int handle_event();
-	RadialBlurMain *plugin;
-	int *output;
-};
-
-class RadialBlurToggle : public BC_CheckBox
-{
-public:
-	RadialBlurToggle(RadialBlurMain *plugin,
-		int x,
-		int y,
-		int *output,
-		char *string);
-	int handle_event();
-	RadialBlurMain *plugin;
-	int *output;
-};
-
-class RadialBlurWindow : public PluginClientWindow
-{
-public:
-	RadialBlurWindow(RadialBlurMain *plugin);
-	~RadialBlurWindow();
-
-	void create_objects();
-
-
-	RadialBlurSize *x, *y, *steps, *angle;
-	RadialBlurToggle *r, *g, *b, *a;
-	RadialBlurMain *plugin;
-};
-
-
-
-
-
-
-class RadialBlurMain : public PluginVClient
-{
-public:
-	RadialBlurMain(PluginServer *server);
-	~RadialBlurMain();
-
-	int process_buffer(VFrame *frame,
-		int64_t start_position,
-		double frame_rate);
-	int is_realtime();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int handle_opengl();
-
-	PLUGIN_CLASS_MEMBERS(RadialBlurConfig)
-
-	VFrame *input, *output, *temp;
-	RadialBlurEngine *engine;
-// Rotate engine only used for OpenGL
-	AffineEngine *rotate;
-};
-
-class RadialBlurPackage : public LoadPackage
-{
-public:
-	RadialBlurPackage();
-	int y1, y2;
-};
-
-class RadialBlurUnit : public LoadClient
-{
-public:
-	RadialBlurUnit(RadialBlurEngine *server, RadialBlurMain *plugin);
-	void process_package(LoadPackage *package);
-	RadialBlurEngine *server;
-	RadialBlurMain *plugin;
-};
-
-class RadialBlurEngine : public LoadServer
-{
-public:
-	RadialBlurEngine(RadialBlurMain *plugin,
-		int total_clients,
-		int total_packages);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	RadialBlurMain *plugin;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#include "radialblur.h"
 
 
 
@@ -188,6 +29,12 @@ REGISTER_PLUGIN(RadialBlurMain)
 
 
 RadialBlurConfig::RadialBlurConfig()
+{
+	reset();
+}
+
+
+void RadialBlurConfig::reset()
 {
 	x = 50;
 	y = 50;
@@ -257,9 +104,9 @@ void RadialBlurConfig::interpolate(RadialBlurConfig &prev,
 RadialBlurWindow::RadialBlurWindow(RadialBlurMain *plugin)
  : PluginClientWindow(plugin,
 	230,
-	340,
+	370,
 	230,
-	340,
+	370,
 	0)
 {
 	this->plugin = plugin;
@@ -296,13 +143,25 @@ void RadialBlurWindow::create_objects()
 	add_subwindow(b = new RadialBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
 	y += 30;
 	add_subwindow(a = new RadialBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
-	y += 30;
+	y += 40;
+	add_subwindow(reset = new RadialBlurReset(plugin, this, x, y));
 
 	show_window();
 	flush();
 }
 
-
+// for Reset button
+void RadialBlurWindow::update()
+{
+	this->x->update(plugin->config.x);
+	this->y->update(plugin->config.y);
+	angle->update(plugin->config.angle);
+	steps->update(plugin->config.steps);
+	r->update(plugin->config.r);
+	g->update(plugin->config.g);
+	b->update(plugin->config.b);
+	a->update(plugin->config.a);
+}
 
 
 
@@ -356,6 +215,26 @@ int RadialBlurSize::handle_event()
 
 
 
+
+
+
+
+RadialBlurReset::RadialBlurReset(RadialBlurMain *plugin, RadialBlurWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+RadialBlurReset::~RadialBlurReset()
+{
+}
+int RadialBlurReset::handle_event()
+{
+	plugin->config.reset();
+	gui->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 

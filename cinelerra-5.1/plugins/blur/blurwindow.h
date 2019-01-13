@@ -42,6 +42,7 @@ class BlurR;
 class BlurG;
 class BlurB;
 class BlurAKey;
+class BlurReset;
 
 class BlurWindow : public PluginClientWindow
 {
@@ -50,6 +51,7 @@ public:
 	~BlurWindow();
 
 	void create_objects();
+	void update();
 
 	BlurMain *client;
 	BlurVertical *vertical;
@@ -61,6 +63,7 @@ public:
 	BlurG *g;
 	BlurB *b;
 	BlurAKey *a_key;
+	BlurReset *reset;
 };
 
 class BlurAKey : public BC_CheckBox
@@ -138,6 +141,16 @@ public:
 	~BlurHorizontal();
 	int handle_event();
 
+	BlurMain *client;
+	BlurWindow *window;
+};
+
+class BlurReset : public BC_GenericButton
+{
+public:
+	BlurReset(BlurMain *client, BlurWindow *window, int x, int y);
+	~BlurReset();
+	int handle_event();
 	BlurMain *client;
 	BlurWindow *window;
 };

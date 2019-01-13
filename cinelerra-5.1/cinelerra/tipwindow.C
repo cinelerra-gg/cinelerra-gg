@@ -127,7 +127,7 @@ void TipWindowGUI::create_objects()
 {
 	lock_window("TipWindowGUI::create_objects");
 	int x = 10, y = 10;
-	add_subwindow(tip_text = new BC_Title(x, y, thread->get_current_tip(0)));
+	add_subwindow(tip_text = new BC_Title(x, y, thread->get_current_tip(1)));
 	y = get_h() - 30;
 	BC_CheckBox *checkbox;
 	add_subwindow(checkbox = new TipDisable(mwindow, this, x, y));

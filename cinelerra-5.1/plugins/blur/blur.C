@@ -40,6 +40,11 @@
 
 BlurConfig::BlurConfig()
 {
+	reset();
+}
+
+void BlurConfig::reset()
+{
 	vertical = 1;
 	horizontal = 1;
 	radius = 5;

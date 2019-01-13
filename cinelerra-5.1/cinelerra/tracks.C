@@ -660,6 +660,7 @@ int Tracks::new_group(int id)
 	for( Track *track=first; track; track=track->next ) {
 		if( !track->record ) continue;
 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( edit->group_id > 0 ) continue;
 			if( !edit->is_selected ) continue;
 			edit->group_id = id;
 			++count;
