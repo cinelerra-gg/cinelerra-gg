@@ -392,7 +392,7 @@ int BatchRenderThread::test_edl_files()
 
 	for( int i=0; !ret && i<jobs.size(); ++i ) {
 		if( !jobs.values[i]->enabled ) continue;
-		const char *path = jobs.values[i]->edl_path;
+		path = jobs.values[i]->edl_path;
 		int is_script = *path == '@' ? 1 : 0;
 		if( is_script ) ++path;
 		FILE *fp = fopen(path, "r");
@@ -1211,9 +1211,14 @@ int BatchRenderList::selection_changed()
 
 int BatchRenderList::column_resize_event()
 {
-	for( int i = 0; i < BATCHRENDER_COLUMNS; i++ ) {
-		thread->list_width[i] = get_column_width(i);
-	}
+	int col = 0;
+	thread->list_width[ENABLED_COL] = get_column_width(col++);
+	thread->list_width[LABELED_COL] = get_column_width(col++);
+	if( thread->gui->use_renderfarm )
+		thread->list_width[FARMED_COL] = get_column_width(col++);
+	thread->list_width[OUTPUT_COL] = get_column_width(col++);
+	thread->list_width[EDL_COL] = get_column_width(col++);
+	thread->list_width[ELAPSED_COL] = get_column_width(col);
 	return 1;
 }
 

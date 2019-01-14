@@ -79,6 +79,7 @@ $(opencv)/build: $(opencv).src
   -DINSTALL_C_EXAMPLES=OFF \
   -DINSTALL_PYTHON_EXAMPLES=OFF \
   -DBUILD_EXAMPLES=OFF .. \
+  -DBUILD_opencv_python3=no \
   -DCMAKE_INSTALL_PREFIX=/usr/local \
   -DOPENCV_EXTRA_MODULES_PATH="$(opencv)_contrib/modules/"
 
@@ -98,6 +99,7 @@ $(opencv)/build: $(opencv).src
   -DINSTALL_C_EXAMPLES=ON \
   -DINSTALL_PYTHON_EXAMPLES=ON \
   -DBUILD_EXAMPLES=ON .. \
+  -DBUILD_opencv_python3=no \
   -DCMAKE_INSTALL_PREFIX=/usr/local \
   -DOPENCV_EXTRA_MODULES_PATH="$(opencv)_contrib/modules/"
 

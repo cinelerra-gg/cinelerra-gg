@@ -1943,8 +1943,12 @@ void TrackCanvas::draw_drag_handle()
 	if( !mwindow->session->drag_edit ) return;
 	int group_id = mwindow->session->drag_edit->group_id;
         if( !group_id ) return;
+	int64_t dx, dy, dw, dh;
+	edit_dimensions(mwindow->session->drag_edit, dx, dy, dw, dh);
 	int drag_handle = mwindow->session->drag_handle;
-	set_color(RED);
+	int64_t pixel0 = !drag_handle ? dx : dx + dw;
+	int delta = pixel1 - pixel0;
+	set_color(LTPURPLE);
 	set_line_width(3);
 
 	for( Track *track=mwindow->edl->tracks->first; track; track=track->next ) {
@@ -1975,10 +1979,10 @@ void TrackCanvas::draw_drag_handle()
 			can_drag = 0;
 		int64_t x, y, w, h;
 		edit_dimensions(edit, x, y, w, h);
+		if( y+h < 0 || y >= get_h() ) continue;
 		int edge_x = !drag_handle ? x : x + w;
 		int edge_y = y + h/2, k = 10;
-		if( edge_x >= 0 && edge_x < get_w() &&
-		    edge_y >= 0 && edge_y < get_h() ) {
+		if( edge_x >= 0 && edge_x < get_w() ) {
 			if( !can_drag ) {
 				draw_line(edge_x-k,edge_y-k, edge_x+k,edge_y+k);
 				draw_line(edge_x-k,edge_y+k, edge_x+k,edge_y-k);
@@ -1991,6 +1995,10 @@ void TrackCanvas::draw_drag_handle()
 				draw_line(edge_x,edge_y, edge_x-k,edge_y-k);
 				draw_line(edge_x,edge_y, edge_x-k,edge_y+k);
 			}
+		}
+		edge_x += delta;
+		if( edge_x >= 0 && edge_x < get_w() ) {
+			draw_line(edge_x, y, edge_x, y+h);
 		}
 	}
 	set_line_width(1);
