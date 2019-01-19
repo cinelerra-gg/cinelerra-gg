@@ -478,36 +478,21 @@ int Labels::paste_silence(double start, double end)
 	return 0;
 }
 
-int Labels::modify_handles(double oldposition,
-	double newposition,
-	int currentend,
-	int handle_mode,
-	int edit_labels)
+int Labels::modify_handles(double oldposition, double newposition,
+		int currentend, int handle_mode, int edit_labels)
 {
-	if(edit_labels &&
-		handle_mode == MOVE_ALL_EDITS)
-	{
-		if(currentend == 0)          // left handle
-		{
-			if(newposition < oldposition)
-			{
+	if( edit_labels && handle_mode == MOVE_EDGE ) {
+		if( !currentend ) {	// left handle
+			if( newposition < oldposition )
 				insert(oldposition, oldposition - newposition);    // shift all labels right
-			}
 			else
-			{
 				clear(oldposition, newposition);   // clear selection
-			}
 		}
-		else
-		{                            // right handle
-			if(newposition < oldposition)
-			{
+		else {			// right handle
+			if( newposition < oldposition )
 				clear(newposition, oldposition);
-			}
 			else
-			{
 				insert(oldposition, newposition - oldposition);
-			}
 		}
 	}
 	return 0;

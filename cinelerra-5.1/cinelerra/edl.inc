@@ -44,14 +44,15 @@ class EDL;
 #define EDITING_IBEAM 1
 
 
+// default for left button
+#define MOVE_EDGE 0
+// default for middle button
+#define MOVE_MEDIA 1
+// default for right button
+#define MOVE_EDGE_MEDIA 2
 
-#define EDIT_HANDLE_MODES 3
-
-// Behavior for the edit handles based on mouse button
-#define MOVE_ALL_EDITS 0 // default for left button
-#define MOVE_ONE_EDIT 1 // default for middle button
-#define MOVE_NO_EDITS 2 // default for right button
 #define MOVE_EDITS_DISABLED 3
+#define EDIT_HANDLE_MODES 3
 
 // AWindow folders
 #define AW_NO_FOLDER         -1

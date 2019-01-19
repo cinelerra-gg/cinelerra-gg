@@ -356,12 +356,12 @@ PKG_3RD([twolame],[auto],
   [  libtwolame ])
 
 PKG_3RD([x264],[auto],
-  [x264-snapshot-20180118-2245],
+  [x264-snapshot-20190117-2245-stable],
   [ libx264.a ],
   [ . ])
 
 PKG_3RD([x265],[auto],
-  [x265_2.8],
+  [x265_2.9],
   [ libx265.a ],
   [ . source ])
 

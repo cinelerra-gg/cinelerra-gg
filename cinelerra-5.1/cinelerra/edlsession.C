@@ -75,9 +75,9 @@ EDLSession::EDLSession(EDL *edl)
 	strcpy(default_atransition, INIT_ATRANSITION);
 	strcpy(default_vtransition, INIT_VTRANSITION);
 	default_transition_length = 1.0;
-	edit_handle_mode[0] = MOVE_ALL_EDITS;
-	edit_handle_mode[1] = MOVE_ONE_EDIT;
-	edit_handle_mode[2] = MOVE_NO_EDITS;
+	edit_handle_mode[0] = MOVE_EDGE;
+	edit_handle_mode[1] = MOVE_MEDIA;
+	edit_handle_mode[2] = MOVE_EDGE_MEDIA;
 	editing_mode = EDITING_IBEAM;
 	enable_duplex = 1;
 	folderlist_format = FOLDERS_ICONS;
@@ -258,9 +258,9 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	sprintf(default_vtransition, INIT_VTRANSITION);
 	defaults->get("DEFAULT_VTRANSITION", default_vtransition);
 	default_transition_length = defaults->get("DEFAULT_TRANSITION_LENGTH", (double)1);
-	edit_handle_mode[0] = defaults->get("EDIT_HANDLE_MODE0", MOVE_ALL_EDITS);
-	edit_handle_mode[1] = defaults->get("EDIT_HANDLE_MODE1", MOVE_ONE_EDIT);
-	edit_handle_mode[2] = defaults->get("EDIT_HANDLE_MODE2", MOVE_NO_EDITS);
+	edit_handle_mode[0] = defaults->get("EDIT_HANDLE_MODE0", MOVE_EDGE);
+	edit_handle_mode[1] = defaults->get("EDIT_HANDLE_MODE1", MOVE_MEDIA);
+	edit_handle_mode[2] = defaults->get("EDIT_HANDLE_MODE2", MOVE_EDGE_MEDIA);
 	editing_mode = defaults->get("EDITING_MODE", EDITING_IBEAM);
 	enable_duplex = defaults->get("ENABLE_DUPLEX", 1);
 	folderlist_format = defaults->get("FOLDERLIST_FORMAT", FOLDERS_TEXT);

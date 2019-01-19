@@ -155,7 +155,7 @@ public:
 
 	virtual int copy_settings(Track *track);
 	void shift_keyframes(int64_t position, int64_t length);
-	void shift_effects(int64_t position, int64_t length, int edit_autos);
+	void shift_effects(int64_t position, int64_t length, int edit_autos, Edits *trim_edits);
 	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
 	void change_modules(int old_location, int new_location, int do_swap);
 	int plugin_exists(Plugin *plugin);

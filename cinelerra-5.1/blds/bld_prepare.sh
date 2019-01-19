@@ -74,7 +74,7 @@ case "$dir" in
     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
     libtiff5-dev exuberant-ctags ttf-bitstream-vera xfonts-75dpi xfonts-100dpi \
     fonts-dejavu libopenexr-dev festival libfftw3-dev gdb \
-    libdc1394-22-dev libesd0-dev libflac-dev libjbig-dev libvdpau-dev \
+    libdc1394-22-dev libflac-dev libjbig-dev libvdpau-dev \
     inkscape libsndfile1-dev libtheora-dev cmake udftools libxml2-utils git \
     autoconf automake debhelper libgtk2.0-dev
   ;;
@@ -86,7 +86,7 @@ case "$dir" in
     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
     libtiff5-dev exuberant-ctags ttf-bitstream-vera xfonts-75dpi xfonts-100dpi \
     fonts-dejavu libopenexr-dev libavc1394-dev festival-dev fftw3-dev gdb \
-    libdc1394-22-dev libiec61883-dev libesd0-dev libflac-dev libjbig-dev \
+    libdc1394-22-dev libiec61883-dev libflac-dev libjbig-dev \
     libvdpau-dev libsndfile1-dev libtheora-dev cmake udftools libxml2-utils \
     git inkscape autoconf automake debhelper libgtk2.0-dev
   ;;

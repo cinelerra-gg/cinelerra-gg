@@ -225,6 +225,7 @@ int DeviceDVBInput::dvb_sync()
 	return 1;
 }
 
+// Return values: 0 = OK, 1 = unreported error, 2 = error reported to stderr
 int DeviceDVBInput::dvb_open()
 {
 	int ret = 0;
@@ -234,13 +235,13 @@ int DeviceDVBInput::dvb_open()
 	   (frontend_fd = ::open(frontend_path, O_RDWR)) < 0 ) {
 		fprintf(stderr, "DeviceDVBInput::dvb_open %s: %s\n",
 			frontend_path, strerror(errno));
-		ret = 1;
+		ret = 2;
 	}
 	if( !ret && ioctl(frontend_fd, FE_GET_INFO, &fe_info) < 0 ) {
 		fprintf(stderr,
 			"DeviceDVBInput::dvb_open FE_GET_INFO: %s\n",
 			strerror(errno));
-		ret = 1;
+		ret = 2;
 	}
 
 	pwr_min = snr_min = 0;
@@ -250,72 +251,87 @@ int DeviceDVBInput::dvb_open()
 	int index = -1, table = -1;
 	if( !ret && (index = get_channel()) < 0 ) ret = 1;
 	if( !ret && (table = get_channel_table()) < 0 ) ret = 1;
+	if( !ret && table >= CHANLIST_SIZE ) ret = 1;
+
+	struct dvb_frontend_parameters frontend_param;
 	if( !ret ) {
-		uint32_t frequency = 0;
-		struct dvb_frontend_parameters frontend_param;
-		bzero(&frontend_param, sizeof(frontend_param));
-		ret = 1;
-		switch(table) {
-		case NETTUNE_AIR:
-			if( index >= chanlists[NTSC_DVB].count ) break;
-			frequency = chanlists[NTSC_DVB].list[index].freq * 1000000;
-			if( frequency < fe_info.frequency_min ||
-				frequency > fe_info.frequency_max ) break;
-			frontend_param.frequency = frequency;
+		uint32_t frequency = chanlists[table].list[index].freq * 1000;
+		if( frequency < fe_info.frequency_min ||
+			frequency > fe_info.frequency_max )  {
+			fprintf(stderr,
+				"DeviceDVBInput::dvb_open channel %s frequency %d out of range %d-%d\n",
+				chanlists[table].list[index].name, frequency, fe_info.frequency_min, fe_info.frequency_max);
+			 ret = 2;
+		}
+		memset(&frontend_param, 0, sizeof(frontend_param));
+		frontend_param.frequency = frequency;
+	}
+	if( !ret ) {
+		switch( table ) {
+		case NTSC_DVB:
+		case NTSC_BCAST:
+		case NTSC_HRC:
+		case NTSC_BCAST_JP:
 			frontend_param.u.vsb.modulation = VSB_8;
-			ret = 0;
 			break;
-		case NETTUNE_CABLE:
-			if( index >= chanlists[CATV_DVB].count ) break;
-			frequency = chanlists[CATV_DVB].list[index].freq * 1000000;
-			if( frequency < fe_info.frequency_min ||
-				frequency > fe_info.frequency_max ) break;
-			frontend_param.frequency = frequency;
+		case PAL_EUROPE:
+		case PAL_E_EUROPE:
+		case PAL_ITALY:
+		case PAL_NEWZEALAND:
+		case PAL_AUSTRALIA:
+		case PAL_IRELAND:
+		case CATV_DVB:
+		case NTSC_CABLE:
+		case NTSC_CABLE_JP:
 			frontend_param.u.vsb.modulation = QAM_AUTO;
-			ret = 0;
+			break;
+		default:
+			fprintf(stderr,
+				"DeviceDVBInput::dvb_open bad table index=%d\n", table);
+			ret = 2;
 			break;
 		}
+	}
 
-		if( !ret && ioctl(frontend_fd, FE_SET_FRONTEND, &frontend_param) < 0 ) {
-			fprintf(stderr,
-				"DeviceDVBInput::dvb_open FE_SET_FRONTEND frequency=%d: %s\n",
-				frontend_param.frequency, strerror(errno));
-			ret = 1;
-		}
+	if( !ret && ioctl(frontend_fd, FE_SET_FRONTEND, &frontend_param) < 0 ) {
+		fprintf(stderr,
+			"DeviceDVBInput::dvb_open FE_SET_FRONTEND frequency=%d: %s\n",
+			frontend_param.frequency, strerror(errno));
+		ret = 2;
+	}
 
-		if( !ret && wait_signal(333,3) ) {
-			fprintf(stderr,
-				 "DeviceDVBInput::dvb_open: no signal, index=%d frequency=%d\n",
-				index, frontend_param.frequency);
-			ret = 1;
-		}
+	if( !ret && wait_signal(333,3) ) {
+		fprintf(stderr,
+			 "DeviceDVBInput::dvb_open: no signal, index=%d, channel %s, frequency=%d\n",
+			index, chanlists[table].list[index].name, frontend_param.frequency);
+		ret = 2;
+	}
 
-		if( !ret && ioctl(frontend_fd, FE_GET_FRONTEND, &frontend_param) ) {
-			fprintf(stderr,
-				"DeviceDVBInput::dvb_open FE_GET_FRONTEND: %s\n",
-				strerror(errno));
-			ret = 1;
+	if( !ret && ioctl(frontend_fd, FE_GET_FRONTEND, &frontend_param) ) {
+		fprintf(stderr,
+			"DeviceDVBInput::dvb_open FE_GET_FRONTEND: %s\n",
+			strerror(errno));
+		ret = 2;
+	}
+	if( !ret ) { // goofy quirks
+		if( !strcmp("Samsung S5H1409 QAM/8VSB Frontend", fe_info.name) ) {
+		        switch(frontend_param.u.vsb.modulation) {
+		        case QAM_64:  snr_min = 200;  snr_max = 300;  break;
+		        case QAM_256: snr_min = 260;  snr_max = 400;  break;
+		        case VSB_8:   snr_min = 111;  snr_max = 300;  break;
+		        default: break;
+			}
+			pwr_min = snr_min;  pwr_max = snr_max;
 		}
-		if( !ret ) { // goofy quirks
-			if( !strcmp("Samsung S5H1409 QAM/8VSB Frontend", fe_info.name) ) {
-			        switch(frontend_param.u.vsb.modulation) {
-			        case QAM_64:  snr_min = 200;  snr_max = 300;  break;
-			        case QAM_256: snr_min = 260;  snr_max = 400;  break;
-			        case VSB_8:   snr_min = 111;  snr_max = 300;  break;
-			        default: break;
-        			}
-				pwr_min = snr_min;  pwr_max = snr_max;
-        		}
-			else if( !strcmp("Auvitek AU8522 QAM/8VSB Frontend", fe_info.name) ) {
-			        switch(frontend_param.u.vsb.modulation) {
-			        case QAM_64:  snr_min = 190;  snr_max = 290;  break;
-			        case QAM_256: snr_min = 280;  snr_max = 400;  break;
-			        case VSB_8:   snr_min = 115;  snr_max = 270;  break;
-			        default: break;
-        			}
-				pwr_min = snr_min;  pwr_max = snr_max;
-        		}
-        	}
+		else if( !strcmp("Auvitek AU8522 QAM/8VSB Frontend", fe_info.name) ) {
+		        switch(frontend_param.u.vsb.modulation) {
+		        case QAM_64:  snr_min = 190;  snr_max = 290;  break;
+		        case QAM_256: snr_min = 280;  snr_max = 400;  break;
+		        case VSB_8:   snr_min = 115;  snr_max = 270;  break;
+		        default: break;
+			}
+			pwr_min = snr_min;  pwr_max = snr_max;
+		}
 	}
 
 	if( !ret && (demux_fd = ::open(demux_path, O_RDWR)) < 0 ) {
@@ -323,7 +339,7 @@ int DeviceDVBInput::dvb_open()
 			"DeviceDVBInput::dvb_open %s for video: %s\n",
 			demux_path,
 			strerror(errno));
-		ret = 1;
+		ret = 2;
 	}
 
 // Setting exactly one PES filter to 0x2000 dumps the entire
@@ -385,7 +401,7 @@ int DeviceDVBInput::dvb_status()
 	if( fe < 0 ) return -1;
 	fe_status_t st;  memset(&st, 0, sizeof(st));
 	if( ioctl(fe, FE_READ_STATUS, &st) ) return 1;
-        if( (st & FE_TIMEDOUT) != 0 ) return 1;
+	if( (st & FE_TIMEDOUT) != 0 ) return 1;
 	signal_lck = (st & FE_HAS_LOCK) != 0 ? 1 : 0;
 	signal_crr = (st & FE_HAS_CARRIER) != 0 ? 1 : 0;
 	uint16_t power = 0;
@@ -425,10 +441,9 @@ int DeviceDVBInput::open_dev(int color_model)
 {
 	int ret = 0;
 	dvb_lock->lock("DeviceDVBInput::open_dev");
-	if( dvb_fd < 0 )
-	{
+	if( dvb_fd < 0 ) {
 		ret = dvb_open();
-		if( ret ) {
+		if( ret == 1 ) {
 			printf("DeviceDVBInput::open_dev: adaptor %s open failed\n",
 				dev_name);
 		}

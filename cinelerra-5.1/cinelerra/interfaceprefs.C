@@ -40,9 +40,9 @@ N_("Drag source only")
 N_("No effect")
 #endif
 
-#define MOVE_ALL_EDITS_TITLE N_("Drag all following edits")
-#define MOVE_ONE_EDIT_TITLE N_("Drag only one edit")
-#define MOVE_NO_EDITS_TITLE N_("Drag source only")
+#define MOVE_EDGE_TITLE N_("Drag edge only")
+#define MOVE_MEDIA_TITLE N_("Drag media only")
+#define MOVE_EDGE_MEDIA_TITLE N_("Drag edge and media")
 #define MOVE_EDITS_DISABLED_TITLE N_("No effect")
 
 InterfacePrefs::InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
@@ -241,9 +241,9 @@ void InterfacePrefs::create_objects()
 const char* InterfacePrefs::behavior_to_text(int mode)
 {
 	switch(mode) {
-		case MOVE_ALL_EDITS: return _(MOVE_ALL_EDITS_TITLE);
-		case MOVE_ONE_EDIT:  return _(MOVE_ONE_EDIT_TITLE);
-		case MOVE_NO_EDITS:  return _(MOVE_NO_EDITS_TITLE);
+		case MOVE_EDGE: return _(MOVE_EDGE_TITLE);
+		case MOVE_MEDIA:  return _(MOVE_MEDIA_TITLE);
+		case MOVE_EDGE_MEDIA:  return _(MOVE_EDGE_MEDIA_TITLE);
 		case MOVE_EDITS_DISABLED: return _(MOVE_EDITS_DISABLED_TITLE);
 		default: return "";
 	}
@@ -339,9 +339,9 @@ int ViewBehaviourText::handle_event()
 
 void ViewBehaviourText::create_objects()
 {
-	add_item(new ViewBehaviourItem(this, _(MOVE_ALL_EDITS_TITLE), MOVE_ALL_EDITS));
-	add_item(new ViewBehaviourItem(this, _(MOVE_ONE_EDIT_TITLE), MOVE_ONE_EDIT));
-	add_item(new ViewBehaviourItem(this, _(MOVE_NO_EDITS_TITLE), MOVE_NO_EDITS));
+	add_item(new ViewBehaviourItem(this, _(MOVE_EDGE_TITLE), MOVE_EDGE));
+	add_item(new ViewBehaviourItem(this, _(MOVE_MEDIA_TITLE), MOVE_MEDIA));
+	add_item(new ViewBehaviourItem(this, _(MOVE_EDGE_MEDIA_TITLE), MOVE_EDGE_MEDIA));
 	add_item(new ViewBehaviourItem(this, _(MOVE_EDITS_DISABLED_TITLE), MOVE_EDITS_DISABLED));
 }
 

@@ -214,28 +214,13 @@ void Tracks::set_edit_length(double start, double end, double length)
 // Go in using the edit handle interface
 					int64_t starting_length = current_edit->length;
 
-					if(length_units < current_edit->length)
-					{
-						current_edit->shift_end_in(MOVE_ALL_EDITS,
-							current_edit->startproject + length_units,
-							current_edit->startproject + current_edit->length,
-							1,
-							edl->session->labels_follow_edits,
-							edl->session->plugins_follow_edits,
-							edl->session->autos_follow_edits,
-							0);
-					}
-					else
-					{
-						current_edit->shift_end_out(MOVE_ALL_EDITS,
-							current_edit->startproject + length_units,
-							current_edit->startproject + current_edit->length,
-							1,
-							edl->session->labels_follow_edits,
-							edl->session->plugins_follow_edits,
-							edl->session->autos_follow_edits,
-							0);
-					}
+					current_edit->shift_end(MOVE_EDGE,
+						current_edit->startproject + length_units,
+						current_edit->startproject + current_edit->length,
+						1, 0,
+						edl->session->plugins_follow_edits,
+						edl->session->autos_follow_edits,
+						0);
 
 					int64_t ending_length = current_edit->length;
 
@@ -248,9 +233,7 @@ void Tracks::set_edit_length(double start, double end, double length)
 						 edl->labels->modify_handles(
 							current_track->from_units(current_edit->startproject + starting_length),
 							current_track->from_units(current_edit->startproject + ending_length),
-							1,
-							MOVE_ALL_EDITS,
-							1);
+							1, MOVE_EDGE, 1);
 					}
 
 
@@ -298,43 +281,24 @@ void Tracks::set_edit_length(double start, double end, double length)
 // Go in using the edit handle interface
 					int64_t starting_length = current_edit->length;
 
-					if(length_units < current_edit->length)
-					{
-						current_edit->shift_end_in(MOVE_ALL_EDITS,
-							current_edit->startproject + length_units,
-							current_edit->startproject + current_edit->length,
-							1,
-							edl->session->labels_follow_edits,
-							edl->session->plugins_follow_edits,
-							edl->session->autos_follow_edits,
-							0);
-					}
-					else
-					{
-						current_edit->shift_end_out(MOVE_ALL_EDITS,
-							current_edit->startproject + length_units,
-							current_edit->startproject + current_edit->length,
-							1,
-							edl->session->labels_follow_edits,
-							edl->session->plugins_follow_edits,
-							edl->session->autos_follow_edits,
-							0);
-					}
+					current_edit->shift_end(MOVE_EDGE,
+						current_edit->startproject + length_units,
+						current_edit->startproject + current_edit->length,
+						1, 0,
+						edl->session->plugins_follow_edits,
+						edl->session->autos_follow_edits,
+						0);
 
 					int64_t ending_length = current_edit->length;
 
-					if(edl->session->labels_follow_edits && first_track)
-					{
-// printf("Tracks::set_edit_length %d %f %f\n",
-// __LINE__,
+					if(edl->session->labels_follow_edits && first_track) {
+// printf("Tracks::set_edit_length %d %f %f\n", __LINE__,
 // current_track->from_units(current_edit->startproject + starting_length),
 // current_track->from_units(current_edit->startproject + ending_length));
 						 edl->labels->modify_handles(
 							current_track->from_units(current_edit->startproject + starting_length),
 							current_track->from_units(current_edit->startproject + ending_length),
-							1,
-							MOVE_ALL_EDITS,
-							1);
+							1, MOVE_EDGE, 1);
 					}
 
 

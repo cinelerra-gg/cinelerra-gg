@@ -861,24 +861,11 @@ int MWindow::modify_pluginhandles()
 void MWindow::finish_modify_handles()
 {
 	int edit_mode = edl->session->edit_handle_mode[session->drag_button];
-
-	if( (session->drag_handle == 1 && edit_mode != MOVE_NO_EDITS) ||
-		(session->drag_handle == 0 && edit_mode == MOVE_ONE_EDIT) ) {
-//printf("MWindow::finish_modify_handles %d\n", __LINE__);
-		edl->local_session->set_selectionstart(session->drag_position);
-		edl->local_session->set_selectionend(session->drag_position);
-	}
-	else
-	if( edit_mode != MOVE_NO_EDITS ) {
-//printf("MWindow::finish_modify_handles %d\n", __LINE__);
-		edl->local_session->set_selectionstart(session->drag_start);
-		edl->local_session->set_selectionend(session->drag_start);
-	}
-
-// clamp the selection to 0
-	if( edl->local_session->get_selectionstart(1) < 0 ) {
-		edl->local_session->set_selectionstart(0);
-		edl->local_session->set_selectionend(0);
+	if( edit_mode != MOVE_MEDIA ) {
+		double position = session->drag_position ;
+		if( position < 0 ) position = 0;
+		edl->local_session->set_selectionstart(position);
+		edl->local_session->set_selectionend(position);
 	}
 	undo->update_undo_after(_("drag handle"), LOAD_EDITS | LOAD_TIMEBAR);
 

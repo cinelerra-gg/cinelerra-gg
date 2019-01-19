@@ -682,8 +682,7 @@ int Edits::clear_handle(double start, double end,
 // Lengthen effects
 					if(edit_plugins)
 						track->shift_effects(current_edit->next->startproject,
-							length,
-							edit_autos);
+								length, edit_autos, 0);
 
 					for(current_edit = current_edit->next; current_edit; current_edit = current_edit->next)
 					{
@@ -732,31 +731,16 @@ int Edits::modify_handles(double oldposition, double newposition, int currentend
 				oldposition = track->from_units(current_edit->startproject);
 				if( group_id > 0 ) newposition = oldposition + delta;
 				result = 1;
-
-				if( newposition >= oldposition ) {
-//printf("Edits::modify_handle 1 %s %f %f\n", track->title, oldposition, newposition);
-// shift start of edit in
-					current_edit->shift_start_in(edit_mode,
-						track->to_units(newposition, 0),
-						track->to_units(oldposition, 0),
-						edit_edits,
-						edit_labels,
-						edit_plugins,
-						edit_autos,
-						trim_edits);
+// dont move stuff if media playback does not shift in time
+				if( edit_mode != MOVE_MEDIA && edit_mode != MOVE_EDGE_MEDIA ) {
+					edit_labels = 0;
+					edit_plugins = 0;
+					edit_autos = 0;
 				}
-				else {
-//printf("Edits::modify_handle 2 %s\n", track->title);
-// move start of edit out
-					current_edit->shift_start_out(edit_mode,
-						track->to_units(newposition, 0),
-						track->to_units(oldposition, 0),
-						edit_edits,
-						edit_labels,
-						edit_plugins,
-						edit_autos,
-						trim_edits);
-				}
+				current_edit->shift_start(edit_mode,
+					track->to_units(newposition, 0), track->to_units(oldposition, 0),
+					0, edit_labels, edit_plugins, edit_autos,
+					trim_edits);
 			}
 
 			if(!result) current_edit = current_edit->next;
@@ -774,34 +758,9 @@ int Edits::modify_handles(double oldposition, double newposition, int currentend
 				if( group_id > 0 ) newposition = oldposition + delta;
 				result = 1;
 
-//printf("Edits::modify_handle 3\n");
-				if(newposition <= oldposition) {
-// shift end of edit in
-//printf("Edits::modify_handle 4\n");
-					current_edit->shift_end_in(edit_mode,
-						track->to_units(newposition, 0),
-						track->to_units(oldposition, 0),
-						edit_edits,
-						edit_labels,
-						edit_plugins,
-						edit_autos,
-						trim_edits);
-//printf("Edits::modify_handle 5\n");
-				}
-				else
-				{
-// move end of edit out
-//printf("Edits::modify_handle %d edit_mode=%d\n", __LINE__, edit_mode);
-					current_edit->shift_end_out(edit_mode,
-						track->to_units(newposition, 0),
-						track->to_units(oldposition, 0),
-						edit_edits,
-						edit_labels,
-						edit_plugins,
-						edit_autos,
-						trim_edits);
-//printf("Edits::modify_handle 7\n");
-				}
+				current_edit->shift_end(edit_mode,
+					track->to_units(newposition, 0), track->to_units(oldposition, 0),
+					edit_edits, edit_labels, edit_plugins, edit_autos, trim_edits);
 			}
 
 			if(!result) current_edit = current_edit->next;
@@ -862,6 +821,6 @@ void Edits::shift_keyframes_recursive(int64_t position, int64_t length)
 
 void Edits::shift_effects_recursive(int64_t position, int64_t length, int edit_autos)
 {
-	track->shift_effects(position, length, edit_autos);
+	track->shift_effects(position, length, edit_autos, 0);
 }
 

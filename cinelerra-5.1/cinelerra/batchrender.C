@@ -510,6 +510,7 @@ void BatchRenderThread::start_rendering(char *config_path,
 //PRINT_TRACE
 // Initialize stuff which MWindow does.
 	signals->initialize("/tmp/cinelerra_batch%d.dmp");
+	boot_defaults = 0;
 	MWindow::init_defaults(boot_defaults, config_path);
 	load_defaults(boot_defaults);
 	preferences = new Preferences;

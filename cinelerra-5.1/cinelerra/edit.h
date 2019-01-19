@@ -77,37 +77,11 @@ public:
 
 // Shift in time
 	virtual void shift(int64_t difference);
-	int shift_start_in(int edit_mode,
-		int64_t newposition,
-		int64_t oldposition,
-		int edit_edits,
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos,
+	int shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
+		int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
 		Edits *trim_edits);
-	int shift_start_out(int edit_mode,
-		int64_t newposition,
-		int64_t oldposition,
-		int edit_edits,
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos,
-		Edits *trim_edits);
-	int shift_end_in(int edit_mode,
-		int64_t newposition,
-		int64_t oldposition,
-		int edit_edits,
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos,
-		Edits *trim_edits);
-	int shift_end_out(int edit_mode,
-		int64_t newposition,
-		int64_t oldposition,
-		int edit_edits,
-		int edit_labels,
-		int edit_plugins,
-		int edit_autos,
+	int shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
+		int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
 		Edits *trim_edits);
 
 	void insert_transition(char  *title);

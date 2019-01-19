@@ -38,8 +38,6 @@ typedef struct
 
 #define CHAN_COUNT(x) (sizeof(x)/sizeof(CHANLIST))
 
-extern CHANLISTS chanlists[];
-
 #define NTSC_AUDIO_CARRIER	4500
 #define PAL_AUDIO_CARRIER_I	6000
 #define PAL_AUDIO_CARRIER_BGHN	5500
@@ -69,5 +67,8 @@ extern CHANLISTS chanlists[];
 #define PAL_NEWZEALAND 10
 #define PAL_AUSTRALIA 11
 #define PAL_IRELAND 12
+#define CHANLIST_SIZE 13
+
+extern CHANLISTS chanlists[CHANLIST_SIZE];
 
 #endif

@@ -29,6 +29,7 @@
 #include "edlsession.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "labels.h"
 #include "localsession.h"
 #include "plugin.h"
 #include "mainsession.h"
@@ -417,353 +418,151 @@ int Edit::load_properties(FileXML *file, int64_t &startproject)
 
 void Edit::shift(int64_t difference)
 {
-//printf("Edit::shift 1 %p %jd %jd\n", this, startproject, difference);
 	startproject += difference;
-//printf("Edit::shift 2 %jd %jd\n", startproject, difference);
 }
 
-int Edit::shift_start_in(int edit_mode,
-	int64_t newposition,
-	int64_t oldposition,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos,
-	Edits *trim_edits)
+
+int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
+        int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
+        Edits *trim_edits)
 {
+	int64_t startproject = this->startproject;
+	int64_t startsource = this->startsource;
+	int64_t length = this->length;
+	int64_t source_len = get_source_end(startsource + length);
 	int64_t cut_length = newposition - oldposition;
-	int64_t end_previous_source, end_source;
+	source_len -= cut_length;
 
-	if(edit_mode == MOVE_ALL_EDITS)
-	{
-		if(cut_length < length)
-		{        // clear partial
-			edits->clear_recursive(oldposition,
-				newposition,
-				edit_edits,
-				edit_labels,
-				edit_plugins,
-				edit_autos,
-				trim_edits);
-		}
-		else
-		{        // clear entire
-			edits->clear_recursive(oldposition,
-				startproject + length,
-				edit_edits,
-				edit_labels,
-				edit_plugins,
-				edit_autos,
-				trim_edits);
-		}
-	}
-	else
-	if(edit_mode == MOVE_ONE_EDIT)
-	{
-// Paste silence and cut
-//printf("Edit::shift_start_in 1\n");
-		if(!previous)
-		{
-			Edit *new_edit = edits->create_edit();
-			new_edit->startproject = this->startproject;
-			new_edit->length = 0;
-			edits->insert_before(this,
-				new_edit);
-		}
-//printf("Edit::shift_start_in 2 %p\n", previous);
-
-		end_previous_source = previous->get_source_end(previous->startsource + previous->length + cut_length);
-		if(end_previous_source > 0 &&
-			previous->startsource + previous->length + cut_length > end_previous_source)
-			cut_length = end_previous_source - previous->startsource - previous->length;
-
-		if(cut_length < length)
-		{		// Move in partial
-			startproject += cut_length;
-			startsource += cut_length;
-			length -= cut_length;
-			previous->length += cut_length;
-//printf("Edit::shift_start_in 2\n");
-		}
-		else
-		{		// Clear entire edit
-			cut_length = length;
-			previous->length += cut_length;
-			for(Edit* current_edit = this; current_edit; current_edit = current_edit->next)
-			{
-				current_edit->startproject += cut_length;
-			}
-			edits->clear_recursive(oldposition + cut_length,
-				startproject + cut_length,
-				edit_edits,
-				edit_labels,
-				edit_plugins,
-				edit_autos,
-				trim_edits);
-		}
-//printf("Edit::shift_start_in 3\n");
-	}
-	else
-	if(edit_mode == MOVE_NO_EDITS)
-	{
-		end_source = get_source_end(startsource + length + cut_length);
-		if(end_source > 0 && startsource + length + cut_length > end_source)
-			cut_length = end_source - startsource - length;
-
+	switch( edit_mode ) {
+	case MOVE_EDGE:
+		startproject += cut_length;
 		startsource += cut_length;
+		length -= cut_length;
+		break;
+	case MOVE_MEDIA:
+		startsource += cut_length;
+		break;
+	case MOVE_EDGE_MEDIA:
+		startproject += cut_length;
+		length -= cut_length;
+		break;
 	}
+
+	if( startproject < 0 ) {
+		startsource += startproject;
+		length += startproject;
+		startproject = 0;
+	}
+	if( startsource < 0 )
+		startsource = 0;
+	if( length > source_len )
+		length = source_len;
+	if( length < 0 )
+		length = 0;
+
+	int64_t start = this->startproject;
+	int64_t end = start + this->length;
+	if( edit_labels ) {
+		double cut_len = track->from_units(cut_length);
+		double start_pos = edits->track->from_units(start);
+		edits->edl->labels->insert(start_pos, cut_len);
+		double end_pos = edits->track->from_units(end);
+		edits->edl->labels->insert(end_pos + cut_len, -cut_len);
+	}
+	if( edit_autos ) {
+		edits->shift_keyframes_recursive(start, cut_length);
+		edits->shift_keyframes_recursive(end + cut_length, -cut_length);
+	}
+	if( edit_plugins ) {
+		edits->shift_effects_recursive(start, cut_length, 1);
+		edits->shift_effects_recursive(end + cut_length, -cut_length, 1);
+	}
+	if( !edit_edits && startproject < start ) {
+		edits->clear(startproject, start);
+		cut_length = start - startproject;
+		for( Edit *edit=next; edit; edit=edit->next )
+			edit->startproject += cut_length;
+	}
+
+	this->startproject = startproject;
+	this->startsource = startsource;
+	this->length = length;
+
 	return 0;
 }
 
-int Edit::shift_start_out(int edit_mode,
-	int64_t newposition,
-	int64_t oldposition,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos,
-	Edits *trim_edits)
+int Edit::shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
+        int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
+        Edits *trim_edits)
 {
-	int64_t cut_length = oldposition - newposition;
+	int64_t startproject = this->startproject;
+	int64_t startsource = this->startsource;
+	int64_t length = this->length;
+	int64_t source_len = get_source_end(startsource + length);
+	int64_t cut_length = newposition - oldposition;
+	source_len += cut_length;
 
-
-	if(asset || nested_edl)
-	{
-		int64_t end_source = get_source_end(1);
-
-//printf("Edit::shift_start_out 1 %jd %jd\n", startsource, cut_length);
-		if(end_source > 0 && startsource < cut_length)
-		{
-			cut_length = startsource;
-		}
-	}
-
-	if(edit_mode == MOVE_ALL_EDITS)
-	{
-//printf("Edit::shift_start_out 10 %jd\n", cut_length);
+	switch( edit_mode ) {
+	case MOVE_EDGE:
+		length += cut_length;
+		break;
+	case MOVE_MEDIA:
+		startsource += cut_length;
+		break;
+	case MOVE_EDGE_MEDIA:
 		startsource -= cut_length;
 		length += cut_length;
-
-		if(edit_autos)
-			edits->shift_keyframes_recursive(startproject,
-				cut_length);
-		if(edit_plugins)
-			edits->shift_effects_recursive(startproject,
-				cut_length,
-				edit_autos);
-
-		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
-		{
-			current_edit->startproject += cut_length;
-		}
+		break;
 	}
-	else
-	if(edit_mode == MOVE_ONE_EDIT)
-	{
-		if(previous)
-		{
-			if(cut_length < previous->length)
-			{   // Cut into previous edit
-				previous->length -= cut_length;
-				startproject -= cut_length;
-				startsource -= cut_length;
-				length += cut_length;
-			}
-			else
-			{   // Clear entire previous edit
-				cut_length = previous->length;
-				previous->length = 0;
-				length += cut_length;
-				startsource -= cut_length;
-				startproject -= cut_length;
-			}
-		}
+	if( startproject < 0 ) {
+		startsource += startproject;
+		length += startproject;
+		startproject = 0;
 	}
-	else
-	if(edit_mode == MOVE_NO_EDITS)
-	{
-		startsource -= cut_length;
+	if( startsource < 0 )
+		startsource = 0;
+	if( length > source_len )
+		length = source_len;
+	if( length < 0 )
+		length = 0;
+
+	int64_t start = this->startproject;
+	int64_t end = start + this->length;
+	if( edit_labels ) {
+		double cut_len = track->from_units(cut_length);
+		double end_pos = edits->track->from_units(end);
+		if( cut_len < 0 )
+			edits->edl->labels->clear(end_pos + cut_len, end_pos, 1);
+		else
+			edits->edl->labels->insert(end_pos, cut_len);
+	}
+	Track *track = edits->track;
+	if( cut_length < 0 )
+		track->clear(end+cut_length, end,
+			0, 0, edit_autos, edit_plugins, trim_edits);
+	else if( cut_length > 0 ) {
+		if( edit_autos )
+			track->shift_keyframes(end, cut_length);
+		if( edit_plugins )
+			track->shift_effects(end, cut_length, 1, trim_edits);
 	}
 
-// Fix infinite length files
-	if(startsource < 0) startsource = 0;
+	int64_t new_end = startproject + length;
+	if( edit_edits ) {
+		cut_length = new_end - end;
+		for( Edit* edit=next; edit; edit=edit->next )
+			edit->startproject += cut_length;
+	}
+	else if( new_end > end )
+		edits->clear(end, new_end);
+
+	this->startproject = startproject;
+	this->startsource = startsource;
+	this->length = length;
+
 	return 0;
 }
 
-int Edit::shift_end_in(int edit_mode,
-	int64_t newposition,
-	int64_t oldposition,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos,
-	Edits *trim_edits)
-{
-	int64_t cut_length = oldposition - newposition;
-
-	if(edit_mode == MOVE_ALL_EDITS)
-	{
-//printf("Edit::shift_end_in 1\n");
-		if(newposition > startproject)
-		{        // clear partial edit
-//printf("Edit::shift_end_in %p %p\n", track->edits, edits);
-			edits->clear_recursive(newposition,
-				oldposition,
-				edit_edits,
-				edit_labels,
-				edit_plugins,
-				edit_autos,
-				trim_edits);
-		}
-		else
-		{        // clear entire edit
-			edits->clear_recursive(startproject,
-				oldposition,
-				edit_edits,
-				edit_labels,
-				edit_plugins,
-				edit_autos,
-				trim_edits);
-		}
-	}
-	else
-	if(edit_mode == MOVE_ONE_EDIT)
-	{
-		if(next)
-		{
-			if(next->asset)
-			{
-				int64_t end_source = next->get_source_end(1);
-
-				if(end_source > 0 && next->startsource - cut_length < 0)
-				{
-					cut_length = next->startsource;
-				}
-			}
-
-			if(cut_length < length)
-			{
-				length -= cut_length;
-				next->startproject -= cut_length;
-				next->startsource -= cut_length;
-				next->length += cut_length;
-//printf("Edit::shift_end_in 2 %d\n", cut_length);
-			}
-			else
-			{
-				cut_length = length;
-				next->length += cut_length;
-				next->startsource -= cut_length;
-				next->startproject -= cut_length;
-				length -= cut_length;
-			}
-		}
-		else
-		{
-			if(cut_length < length)
-			{
-				length -= cut_length;
-			}
-			else
-			{
-				cut_length = length;
-				edits->clear_recursive(startproject,
-					oldposition,
-					edit_edits,
-					edit_labels,
-					edit_plugins,
-					edit_autos,
-					trim_edits);
-			}
-		}
-	}
-	else
-// Does nothing for plugins
-	if(edit_mode == MOVE_NO_EDITS)
-	{
-//printf("Edit::shift_end_in 3\n");
-		int64_t end_source = get_source_end(1);
-		if(end_source > 0 && startsource < cut_length)
-		{
-			cut_length = startsource;
-		}
-		startsource -= cut_length;
-	}
-	return 0;
-}
-
-int Edit::shift_end_out(int edit_mode,
-	int64_t newposition,
-	int64_t oldposition,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
-	int edit_autos,
-	Edits *trim_edits)
-{
-	int64_t cut_length = newposition - oldposition;
-	int64_t endsource = get_source_end(startsource + length + cut_length);
-
-// check end of edit against end of source file
-	if(endsource > 0 && startsource + length + cut_length > endsource)
-		cut_length = endsource - startsource - length;
-
-//printf("Edit::shift_end_out 1 %jd %d %d %d\n", oldposition, newposition, this->length, cut_length);
-	if(edit_mode == MOVE_ALL_EDITS)
-	{
-// Extend length
-		this->length += cut_length;
-
-// Effects are shifted in length extension
-		if(edit_plugins)
-			edits->shift_effects_recursive(oldposition /* startproject */,
-				cut_length,
-				edit_autos);
-		if(edit_autos)
-			edits->shift_keyframes_recursive(oldposition /* startproject */,
-				cut_length);
-
-		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
-		{
-			current_edit->startproject += cut_length;
-		}
-	}
-	else
-	if(edit_mode == MOVE_ONE_EDIT)
-	{
-		if(next)
-		{
-			if(cut_length < next->length)
-			{
-				length += cut_length;
-				next->startproject += cut_length;
-				next->startsource += cut_length;
-				next->length -= cut_length;
-//printf("Edit::shift_end_out %d cut_length=%d\n", __LINE__, cut_length);
-			}
-			else
-			{
-//printf("Edit::shift_end_out %d cut_length=%d next->length=%d\n", __LINE__, cut_length, next->length);
-				cut_length = next->length;
-				next->startproject += next->length;
-				next->startsource += next->length;
-				next->length = 0;
-				length += cut_length;
-//track->dump();
-			}
-		}
-		else
-		{
-			length += cut_length;
-		}
-	}
-	else
-	if(edit_mode == MOVE_NO_EDITS)
-	{
-		startsource += cut_length;
-	}
-	return 0;
-}
 
 int Edit::popup_transition(float view_start, float zoom_units, int cursor_x, int cursor_y)
 {

@@ -474,23 +474,17 @@ void Track::insert_plugin_set(Track *track,
 	int edit_autos)
 {
 // Extend plugins if no incoming plugins
-	if(!track->plugin_set.total)
-	{
-		shift_effects(position,
-			min_length,
-			edit_autos);
+	if( track->plugin_set.total ) {
+		for(int i = 0; i < track->plugin_set.total; i++) {
+			if(i >= plugin_set.total)
+				plugin_set.append(new PluginSet(edl, this));
+
+			plugin_set.values[i]->insert_edits(track->plugin_set.values[i],
+					position, min_length, edit_autos);
+		}
 	}
 	else
-	for(int i = 0; i < track->plugin_set.total; i++)
-	{
-		if(i >= plugin_set.total)
-			plugin_set.append(new PluginSet(edl, this));
-
-		plugin_set.values[i]->insert_edits(track->plugin_set.values[i],
-			position,
-			min_length,
-			edit_autos);
-	}
+		shift_effects(position, min_length, edit_autos, 0);
 }
 
 
@@ -670,11 +664,11 @@ void Track::shift_keyframes(int64_t position, int64_t length)
 // Effect keyframes are shifted in shift_effects
 }
 
-void Track::shift_effects(int64_t position, int64_t length, int edit_autos)
+void Track::shift_effects(int64_t position, int64_t length, int edit_autos, Edits *trim_edits)
 {
-	for(int i = 0; i < plugin_set.total; i++)
-	{
-		plugin_set.values[i]->shift_effects(position, length, edit_autos);
+	for( int i=0; i<plugin_set.total; ++i ) {
+		if( !trim_edits || trim_edits == (Edits*)plugin_set.values[i] )
+			plugin_set.values[i]->shift_effects(position, length, edit_autos);
 	}
 }
 
@@ -1243,8 +1237,7 @@ int Track::modify_pluginhandles(double oldposition,
 		if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
 			plugin_set.values[i]->modify_handles(oldposition, newposition,
 // Don't allow plugin tweeks to affect edits.
-				currentend, handle_mode, 0,
-				edit_labels, 1, edit_autos, trim_edits, 0);
+				currentend, handle_mode, 0, 0, 0, 0, 0, 0);
 	}
 	return 0;
 }
@@ -1262,7 +1255,7 @@ int Track::paste_silence(int64_t start, int64_t end, int edit_plugins, int edit_
 	if( edit_autos )
 		shift_keyframes(start, end - start);
 	if( edit_plugins )
-		shift_effects(start, end - start, edit_autos);
+		shift_effects(start, end - start, edit_autos, 0);
 	edits->optimize();
 	return 0;
 }

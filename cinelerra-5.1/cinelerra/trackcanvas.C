@@ -3816,10 +3816,9 @@ void TrackCanvas::update_drag_handle()
 			edl->session->labels_follow_edits,
 			edl->session->plugins_follow_edits,
 			edl->session->autos_follow_edits,
-			session->drag_edit->group_id);
-		double position = edit_mode != MOVE_NO_EDITS &&
-			( session->drag_handle || edit_mode == MOVE_ONE_EDIT ) ?
-				session->drag_position : session->drag_start;
+			!session->drag_edit ? 0 : session->drag_edit->group_id);
+		double position = edit_mode == MOVE_EDGE || edit_mode == MOVE_EDGE_MEDIA ?
+				session->drag_position : session->drag_start ;
 		Track *track = session->drag_handle_track();
 		int64_t pos = track->to_units(position, 0);
 		render_handle_frame(edl, pos, shift_down() ? 0 :
