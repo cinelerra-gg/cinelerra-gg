@@ -909,7 +909,6 @@ void EDL::move_edit_labels(ArrayList<Edit*> *edits, double dist)
 	}
 }
 
-
 void EDL::modify_edithandles(double oldposition, double newposition,
 	int currentend, int handle_mode, int edit_labels,
 	int edit_plugins, int edit_autos, int group_id)
@@ -917,8 +916,6 @@ void EDL::modify_edithandles(double oldposition, double newposition,
 	tracks->modify_edithandles(oldposition, newposition,
 		currentend, handle_mode, edit_labels,
 		edit_plugins, edit_autos, group_id);
-	labels->modify_handles(oldposition, newposition,
-		currentend, handle_mode, edit_labels);
 }
 
 void EDL::modify_pluginhandles(double oldposition, double newposition,

@@ -14,6 +14,8 @@ class yuv411Config
 {
 public:
 	yuv411Config();
+	void reset();
+
 	void copy_from(yuv411Config &that);
 	int equivalent(yuv411Config &that);
 	void interpolate(yuv411Config &prev, yuv411Config &next,

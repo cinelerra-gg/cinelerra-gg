@@ -3,7 +3,7 @@
 #include "language.h"
 
 yuv411Window::yuv411Window(yuv411Main *client)
- : PluginClientWindow(client, 250, 220, 250, 220, 0)
+ : PluginClientWindow(client, 250, 255, 250, 255, 0)
 {
 	this->client = client;
 }
@@ -42,12 +42,23 @@ void yuv411Window::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Bias:")));
 	add_subwindow(bias=new yuv411Bias(client,x1,y));
 	y += 30;
+	add_subwindow(reset = new yuv411Reset(client, this, x, y+35));
 	show_window();
 	flush();
 
 	yuv_warning = new BC_Title(x, y, _("Warning: colormodel not YUV"),MEDIUMFONT,RED);
 	add_subwindow(yuv_warning);
 	yuv_warning->hide_window();
+}
+
+void yuv411Window::update()
+{
+	avg_vertical->update(client->config.avg_vertical);
+	int_horizontal->update(client->config.int_horizontal);
+	inpainting->update(client->config.inpainting);
+	offset->update(client->config.offset);
+	thresh->update(client->config.thresh);
+	bias->update(client->config.bias);
 }
 
 int yuv411Window::close_event()
@@ -115,6 +126,25 @@ int yuv411Bias::handle_event()
 	client->send_configure_change();
 	return 1;
 }
+
+yuv411Reset::yuv411Reset(yuv411Main *client, yuv411Window *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->client = client;
+	this->window = window;
+}
+yuv411Reset::~yuv411Reset()
+{
+}
+int yuv411Reset::handle_event()
+{
+	client->config.reset();
+	window->update();
+	window->update_enables();
+	client->send_configure_change();
+	return 1;
+}
+
 
 void yuv411Window::update_enables()
 {

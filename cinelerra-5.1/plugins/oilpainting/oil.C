@@ -44,13 +44,16 @@
 
 
 class OilEffect;
-
+class OilWindow;
+class OilReset;
 
 
 class OilConfig
 {
 public:
 	OilConfig();
+	void reset();
+
 	void copy_from(OilConfig &src);
 	int equivalent(OilConfig &src);
 	void interpolate(OilConfig &prev,
@@ -79,16 +82,28 @@ public:
 	OilEffect *plugin;
 };
 
+class OilReset : public BC_GenericButton
+{
+public:
+	OilReset(OilEffect *plugin, OilWindow *window, int x, int y);
+	~OilReset();
+	int handle_event();
+	OilEffect *plugin;
+	OilWindow *window;
+};
+
+
 class OilWindow : public PluginClientWindow
 {
 public:
 	OilWindow(OilEffect *plugin);
 	~OilWindow();
 	void create_objects();
-
+	void update();
 	OilEffect *plugin;
 	OilRadius *radius;
 	OilIntensity *intensity;
+	OilReset *reset;
 };
 
 
@@ -159,9 +174,12 @@ public:
 
 
 
-
-
 OilConfig::OilConfig()
+{
+	reset();
+}
+
+void OilConfig::reset()
 {
 	radius = 5;
 	use_intensity = 0;
@@ -242,6 +260,22 @@ int OilIntensity::handle_event()
 }
 
 
+OilReset::OilReset(OilEffect *plugin, OilWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+OilReset::~OilReset()
+{
+}
+int OilReset::handle_event()
+{
+	plugin->config.reset();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 
@@ -250,9 +284,9 @@ int OilIntensity::handle_event()
 OilWindow::OilWindow(OilEffect *plugin)
  : PluginClientWindow(plugin,
 	300,
-	160,
+	120,
 	300,
-	160,
+	120,
 	0)
 {
 	this->plugin = plugin;
@@ -269,13 +303,20 @@ void OilWindow::create_objects()
 	add_subwindow(radius = new OilRadius(plugin, x + 70, y));
 	y += 40;
 	add_subwindow(intensity = new OilIntensity(plugin, x, y));
+	y += 40;
+	add_subwindow(reset = new OilReset(plugin, this, x, y));
 
 	show_window();
 	flush();
 }
 
 
-
+// for Reset button
+void OilWindow::update()
+{
+	radius->update(plugin->config.radius);
+	intensity->update(plugin->config.use_intensity);
+}
 
 
 

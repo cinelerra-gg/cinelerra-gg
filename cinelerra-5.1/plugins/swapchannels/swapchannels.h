@@ -33,6 +33,8 @@
 
 
 class SwapMain;
+class SwapWindow;
+class SwapReset;
 
 #define RED_SRC 0
 #define GREEN_SRC 1
@@ -48,6 +50,7 @@ class SwapConfig
 public:
 	SwapConfig();
 
+	void reset_Config();
 	int equivalent(SwapConfig &that);
 	void copy_from(SwapConfig &that);
 
@@ -84,12 +87,23 @@ public:
 	char *title;
 };
 
+
+class SwapReset : public BC_GenericButton
+{
+public:
+	SwapReset(SwapMain *plugin, SwapWindow *gui, int x, int y);
+	~SwapReset();
+	int handle_event();
+	SwapMain *plugin;
+	SwapWindow *gui;
+};
+
+
 class SwapWindow : public PluginClientWindow
 {
 public:
 	SwapWindow(SwapMain *plugin);
 	~SwapWindow();
-
 
 	void create_objects();
 
@@ -98,6 +112,7 @@ public:
 	SwapMenu *green;
 	SwapMenu *blue;
 	SwapMenu *alpha;
+	SwapReset *reset;
 };
 
 

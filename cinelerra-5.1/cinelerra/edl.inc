@@ -45,14 +45,15 @@ class EDL;
 
 
 // default for left button
-#define MOVE_EDGE 0
 // default for middle button
-#define MOVE_MEDIA 1
 // default for right button
-#define MOVE_EDGE_MEDIA 2
-
-#define MOVE_EDITS_DISABLED 3
-#define EDIT_HANDLE_MODES 3
+#define MOVE_RIPPLE 0
+#define MOVE_ROLL   1
+#define MOVE_SLIP   2
+#define MOVE_SLIDE  3
+#define MOVE_EDGE   4
+#define MOVE_EDITS_DISABLED 5
+#define EDIT_HANDLE_MODES 5
 
 // AWindow folders
 #define AW_NO_FOLDER         -1

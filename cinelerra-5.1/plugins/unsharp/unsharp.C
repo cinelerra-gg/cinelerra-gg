@@ -39,6 +39,11 @@ REGISTER_PLUGIN(UnsharpMain)
 
 UnsharpConfig::UnsharpConfig()
 {
+	reset();
+}
+
+void UnsharpConfig::reset()
+{
 	radius = 5;
 	amount = 0.5;
 	threshold = 0;

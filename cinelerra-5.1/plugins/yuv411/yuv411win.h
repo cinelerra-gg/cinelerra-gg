@@ -13,6 +13,7 @@ class yuv411Toggle;
 class yuv411Offset;
 class yuv411Thresh;
 class yuv411Bias;
+class yuv411Reset;
 
 class yuv411Window : public PluginClientWindow
 {
@@ -21,6 +22,7 @@ public:
 	~yuv411Window();
 
 	void create_objects();
+	void update();
 	int close_event();
 	void update_enables();
 	void show_warning(int warn);
@@ -33,6 +35,7 @@ public:
 	yuv411Thresh *thresh;
 	yuv411Bias *bias;
 	BC_Title *yuv_warning;
+	yuv411Reset *reset;
 };
 
 class yuv411Toggle : public BC_CheckBox
@@ -68,6 +71,16 @@ public:
 	yuv411Bias(yuv411Main *client, int x, int y);
 	int handle_event();
 	yuv411Main *client;
+};
+
+class yuv411Reset : public BC_GenericButton
+{
+public:
+	yuv411Reset(yuv411Main *client, yuv411Window *window, int x, int y);
+	~yuv411Reset();
+	int handle_event();
+	yuv411Main *client;
+	yuv411Window *window;
 };
 
 #endif

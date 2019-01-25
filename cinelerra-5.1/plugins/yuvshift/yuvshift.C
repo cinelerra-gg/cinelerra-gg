@@ -19,76 +19,7 @@
  *
  */
 
-#include "bcdisplayinfo.h"
-#include "clip.h"
-#include "bchash.h"
-#include "filexml.h"
-#include "guicast.h"
-#include "language.h"
-#include "bccolors.h"
-#include "pluginvclient.h"
-#include "vframe.h"
-
-#include <stdint.h>
-#include <string.h>
-
-
-class YUVShiftEffect;
-
-
-class YUVShiftConfig
-{
-public:
-	YUVShiftConfig();
-
-	void copy_from(YUVShiftConfig &src);
-	int equivalent(YUVShiftConfig &src);
-	void interpolate(YUVShiftConfig &prev,
-		YUVShiftConfig &next,
-		long prev_frame,
-		long next_frame,
-		long current_frame);
-
-	int y_dx, y_dy, u_dx, u_dy, v_dx, v_dy;
-};
-
-class YUVShiftLevel : public BC_ISlider
-{
-public:
-	YUVShiftLevel(YUVShiftEffect *plugin, int *output, int x, int y);
-	int handle_event();
-	YUVShiftEffect *plugin;
-	int *output;
-};
-
-class YUVShiftWindow : public PluginClientWindow
-{
-public:
-	YUVShiftWindow(YUVShiftEffect *plugin);
-	void create_objects();
-	YUVShiftLevel *y_dx, *y_dy, *u_dx, *u_dy, *v_dx, *v_dy;
-	YUVShiftEffect *plugin;
-};
-
-
-
-class YUVShiftEffect : public PluginVClient
-{
-	VFrame *temp_frame;
-public:
-	YUVShiftEffect(PluginServer *server);
-	~YUVShiftEffect();
-
-
-	PLUGIN_CLASS_MEMBERS(YUVShiftConfig)
-	int process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-};
-
-
+#include "yuvshift.h"
 
 
 
@@ -99,8 +30,12 @@ REGISTER_PLUGIN(YUVShiftEffect)
 
 
 
-
 YUVShiftConfig::YUVShiftConfig()
+{
+	reset();
+}
+
+void YUVShiftConfig::reset()
 {
 	y_dx = y_dy = 0;
 	u_dx = u_dy = 0;
@@ -159,8 +94,26 @@ int YUVShiftLevel::handle_event()
 }
 
 
+YUVShiftReset::YUVShiftReset(YUVShiftEffect *plugin, YUVShiftWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+YUVShiftReset::~YUVShiftReset()
+{
+}
+int YUVShiftReset::handle_event()
+{
+	plugin->config.reset();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
 YUVShiftWindow::YUVShiftWindow(YUVShiftEffect *plugin)
- : PluginClientWindow(plugin, 300, 200, 300, 200, 0)
+ : PluginClientWindow(plugin, 300, 230, 300, 230, 0)
 {
 	this->plugin = plugin;
 }
@@ -186,12 +139,24 @@ void YUVShiftWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, _("V_dy:")));
 	add_subwindow(v_dy = new YUVShiftLevel(plugin, &plugin->config.v_dy, x1, y));
 
+	y += 40;
+	add_subwindow(reset = new YUVShiftReset(plugin, this, x, y));
+
 	show_window();
 	flush();
 }
 
 
-
+// for Reset button
+void YUVShiftWindow::update()
+{
+	y_dx->update(plugin->config.y_dx);
+	y_dy->update(plugin->config.y_dy);
+	u_dx->update(plugin->config.u_dx);
+	u_dy->update(plugin->config.u_dy);
+	v_dx->update(plugin->config.v_dx);
+	v_dy->update(plugin->config.v_dy);
+}
 
 
 

@@ -78,8 +78,8 @@ BluebananaMain::~BluebananaMain() {
 
   // if ants are running, run one more pane update to hide them (gui
   // is already marked as closed)
-  if(server && server->mwindow && ants_counter>0)
-    server->mwindow->sync_parameters();
+  //if(server && server->mwindow && ants_counter>0)
+  //  server->mwindow->sync_parameters();
 
   delete engine;
 }
@@ -263,9 +263,9 @@ void BluebananaMain::load_nonauto(){
 
 
 void BluebananaMain::read_data(KeyFrame *keyframe){
-  FileXML input;
+  
   int result = 0;
-
+{ FileXML input; // release xbuf-shared_lock before nonaauto
   input.set_shared_input(keyframe->xbuf);
 
   while(!result){
@@ -335,7 +335,7 @@ void BluebananaMain::read_data(KeyFrame *keyframe){
 
     }
   }
-
+}
   load_nonauto();
 }
 
@@ -613,7 +613,6 @@ int BluebananaMain::process_buffer(VFrame *frame,
                                    int64_t start_position,
                                    double frame_rate){
   ants_counter++;
-
   SET_TRACE
   load_configuration();
   this->frame = frame;

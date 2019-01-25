@@ -26,6 +26,7 @@
 
 class TranslateThread;
 class TranslateWin;
+class TranslateReset;
 
 #include "filexml.h"
 #include "mutex.h"
@@ -43,9 +44,11 @@ public:
 	~TranslateWin();
 
 	void create_objects();
+	void update();
 
 	TranslateCoord *in_x, *in_y, *in_w, *in_h, *out_x, *out_y, *out_w, *out_h;
 	TranslateMain *client;
+	TranslateReset *reset;
 };
 
 class TranslateCoord : public BC_TumbleTextBox
@@ -64,5 +67,14 @@ public:
 	float *value;
 };
 
+class TranslateReset : public BC_GenericButton
+{
+public:
+	TranslateReset(TranslateMain *client, TranslateWin *win, int x, int y);
+	~TranslateReset();
+	int handle_event();
+	TranslateMain *client;
+	TranslateWin *win;
+};
 
 #endif

@@ -34,12 +34,15 @@
 
 
 class YUVEffect;
+class YUVWindow;
+class YUVReset;
 
 
 class YUVConfig
 {
 public:
 	YUVConfig();
+	void reset();
 
 	void copy_from(YUVConfig &src);
 	int equivalent(YUVConfig &src);
@@ -61,13 +64,25 @@ public:
 	float *output;
 };
 
+class YUVReset : public BC_GenericButton
+{
+public:
+	YUVReset(YUVEffect *plugin, YUVWindow *window, int x, int y);
+	~YUVReset();
+	int handle_event();
+	YUVEffect *plugin;
+	YUVWindow *window;
+};
+
 class YUVWindow : public PluginClientWindow
 {
 public:
 	YUVWindow(YUVEffect *plugin);
 	void create_objects();
+	void update();
 	YUVLevel *y, *u, *v;
 	YUVEffect *plugin;
+	YUVReset *reset;
 };
 
 
@@ -100,6 +115,11 @@ REGISTER_PLUGIN(YUVEffect)
 
 
 YUVConfig::YUVConfig()
+{
+	reset();
+}
+
+void YUVConfig::reset()
 {
 	y = 0;
 	u = 0;
@@ -161,12 +181,30 @@ int YUVLevel::handle_event()
 }
 
 
+YUVReset::YUVReset(YUVEffect *plugin, YUVWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+YUVReset::~YUVReset()
+{
+}
+int YUVReset::handle_event()
+{
+	plugin->config.reset();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
 YUVWindow::YUVWindow(YUVEffect *plugin)
  : PluginClientWindow(plugin,
 	260,
-	100,
+	135,
 	260,
-	100,
+	135,
 	0)
 {
 	this->plugin = plugin;
@@ -174,7 +212,7 @@ YUVWindow::YUVWindow(YUVEffect *plugin)
 
 void YUVWindow::create_objects()
 {
-	int x = 10, y = 10, x1 = 50;
+	int x = 10, y = 10, x1 = 40;
 	add_subwindow(new BC_Title(x, y, _("Y:")));
 	add_subwindow(this->y = new YUVLevel(plugin, &plugin->config.y, x1, y));
 	y += 30;
@@ -183,13 +221,21 @@ void YUVWindow::create_objects()
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("V:")));
 	add_subwindow(v = new YUVLevel(plugin, &plugin->config.v, x1, y));
+	y += 35;
+	add_subwindow(reset = new YUVReset(plugin, this, x, y));
 
 	show_window();
 	flush();
 }
 
 
-
+// for Reset button
+void YUVWindow::update()
+{
+	this->y->update(plugin->config.y);
+	u->update(plugin->config.u);
+	v->update(plugin->config.v);
+}
 
 
 

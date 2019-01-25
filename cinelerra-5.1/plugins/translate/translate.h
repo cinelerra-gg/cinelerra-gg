@@ -36,6 +36,7 @@ class TranslateConfig
 {
 public:
 	TranslateConfig();
+	void reset();
 	int equivalent(TranslateConfig &that);
 	void copy_from(TranslateConfig &that);
 	void interpolate(TranslateConfig &prev,

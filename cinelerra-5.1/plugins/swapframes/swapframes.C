@@ -46,6 +46,11 @@ REGISTER_PLUGIN(SwapFrames)
 
 SwapFramesConfig::SwapFramesConfig()
 {
+	reset();
+}
+
+void SwapFramesConfig::reset()
+{
 	on = 1;
 	swap_even = 1;
 }
@@ -155,12 +160,34 @@ int SwapFramesOdd::handle_event()
 
 
 
+
+SwapFramesReset::SwapFramesReset(SwapFrames *plugin, SwapFramesWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+SwapFramesReset::~SwapFramesReset()
+{
+}
+int SwapFramesReset::handle_event()
+{
+	plugin->config.reset();
+	gui->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
 SwapFramesWindow::SwapFramesWindow(SwapFrames *plugin)
  : PluginClientWindow(plugin,
 	260,
-	130,
+	135,
 	260,
-	130,
+	135,
 	0)
 {
 	this->plugin = plugin;
@@ -183,10 +210,20 @@ void SwapFramesWindow::create_objects()
 		this,
 		x,
 		y));
+
+	y += 35;
+	add_subwindow(reset = new SwapFramesReset(plugin, this, x, y));
+
 	show_window();
 }
 
-
+// for Reset button
+void SwapFramesWindow::update()
+{
+	on->update(plugin->config.swap_even);
+	swap_even->update(plugin->config.swap_even);
+	swap_odd->update(!plugin->config.swap_even);
+}
 
 
 

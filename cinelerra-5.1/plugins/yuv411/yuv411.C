@@ -14,6 +14,11 @@ REGISTER_PLUGIN(yuv411Main)
 
 yuv411Config::yuv411Config()
 {
+	reset();
+}
+
+void yuv411Config::reset()
+{
 	int_horizontal = 0;
 	avg_vertical = 0;
 	inpainting = 0;

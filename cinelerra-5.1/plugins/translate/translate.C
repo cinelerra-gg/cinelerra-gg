@@ -34,6 +34,11 @@ REGISTER_PLUGIN(TranslateMain)
 
 TranslateConfig::TranslateConfig()
 {
+	reset();
+}
+
+void TranslateConfig::reset()
+{
 	in_x = 0;
 	in_y = 0;
 	in_w = 720;
@@ -43,6 +48,7 @@ TranslateConfig::TranslateConfig()
 	out_w = 720;
 	out_h = 480;
 }
+
 
 int TranslateConfig::equivalent(TranslateConfig &that)
 {

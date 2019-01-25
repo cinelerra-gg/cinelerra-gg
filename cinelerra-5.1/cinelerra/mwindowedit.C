@@ -825,15 +825,13 @@ void MWindow::insert_effect(char *title,
 int MWindow::modify_edithandles()
 {
 	undo->update_undo_before();
+	int handle_mode = edl->session->edit_handle_mode[session->drag_button];
 	edl->modify_edithandles(session->drag_start,
-		session->drag_position,
-		session->drag_handle,
-		edl->session->edit_handle_mode[session->drag_button],
+		session->drag_position, session->drag_handle, handle_mode,
 		edl->session->labels_follow_edits,
 		edl->session->plugins_follow_edits,
 		edl->session->autos_follow_edits,
 		session->drag_edit->group_id);
-
 	finish_modify_handles();
 //printf("MWindow::modify_handles 1\n");
 	return 0;
@@ -861,9 +859,19 @@ int MWindow::modify_pluginhandles()
 void MWindow::finish_modify_handles()
 {
 	int edit_mode = edl->session->edit_handle_mode[session->drag_button];
-	if( edit_mode != MOVE_MEDIA ) {
-		double position = session->drag_position ;
-		if( position < 0 ) position = 0;
+	double position = -1;
+	switch( edit_mode ) {
+	case MOVE_RIPPLE:
+	case MOVE_ROLL:
+	case MOVE_SLIDE:
+		position = session->drag_position;
+		break;
+	case MOVE_SLIP:
+	case MOVE_EDGE:
+		position = session->drag_start;
+		break;
+	}
+	if( position >= 0 ) {
 		edl->local_session->set_selectionstart(position);
 		edl->local_session->set_selectionend(position);
 	}

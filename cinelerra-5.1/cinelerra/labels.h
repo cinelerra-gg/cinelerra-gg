@@ -83,11 +83,7 @@ public:
 // Always add label without toggling
 	void insert_label(double position);
 
-	int modify_handles(double oldposition,
-		double newposition,
-		int currentend,
-		int handle_mode,
-		int edit_labels);
+	int modify_handles(double oldposition, double newposition, int currentend);
 	int copy(double start, double end, FileXML *xml);
 	int copy_length(long start, long end); // return number of Labels in selection
 	Label *add_label(double position);

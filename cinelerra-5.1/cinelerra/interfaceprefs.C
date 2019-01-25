@@ -33,17 +33,13 @@
 #include "shbtnprefs.h"
 #include "theme.h"
 
-#if 0
-N_("Drag all following edits")
-N_("Drag only one edit")
-N_("Drag source only")
-N_("No effect")
-#endif
-
-#define MOVE_EDGE_TITLE N_("Drag edge only")
-#define MOVE_MEDIA_TITLE N_("Drag media only")
-#define MOVE_EDGE_MEDIA_TITLE N_("Drag edge and media")
+#define MOVE_RIPPLE_TITLE N_("All Edits (ripple)")
+#define MOVE_ROLL_TITLE   N_("One Edit  (roll)")
+#define MOVE_SLIP_TITLE   N_("Src Only  (slip)")
+#define MOVE_SLIDE_TITLE  N_("Move Edit (slide)")
+#define MOVE_EDGE_TITLE   N_("Drag Edge (edge)")
 #define MOVE_EDITS_DISABLED_TITLE N_("No effect")
+
 
 InterfacePrefs::InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
@@ -92,11 +88,11 @@ void InterfacePrefs::create_objects()
 	add_subwindow(snapshot_path = new SnapshotPathText(pwindow, this, x, y, get_w()-x-30));
 
 	x = x0;  y = y2;
-	add_subwindow(new BC_Title(x, y, _("Clicking on edit boundaries does what:")));
-	y += 25;
+	add_subwindow(title = new BC_Title(x, y, _("Clicking on edit boundaries does what:")));
+	y += title->get_h() + 10;
 	add_subwindow(new BC_Title(x, y, _("Button 1:")));
-
 	int x1 = x + 100;
+
 	ViewBehaviourText *text;
 	add_subwindow(text = new ViewBehaviourText(x1, y - 5,
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[0]),
@@ -240,13 +236,15 @@ void InterfacePrefs::create_objects()
 
 const char* InterfacePrefs::behavior_to_text(int mode)
 {
-	switch(mode) {
-		case MOVE_EDGE: return _(MOVE_EDGE_TITLE);
-		case MOVE_MEDIA:  return _(MOVE_MEDIA_TITLE);
-		case MOVE_EDGE_MEDIA:  return _(MOVE_EDGE_MEDIA_TITLE);
-		case MOVE_EDITS_DISABLED: return _(MOVE_EDITS_DISABLED_TITLE);
-		default: return "";
+	switch( mode ) {
+	case MOVE_RIPPLE: return _(MOVE_RIPPLE_TITLE);
+	case MOVE_ROLL: return _(MOVE_ROLL_TITLE);
+	case MOVE_SLIP: return _(MOVE_SLIP_TITLE);
+	case MOVE_SLIDE: return _(MOVE_SLIDE_TITLE);
+	case MOVE_EDGE: return _(MOVE_EDGE_TITLE);
+	case MOVE_EDITS_DISABLED: return _(MOVE_EDITS_DISABLED_TITLE);
 	}
+	return "";
 }
 
 IndexPathText::IndexPathText(int x, int y, PreferencesWindow *pwindow, char *text)
@@ -323,7 +321,7 @@ int IndexFFMPEGMarkerFiles::handle_event()
 
 ViewBehaviourText::ViewBehaviourText(int x, int y, const char *text, PreferencesWindow *pwindow,
 	int *output)
- : BC_PopupMenu(x, y, 200, text)
+ : BC_PopupMenu(x, y, 250, text)
 {
 	this->output = output;
 }
@@ -339,14 +337,14 @@ int ViewBehaviourText::handle_event()
 
 void ViewBehaviourText::create_objects()
 {
-	add_item(new ViewBehaviourItem(this, _(MOVE_EDGE_TITLE), MOVE_EDGE));
-	add_item(new ViewBehaviourItem(this, _(MOVE_MEDIA_TITLE), MOVE_MEDIA));
-	add_item(new ViewBehaviourItem(this, _(MOVE_EDGE_MEDIA_TITLE), MOVE_EDGE_MEDIA));
-	add_item(new ViewBehaviourItem(this, _(MOVE_EDITS_DISABLED_TITLE), MOVE_EDITS_DISABLED));
+	for( int mode=0; mode<=EDIT_HANDLE_MODES; ++mode )
+		add_item(new ViewBehaviourItem(this,
+			InterfacePrefs::behavior_to_text(mode), mode));
 }
 
 
-ViewBehaviourItem::ViewBehaviourItem(ViewBehaviourText *popup, char *text, int behaviour)
+ViewBehaviourItem::ViewBehaviourItem(ViewBehaviourText *popup,
+		const char *text, int behaviour)
  : BC_MenuItem(text)
 {
 	this->popup = popup;

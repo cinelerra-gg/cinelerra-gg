@@ -98,8 +98,9 @@ void BC_Trace::disable_locks()
 	trace_locks = 0;
 	while( lock_table.last ) {
 		lock_item *p = (lock_item*)lock_table.last;
+		lock_table.remove_pointer(p);
 		p->info->trace = 0;
-		lock_table.remove_pointer(p);  lock_free.append(p);
+		lock_free.append(p);
 	}
 	lock_free.clear();
 	lock_table.unlock();
@@ -170,9 +171,15 @@ void BC_Trace::unset_lock2(int table_id, trace_info *info)
 		p = (lock_item*)lock_table.last;
 		while( p && p->id != table_id ) p = (lock_item*)p->previous;
 	}
-	else
-		info->trace = 0;
-	if( p ) { lock_table.remove_pointer(p);  lock_free.append(p); }
+	if( p ) {
+		if( p->list == &lock_table ) {
+			lock_table.remove_pointer(p);
+			info->trace = 0;
+			lock_free.append(p);
+		}
+		else
+			printf("unset_lock2: free lock_item in lock_table %p\n", p);
+	}
 	lock_table.unlock();
 }
 
@@ -185,9 +192,16 @@ void BC_Trace::unset_lock(trace_info *info)
 		p = (lock_item*)lock_table.last;
 		while( p && ( p->info!=info || !p->is_owner ) ) p = (lock_item*)p->previous;
 	}
-	else
-		info->trace = 0;
-	if( p ) { lock_table.remove_pointer(p);  lock_free.append(p); }
+	info->trace = 0;
+	if( p ) {
+		if( p->list == &lock_table ) {
+			lock_table.remove_pointer(p);
+			info->trace = 0;
+			lock_free.append(p);
+		}
+		else
+			printf("unset_lock: free lock_item in lock_table %p\n", p);
+	}
 	lock_table.unlock();
 }
 
@@ -196,11 +210,13 @@ void BC_Trace::unset_all_locks(trace_info *info)
 {
 	if( !global_trace || !trace_locks ) return;
 	lock_table.lock();
+	info->trace = 0;
 	lock_item *p = (lock_item*)lock_table.first;
 	while( p ) {
 		lock_item *lp = p;  p = (lock_item*)p->next;
 		if( lp->info != info ) continue;
-		lock_table.remove_pointer(lp);  lock_free.append(lp);
+		lock_table.remove_pointer(lp);
+		lock_free.append(lp);
 	}
 	lock_table.unlock();
 }
@@ -213,7 +229,9 @@ void BC_Trace::clear_locks_tid(pthread_t tid)
 	while( p ) {
 		lock_item *lp = p;  p = (lock_item*)p->next;
 		if( lp->tid != tid ) continue;
-		lock_table.remove_pointer(lp);  lock_free.append(lp);
+		lock_table.remove_pointer(lp);
+		lp->info->trace = 0;
+		lock_free.append(lp);
 	}
 	lock_table.unlock();
 }
@@ -301,6 +319,13 @@ void BC_Trace::dump_locks(FILE *fp)
 		fprintf(fp,"    %p %s %s %p%s\n", p->info, p->title,
 			p->loc, (void*)p->tid, p->is_owner ? " *" : "");
 	}
+	int64_t lock_total = lock_table.total();
+	int64_t free_total = lock_free.total();
+	printf("lock_items: %jd\n", lock_total);
+	printf("lock_frees: %jd\n", free_total);
+	int64_t missed_locks = lock_table.size - (lock_total + free_total);
+	if( missed_locks )
+		printf("miss locks: %jd\n", missed_locks);
 #endif
 }
 

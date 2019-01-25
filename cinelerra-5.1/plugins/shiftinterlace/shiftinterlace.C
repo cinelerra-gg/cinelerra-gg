@@ -19,103 +19,8 @@
  *
  */
 
-#include "bcdisplayinfo.h"
-#include "clip.h"
-#include "bchash.h"
-#include "filexml.h"
-#include "guicast.h"
-#include "language.h"
-#include "pluginvclient.h"
-#include "vframe.h"
+#include "shiftinterlace.h"
 
-
-
-#include <stdint.h>
-#include <string.h>
-
-
-
-
-
-
-
-class ShiftInterlaceWindow;
-class ShiftInterlaceMain;
-
-class ShiftInterlaceConfig
-{
-public:
-	ShiftInterlaceConfig();
-
-	int equivalent(ShiftInterlaceConfig &that);
-	void copy_from(ShiftInterlaceConfig &that);
-	void interpolate(ShiftInterlaceConfig &prev,
-		ShiftInterlaceConfig &next,
-		long prev_frame,
-		long next_frame,
-		long current_frame);
-
-
-	int odd_offset;
-	int even_offset;
-};
-
-
-class ShiftInterlaceOdd : public BC_ISlider
-{
-public:
-	ShiftInterlaceOdd(ShiftInterlaceMain *plugin, int x, int y);
-	int handle_event();
-	ShiftInterlaceMain *plugin;
-};
-
-class ShiftInterlaceEven : public BC_ISlider
-{
-public:
-	ShiftInterlaceEven(ShiftInterlaceMain *plugin, int x, int y);
-	int handle_event();
-	ShiftInterlaceMain *plugin;
-};
-
-class ShiftInterlaceWindow : public PluginClientWindow
-{
-public:
-	ShiftInterlaceWindow(ShiftInterlaceMain *plugin);
-
-	void create_objects();
-
-	ShiftInterlaceOdd *odd_offset;
-	ShiftInterlaceEven *even_offset;
-	ShiftInterlaceMain *plugin;
-};
-
-
-
-
-
-
-class ShiftInterlaceMain : public PluginVClient
-{
-public:
-	ShiftInterlaceMain(PluginServer *server);
-	~ShiftInterlaceMain();
-
-// required for all realtime plugins
-	PLUGIN_CLASS_MEMBERS(ShiftInterlaceConfig)
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
-	void update_gui();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-
-	void shift_row(VFrame *input_frame,
-		VFrame *output_frame,
-		int offset,
-		int row);
-
-
-};
 
 
 
@@ -129,6 +34,11 @@ PluginClient* new_plugin(PluginServer *server)
 
 
 ShiftInterlaceConfig::ShiftInterlaceConfig()
+{
+	reset();
+}
+
+void ShiftInterlaceConfig::reset()
 {
 	odd_offset = 0;
 	even_offset = 0;
@@ -168,9 +78,9 @@ void ShiftInterlaceConfig::interpolate(ShiftInterlaceConfig &prev,
 ShiftInterlaceWindow::ShiftInterlaceWindow(ShiftInterlaceMain *plugin)
  : PluginClientWindow(plugin,
 	310,
-	100,
+	110,
 	310,
-	100,
+	110,
 	0)
 {
 	this->plugin = plugin;
@@ -187,9 +97,17 @@ void ShiftInterlaceWindow::create_objects()
 	y += margin;
 	add_subwindow(new BC_Title(x, y, _("Even offset:")));
 	add_subwindow(even_offset = new ShiftInterlaceEven(plugin, x + 90, y));
-
+	y += 40;
+	add_subwindow(reset = new ShiftInterlaceReset(plugin, this, x, y));
 	show_window();
 	flush();
+}
+
+// for Reset button
+void ShiftInterlaceWindow::update()
+{
+	odd_offset->update(plugin->config.odd_offset);
+	even_offset->update(plugin->config.even_offset);
 }
 
 
@@ -237,6 +155,25 @@ int ShiftInterlaceEven::handle_event()
 	return 1;
 }
 
+
+
+
+ShiftInterlaceReset::ShiftInterlaceReset(ShiftInterlaceMain *plugin, ShiftInterlaceWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+ShiftInterlaceReset::~ShiftInterlaceReset()
+{
+}
+int ShiftInterlaceReset::handle_event()
+{
+	plugin->config.reset();
+	gui->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 

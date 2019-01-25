@@ -77,12 +77,15 @@ public:
 
 // Shift in time
 	virtual void shift(int64_t difference);
+
+	void trim(int64_t difference);
 	int shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
-		int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
-		Edits *trim_edits);
+		int edit_labels, int edit_autos, int edit_plugins, Edits *trim_edits);
 	int shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
-		int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
-		Edits *trim_edits);
+		int edit_labels, int edit_autos, int edit_plugins, Edits *trim_edits);
+	int follow_edits(int64_t start, int64_t end, int64_t cut_length,
+		int edits_moved, int rest_moved, int edit_labels, int edit_autos,
+		int edit_plugins, Edits *trim_edits);
 
 	void insert_transition(char  *title);
 	void detach_transition();
@@ -118,7 +121,6 @@ public:
 	Transition *transition;
 
 	Edits *edits;
-
 	Track *track;
 
 // points to an object in edl->assets if set

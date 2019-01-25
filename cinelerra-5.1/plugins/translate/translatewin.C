@@ -40,9 +40,9 @@
 TranslateWin::TranslateWin(TranslateMain *client)
  : PluginClientWindow(client,
 	300,
-	220,
+	250,
 	300,
-	220,
+	250,
 	0)
 {
 	this->client = client;
@@ -78,8 +78,9 @@ void TranslateWin::create_objects()
 	y += 20;
 	in_h = new TranslateCoord(this, client, x, y, &client->config.in_h);
 	in_h->create_objects();
-	y += 30;
 
+	y += 40;
+	add_tool(reset = new TranslateReset(client, this, x, y));
 
 	x += 150;
 	y = 10;
@@ -107,10 +108,21 @@ void TranslateWin::create_objects()
 	out_h->create_objects();
 	y += 30;
 
-
-
 	show_window();
 	flush();
+}
+
+void TranslateWin::update()
+{
+	in_x->update((int64_t)client->config.in_x);
+	in_y->update((int64_t)client->config.in_y);
+	in_w->update((int64_t)client->config.in_w);
+	in_h->update((int64_t)client->config.in_h);
+	out_x->update((int64_t)client->config.out_x);
+	out_y->update((int64_t)client->config.out_y);
+	out_y->update((int64_t)client->config.out_y);
+	out_w->update((int64_t)client->config.out_w);
+	out_h->update((int64_t)client->config.out_h);
 }
 
 
@@ -146,4 +158,19 @@ int TranslateCoord::handle_event()
 	return 1;
 }
 
-
+TranslateReset::TranslateReset(TranslateMain *client, TranslateWin *win, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->client = client;
+	this->win = win;
+}
+TranslateReset::~TranslateReset()
+{
+}
+int TranslateReset::handle_event()
+{
+	client->config.reset();
+	win->update();
+	client->send_configure_change();
+	return 1;
+}

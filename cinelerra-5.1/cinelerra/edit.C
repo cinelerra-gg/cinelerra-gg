@@ -384,20 +384,19 @@ int Edit::dump(FILE *fp)
 {
 	fprintf(fp,"     EDIT %p\n", this); fflush(fp);
 	fprintf(fp,"      nested_edl=%p %s asset=%p %s\n",
-		nested_edl,
-		nested_edl ? nested_edl->path : "",
-		asset,
-		asset ? asset->path : "");
+		nested_edl, nested_edl ? nested_edl->path : "",
+		asset, asset ? asset->path : "");
 	fflush(fp);
-	fprintf(fp,"      channel %d, color %08x, group_id %d, is_selected %d\n",
-		channel, color, group_id, is_selected);
-	if(transition)
-	{
+	fprintf(fp,"      channel %d, color %08x, hard lt/rt %d/%d"
+		" group_id %d, is_selected %d\n",
+		channel, color, hard_left, hard_right, group_id, is_selected);
+	if( transition ) {
 		fprintf(fp,"      TRANSITION %p\n", transition);
 		transition->dump(fp);
 	}
-	fprintf(fp,"      startsource %jd startproject %jd hard lt/rt %d/%d length %jd\n",
-		startsource, startproject, hard_left, hard_right, length); fflush(fp);
+	fprintf(fp,"      startsource %jd startproject %jd length %jd\n",
+		startsource, startproject, length);
+	fflush(fp);
 	return 0;
 }
 
@@ -421,147 +420,200 @@ void Edit::shift(int64_t difference)
 	startproject += difference;
 }
 
-
-int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
-        int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
-        Edits *trim_edits)
+void Edit::trim(int64_t difference)
 {
-	int64_t startproject = this->startproject;
-	int64_t startsource = this->startsource;
-	int64_t length = this->length;
-	int64_t source_len = get_source_end(startsource + length);
-	int64_t cut_length = newposition - oldposition;
-	source_len -= cut_length;
-
-	switch( edit_mode ) {
-	case MOVE_EDGE:
-		startproject += cut_length;
-		startsource += cut_length;
-		length -= cut_length;
-		break;
-	case MOVE_MEDIA:
-		startsource += cut_length;
-		break;
-	case MOVE_EDGE_MEDIA:
-		startproject += cut_length;
-		length -= cut_length;
-		break;
-	}
-
+	length += difference;
 	if( startproject < 0 ) {
-		startsource += startproject;
-		length += startproject;
+		if( (startsource+=startproject) < 0 ) startsource = 0;
+		if( (length+=startproject) < 0 ) length = 0;
 		startproject = 0;
 	}
 	if( startsource < 0 )
 		startsource = 0;
-	if( length > source_len )
-		length = source_len;
+	int64_t src_len = get_source_end(INT64_MAX);
+	if( startsource + length > src_len ) {
+		length = src_len - startsource;
+		if( length < 0 ) length = 0;
+	}
 	if( length < 0 )
 		length = 0;
+}
 
-	int64_t start = this->startproject;
-	int64_t end = start + this->length;
-	if( edit_labels ) {
-		double cut_len = track->from_units(cut_length);
-		double start_pos = edits->track->from_units(start);
-		edits->edl->labels->insert(start_pos, cut_len);
-		double end_pos = edits->track->from_units(end);
-		edits->edl->labels->insert(end_pos + cut_len, -cut_len);
-	}
-	if( edit_autos ) {
-		edits->shift_keyframes_recursive(start, cut_length);
-		edits->shift_keyframes_recursive(end + cut_length, -cut_length);
-	}
-	if( edit_plugins ) {
-		edits->shift_effects_recursive(start, cut_length, 1);
-		edits->shift_effects_recursive(end + cut_length, -cut_length, 1);
-	}
-	if( !edit_edits && startproject < start ) {
-		edits->clear(startproject, start);
-		cut_length = start - startproject;
+int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
+	int edit_labels, int edit_autos, int edit_plugins, Edits *trim_edits)
+{
+	int64_t cut_length = newposition - oldposition;
+	if( !cut_length ) return 0;
+	int64_t start = startproject, end = start + length;
+	Edit *prev = this->previous, *next = this->next;
+	int edits_moved = 0, rest_moved = 0;
+
+	switch( edit_mode ) {
+	case MOVE_RIPPLE:
+		edits_moved = rest_moved = 1;
+		if( prev ) prev->trim(cut_length);
+		for( Edit *edit=this; edit; edit=edit->next )
+			edit->startproject += cut_length;
+		break;
+	case MOVE_ROLL:
+		if( prev ) prev->trim(cut_length);
+		startproject += cut_length;
+		startsource += cut_length;
+		length -= cut_length;
+		break;
+	case MOVE_SLIP:
+		edits_moved = 1;
+		startsource -= cut_length;
+		break;
+	case MOVE_SLIDE:
+		edits_moved = 1;
+		if( prev ) prev->trim(cut_length);
+		startproject += cut_length;
+		if( next ) {
+			next->startproject += cut_length;
+			next->startsource += cut_length;
+			next->trim(-cut_length);
+		}
+		break;
+	case MOVE_EDGE:
+		edits_moved = rest_moved = 1;
+		startsource -= cut_length;
+		length += cut_length;
 		for( Edit *edit=next; edit; edit=edit->next )
 			edit->startproject += cut_length;
+		break;
 	}
+	trim(0);
 
-	this->startproject = startproject;
-	this->startsource = startsource;
-	this->length = length;
-
-	return 0;
+	return follow_edits(start, end, cut_length, edits_moved, rest_moved,
+		edit_labels, edit_autos, edit_plugins, trim_edits);
 }
 
 int Edit::shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
-        int edit_edits, int edit_labels, int edit_plugins, int edit_autos,
-        Edits *trim_edits)
+	int edit_labels, int edit_autos, int edit_plugins, Edits *trim_edits)
 {
-	int64_t startproject = this->startproject;
-	int64_t startsource = this->startsource;
-	int64_t length = this->length;
-	int64_t source_len = get_source_end(startsource + length);
 	int64_t cut_length = newposition - oldposition;
-	source_len += cut_length;
+	if( !cut_length ) return 0;
+	int64_t start = startproject, end = start + length;
+	Edit *prev = this->previous, *next = this->next;
+	int edits_moved = 0, rest_moved = 0;
 
 	switch( edit_mode ) {
-	case MOVE_EDGE:
+	case MOVE_RIPPLE:
+		rest_moved = 1;
 		length += cut_length;
-		break;
-	case MOVE_MEDIA:
-		startsource += cut_length;
-		break;
-	case MOVE_EDGE_MEDIA:
-		startsource -= cut_length;
-		length += cut_length;
-		break;
-	}
-	if( startproject < 0 ) {
-		startsource += startproject;
-		length += startproject;
-		startproject = 0;
-	}
-	if( startsource < 0 )
-		startsource = 0;
-	if( length > source_len )
-		length = source_len;
-	if( length < 0 )
-		length = 0;
-
-	int64_t start = this->startproject;
-	int64_t end = start + this->length;
-	if( edit_labels ) {
-		double cut_len = track->from_units(cut_length);
-		double end_pos = edits->track->from_units(end);
-		if( cut_len < 0 )
-			edits->edl->labels->clear(end_pos + cut_len, end_pos, 1);
-		else
-			edits->edl->labels->insert(end_pos, cut_len);
-	}
-	Track *track = edits->track;
-	if( cut_length < 0 )
-		track->clear(end+cut_length, end,
-			0, 0, edit_autos, edit_plugins, trim_edits);
-	else if( cut_length > 0 ) {
-		if( edit_autos )
-			track->shift_keyframes(end, cut_length);
-		if( edit_plugins )
-			track->shift_effects(end, cut_length, 1, trim_edits);
-	}
-
-	int64_t new_end = startproject + length;
-	if( edit_edits ) {
-		cut_length = new_end - end;
-		for( Edit* edit=next; edit; edit=edit->next )
+		for( Edit *edit=next; edit; edit=edit->next )
 			edit->startproject += cut_length;
+		break;
+	case MOVE_ROLL:
+		length += cut_length;
+		if( next ) {
+			next->startproject += cut_length;
+			next->startsource += cut_length;
+			next->trim(-cut_length);
+		}
+		break;
+	case MOVE_SLIP:
+		edits_moved = 1;
+		startsource -= cut_length;
+		break;
+	case MOVE_SLIDE:
+		edits_moved = 1;
+		if( prev ) prev->trim(cut_length);
+		startproject += cut_length;
+		if( next ) {
+			next->startproject += cut_length;
+			next->startsource += cut_length;
+			next->trim(-cut_length);
+		}
+		break;
+	case MOVE_EDGE:
+		edits_moved = 1;
+		if( prev ) prev->trim(cut_length);
+		startproject += cut_length;
+		length -= cut_length;
+		break;
 	}
-	else if( new_end > end )
-		edits->clear(end, new_end);
+	trim(0);
 
-	this->startproject = startproject;
-	this->startsource = startsource;
-	this->length = length;
+	return follow_edits(start, end, cut_length, edits_moved, rest_moved,
+		edit_labels, edit_autos, edit_plugins, trim_edits);
+}
 
+int Edit::follow_edits(int64_t start, int64_t end, int64_t cut_length,
+		int edits_moved, int rest_moved, int edit_labels, int edit_autos,
+		int edit_plugins, Edits *trim_edits)
+{
+	if( edits_moved && rest_moved ) {
+		if( edit_labels ) {
+			double cut_len = track->from_units(cut_length);
+			double start_pos = edits->track->from_units(start);
+			if( cut_len < 0 )
+				edits->edl->labels->clear(start_pos + cut_len, start_pos, 1);
+			else if( cut_len > 0 )
+				edits->edl->labels->insert(start_pos, cut_len);
+		}
+		if( cut_length < 0 )
+			track->clear(start + cut_length, start,
+				0, 0, edit_autos, edit_plugins, trim_edits);
+		else if( cut_length > 0 ) {
+			if( edit_autos )
+				track->shift_keyframes(start, cut_length);
+			if( edit_plugins )
+				track->shift_effects(start, cut_length, 1, trim_edits);
+		}
+	}
+	else if( edits_moved ) {
+		if( edit_labels ) {
+			double cut_len = track->from_units(cut_length);
+			double start_pos = edits->track->from_units(start);
+			edits->edl->labels->insert(start_pos, cut_len);
+			double end_pos = edits->track->from_units(end);
+			edits->edl->labels->insert(end_pos + cut_len, -cut_len);
+		}
+		if( edit_autos ) {
+			if( cut_length > 0 ) {
+				track->clear(end, end+cut_length, 0, 0, 0, 1, 0);
+				track->shift_keyframes(start, cut_length);
+			}
+			else if( cut_length < 0 ) {
+				track->clear(start+cut_length, start, 0, 0, 0, 1, 0);
+				track->shift_keyframes(end+cut_length, -cut_length);
+			}
+		}
+		if( edit_plugins ) {
+			if( cut_length > 0 ) {
+				track->clear(end, end+cut_length, 0, 0, 1, 0, 0);
+				track->shift_effects(start, cut_length, 1, 0);
+			}
+			else if( cut_length < 0 ) {
+				track->clear(start+cut_length, start, 0, 0, 1, 0, 0);
+				track->shift_effects(end+cut_length, -cut_length, 1, 0);
+			}
+		}
+	}
+	else if( rest_moved ) {
+		if( edit_labels ) {
+			double cut_len = track->from_units(cut_length);
+			double end_pos = edits->track->from_units(end);
+			if( cut_len < 0 )
+				edits->edl->labels->clear(end_pos + cut_len, end_pos, 1);
+			else if( cut_len > 0 )
+				edits->edl->labels->insert(end_pos, cut_len);
+		}
+		if( cut_length < 0 )
+			track->clear(end + cut_length, end,
+				0, 0, edit_autos, edit_plugins, trim_edits);
+		else if( cut_length > 0 ) {
+			if( edit_autos )
+				track->shift_keyframes(end, cut_length);
+			if( edit_plugins )
+				track->shift_effects(end, cut_length, 1, trim_edits);
+		}
+	}
 	return 0;
 }
+
 
 
 int Edit::popup_transition(float view_start, float zoom_units, int cursor_x, int cursor_y)

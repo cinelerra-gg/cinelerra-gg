@@ -50,6 +50,16 @@ public:
 	UnsharpMain *plugin;
 };
 
+class UnsharpReset : public BC_GenericButton
+{
+public:
+	UnsharpReset(UnsharpMain *plugin, UnsharpWindow *window, int x, int y);
+	~UnsharpReset();
+	int handle_event();
+	UnsharpMain *plugin;
+	UnsharpWindow *window;
+};
+
 class UnsharpWindow : public PluginClientWindow
 {
 public:
@@ -63,6 +73,7 @@ public:
 	UnsharpAmount *amount;
 	UnsharpThreshold *threshold;
 	UnsharpMain *plugin;
+	UnsharpReset *reset;
 };
 
 

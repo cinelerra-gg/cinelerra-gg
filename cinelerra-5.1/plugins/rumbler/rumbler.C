@@ -19,101 +19,17 @@
  *
  */
 
-#include "bcdisplayinfo.h"
-#include "affine.h"
-#include "clip.h"
-#include "bchash.h"
-#include "filexml.h"
-#include "guicast.h"
-#include "keyframe.h"
-#include "language.h"
-#include "pluginvclient.h"
-#include "vframe.h"
-
-#include <math.h>
-#include <string.h>
-#include <stdint.h>
+#include "rumbler.h"
 
 
-class Rumbler;
-class RumblerConfig;
-class RumblerRate;
-class RumblerSeq;
-class RumblerWindow;
-
-
-class RumblerConfig
-{
-public:
-	RumblerConfig();
-	float time_rumble, time_rate;
-	float space_rumble, space_rate;
-	int sequence;
-	void copy_from(RumblerConfig &that);
-	int equivalent(RumblerConfig &that);
-	void interpolate(RumblerConfig &prev, RumblerConfig &next,
-	        int64_t prev_frame, int64_t next_frame, int64_t current_frame);
-};
-
-class RumblerRate : public BC_TextBox
-{
-public:
-	RumblerRate(Rumbler *plugin, RumblerWindow *gui,
-		float &value, int x, int y);
-	int handle_event();
-	Rumbler *plugin;
-	RumblerWindow *gui;
-	float *value;
-};
-
-class RumblerSeq : public BC_TextBox
-{
-public:
-	RumblerSeq(Rumbler *plugin, RumblerWindow *gui,
-		int &value, int x, int y);
-	int handle_event();
-	Rumbler *plugin;
-	RumblerWindow *gui;
-	int *value;
-};
-
-
-class RumblerWindow : public PluginClientWindow
-{
-public:
-	RumblerWindow(Rumbler *plugin);
-	~RumblerWindow();
-	void create_objects();
-
-	Rumbler *plugin;
-	RumblerRate *time_rumble, *time_rate;
-	RumblerRate *space_rumble, *space_rate;
-	RumblerSeq *seq;
-};
-
-class Rumbler : public PluginVClient
-{
-public:
-	Rumbler(PluginServer *server);
-	~Rumbler();
-
-	PLUGIN_CLASS_MEMBERS(RumblerConfig)
-
-	int process_buffer(VFrame *frame, int64_t start_position, double frame_rate);
-	int is_realtime();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int handle_opengl();
-	static double rumble(int64_t seq, double cur, double per, double amp);
-
-	VFrame *input, *output, *temp;
-	float x1,y1, x2,y2, x3,y3, x4,y4;
-	AffineEngine *engine;
-};
 
 
 RumblerConfig::RumblerConfig()
+{
+	reset();
+}
+
+void RumblerConfig::reset()
 {
 	time_rumble = 10;
 	time_rate = 1.;
@@ -153,7 +69,7 @@ void RumblerConfig::interpolate(RumblerConfig &prev, RumblerConfig &next,
 }
 
 RumblerWindow::RumblerWindow(Rumbler *plugin)
- : PluginClientWindow(plugin, 300, 120, 300, 120, 0)
+ : PluginClientWindow(plugin, 300, 150, 300, 150, 0)
 {
 	this->plugin = plugin;
 }
@@ -181,9 +97,21 @@ void RumblerWindow::create_objects()
 	y += title->get_h() + 10;
 	add_subwindow(title = new BC_Title(x, y, _("seq:")));
 	add_subwindow(seq = new RumblerSeq(plugin, this, plugin->config.sequence, x1, y));
+	y += 35;
+	add_subwindow(reset = new RumblerReset(plugin, this, x, y));
 
 	show_window();
 	flush();
+}
+
+// for Reset button
+void RumblerWindow::update()
+{
+	time_rumble->update(plugin->config.time_rumble);
+	time_rate->update(plugin->config.time_rate);
+	space_rumble->update(plugin->config.space_rumble);
+	space_rate->update(plugin->config.space_rate);
+	seq->update((int64_t)(plugin->config.sequence));
 }
 
 
@@ -215,6 +143,24 @@ RumblerSeq::RumblerSeq(Rumbler *plugin, RumblerWindow *gui,
 int RumblerSeq::handle_event()
 {
 	*value = atoi(get_text());
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+RumblerReset::RumblerReset(Rumbler *plugin, RumblerWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+RumblerReset::~RumblerReset()
+{
+}
+int RumblerReset::handle_event()
+{
+	plugin->config.reset();
+	gui->update();
 	plugin->send_configure_change();
 	return 1;
 }

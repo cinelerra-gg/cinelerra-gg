@@ -730,17 +730,10 @@ int Edits::modify_handles(double oldposition, double newposition, int currentend
 				double delta = newposition - oldposition;
 				oldposition = track->from_units(current_edit->startproject);
 				if( group_id > 0 ) newposition = oldposition + delta;
-				result = 1;
-// dont move stuff if media playback does not shift in time
-				if( edit_mode != MOVE_MEDIA && edit_mode != MOVE_EDGE_MEDIA ) {
-					edit_labels = 0;
-					edit_plugins = 0;
-					edit_autos = 0;
-				}
 				current_edit->shift_start(edit_mode,
 					track->to_units(newposition, 0), track->to_units(oldposition, 0),
-					0, edit_labels, edit_plugins, edit_autos,
-					trim_edits);
+					edit_labels, edit_autos, edit_plugins, trim_edits);
+				result = 1;
 			}
 
 			if(!result) current_edit = current_edit->next;
@@ -760,7 +753,7 @@ int Edits::modify_handles(double oldposition, double newposition, int currentend
 
 				current_edit->shift_end(edit_mode,
 					track->to_units(newposition, 0), track->to_units(oldposition, 0),
-					edit_edits, edit_labels, edit_plugins, edit_autos, trim_edits);
+					edit_labels, edit_autos, edit_plugins, trim_edits);
 			}
 
 			if(!result) current_edit = current_edit->next;

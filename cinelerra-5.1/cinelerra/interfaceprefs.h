@@ -40,7 +40,7 @@ public:
 	void create_objects();
 // must delete each derived class
 	int update(int new_value);
-	const char* behavior_to_text(int mode);
+	static const char* behavior_to_text(int mode);
 	int start_shbtn_dialog();
 	void start_probe_dialog();
 
@@ -111,7 +111,7 @@ public:
 class ViewBehaviourItem : public BC_MenuItem
 {
 public:
-	ViewBehaviourItem(ViewBehaviourText *popup, char *text, int behaviour);
+	ViewBehaviourItem(ViewBehaviourText *popup, const char *text, int behaviour);
 	~ViewBehaviourItem();
 
 	int handle_event();

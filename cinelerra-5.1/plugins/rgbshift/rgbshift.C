@@ -19,76 +19,7 @@
  *
  */
 
-#include "bcdisplayinfo.h"
-#include "clip.h"
-#include "bchash.h"
-#include "filexml.h"
-#include "guicast.h"
-#include "language.h"
-#include "bccolors.h"
-#include "pluginvclient.h"
-#include "vframe.h"
-
-#include <stdint.h>
-#include <string.h>
-
-
-class RGBShiftEffect;
-
-
-class RGBShiftConfig
-{
-public:
-	RGBShiftConfig();
-
-	void copy_from(RGBShiftConfig &src);
-	int equivalent(RGBShiftConfig &src);
-	void interpolate(RGBShiftConfig &prev,
-		RGBShiftConfig &next,
-		long prev_frame,
-		long next_frame,
-		long current_frame);
-
-	int r_dx, r_dy, g_dx, g_dy, b_dx, b_dy;
-};
-
-class RGBShiftLevel : public BC_ISlider
-{
-public:
-	RGBShiftLevel(RGBShiftEffect *plugin, int *output, int x, int y);
-	int handle_event();
-	RGBShiftEffect *plugin;
-	int *output;
-};
-
-class RGBShiftWindow : public PluginClientWindow
-{
-public:
-	RGBShiftWindow(RGBShiftEffect *plugin);
-	void create_objects();
-	RGBShiftLevel *r_dx, *r_dy, *g_dx, *g_dy, *b_dx, *b_dy;
-	RGBShiftEffect *plugin;
-};
-
-
-
-class RGBShiftEffect : public PluginVClient
-{
-	VFrame *temp_frame;
-public:
-	RGBShiftEffect(PluginServer *server);
-	~RGBShiftEffect();
-
-
-	PLUGIN_CLASS_MEMBERS(RGBShiftConfig)
-	int process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-};
-
-
+#include "rgbshift.h"
 
 
 
@@ -99,8 +30,12 @@ REGISTER_PLUGIN(RGBShiftEffect)
 
 
 
-
 RGBShiftConfig::RGBShiftConfig()
+{
+	reset();
+}
+
+void RGBShiftConfig::reset()
 {
 	r_dx = r_dy = 0;
 	g_dx = g_dy = 0;
@@ -159,8 +94,26 @@ int RGBShiftLevel::handle_event()
 }
 
 
+RGBShiftReset::RGBShiftReset(RGBShiftEffect *plugin, RGBShiftWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+RGBShiftReset::~RGBShiftReset()
+{
+}
+int RGBShiftReset::handle_event()
+{
+	plugin->config.reset();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
 RGBShiftWindow::RGBShiftWindow(RGBShiftEffect *plugin)
- : PluginClientWindow(plugin, 300, 200, 300, 200, 0)
+ : PluginClientWindow(plugin, 300, 230, 300, 230, 0)
 {
 	this->plugin = plugin;
 }
@@ -186,12 +139,24 @@ void RGBShiftWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, _("B_dy:")));
 	add_subwindow(b_dy = new RGBShiftLevel(plugin, &plugin->config.b_dy, x1, y));
 
+	y += 40;
+	add_subwindow(reset = new RGBShiftReset(plugin, this, x, y));
+
 	show_window();
 	flush();
 }
 
 
-
+// for Reset button
+void RGBShiftWindow::update()
+{
+	r_dx->update(plugin->config.r_dx);
+	r_dy->update(plugin->config.r_dy);
+	g_dx->update(plugin->config.g_dx);
+	g_dy->update(plugin->config.g_dy);
+	b_dx->update(plugin->config.b_dx);
+	b_dy->update(plugin->config.b_dy);
+}
 
 
 

@@ -3808,17 +3808,28 @@ void TrackCanvas::update_drag_handle()
 		edl->create_objects();
 		edl->copy_all(mwindow->edl);
 		MainSession *session = mwindow->session;
-		int edit_mode = mwindow->edl->session->edit_handle_mode[session->drag_button];
+		int handle_mode = mwindow->edl->session->edit_handle_mode[session->drag_button];
 		edl->modify_edithandles(session->drag_start,
-			session->drag_position,
-			session->drag_handle,
-			edit_mode,
+			session->drag_position, session->drag_handle, handle_mode,
 			edl->session->labels_follow_edits,
 			edl->session->plugins_follow_edits,
 			edl->session->autos_follow_edits,
 			!session->drag_edit ? 0 : session->drag_edit->group_id);
-		double position = edit_mode == MOVE_EDGE || edit_mode == MOVE_EDGE_MEDIA ?
-				session->drag_position : session->drag_start ;
+
+		double position = -1;
+		switch( handle_mode ) {
+		case MOVE_RIPPLE:
+		case MOVE_ROLL:
+		case MOVE_SLIDE:
+			position = session->drag_position;
+			break;
+		case MOVE_SLIP:
+		case MOVE_EDGE:
+			position = session->drag_start;
+			break;
+		}
+
+		if( position < 0 ) position = 0;
 		Track *track = session->drag_handle_track();
 		int64_t pos = track->to_units(position, 0);
 		render_handle_frame(edl, pos, shift_down() ? 0 :

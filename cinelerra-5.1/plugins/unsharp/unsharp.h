@@ -41,6 +41,7 @@ class UnsharpConfig
 {
 public:
 	UnsharpConfig();
+	void reset();
 
 	int equivalent(UnsharpConfig &that);
 	void copy_from(UnsharpConfig &that);

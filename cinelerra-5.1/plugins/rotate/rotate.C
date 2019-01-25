@@ -19,216 +19,26 @@
  *
  */
 
-#include "affine.h"
-#include "bcdisplayinfo.h"
-#include "clip.h"
-#include "bchash.h"
-#include "filexml.h"
-#include "guicast.h"
-#include "language.h"
-#include "pluginvclient.h"
-#include "rotateframe.h"
-#include "vframe.h"
 
-
-#include <string.h>
-
-
+#include "rotate.h"
 
 #define MAXANGLE 360
-
-
-class RotateEffect;
-class RotateWindow;
-
-
-class RotateConfig
-{
-public:
-	RotateConfig();
-
-	int equivalent(RotateConfig &that);
-	void copy_from(RotateConfig &that);
-	void interpolate(RotateConfig &prev,
-		RotateConfig &next,
-		long prev_frame,
-		long next_frame,
-		long current_frame);
-
-	float angle;
-	float pivot_x;
-	float pivot_y;
-	int draw_pivot;
-//	int bilinear;
-};
-
-class RotateToggle : public BC_Radial
-{
-public:
-	RotateToggle(RotateWindow *window,
-		RotateEffect *plugin,
-		int init_value,
-		int x,
-		int y,
-		int value,
-		const char *string);
-	int handle_event();
-
-	RotateEffect *plugin;
-    RotateWindow *window;
-    int value;
-};
-
-class RotateDrawPivot : public BC_CheckBox
-{
-public:
-	RotateDrawPivot(RotateWindow *window,
-		RotateEffect *plugin,
-		int x,
-		int y);
-	int handle_event();
-	RotateEffect *plugin;
-    RotateWindow *window;
-    int value;
-};
-
-class RotateInterpolate : public BC_CheckBox
-{
-public:
-	RotateInterpolate(RotateEffect *plugin, int x, int y);
-	int handle_event();
-	RotateEffect *plugin;
-};
-
-class RotateFine : public BC_FPot
-{
-public:
-	RotateFine(RotateWindow *window,
-		RotateEffect *plugin,
-		int x,
-		int y);
-	int handle_event();
-
-	RotateEffect *plugin;
-    RotateWindow *window;
-};
-
-class RotateX : public BC_FPot
-{
-public:
-	RotateX(RotateWindow *window,
-		RotateEffect *plugin,
-		int x,
-		int y);
-	int handle_event();
-	RotateEffect *plugin;
-    RotateWindow *window;
-};
-
-class RotateY : public BC_FPot
-{
-public:
-	RotateY(RotateWindow *window,
-		RotateEffect *plugin,
-		int x,
-		int y);
-	int handle_event();
-	RotateEffect *plugin;
-    RotateWindow *window;
-};
-
-
-class RotateText : public BC_TextBox
-{
-public:
-	RotateText(RotateWindow *window,
-		RotateEffect *plugin,
-		int x,
-		int y);
-	int handle_event();
-
-	RotateEffect *plugin;
-    RotateWindow *window;
-};
-
-class RotateWindow : public PluginClientWindow
-{
-public:
-	RotateWindow(RotateEffect *plugin);
-
-	void create_objects();
-
-	int update();
-	int update_fine();
-	int update_text();
-	int update_toggles();
-
-	RotateEffect *plugin;
-	RotateToggle *toggle0;
-	RotateToggle *toggle90;
-	RotateToggle *toggle180;
-	RotateToggle *toggle270;
-	RotateDrawPivot *draw_pivot;
-	RotateFine *fine;
-	RotateText *text;
-	RotateX *x;
-	RotateY *y;
-//	RotateInterpolate *bilinear;
-};
-
-
-
-
-class RotateEffect : public PluginVClient
-{
-public:
-	RotateEffect(PluginServer *server);
-	~RotateEffect();
-
-	PLUGIN_CLASS_MEMBERS(RotateConfig)
-	int process_buffer(VFrame *frame,
-		int64_t start_position,
-		double frame_rate);
-	int is_realtime();
-	void update_gui();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	int handle_opengl();
-
-	AffineEngine *engine;
-	int need_reconfigure;
-};
-
-
-
-
-
-
 
 REGISTER_PLUGIN(RotateEffect)
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 RotateConfig::RotateConfig()
 {
-	angle = 0;
-	pivot_x = 50;
-	pivot_y = 50;
+	reset();
+}
+
+void RotateConfig::reset()
+{
+	angle = 0.0;
+	pivot_x = 50.0;
+	pivot_y = 50.0;
 	draw_pivot = 0;
 }
 
@@ -286,13 +96,13 @@ RotateToggle::RotateToggle(RotateWindow *window,
 {
 	this->value = value;
 	this->plugin = plugin;
-    this->window = window;
+	this->window = window;
 }
 
 int RotateToggle::handle_event()
 {
 	plugin->config.angle = (float)value;
-    window->update();
+	window->update();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -310,7 +120,7 @@ RotateDrawPivot::RotateDrawPivot(RotateWindow *window,
  : BC_CheckBox(x, y, plugin->config.draw_pivot, _("Draw pivot"))
 {
 	this->plugin = plugin;
-    this->window = window;
+	this->window = window;
 }
 
 int RotateDrawPivot::handle_event()
@@ -369,7 +179,7 @@ RotateText::RotateText(RotateWindow *window,
 	int y)
  : BC_TextBox(x,
  	y,
-	100,
+	90,
 	1,
 	(float)plugin->config.angle)
 {
@@ -430,6 +240,22 @@ int RotateY::handle_event()
 }
 
 
+RotateReset::RotateReset(RotateEffect *plugin, RotateWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+RotateReset::~RotateReset()
+{
+}
+int RotateReset::handle_event()
+{
+	plugin->config.reset();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 
@@ -499,7 +325,7 @@ void RotateWindow::create_objects()
 	add_tool(fine = new RotateFine(this, plugin, x, y));
 	y += fine->get_h() + 10;
 	add_tool(text = new RotateText(this, plugin, x, y));
-	y += 30;
+	y += 25;
 	add_tool(new BC_Title(x, y, _("Degrees")));
 
 
@@ -513,14 +339,13 @@ void RotateWindow::create_objects()
 	x += this->x->get_w() + 10;
 	add_subwindow(this->y = new RotateY(this, plugin, x, y));
 
+//	y += this->y->get_h() + 10;
 	x = 10;
-	y += this->y->get_h() + 10;
 	add_subwindow(draw_pivot = new RotateDrawPivot(this, plugin, x, y));
+	y += 60;
+	add_subwindow(reset = new RotateReset(plugin, this, x, y));
 
 	show_window();
-
-
-
 }
 
 

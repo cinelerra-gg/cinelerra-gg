@@ -34,7 +34,7 @@
 
 
 UnsharpWindow::UnsharpWindow(UnsharpMain *plugin)
- : PluginClientWindow(plugin, 285, 160, 285, 160, 0)
+ : PluginClientWindow(plugin, 285, 170, 285, 170, 0)
 {
 	this->plugin = plugin;
 }
@@ -45,25 +45,22 @@ UnsharpWindow::~UnsharpWindow()
 
 void UnsharpWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = 10, y = 10, x1 = 90;
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x, y + 10, _("Radius:")));
-	add_subwindow(radius = new UnsharpRadius(plugin,
-		x + title->get_w() + 10,
-		y));
+	add_subwindow(radius = new UnsharpRadius(plugin, x + x1, y));
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Amount:")));
-	add_subwindow(amount = new UnsharpAmount(plugin,
-		x + title->get_w() + 10,
-		y));
+	add_subwindow(amount = new UnsharpAmount(plugin, x + x1, y));
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Threshold:")));
-	add_subwindow(threshold = new UnsharpThreshold(plugin,
-		x + title->get_w() + 10,
-		y));
+	add_subwindow(threshold = new UnsharpThreshold(plugin, x + x1, y));
+
+	y += 50;
+	add_subwindow(reset = new UnsharpReset(plugin, this, x, y));
 
 	show_window();
 	flush();
@@ -122,6 +119,21 @@ int UnsharpThreshold::handle_event()
 	return 1;
 }
 
-
+UnsharpReset::UnsharpReset(UnsharpMain *plugin, UnsharpWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+UnsharpReset::~UnsharpReset()
+{
+}
+int UnsharpReset::handle_event()
+{
+	plugin->config.reset();
+	window->update();
+	plugin->send_configure_change();
+	return 1;
+}
 
 

@@ -28,12 +28,14 @@
 
 class SwapFrames;
 class SwapFramesWindow;
+class SwapFramesReset;
 
 class SwapFramesConfig
 {
 public:
 	SwapFramesConfig();
 
+	void reset();
 	int equivalent(SwapFramesConfig &that);
 	void copy_from(SwapFramesConfig &that);
 	void interpolate(SwapFramesConfig &prev,
@@ -79,16 +81,28 @@ public:
 	SwapFrames *plugin;
 };
 
+class SwapFramesReset : public BC_GenericButton
+{
+public:
+	SwapFramesReset(SwapFrames *plugin, SwapFramesWindow *gui, int x, int y);
+	~SwapFramesReset();
+	int handle_event();
+	SwapFrames *plugin;
+	SwapFramesWindow *gui;
+};
+
 
 class SwapFramesWindow : public PluginClientWindow
 {
 public:
 	SwapFramesWindow(SwapFrames *plugin);
 	void create_objects();
+	void update();
 	SwapFramesOn *on;
 	SwapFramesEven *swap_even;
 	SwapFramesOdd *swap_odd;
 	SwapFrames *plugin;
+	SwapFramesReset *reset;
 };
 
 

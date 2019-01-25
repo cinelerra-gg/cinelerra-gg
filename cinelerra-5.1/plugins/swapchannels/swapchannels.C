@@ -48,10 +48,15 @@ REGISTER_PLUGIN(SwapMain)
 
 SwapConfig::SwapConfig()
 {
+	reset_Config();
+}
+
+void SwapConfig::reset_Config()
+{
 	red = RED_SRC;
 	green = GREEN_SRC;
 	blue = BLUE_SRC;
-    alpha = ALPHA_SRC;
+	alpha = ALPHA_SRC;
 }
 
 
@@ -81,9 +86,9 @@ void SwapConfig::copy_from(SwapConfig &that)
 SwapWindow::SwapWindow(SwapMain *plugin)
  : PluginClientWindow(plugin,
 	250,
-	170,
+	200,
 	250,
-	170,
+	200,
 	0)
 {
 	this->plugin = plugin;
@@ -117,10 +122,12 @@ void SwapWindow::create_objects()
 	add_subwindow(alpha = new SwapMenu(plugin, &(plugin->config.alpha), x, y));
 	alpha->create_objects();
 
+	y += 40;
+	add_subwindow(reset = new SwapReset(plugin, this, x, y));
+
 	show_window();
 	flush();
 }
-
 
 
 
@@ -171,7 +178,22 @@ int SwapItem::handle_event()
 
 
 
-
+SwapReset::SwapReset(SwapMain *plugin, SwapWindow *gui, int x, int y)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+SwapReset::~SwapReset()
+{
+}
+int SwapReset::handle_event()
+{
+	plugin->config.reset_Config();
+	plugin->send_configure_change();
+	plugin->update_gui();
+	return 1;
+}
 
 
 

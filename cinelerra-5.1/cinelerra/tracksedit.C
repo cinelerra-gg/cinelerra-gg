@@ -214,12 +214,12 @@ void Tracks::set_edit_length(double start, double end, double length)
 // Go in using the edit handle interface
 					int64_t starting_length = current_edit->length;
 
-					current_edit->shift_end(MOVE_EDGE,
+					current_edit->shift_end(MOVE_RIPPLE,
 						current_edit->startproject + length_units,
 						current_edit->startproject + current_edit->length,
-						1, 0,
-						edl->session->plugins_follow_edits,
+						0,
 						edl->session->autos_follow_edits,
+						edl->session->plugins_follow_edits,
 						0);
 
 					int64_t ending_length = current_edit->length;
@@ -233,7 +233,7 @@ void Tracks::set_edit_length(double start, double end, double length)
 						 edl->labels->modify_handles(
 							current_track->from_units(current_edit->startproject + starting_length),
 							current_track->from_units(current_edit->startproject + ending_length),
-							1, MOVE_EDGE, 1);
+							1);
 					}
 
 
@@ -281,12 +281,12 @@ void Tracks::set_edit_length(double start, double end, double length)
 // Go in using the edit handle interface
 					int64_t starting_length = current_edit->length;
 
-					current_edit->shift_end(MOVE_EDGE,
+					current_edit->shift_end(MOVE_RIPPLE,
 						current_edit->startproject + length_units,
 						current_edit->startproject + current_edit->length,
-						1, 0,
-						edl->session->plugins_follow_edits,
+						0,
 						edl->session->autos_follow_edits,
+						edl->session->plugins_follow_edits,
 						0);
 
 					int64_t ending_length = current_edit->length;
@@ -298,7 +298,7 @@ void Tracks::set_edit_length(double start, double end, double length)
 						 edl->labels->modify_handles(
 							current_track->from_units(current_edit->startproject + starting_length),
 							current_track->from_units(current_edit->startproject + ending_length),
-							1, MOVE_EDGE, 1);
+							1);
 					}
 
 
@@ -1146,6 +1146,8 @@ int Tracks::modify_edithandles(double &oldposition, double &newposition,
 		track->modify_edithandles(oldposition, newposition,
 			currentend, handle_mode, edit_labels,
 			edit_plugins, edit_autos, group_id);
+// labels follow first armed track
+		edit_labels = 0;
 	}
 	return 0;
 }
