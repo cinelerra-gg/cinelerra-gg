@@ -145,13 +145,12 @@ int64_t VEdit::get_source_end(int64_t default_)
 {
 	if(!nested_edl && !asset) return default_;   // Infinity
 
-	if(nested_edl)
-	{
+	if( nested_edl ) {
 		return (int64_t)(nested_edl->tracks->total_length() *
 			edl->session->frame_rate + 0.5);
 	}
 
-	return (int64_t)((double)asset->video_length /
-		asset->frame_rate *
-		edl->session->frame_rate + 0.5);
+	return asset->video_length < 0 ? default_ :
+		 (int64_t)((double)asset->video_length /
+			asset->frame_rate * edl->session->frame_rate + 0.5);
 }
