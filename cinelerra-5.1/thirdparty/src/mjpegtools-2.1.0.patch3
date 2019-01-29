@@ -1,0 +1,14 @@
+--- mjpegtools-2.1.0/utils/videodev_mjpeg.h.orig	2019-01-12 11:13:19.901685543 -0700
++++ mjpegtools-2.1.0/utils/videodev_mjpeg.h	2019-01-12 11:14:33.325683843 -0700
+@@ -109,6 +109,11 @@
+ /*
+ Private IOCTL to set up for displaying MJPEG
+ */
++/* bad spelling, see /usr/include/videodev2.h */
++#ifndef BASE_VIDIOCPRIVATE
++#define BASE_VIDIOCPRIVATE BASE_VIDIOC_PRIVATE
++#endif
++
+ #define MJPIOC_G_PARAMS       _IOR ('v', BASE_VIDIOCPRIVATE+0,  struct mjpeg_params)
+ #define MJPIOC_S_PARAMS       _IOWR('v', BASE_VIDIOCPRIVATE+1,  struct mjpeg_params)
+ #define MJPIOC_REQBUFS        _IOWR('v', BASE_VIDIOCPRIVATE+2,  struct mjpeg_requestbuffers)

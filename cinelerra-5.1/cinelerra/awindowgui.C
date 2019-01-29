@@ -1213,14 +1213,6 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	video_vframe = 0;		video_icon = 0;
 	label_vframe = 0;		label_icon = 0;
 
-	atransition_vframe = 0;		atransition_icon = 0;
-	vtransition_vframe = 0;		vtransition_icon = 0;
-	aeffect_vframe = 0;		aeffect_icon = 0;
-	ladspa_vframe = 0;		ladspa_icon = 0;
-	veffect_vframe = 0;		veffect_icon = 0;
-	ff_aud_vframe = 0;		ff_aud_icon = 0;
-	ff_vid_vframe = 0;		ff_vid_icon = 0;
-
 	aeffect_folder_vframe = 0;	aeffect_folder_icon = 0;
 	atransition_folder_vframe = 0;	atransition_folder_icon = 0;
 	clip_folder_vframe = 0;		clip_folder_icon = 0;

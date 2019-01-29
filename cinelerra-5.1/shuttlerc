@@ -1,0 +1,92 @@
+
+# uncomment to enable diagnostics
+#DEBUG
+
+# redefine default, use
+# also used for resources,load windows
+[Default]
+[Resources]
+[Load]
+ K5 XK_Home
+ K6 XK_Button_1
+ K7 XK_Button_2
+ K8 XK_Button_3
+ K9 XK_End
+ JL XK_Scroll_Up
+ JR XK_Scroll_Down
+
+[Cinelerra]
+
+ K5 XK_KP_0     # Stop
+ K9 XK_KP_3     # Play
+ K12 XK_Home    # Beginning
+ K13 XK_End     # End
+ K14 "["        # Toggle in
+ K15 "]"        # Toggle out
+
+ K1 "i"		# Pro Only - Clip
+ K2 "x"		# Pro Only - Cut
+ K3 "c"		# Pro Only - Copy
+ K4 "v"		# Pro Only - Paste
+
+ S-3 XK_KP_Add  # Fast reverse
+ S-2 XK_KP_6    # Play reverse
+ S-1 XK_KP_5    # Slow reverse
+ S0 XK_KP_0     # Stop
+ S1 XK_KP_2     # Slow forward
+ S2 XK_KP_3     # Play forward
+ S3 XK_KP_Enter # Fast forward
+ 
+ JL XK_KP_4     # Frame reverse
+ JR XK_KP_1     # Frame forward
+
+[Composer]
+
+ K5 XK_KP_0     # Stop
+ K9 XK_KP_3     # Play
+ K12 XK_Home    # Beginning
+ K13 XK_End     # End
+ K14 "["        # Toggle in
+ K15 "]"        # Toggle out
+
+ K1 "i"		# Pro Only - Clip
+ K2 "x"		# Pro Only - Cut
+ K3 "c"		# Pro Only - Copy
+ K4 "v"		# Pro Only - Paste
+
+ S-3 XK_KP_Add  # Fast reverse
+ S-2 XK_KP_6    # Play reverse
+ S-1 XK_KP_5    # Slow reverse
+ S0 XK_KP_0     # Stop
+ S1 XK_KP_2     # Slow forward
+ S2 XK_KP_3     # Play forward
+ S3 XK_KP_Enter # Fast forward
+ 
+ JL XK_KP_4     # Frame reverse
+ JR XK_KP_1     # Frame forward
+
+[Viewer]
+
+ K5 "v"		# Splice (Viewer only - button is on Xpress)
+ K9 "b"		# Overwrite (Viewer only - button is on Xpress)
+ K12 XK_Home    # Beginning
+ K13 XK_End     # End
+ K14 "["        # Toggle in
+ K15 "]"        # Toggle out
+
+ K1 "i"		# Pro Only - Clip
+ K2 XK_Home	# Pro Only - Beginning 
+ K3 "c"		# Pro Only - Copy
+ K4 XK_End	# Pro Only - End
+
+ S-3 XK_KP_Add  # Fast reverse
+ S-2 XK_KP_6    # Play reverse
+ S-1 XK_KP_5    # Slow reverse
+ S0 XK_KP_0     # Stop
+ S1 XK_KP_2     # Slow forward
+ S2 XK_KP_3     # Play forward
+ S3 XK_KP_Enter # Fast forward
+ 
+ JL XK_KP_4     # Frame reverse
+ JR XK_KP_1     # Frame forward
+

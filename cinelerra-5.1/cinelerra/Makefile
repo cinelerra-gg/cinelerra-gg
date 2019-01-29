@@ -271,6 +271,7 @@ OBJS := \
 	$(OBJDIR)/sharedlocation.o \
 	$(OBJDIR)/shbtnprefs.o \
 	$(OBJDIR)/shmemory.o \
+	$(OBJDIR)/shuttle.o \
 	$(OBJDIR)/sighandler.o \
 	$(OBJDIR)/signalstatus.o \
 	$(OBJDIR)/splashgui.o \
@@ -581,6 +582,11 @@ $(OBJDIR)/pluginlv2ui.o:	pluginlv2ui.C
 $(OBJDIR)/lv2ui.o:	lv2ui.C
 $(OBJDIR)/pluginlv2ui.o $(OBJDIR)/lv2ui.o:
 	$(CXX) `cat $(OBJDIR)/c_flags` $(GTK2_INCS) -DMSGQUAL=$* -c $< -o $@
+
+$(OBJDIR)/shuttle.o:	shuttle.C shuttle_keys.h
+	$(CXX) `cat $(OBJDIR)/c_flags` -DMSGQUAL=$* -c $< -o $@
+shuttle_keys.h: /usr/include/X11/keysymdef.h
+	sed < /usr/include/X11/keysymdef.h > shuttle_keys.h -f shuttle.sed
 
 $(OBJDIR)/lv2ui: $(LV2OBJS)
 	@echo $(CXX) \`cat $(OBJDIR)/c_flags\` $^ -o $@

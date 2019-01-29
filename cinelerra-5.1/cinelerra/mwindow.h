@@ -82,6 +82,7 @@
 #include "sharedlocation.inc"
 #include "sighandler.inc"
 #include "splashgui.inc"
+#include "shuttle.inc"
 #include "theme.inc"
 #include "thread.h"
 #include "threadloader.inc"
@@ -706,6 +707,7 @@ public:
 
 	void init_preferences();
 	void init_signals();
+	void init_shuttle();
 	void init_theme();
 	void init_compositor();
 	void init_levelwindow();
@@ -730,6 +732,7 @@ public:
 	int restart_status;
 	int screens;
 	int in_destructor;
+	Shuttle *shuttle;
 };
 
 #endif

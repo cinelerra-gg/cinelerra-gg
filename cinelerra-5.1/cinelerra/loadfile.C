@@ -47,6 +47,7 @@ Load::Load(MWindow *mwindow, MainMenu *mainmenu)
 {
 	this->mwindow = mwindow;
 	this->mainmenu = mainmenu;
+	this->thread = 0;
 }
 
 Load::~Load()
@@ -77,6 +78,7 @@ LoadFileThread::LoadFileThread(MWindow *mwindow, Load *load)
 {
 	this->mwindow = mwindow;
 	this->load = load;
+	this->window = 0;
 }
 
 LoadFileThread::~LoadFileThread()

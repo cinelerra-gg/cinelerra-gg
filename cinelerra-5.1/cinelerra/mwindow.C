@@ -102,6 +102,7 @@
 #include "savefile.inc"
 #include "samplescroll.h"
 #include "sha1.h"
+#include "shuttle.h"
 #include "sighandler.h"
 #include "splashgui.h"
 #include "statusbar.h"
@@ -237,6 +238,7 @@ MWindow::MWindow()
 	in_destructor = 0;
 	speed_edl = 0;
 	proxy_beep = 0;
+	shuttle = 0;
 }
 
 
@@ -254,6 +256,7 @@ MWindow::~MWindow()
 	delete proxy_beep;
 	delete create_bd;       create_bd = 0;
 	delete create_dvd;      create_dvd = 0;
+	delete shuttle;         shuttle = 0;
 	delete batch_render;    batch_render = 0;
 	delete render;          render = 0;
 	commit_commercial();
@@ -1582,6 +1585,17 @@ void MWindow::init_exportedl()
 	exportedl = new ExportEDL(this);
 }
 
+void MWindow::init_shuttle()
+{
+#ifdef HAVE_SHUTTLE
+	const char *dev_name = Shuttle::probe();
+	if( dev_name ) {
+		shuttle = new Shuttle(this);
+		shuttle->start(dev_name);
+	}
+#endif
+}
+
 void MWindow::init_brender()
 {
 	if(preferences->use_brender && !brender)
@@ -2620,6 +2634,7 @@ void MWindow::create_objects(int want_gui,
 	init_render();
 	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 
+	init_shuttle();
 	init_brender();
 	init_exportedl();
 	init_commercials();

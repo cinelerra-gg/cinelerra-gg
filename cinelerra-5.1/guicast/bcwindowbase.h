@@ -173,6 +173,7 @@ public:
 	friend class BC_Tumbler;
 	friend class BC_Window;
 	friend class BC_WindowEvents;
+	friend class Shuttle;
 
 // Main loop
 	int run_window();

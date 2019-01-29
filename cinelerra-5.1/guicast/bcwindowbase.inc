@@ -25,6 +25,8 @@
 class BC_ActiveBitmaps;
 class BC_WindowBase;
 class BC_WindowList;
+class Shuttle;
+
 #define BCTEXTLEN 1024
 #define BCSTRLEN 64
 #define KEYPRESSLEN 6
