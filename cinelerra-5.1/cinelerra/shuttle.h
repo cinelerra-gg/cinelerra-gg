@@ -7,27 +7,9 @@
 #include "shuttle.inc"
 #include "thread.h"
 
-#include "mwindow.h"
-#include "mwindowgui.h"
-#include "awindow.h"
-#include "awindowgui.h"
-#include "cwindow.h"
-#include "cwindowgui.h"
-#include "vwindow.h"
-#include "vwindowgui.h"
-
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-
 #include <linux/input.h>
-#include <linux/input-event-codes.h>
 #include <sys/types.h>
 #include <regex.h>
-
 
 // Copyright 2013 Eric Messick (FixedImagePhoto.com/Contact)
 // reworked 2019 for cinelerra-gg by William Morrow (aka goodguy)

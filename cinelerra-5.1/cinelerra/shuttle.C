@@ -2,9 +2,6 @@
 // Copyright 2013 Eric Messick (FixedImagePhoto.com/Contact)
 // reworked 2019 for cinelerra-gg by William Morrow
 
-// keys.h collides with linux/input_events.h
-#define KEYS_H
-
 #include "arraylist.h"
 #include "cstrdup.h"
 #include "file.h"
@@ -12,12 +9,25 @@
 #include "linklist.h"
 #include "loadfile.h"
 #include "mainmenu.h"
-#include "mwindow.h"
 #include "shuttle.h"
 #include "thread.h"
 
+#include "mwindow.h"
+#include "mwindowgui.h"
+#include "awindow.h"
+#include "awindowgui.h"
+#include "cwindow.h"
+#include "cwindowgui.h"
+#include "vwindow.h"
+#include "vwindowgui.h"
+
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 
 #include <X11/Xlib.h>
