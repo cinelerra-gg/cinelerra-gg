@@ -208,6 +208,7 @@ public:
 	static const char *probe();
 	void run();
 	int read_config_file();
+	static BC_WindowBase *owns(BC_WindowBase *wdw, Window win);
 
 	int done;
 	int failed;

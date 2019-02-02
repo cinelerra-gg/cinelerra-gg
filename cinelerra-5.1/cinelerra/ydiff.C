@@ -31,6 +31,13 @@ extern "C" {
 #include "libswscale/swscale.h"
 }
 
+#ifdef FFMPEG3
+#define url filename
+#else
+#define av_register_all(s)
+#define avfilter_register_all(s)
+#endif
+
 int done = 0;
 int64_t tm = 0, tn = 0;
 

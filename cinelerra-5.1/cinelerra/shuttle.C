@@ -556,6 +556,7 @@ const char *Shuttle::probe()
 	static const char *shuttle_devs[] = {
 		"/dev/input/by-id/usb-Contour_Design_ShuttleXpress-event-if00",
 		"/dev/input/by-id/usb-Contour_Design_ShuttlePRO_v2-event-if00",
+		"/dev/input/by-id/usb-Contour_Design_ShuttlePro-event-if00",
 	};
 	int ret = sizeof(shuttle_devs) / sizeof(shuttle_devs[0]);
 	while( --ret >= 0 && stat(shuttle_devs[ret] , &st) );
@@ -579,6 +580,14 @@ void Shuttle::stop()
 	}
 }
 
+BC_WindowBase *Shuttle::owns(BC_WindowBase *wdw, Window win)
+{
+	if( wdw->win == win ) return wdw;
+	if( (wdw=wdw->top_level)->win == win ) return wdw;
+	for( int i=wdw->popups.size(); --i>=0; )
+		if( wdw->popups[i]->win == win ) return wdw;
+	return 0;
+}
 
 int Shuttle::get_focused_window_translation()
 {
@@ -620,13 +629,16 @@ int Shuttle::get_focused_window_translation()
 	this->msk = 0;
 	BC_WindowBase *wdw = 0;
 	int cin = -1;
-	if( (wdw=mwindow->gui) && wdw->win == focus )
+	if( (wdw=owns(mwindow->gui, focus)) != 0 )
 		cin = FOCUS_MWINDOW;
-	else if( (wdw=mwindow->awindow->gui) && wdw->win == focus )
+	else if( (wdw=owns(mwindow->awindow->gui, focus)) != 0 )
 		cin = FOCUS_AWINDOW;
-	else if( (wdw=mwindow->cwindow->gui) && wdw->win == focus )
+	else if( (wdw=owns(mwindow->cwindow->gui, focus)) != 0 ) {
+		if( mwindow->cwindow->gui->canvas->get_fullscreen() )
+			wdw = mwindow->cwindow->gui->canvas->get_canvas();
 		cin = FOCUS_CWINDOW;
-	else if( (wdw=mwindow->gui->mainmenu->load_file->thread->window) &&
+	}
+	else if( (wdw=mwindow->gui->mainmenu->load_file->thread->window) != 0 &&
 		 wdw->win == focus )
 		cin = FOCUS_LOAD;
 	else {
@@ -634,7 +646,9 @@ int Shuttle::get_focused_window_translation()
 		while( --i >= 0 ) {
 			VWindow *vwdw =  mwindow->vwindows[i];
 			if( !vwdw->is_running() ) continue;
-			if( (wdw=vwdw->gui) && wdw->win == focus ) {
+			if( (wdw=owns(vwdw->gui, focus)) != 0 ) {
+				if( vwdw->gui->canvas->get_fullscreen() )
+					wdw = vwdw->gui->canvas->get_canvas();
 				cin = FOCUS_VIEWER;  break;
 			}
 		}
@@ -644,7 +658,7 @@ int Shuttle::get_focused_window_translation()
 	int root_x = 0, root_y = 0, win_x = 0, win_y = 0, x = 0, y = 0;
 	unsigned int mask = 0, width = 0, height = 0, border_width = 0, depth = 0;
 	wdw->lock_window("Shuttle::get_focused_window_translation 1");
-	if( XQueryPointer(wdw->display, focus, &root, &child,
+	if( XQueryPointer(wdw->top_level->display, focus, &root, &child,
 			&root_x, &root_y, &win_x, &win_y, &mask) ) {
 		if( !child ) {
 			if( wdw->active_menubar )
@@ -653,9 +667,11 @@ int Shuttle::get_focused_window_translation()
 				child = wdw->active_popup_menu->win;
 			else if( wdw->active_subwindow )
 				child = wdw->active_subwindow->win;
+			else
+				child = wdw->win;
 		}
-		if( child )
-			XGetGeometry(wdw->display, child, &root, &x, &y,
+		else
+			XGetGeometry(wdw->top_level->display, child, &root, &x, &y,
 				&width, &height, &border_width, &depth);
 	}
 	wdw->unlock_window();

@@ -1,2 +1,4 @@
 image2 tiff
+# this codec creates a set of image files in a directory
+# use an image2 file name like /dir/t%05d.tiff
 pixel_format=rgb48

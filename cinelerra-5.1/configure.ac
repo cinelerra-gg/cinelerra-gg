@@ -196,7 +196,7 @@ if test "x$WANT_GIT_FFMPEG" != "xno" ; then
 fi
 
 PKG_3RD([fftw],[auto],
-  [fftw-3.3.7],
+  [fftw-3.3.8],
   [ .libs/libfftw3.a \
     libbench2/libbench2.a \
     rdft/scalar/r2cb/.libs/librdft_scalar_r2cb.a \
@@ -277,7 +277,7 @@ PKG_3RD([libjpeg],[auto],
   [ . ])
 
 PKG_3RD([opus],[auto],
-  [opus-1.2.1],
+  [opus-1.3],
   [ .libs/libopus.a ],
   [ include ])
 
@@ -287,7 +287,7 @@ PKG_3RD([openjpeg],[auto],
   [ src/lib/openjp2 ])
 
 PKG_3RD([libogg],[auto],
-  [libogg-1.3.2],
+  [libogg-1.3.3],
   [ src/.libs/libogg.a ],
   [ include ])
 
@@ -312,7 +312,7 @@ PKG_3RD([libuuid],[yes],
   [ . ])
 
 PKG_3RD([libvorbis],[auto],
-  [libvorbis-1.3.5],
+  [libvorbis-1.3.6],
   [ lib/.libs/libvorbis.a \
     lib/.libs/libvorbisenc.a \
     lib/.libs/libvorbisfile.a ],
@@ -345,7 +345,7 @@ PKG_3RD([openexr],[auto],
 #  [])
 #
 PKG_3RD([tiff],[auto],
-  [tiff-4.0.9],
+  [tiff-4.0.10],
   [ libtiff/.libs/libtiff.a \
     libtiff/.libs/libtiffxx.a \
     port/.libs/libport.a ],[
@@ -362,7 +362,7 @@ PKG_3RD([x264],[auto],
   [ . ])
 
 PKG_3RD([x265],[auto],
-  [x265_2.9],
+  [x265_3.0],
   [ libx265.a ],
   [ . source ])
 
@@ -399,6 +399,16 @@ PKG_3RD([lilv],[auto],
 PKG_3RD([suil],[auto],
   [suil-0.8.4],
   [ usr/local/lib/libsuil-0.a ],
+  [ usr/local/include ])
+
+PKG_3RD([libaom],[auto],
+  [libaom-v1.0.0],
+  [ usr/local/lib*/libaom*.a ],
+  [ usr/local/include ])
+
+PKG_3RD([libwebp],[auto],
+  [libwebp-1.0.2],
+  [ usr/local/lib*/libwebp*.a ],
   [ usr/local/include ])
 
 AC_SUBST(STATIC_PKGS)
@@ -473,7 +483,7 @@ fi
 
 AC_DEFUN([CHECK_LIB], [
 if test "x$HAVE_$1" != "xno"; then
- if test "x$PKG_$1" = "x" -o "x$WANT_STATIC_BUILD" = "xno"; then
+ if test "x$PKG_$1" = "x" -o "x$WANT_STATIC_BUILD" = "xno" -a "x$PKG_$1" = "xauto"; then
   AC_CHECK_LIB([$2], [$3], [HAVE_$1=yes], [HAVE_$1=no], [$4])
   AC_SUBST([HAVE_$1])
   if test "x$HAVE_$1" = "xyes"; then
@@ -544,6 +554,12 @@ CHECK_LIB([x264], [x264], [x264_encoder_encode])
 CHECK_HEADERS([x264], [x264 headers], [stdint.h x264.h])
 CHECK_LIB([x265], [x265], [x265_encoder_encode])
 CHECK_HEADERS([x265], [x265 headers], [x265.h])
+CHECK_LIB([opus], [opus], [opus_multistream_decoder_create])
+CHECK_HEADERS([opus], [libopus headers], [opus/opus_multistream.h])
+CHECK_LIB([libaom], [aom], [aom_codec_version])
+CHECK_HEADERS([libaom], [libaom headers], [aom/aom.h])
+CHECK_LIB([libwebp], [webp], [WebPGetEncoderVersion])
+CHECK_HEADERS([libwebp], [libwebp headers], [webp/encode.h])
 CHECK_LIB([a52dec], [a52], [a52_init])
 CHECK_HEADERS([a52dec], [a52 headers], [a52.h])
 CHECK_LIB([encore], [encore], [encore])
@@ -620,10 +636,6 @@ CHECK_WANT([ESOUND], [no], [use esd], [
  CHECK_HEADERS([esound], [esound headers], [esd.h])
  CHECK_LIB([audiofile], [audiofile], [afOpenFile])
  CHECK_HEADERS([audiofile], [audiofile headers], [audiofile.h])])
-
-CHECK_WANT([OPUS], [auto], [use libopus], [
- CHECK_LIB([opus], [opus], [opus_multistream_decoder_create])
- CHECK_HEADERS([opus], [libopus headers], [opus/opus_multistream.h])])
 
 CHECK_WANT([LV2], [auto], [use lv2], [
  saved_CFLAGS="$CFLAGS"
@@ -702,7 +714,6 @@ AC_DEFUN([PKG_SHARED],[
  BUILD_$1=0
  AC_SUBST(BUILD_$1)
  SHARED_LIBS+="$SHARED_$1"
- echo "AC_HELP_STRING([shared],[$1])"
 ])
 
 AC_DEFUN([PKG_STATIC],[
@@ -772,6 +783,8 @@ PKG_PROVIDE([libtheora])
 PKG_PROVIDE([libuuid])
 PKG_PROVIDE([libvorbis])
 PKG_PROVIDE([mjpegtools])
+PKG_PROVIDE([libaom])
+PKG_PROVIDE([libwebp])
 PKG_PROVIDE([openexr], [$WANT_OPENEXR])
 PKG_PROVIDE([openjpeg])
 PKG_PROVIDE([tiff])
@@ -779,7 +792,7 @@ PKG_PROVIDE([twolame])
 PKG_PROVIDE([x264])
 PKG_PROVIDE([x265])
 PKG_PROVIDE([libvpx])
-PKG_PROVIDE([opus], [$WANT_OPUS])
+PKG_PROVIDE([opus])
 PKG_PROVIDE([lv2], [$WANT_LV2])
 PKG_PROVIDE([lilv], [$WANT_LV2])
 PKG_PROVIDE([sratom], [$WANT_LV2])
@@ -795,8 +808,10 @@ if test "x$WANT_LV2" = "xyes"; then
 fi
 
 AC_SUBST(STATIC_BLDS)
+for f in $SHARED_LIBS; do
+  echo "AC_HELP_STRING([shared],[$f])"
+done
 AC_SUBST(SHARED_LIBS)
-
 for f in $SYSTEM_LIBS; do
   echo "AC_HELP_STRING([system],[$f])"
 done
@@ -854,13 +869,6 @@ fi
 if test "x$HAVE_DL" = "xyes"; then
   EXTRA_LIBS+=' -ldl'
   FFMPEG_EXTRA_CFG+=' --extra-ldflags="-ldl"'
-fi
-if test "x$WANT_OPUS" = "xyes"; then
-  FFMPEG_EXTRA_CFG+=' --enable-libopus'
-  if test "x$HAVE_opus" = "xyes" -a "x$BUILD_opus" = "x0"; then
-    EXTRA_LIBS+=' -lopus'
-    CFG_CFLAGS+=' -I/usr/include/opus -I/usr/local/include/opus'
-  fi
 fi
 if test "x$WANT_BOOBY" != "xno"; then
   CFG_CFLAGS+=" -DBOOBY"
@@ -1024,9 +1032,6 @@ fi
 
 if test "x$WANT_GIT_FFMPEG" != "xno"; then
   echo "ffmpeg.git := $WANT_GIT_FFMPEG"
-fi
-if test "x$WANT_OPUS" = "xyes" -a "x$BUILD_opus" = "x0"; then
-  echo 'ffmpeg.cflags+=" -I/usr/include/opus -I/usr/local/include/opus"'
 fi
 if test "x$X264_CFG_PARAMS" != "x" ; then
   echo "x264.cfg_params :=$X264_CFG_PARAMS --enable-static --enable-pic"

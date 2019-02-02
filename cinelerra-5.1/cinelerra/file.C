@@ -52,7 +52,6 @@
 #include "filejpeg.h"
 #include "filempeg.h"
 #undef HAVE_STDLIB_H // automake conflict
-#include "fileogg.h"
 #include "filepng.h"
 #include "fileppm.h"
 #include "filescene.h"
@@ -60,7 +59,6 @@
 #include "filetga.h"
 #include "filethread.h"
 #include "filetiff.h"
-#include "filevorbis.h"
 #include "filexml.h"
 #include "formatwindow.h"
 #include "formattools.h"
@@ -75,13 +73,6 @@
 #include "probeprefs.h"
 #include "samples.h"
 #include "vframe.h"
-
-//static int temp_debug = 0;
-//suppress noref warning
-void *vorbis0_ov_callbacks[] = {
- &OV_CALLBACKS_DEFAULT, &OV_CALLBACKS_NOCLOSE,
- &OV_CALLBACKS_STREAMONLY, &OV_CALLBACKS_STREAMONLY_NOCLOSE,
-};
 
 File::File()
 {
@@ -237,10 +228,6 @@ int File::get_options(FormatTools *format,
 		FileTIFF::get_parameters(parent_window, asset, format_window,
 			audio_options, video_options, edl);
 		break;
-	case FILE_OGG:
-		FileOGG::get_parameters(parent_window, asset, format_window,
-			audio_options, video_options, edl);
-		break;
 	default:
 		break;
 	}
@@ -362,8 +349,6 @@ const char *File::default_probes[] = {
 	"CR2",
 	"TGA",
 	"TIFF",
-	"OGG",
-	"Vorbis",
 	"MPEG",
 	"EDL",
        	"FFMPEG_Late", 
@@ -459,16 +444,6 @@ int File::probe()
 		if( !strcmp(pref->name,"TIFF") ) { // TIFF file
 			if( !FileTIFF::check_sig(this->asset) ) continue;
 			file = new FileTIFF(this->asset, this);
-			return FILE_OK;
-		}
-		if( !strcmp(pref->name,"OGG") ) { // OGG file
-			if( !FileOGG::check_sig(this->asset) ) continue;
-			file = new FileOGG(this->asset, this);
-			return FILE_OK;
-		}
-		if( !strcmp(pref->name,"Vorbis") ) { // VorbisFile file
-			if( !FileVorbis::check_sig(this->asset) ) continue;
-			file = new FileVorbis(this->asset, this);
 			return FILE_OK;
 		}
 #ifdef HAVE_LIBZMPEG
@@ -591,13 +566,6 @@ int File::open_file(Preferences *preferences,
 		file = new FileMPEG(this->asset, this);
 		break;
 #endif
-	case FILE_OGG:
-		file = new FileOGG(this->asset, this);
-		break;
-
-	case FILE_VORBIS:
-		file = new FileVorbis(this->asset, this);
-		break;
 #ifdef HAVE_DV
 	case FILE_RAWDV:
 		file = new FileDV(this->asset, this);
@@ -1254,8 +1222,6 @@ int File::strtoformat(const char *format)
 	if( !strcasecmp(format, _(VMPEG_NAME)) ) return FILE_VMPEG;
 	if( !strcasecmp(format, _(TGA_NAME)) ) return FILE_TGA;
 	if( !strcasecmp(format, _(TGA_LIST_NAME)) ) return FILE_TGA_LIST;
-	if( !strcasecmp(format, _(OGG_NAME)) ) return FILE_OGG;
-	if( !strcasecmp(format, _(VORBIS_NAME)) ) return FILE_VORBIS;
 	if( !strcasecmp(format, _(RAWDV_NAME)) ) return FILE_RAWDV;
 	if( !strcasecmp(format, _(FFMPEG_NAME)) ) return FILE_FFMPEG;
 	if( !strcasecmp(format, _(DBASE_NAME)) ) return FILE_DB;
@@ -1294,8 +1260,6 @@ const char* File::formattostr(int format)
 	case FILE_TGA_LIST:	return _(TGA_LIST_NAME);
 	case FILE_TIFF:		return _(TIFF_NAME);
 	case FILE_TIFF_LIST:	return _(TIFF_LIST_NAME);
-	case FILE_OGG:		return _(OGG_NAME);
-	case FILE_VORBIS:	return _(VORBIS_NAME);
 	case FILE_RAWDV:	return _(RAWDV_NAME);
 	case FILE_FFMPEG:	return _(FFMPEG_NAME);
 	case FILE_DB:		return _(DBASE_NAME);
@@ -1427,7 +1391,6 @@ int64_t File::get_memory_usage()
 int File::renders_video(int format)
 {
 	switch( format ) {
-	case FILE_OGG:
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:
 	case FILE_CR2:
@@ -1463,8 +1426,6 @@ int File::renders_audio(int format)
 	case FILE_FLAC:
 	case FILE_PCM:
 	case FILE_WAV:
-	case FILE_OGG:
-	case FILE_VORBIS:
 	case FILE_AMPEG:
 	case FILE_AU:
 	case FILE_AIFF:
@@ -1511,7 +1472,6 @@ const char* File::get_tag(int format)
 	case FILE_FLAC:         return "flac";
 	case FILE_JPEG:         return "jpg";
 	case FILE_JPEG_LIST:    return "jpg";
-	case FILE_OGG:          return "ogg";
 	case FILE_PCM:          return "pcm";
 	case FILE_PNG:          return "png";
 	case FILE_PNG_LIST:     return "png";
@@ -1522,7 +1482,6 @@ const char* File::get_tag(int format)
 	case FILE_TIFF:         return "tif";
 	case FILE_TIFF_LIST:    return "tif";
 	case FILE_VMPEG:        return "m2v";
-	case FILE_VORBIS:       return "ogg";
 	case FILE_WAV:          return "wav";
 	case FILE_FFMPEG:       return "ffmpg";
 	}
@@ -1556,8 +1515,6 @@ const char* File::get_prefix(int format)
 	case FILE_EXR:		return "EXR";
 	case FILE_EXR_LIST:	return "EXR_LIST";
 	case FILE_CR2:		return "CR2";
-	case FILE_OGG:		return "OGG";
-	case FILE_VORBIS:	return "VORBIS";
 	case FILE_FLAC:		return "FLAC";
 	case FILE_FFMPEG:	return "FFMPEG";
 	case FILE_SCENE:	return "SCENE";
@@ -1571,16 +1528,7 @@ const char* File::get_prefix(int format)
 
 PackagingEngine *File::new_packaging_engine(Asset *asset)
 {
-	PackagingEngine *result;
-	switch( asset->format ) {
-	case FILE_OGG:
-		result = (PackagingEngine*)new PackagingEngineOGG();
-		break;
-	default:
-		result = (PackagingEngine*) new PackagingEngineDefault();
-		break;
-	}
-
+	PackagingEngine *result = (PackagingEngine*) new PackagingEngineDefault();
 	return result;
 }
 

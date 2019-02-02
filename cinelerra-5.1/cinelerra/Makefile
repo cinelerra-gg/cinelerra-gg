@@ -109,7 +109,6 @@ OBJS := \
 	$(OBJDIR)/filejpeg.o \
 	$(OBJDIR)/filelist.o \
 	$(OBJDIR)/file.o \
-	$(OBJDIR)/fileogg.o \
 	$(OBJDIR)/filepng.o \
 	$(OBJDIR)/fileppm.o \
 	$(OBJDIR)/filescene.o \
@@ -117,7 +116,6 @@ OBJS := \
 	$(OBJDIR)/filetga.o \
 	$(OBJDIR)/filethread.o \
 	$(OBJDIR)/filetiff.o \
-	$(OBJDIR)/filevorbis.o \
 	$(OBJDIR)/filexml.o \
 	$(OBJDIR)/floatauto.o \
 	$(OBJDIR)/floatautos.o \
@@ -557,6 +555,7 @@ ydiff:	ydiff.C $(LIBRARIES)
 
 clean:
 	rm -rf $(OBJDIR)
+	rm -f shuttle_keys.h
 
 
 tags:

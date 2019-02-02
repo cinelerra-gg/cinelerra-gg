@@ -103,18 +103,6 @@ int Asset::init_values()
 	ampeg_bitrate = 256;
 	ampeg_derivative = 3;
 
-	vorbis_vbr = 0;
-	vorbis_min_bitrate = -1;
-	vorbis_bitrate = 128000;
-	vorbis_max_bitrate = -1;
-
-	theora_fix_bitrate = 1;
-	theora_bitrate = 860000;
-	theora_quality = 16;
-	theora_sharpness = 2;
-	theora_keyframe_frequency = 64;
-	theora_keyframe_force_frequency = 64;
-
 // mpeg parameters
 	vmpeg_iframe_distance = 45;
 	vmpeg_pframe_distance = 0;
@@ -240,21 +228,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	ampeg_bitrate = asset->ampeg_bitrate;
 	ampeg_derivative = asset->ampeg_derivative;
-
-
-	vorbis_vbr = asset->vorbis_vbr;
-	vorbis_min_bitrate = asset->vorbis_min_bitrate;
-	vorbis_bitrate = asset->vorbis_bitrate;
-	vorbis_max_bitrate = asset->vorbis_max_bitrate;
-
-
-	theora_fix_bitrate = asset->theora_fix_bitrate;
-	theora_bitrate = asset->theora_bitrate;
-	theora_quality = asset->theora_quality;
-	theora_sharpness = asset->theora_sharpness;
-	theora_keyframe_frequency = asset->theora_keyframe_frequency;
-	theora_keyframe_force_frequency = asset->theora_keyframe_frequency;
-
 
 	jpeg_quality = asset->jpeg_quality;
 
@@ -639,14 +612,7 @@ int Asset::write_audio(FileXML *file)
 
 // 	file->tag.set_property("AMPEG_BITRATE", ampeg_bitrate);
 // 	file->tag.set_property("AMPEG_DERIVATIVE", ampeg_derivative);
-//
-// 	file->tag.set_property("VORBIS_VBR", vorbis_vbr);
-// 	file->tag.set_property("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-// 	file->tag.set_property("VORBIS_BITRATE", vorbis_bitrate);
-// 	file->tag.set_property("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-//
 // 	file->tag.set_property("MP3_BITRATE", mp3_bitrate);
-//
 
 
 
@@ -788,18 +754,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	ampeg_bitrate = GET_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
 	ampeg_derivative = GET_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
 
-	vorbis_vbr = GET_DEFAULT("VORBIS_VBR", vorbis_vbr);
-	vorbis_min_bitrate = GET_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-	vorbis_bitrate = GET_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
-	vorbis_max_bitrate = GET_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-
-	theora_fix_bitrate = GET_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
-	theora_bitrate = GET_DEFAULT("THEORA_BITRATE", theora_bitrate);
-	theora_quality = GET_DEFAULT("THEORA_QUALITY", theora_quality);
-	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
-	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FREQUENCY", theora_keyframe_force_frequency);
-
 	GET_DEFAULT("FF_AUDIO_OPTIONS", ff_audio_options);
 	GET_DEFAULT("FF_SAMPLE_FORMAT", ff_sample_format);
 	ff_audio_bitrate = GET_DEFAULT("FF_AUDIO_BITRATE", ff_audio_bitrate);
@@ -831,14 +785,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	vmpeg_seq_codes = GET_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
 	vmpeg_preset = GET_DEFAULT("VMPEG_PRESET", vmpeg_preset);
 	vmpeg_field_order = GET_DEFAULT("VMPEG_FIELD_ORDER", vmpeg_field_order);
-
-	theora_fix_bitrate = GET_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
-	theora_bitrate = GET_DEFAULT("THEORA_BITRATE", theora_bitrate);
-	theora_quality = GET_DEFAULT("THEORA_QUALITY", theora_quality);
-	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
-	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
-
 
 	ac3_bitrate = GET_DEFAULT("AC3_BITRATE", ac3_bitrate);
 
@@ -889,11 +835,6 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
 		UPDATE_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
 
-		UPDATE_DEFAULT("VORBIS_VBR", vorbis_vbr);
-		UPDATE_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-		UPDATE_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
-		UPDATE_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-
 		UPDATE_DEFAULT("FF_AUDIO_OPTIONS", ff_audio_options);
 		UPDATE_DEFAULT("FF_SAMPLE_FORMAT", ff_sample_format);
 		UPDATE_DEFAULT("FF_AUDIO_BITRATE", ff_audio_bitrate);
@@ -902,15 +843,6 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("FF_PIXEL_FORMAT",  ff_pixel_format);
 		UPDATE_DEFAULT("FF_VIDEO_BITRATE", ff_video_bitrate);
 		UPDATE_DEFAULT("FF_VIDEO_QUALITY", ff_video_quality);
-
-		UPDATE_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
-		UPDATE_DEFAULT("THEORA_BITRATE", theora_bitrate);
-		UPDATE_DEFAULT("THEORA_QUALITY", theora_quality);
-		UPDATE_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
-		UPDATE_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-		UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FREQUENCY", theora_keyframe_force_frequency);
-
-
 
 		UPDATE_DEFAULT("MP3_BITRATE", mp3_bitrate);
 

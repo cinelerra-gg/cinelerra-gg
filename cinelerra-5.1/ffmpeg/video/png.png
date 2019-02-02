@@ -1,1 +1,3 @@
 image2 png
+# this codec creates a set of image files in a directory
+# use an image2 file name like /dir/p%05d.png

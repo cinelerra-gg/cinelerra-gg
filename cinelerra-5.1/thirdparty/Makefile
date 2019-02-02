@@ -114,6 +114,9 @@ ffmpeg.cfg_params= \
 	$(call if_pkg,twolame,--enable-libtwolame) \
 	$(call if_pkg,openjpeg,--enable-libopenjpeg) \
 	$(call if_pkg,lame,--enable-libmp3lame) \
+	$(call if_pkg,libaom,--enable-libaom) \
+	$(call if_pkg,libwebp,--enable-libwebp) \
+	$(call if_pkg,opus,--enable-libopus) \
 	$(call if_pkg,libvorbis,--enable-libvorbis) \
 	$(call if_pkg,libtheora,--enable-libtheora) \
 	$(call if_pkg,libvpx,--enable-libvpx) \
@@ -122,6 +125,8 @@ ffmpeg.cfg_params= \
 	--extra-cflags="\
 		$(call inc_path,twolame,libtwolame) \
 		$(call inc_path,lame,include) \
+		$(call inc_path,libaom,usr/local/include) \
+		$(call inc_path,libwebp,usr/local/include) \
 		$(call inc_path,openjpeg,src/lib/openjp2) \
 		$(call inc_path,libogg,include) \
 		$(call inc_path,opus,include) \
@@ -136,6 +141,8 @@ ffmpeg.cfg_params= \
 	--extra-libs="-Wl,--start-group \
 		$(call ld_path,twolame,libtwolame/.libs) \
 		$(call ld_path,lame,libmp3lame/.libs) \
+		$(call ld_path,libaom,usr/local/lib) \
+		$(call ld_path,libwebp,usr/local/lib) \
 		$(call ld_path,openjpeg,bin) \
 		$(call ld_path,opus,.libs) \
 		$(call ld_path,libogg,lib/.libs) \
@@ -166,6 +173,13 @@ ilmbase.mak_params?=; $(MAKE) -C ilmbase* install; cd $(call bld_path,ilmbase); 
 lame.cfg_vars?= CFLAGS+=" -O"
 lame.cfg_params?=--enable-shared=no
 lame.mak_params?= ; cd $(call bld_path,lame,include); ln -sf . lame
+libaom.cfg_vars?=$(call cmake_config,aom-master)
+libaom.cfg_params?= -DENABLE_SHARED=no -DCMAKE_INSTALL_LIBDIR=lib \
+ -DCMAKE_INSTALL_PREFIX=$(call bld_path,libaom)/usr/local
+libaom.mak_params?= ; $(MAKE) -C libaom* install
+libwebp.cfg_vars?= ./autogen.sh ;
+libwebp.cfg_params?=--enable-shared=no
+libwebp.mak_params?=; $(MAKE) -C libwebp* install DESTDIR=$(call bld_path,libwebp)
 mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"
 mjpegtools.mak_params?=; ln -s . $(call bld_path,mjpegtools,utils)/mjpegtools 
 mjpegtools.cfg_params?= --enable-shared=no --without-libsdl --without-v4l
@@ -272,13 +286,15 @@ $(call rules,$(call std-build,djbfft))
 $(call rules,$(call std-build,audiofile))
 $(call rules,$(call std-build,encore))
 $(call rules,$(call std-build,esound,audiofile))
-$(call rules,$(call std-build,ffmpeg, twolame lame openjpeg opus libtheora x264 x265 libvpx))
+$(call rules,$(call std-build,ffmpeg, twolame lame openjpeg opus libtheora x264 x265 libvpx libaom libwebp))
 $(call rules,$(call std-build,fftw))
 $(call rules,$(call std-build,flac,libogg))
 $(call rules,$(call std-build,giflib))
 $(call rules,$(call std-build,ilmbase))
 $(call rules,$(call std-build,ladspa))
 $(call rules,$(call std-build,lame))
+$(call rules,$(call std-build,libaom))
+$(call rules,$(call std-build,libwebp))
 $(call rules,$(call std-build,libavc1394,libraw1394))
 $(call rules,$(call std-build,libdv))
 $(call rules,$(call std-build,libiec61883,libraw1394))

@@ -1,0 +1,6 @@
+webm libaom-av1
+# this codec codes less than one frame per sec
+# and so even a few seconds of video can take
+# a very long time to encode
+strict -2
+threads 8
