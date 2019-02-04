@@ -385,15 +385,6 @@ int VWindowGUI::keypress_event()
 	return result;
 }
 
-void VWindowGUI::stop_transport(const char *lock_msg)
-{
-	if( !transport->is_stopped() ) {
-		if( lock_msg ) unlock_window();
-		transport->handle_transport(STOP, 1, 0, 0);
-		if( lock_msg ) lock_window(lock_msg);
-	}
-}
-
 int VWindowGUI::button_press_event()
 {
 	if( vwindow->get_edl() != 0 && canvas->get_canvas() &&
@@ -494,6 +485,14 @@ int VWindowGUI::drag_stop()
 	return 0;
 }
 
+void VWindowGUI::stop_transport()
+{
+	if( !transport->is_stopped() ) {
+		unlock_window();
+		transport->handle_transport(STOP, 1, 0, 0);
+		lock_window("VWindowGUI::panel_stop_transport");
+	}
+}
 
 void VWindowGUI::update_meters()
 {
@@ -548,8 +547,6 @@ VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow)
 		0, // use_keyframe
 		1, // use_splice
 		1, // use_overwrite
-		0, // use_lift
-		0, // use_extract
 		1, // use_copy
 		0, // use_paste
 		0, // use_undo
@@ -571,104 +568,12 @@ VWindowEditing::~VWindowEditing()
 {
 }
 
-void VWindowEditing::copy_selection()
-{
-	vwindow->copy(subwindow->shift_down());
-}
-
-void VWindowEditing::splice_selection()
-{
-	if(vwindow->get_edl())
-	{
-		mwindow->gui->lock_window("VWindowEditing::splice_selection");
-		mwindow->splice(vwindow->get_edl(), subwindow->shift_down());
-		mwindow->gui->unlock_window();
-	}
-}
-
-void VWindowEditing::overwrite_selection()
-{
-	if(vwindow->get_edl())
-	{
-		mwindow->gui->lock_window("VWindowEditing::overwrite_selection");
-		mwindow->overwrite(vwindow->get_edl(), subwindow->shift_down());
-		mwindow->gui->unlock_window();
-	}
-}
-
-void VWindowEditing::toggle_label()
-{
-	if(vwindow->get_edl())
-	{
-		EDL *edl = vwindow->get_edl();
-		edl->labels->toggle_label(edl->local_session->get_selectionstart(1),
-			edl->local_session->get_selectionend(1));
-		vwindow->gui->timebar->update(1);
-	}
-}
-
-void VWindowEditing::prev_label(int cut)
-{
-	if(vwindow->get_edl())
-	{
-		EDL *edl = vwindow->get_edl();
-		vwindow->gui->unlock_window();
-		vwindow->playback_engine->interrupt_playback(1);
-		vwindow->gui->lock_window("VWindowEditing::prev_label");
-
-		Label *current = edl->labels->prev_label(
-			edl->local_session->get_selectionstart(1));
-
-
-		if(!current)
-		{
-			edl->local_session->set_selectionstart(0);
-			edl->local_session->set_selectionend(0);
-			vwindow->update_position(CHANGE_NONE, 0, 1, 0);
-			vwindow->gui->timebar->update(1);
-		}
-		else
-		{
-			edl->local_session->set_selectionstart(current->position);
-			edl->local_session->set_selectionend(current->position);
-			vwindow->update_position(CHANGE_NONE, 0, 1, 0);
-			vwindow->gui->timebar->update(1);
-		}
-	}
-}
-
-void VWindowEditing::next_label(int cut)
-{
-	if(vwindow->get_edl())
-	{
-		EDL *edl = vwindow->get_edl();
-		Label *current = edl->labels->next_label(
-			edl->local_session->get_selectionstart(1));
-		if(!current)
-		{
-			vwindow->gui->unlock_window();
-			vwindow->playback_engine->interrupt_playback(1);
-			vwindow->gui->lock_window("VWindowEditing::next_label 1");
-
-			double position = edl->tracks->total_length();
-			edl->local_session->set_selectionstart(position);
-			edl->local_session->set_selectionend(position);
-			vwindow->update_position(CHANGE_NONE, 0, 1, 0);
-			vwindow->gui->timebar->update(1);
-		}
-		else
-		{
-			vwindow->gui->unlock_window();
-			vwindow->playback_engine->interrupt_playback(1);
-			vwindow->gui->lock_window("VWindowEditing::next_label 2");
-
-			edl->local_session->set_selectionstart(current->position);
-			edl->local_session->set_selectionend(current->position);
-			vwindow->update_position(CHANGE_NONE, 0, 1, 0);
-			vwindow->gui->timebar->update(1);
-		}
-	}
-}
+#define relock_vm(s) \
+ vwindow->gui->unlock_window(); \
+ mwindow->gui->lock_window("VWindowEditing::" s)
+#define relock_mv(s) \
+ mwindow->gui->unlock_window(); \
+ vwindow->gui->lock_window("VWindowEditing::" s)
 
 double VWindowEditing::get_position()
 {
@@ -689,28 +594,119 @@ void VWindowEditing::set_position(double position)
 	}
 }
 
-void VWindowEditing::set_inpoint()
+void VWindowEditing::set_click_to_play(int v)
+{
+	click2play->update(v);
+	relock_vm("set_click_to_play");
+	mwindow->edl->session->vwindow_click2play = v;
+	mwindow->update_vwindow();
+	relock_mv("set_click_to_play");
+}
+
+void VWindowEditing::panel_stop_transport()
+{
+	vwindow->gui->stop_transport();
+}
+
+void VWindowEditing::panel_toggle_label()
+{
+	if( !vwindow->get_edl() ) return;
+	EDL *edl = vwindow->get_edl();
+	edl->labels->toggle_label(edl->local_session->get_selectionstart(1),
+		edl->local_session->get_selectionend(1));
+	vwindow->gui->timebar->update(1);
+}
+
+void VWindowEditing::panel_next_label(int cut)
+{
+	if( !vwindow->get_edl() ) return;
+	vwindow->gui->unlock_window();
+	vwindow->playback_engine->interrupt_playback(1);
+	vwindow->gui->lock_window("VWindowEditing::next_label");
+
+	EDL *edl = vwindow->get_edl();
+	Label *current = edl->labels->next_label(
+		edl->local_session->get_selectionstart(1));
+	double position = current ? current->position :
+		edl->tracks->total_length();
+	edl->local_session->set_selectionstart(position);
+	edl->local_session->set_selectionend(position);
+	vwindow->update_position(CHANGE_NONE, 0, 1, 0);
+	vwindow->gui->timebar->update(1);
+}
+
+void VWindowEditing::panel_prev_label(int cut)
+{
+	if( !vwindow->get_edl() ) return;
+	vwindow->gui->unlock_window();
+	vwindow->playback_engine->interrupt_playback(1);
+	vwindow->gui->lock_window("VWindowEditing::prev_label");
+
+	EDL *edl = vwindow->get_edl();
+	Label *current = edl->labels->prev_label(
+		edl->local_session->get_selectionstart(1));
+	double position = !current ? 0 : current->position;
+	edl->local_session->set_selectionstart(position);
+	edl->local_session->set_selectionend(position);
+	vwindow->update_position(CHANGE_NONE, 0, 1, 0);
+	vwindow->gui->timebar->update(1);
+}
+
+void VWindowEditing::panel_prev_edit(int cut) {} // not used
+void VWindowEditing::panel_next_edit(int cut) {} // not used
+
+void VWindowEditing::panel_copy_selection()
+{
+	vwindow->copy(vwindow->gui->shift_down());
+}
+
+void VWindowEditing::panel_overwrite_selection()
+{
+	if( !vwindow->get_edl() ) return;
+	relock_vm("overwrite_selection");
+	mwindow->overwrite(vwindow->get_edl(), vwindow->gui->shift_down());
+	relock_mv("overwrite_selection");
+}
+
+void VWindowEditing::panel_splice_selection()
+{
+	if( !vwindow->get_edl() ) return;
+	relock_vm("splice_selection");
+	mwindow->splice(vwindow->get_edl(), vwindow->gui->shift_down());
+	relock_mv("splice_selection");
+}
+
+void VWindowEditing::panel_set_inpoint()
 {
 	vwindow->set_inpoint();
 }
 
-void VWindowEditing::set_outpoint()
+void VWindowEditing::panel_set_outpoint()
 {
 	vwindow->set_outpoint();
 }
 
-void VWindowEditing::unset_inoutpoint()
+void VWindowEditing::panel_unset_inoutpoint()
 {
 	vwindow->unset_inoutpoint();
 }
 
-
-void VWindowEditing::to_clip()
+void VWindowEditing::panel_to_clip()
 {
 	EDL *edl = vwindow->get_edl();
 	if( !edl ) return;
 	mwindow->to_clip(edl, _("viewer window: "), subwindow->shift_down());
 }
+
+// not used
+void VWindowEditing::panel_cut() {}
+void VWindowEditing::panel_paste() {}
+void VWindowEditing::panel_fit_selection() {}
+void VWindowEditing::panel_fit_autos(int all) {}
+void VWindowEditing::panel_set_editing_mode(int mode) {}
+void VWindowEditing::panel_set_auto_keyframes(int v) {}
+void VWindowEditing::panel_set_labels_follow_edits(int v) {}
+
 
 VWindowSource::VWindowSource(MWindow *mwindow, VWindowGUI *vwindow, int x, int y)
  : BC_PopupTextBox(vwindow,

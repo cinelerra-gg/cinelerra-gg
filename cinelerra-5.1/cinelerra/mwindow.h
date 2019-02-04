@@ -103,8 +103,6 @@
 
 #define FONT_SEARCHPATH "fonts"
 
-// All entry points for commands except for window locking should be here.
-// This allows scriptability.
 
 class MWindow : public Thread
 {
@@ -188,7 +186,7 @@ public:
 		int edit_labels, int edit_autos, int edit_plugins);
 	void selected_edits_to_clipboard(int packed);
 // Fit selected autos to the vertical display range
-	void fit_autos(int doall);
+	void fit_autos(int all);
 	void change_currentautorange(int autogrouptype, int increment, int changemax);
 	void expand_autos(int changeall, int domin, int domax);
 	void shrink_autos(int changeall, int domin, int domax);
@@ -210,6 +208,8 @@ public:
 	void dump_plugindb(FILE *fp);
 	void stop_playback(int wait);
 	void stop_transport();
+	void undo_before(const char *description = "", void *creator = 0);
+	void undo_after(const char *description, uint32_t load_flags, int changes_made = 1);
 
 	void queue_mixers(EDL *edl, int command, int wait_tracking,
 		int use_inout, int update_refresh, int toggle_audio, int loop_play);
@@ -261,6 +261,8 @@ public:
 	int find_selection(double position, int scroll_display = 0);
 	void toggle_camera_xyz();
 	void toggle_projector_xyz();
+	double get_position();
+	void set_position(double position);
 
 // seek to labels
 // shift_down must be passed by the caller because different windows call
@@ -473,16 +475,16 @@ public:
 
 	void set_automation_mode(int mode);
 	void set_keyframe_type(int mode);
-	void set_auto_keyframes(int value, int lock_mwindow, int lock_cwindow);
+	void set_auto_keyframes(int value);
 	void set_auto_visibility(Autos *autos, int value);
 	void set_labels_follow_edits(int value);
 
 // Update the editing mode
-	int set_editing_mode(int new_editing_mode, int lock_mwindow, int lock_cwindow);
+	int set_editing_mode(int new_editing_mode);
 	void toggle_editing_mode();
-	void set_inpoint(int is_mwindow);
-	void set_outpoint(int is_mwindow);
-	void unset_inoutpoint(int is_mwindow);
+	void set_inpoint();
+	void set_outpoint();
+	void unset_inoutpoint();
 	void toggle_loop_playback();
 	void trim_selection();
 // Synchronize EDL settings with all playback engines depending on current
@@ -490,7 +492,7 @@ public:
 	void sync_parameters(int change_type = CHANGE_PARAMS);
 	void save_clip(EDL *new_edl, const char *txt);
 	void to_clip(EDL *edl, const char *txt, int all);
-	int toggle_label(int is_mwindow);
+	int toggle_label();
 	void undo_entry(BC_WindowBase *calling_window_gui);
 	void redo_entry(BC_WindowBase *calling_window_gui);
 	void save_undo_data();
@@ -551,6 +553,8 @@ public:
 
 // Main undo stack
 	MainUndo *undo;
+	int undo_command;
+
 	BC_Hash *defaults;
 	Assets *assets;
 // CICaches for drawing timeline only

@@ -26,8 +26,11 @@ class TheChk;
 class trace_info {
 public:
 	void *trace;
-	trace_info() { trace = 0; }
+	unsigned long owner;
+	trace_info() { trace = 0; owner = 0; }
 	~trace_info() {}
+	void set_owner();
+	void unset_owner();
 };
 
 #ifdef NO_GUICAST

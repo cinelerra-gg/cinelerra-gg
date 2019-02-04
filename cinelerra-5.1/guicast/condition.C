@@ -52,6 +52,7 @@ void Condition::reset()
 	pthread_mutex_init(&mutex, 0);
 	pthread_cond_init(&cond, NULL);
 	UNSET_ALL_LOCKS(this);
+	unset_owner();
 	value = init_value;
 	trace = 0;
 }
@@ -66,6 +67,8 @@ void Condition::lock(const char *location)
 		value = 0;
 	else
 		value--;
+	if( !value )
+		set_owner();
 	pthread_mutex_unlock(&mutex);
 }
 
@@ -78,6 +81,7 @@ void Condition::unlock()
 		value = 1;
 	else
 		value++;
+	unset_owner();
 	pthread_cond_signal(&cond);
 	pthread_mutex_unlock(&mutex);
 }
@@ -130,6 +134,8 @@ int Condition::timed_lock(int microseconds, const char *location)
 		else
 			--value;
 	}
+	if( !value )
+		set_owner();
 	pthread_mutex_unlock(&mutex);
 	return result;
 }

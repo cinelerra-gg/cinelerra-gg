@@ -199,6 +199,7 @@ MWindow::MWindow()
 	playback_3d = 0;
 	splash_window = 0;
 	undo = 0;
+	undo_command = COMMAND_NONE;
 	defaults = 0;
 	assets = 0;
 	//commercials = 0;
@@ -1366,7 +1367,7 @@ void MWindow::create_mixers()
 {
 	if( !session->drag_assets->size() &&
 	    !session->drag_clips->size() ) return;
-	undo->update_undo_before();
+	undo_before();
 
 	select_zwindow(0);
 	ArrayList<ZWindow *>new_mixers;
@@ -1390,7 +1391,7 @@ void MWindow::create_mixers()
 
 	refresh_mixers();
 	save_backup();
-	undo->update_undo_after(_("create mixers"), LOAD_ALL);
+	undo_after(_("create mixers"), LOAD_ALL);
 	restart_brender();
 	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 0);
 	sync_parameters(CHANGE_ALL);
@@ -1814,6 +1815,28 @@ void MWindow::stop_transport()
 	gui->stop_transport(gui->get_window_lock() ? "MWindow::stop_transport" : 0);
 }
 
+void MWindow::undo_before(const char *description, void *creator)
+{
+	if( cwindow->playback_engine->is_playing_back ) {
+		undo_command = cwindow->playback_engine->command->command;
+		cwindow->playback_engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
+		gui->unlock_window();
+		cwindow->playback_engine->interrupt_playback(1);
+		gui->lock_window(description);
+	}
+	undo->update_undo_before(description, creator);
+}
+
+void MWindow::undo_after(const char *description, uint32_t load_flags, int changes_made)
+{
+	if( undo_command != COMMAND_NONE ) {
+		cwindow->playback_engine->que->send_command(undo_command, CHANGE_NONE, edl, 1, 0);
+		undo_command = COMMAND_NONE;
+	}
+
+	undo->update_undo_after(description, load_flags, changes_made);
+}
+
 void MWindow::beep(double freq, double secs, double gain)
 {
 	if( !proxy_beep ) proxy_beep = new ProxyBeep(this);
@@ -1840,7 +1863,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	gui->lock_window("MWindow::load_filenames 0");
 
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
-	undo->update_undo_before();
+	undo_before();
 
 
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
@@ -2239,7 +2262,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 // need to update undo before project, since mwindow is unlocked & a new load
 // can begin here.  Should really prevent loading until we're done.
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
-	undo->update_undo_after(_("load"), LOAD_ALL);
+	undo_after(_("load"), LOAD_ALL);
 
 	for(int i = 0; i < new_edls.size(); i++)
 	{
@@ -2353,7 +2376,7 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 
 	edl->Garbage::add_user();
 	save_backup();
-	undo->update_undo_before(_("proxy"), this);
+	undo_before(_("proxy"), this);
 	ProxyRender proxy_render(this, asset);
 
 // revert project to original size from current size
@@ -2466,7 +2489,7 @@ int MWindow::to_proxy(Asset *asset, int new_scale, int new_use_scaler)
 		edl->set_proxy(new_scale, new_use_scaler,
 			&proxy_render.orig_idxbls, &proxy_render.orig_proxies);
 
-	undo->update_undo_after(_("proxy"), LOAD_ALL);
+	undo_after(_("proxy"), LOAD_ALL);
 	edl->Garbage::remove_user();
 	restart_brender();
 
@@ -2975,18 +2998,15 @@ void MWindow::set_screens(int value)
 	screens = value;
 }
 
-void MWindow::set_auto_keyframes(int value, int lock_mwindow, int lock_cwindow)
+void MWindow::set_auto_keyframes(int value)
 {
-	if(lock_mwindow) gui->lock_window("MWindow::set_auto_keyframes");
 	edl->session->auto_keyframes = value;
 	gui->mbuttons->edit_panel->keyframe->update(value);
 	gui->flush();
-	if(lock_mwindow) gui->unlock_window();
-
-	if(lock_cwindow) cwindow->gui->lock_window("MWindow::set_auto_keyframes");
+	cwindow->gui->lock_window("MWindow::set_auto_keyframes");
 	cwindow->gui->edit_panel->keyframe->update(value);
 	cwindow->gui->flush();
-	if(lock_cwindow) cwindow->gui->unlock_window();
+	cwindow->gui->unlock_window();
 }
 
 void MWindow::set_auto_visibility(Autos *autos, int value)
@@ -3013,20 +3033,17 @@ void MWindow::set_keyframe_type(int mode)
 	gui->unlock_window();
 }
 
-int MWindow::set_editing_mode(int new_editing_mode, int lock_mwindow, int lock_cwindow)
+int MWindow::set_editing_mode(int new_editing_mode)
 {
-	if(lock_mwindow) gui->lock_window("MWindow::set_editing_mode");
 	edl->session->editing_mode = new_editing_mode;
 	gui->mbuttons->edit_panel->editing_mode = edl->session->editing_mode;
 	gui->mbuttons->edit_panel->update();
 	gui->set_editing_mode(1);
-	if(lock_mwindow) gui->unlock_window();
 
-
-	if(lock_cwindow) cwindow->gui->lock_window("MWindow::set_editing_mode");
+	cwindow->gui->lock_window("MWindow::set_editing_mode");
 	cwindow->gui->edit_panel->update();
 	cwindow->gui->edit_panel->editing_mode = edl->session->editing_mode;
-	if(lock_cwindow) cwindow->gui->unlock_window();
+	cwindow->gui->unlock_window();
 	return 0;
 }
 
@@ -3034,9 +3051,9 @@ void MWindow::toggle_editing_mode()
 {
 	int mode = edl->session->editing_mode;
 	if( mode == EDITING_ARROW )
-		set_editing_mode(EDITING_IBEAM, 0, 1);
+		set_editing_mode(EDITING_IBEAM);
 	else
-		set_editing_mode(EDITING_ARROW, 0, 1);
+		set_editing_mode(EDITING_ARROW);
 }
 
 void MWindow::toggle_camera_xyz()
@@ -3055,12 +3072,10 @@ void MWindow::toggle_projector_xyz()
 
 void MWindow::set_labels_follow_edits(int value)
 {
-	gui->lock_window("MWindow::set_labels_follow_edits");
 	edl->session->labels_follow_edits = value;
 	gui->mbuttons->edit_panel->locklabels->update(value);
 	gui->mainmenu->labels_follow_edits->set_checked(value);
 	gui->flush();
-	gui->unlock_window();
 }
 
 void MWindow::sync_parameters(int change_type)
@@ -3796,8 +3811,8 @@ void MWindow::load_backup()
 
 void MWindow::save_undo_data()
 {
-	undo->update_undo_before();
-	undo->update_undo_after(_("perpetual session"), LOAD_ALL);
+	undo_before();
+	undo_after(_("perpetual session"), LOAD_ALL);
 	char perpetual_path[BCTEXTLEN];
 	snprintf(perpetual_path, sizeof(perpetual_path), "%s/%s",
 		File::get_config_path(), PERPETUAL_FILE);
@@ -4131,11 +4146,11 @@ void MWindow::remove_assets_from_project(int push_undo, int redraw,
 	}
 
 //printf("MWindow::rebuild_indices 1 %s\n", indexable->path);
-	if(push_undo) undo->update_undo_before();
+	if(push_undo) undo_before();
 	if(drag_assets) edl->remove_from_project(drag_assets);
 	if(drag_clips) edl->remove_from_project(drag_clips);
 	if(redraw) save_backup();
-	if(push_undo) undo->update_undo_after(_("remove assets"), LOAD_ALL);
+	if(push_undo) undo_after(_("remove assets"), LOAD_ALL);
 	if(redraw) {
 		restart_brender();
 
@@ -4518,7 +4533,7 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 	session->auto_keyframes = 0;
 	int result = file->open_file(preferences, asset, 1, 0);
 	if( !result && delete_tracks > 0 )
-		undo->update_undo_before();
+		undo_before();
 	int video_layers = asset->get_video_layers();
 	if( !result && asset->video_data && vstream < video_layers ) {
 		// try to get asset up to date, may fail
@@ -4614,7 +4629,7 @@ int MWindow::select_asset(Asset *asset, int vstream, int astream, int delete_tra
 	session->auto_keyframes = old_auto_keyframes;
 	if( !result && delete_tracks > 0 ) {
 		save_backup();
-		undo->update_undo_after(_("select asset"), LOAD_ALL);
+		undo_after(_("select asset"), LOAD_ALL);
 	}
 	resync_guis();
 	return result;

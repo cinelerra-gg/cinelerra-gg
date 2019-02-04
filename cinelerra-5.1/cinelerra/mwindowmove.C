@@ -145,7 +145,7 @@ void MWindow::fit_selection()
 }
 
 
-void MWindow::fit_autos(int doall)
+void MWindow::fit_autos(int all)
 {
 	float min = 0, max = 0;
 	double start, end;
@@ -167,7 +167,7 @@ void MWindow::fit_autos(int doall)
 	int forstart = edl->local_session->zoombar_showautotype;
 	int forend   = edl->local_session->zoombar_showautotype + 1;
 
-	if (doall) {
+	if( all ) {
 		forstart = 0;
 		forend   = AUTOGROUPTYPE_COUNT;
 	}
@@ -714,6 +714,25 @@ int MWindow::find_selection(double position, int scroll_display)
 		cwindow->update(1, 0, 0, 0, 1);
 	}
 	return 0;
+}
+
+double MWindow::get_position()
+{
+        return edl->local_session->get_selectionstart(1);
+}
+
+void MWindow::set_position(double position)
+{
+        if( position != get_position() ) {
+                if( position < 0 ) position = 0;
+                edl->local_session->set_selectionstart(position);
+                edl->local_session->set_selectionend(position);
+                gui->lock_window();
+                find_cursor();
+                gui->update(1, NORMAL_DRAW, 1, 1, 1, 1, 0);
+                gui->unlock_window();
+                cwindow->update(1, 0, 0, 0, 0);
+        }
 }
 
 

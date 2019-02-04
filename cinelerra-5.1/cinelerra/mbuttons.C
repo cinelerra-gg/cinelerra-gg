@@ -131,8 +131,6 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 		1, // use_keyframe
 		0, // use_splice
 		0, // use_overwrite
-		1, // use_lift
-		1, // use_extract
 		1, // use_copy
 		1, // use_paste
 		1, // use_undo
@@ -150,7 +148,95 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 	this->mbuttons = mbuttons;
 }
 
-void MainEditing::to_clip()
+double MainEditing::get_position()
+{
+	return mwindow->get_position();
+}
+
+void MainEditing::set_position(double position)
+{
+	mwindow->set_position(position);
+}
+
+void MainEditing::set_click_to_play(int v)
+{
+// not used
+}
+
+void MainEditing::panel_stop_transport()
+{
+	mwindow->gui->stop_transport("MainEditing::stop_transport");
+}
+
+void MainEditing::panel_toggle_label()
+{
+	mwindow->toggle_label();
+}
+
+void MainEditing::panel_next_label(int cut)
+{
+	int shift_down = mwindow->gui->shift_down();
+	panel_stop_transport();
+	if( cut )
+		mwindow->cut_right_label();
+	else
+		mwindow->next_label(shift_down);
+}
+
+void MainEditing::panel_prev_label(int cut)
+{
+	int shift_down = mwindow->gui->shift_down();
+	panel_stop_transport();
+	if( cut )
+		mwindow->cut_left_label();
+	else
+		mwindow->prev_label(shift_down);
+}
+
+void MainEditing::panel_prev_edit(int cut)
+{
+	int shift_down = subwindow->shift_down();
+	panel_stop_transport();
+	if( cut )
+		mwindow->cut_left_edit();
+	else
+		mwindow->prev_edit_handle(shift_down);
+}
+
+void MainEditing::panel_next_edit(int cut)
+{
+	int shift_down = subwindow->shift_down();
+	panel_stop_transport();
+	if( cut )
+		mwindow->cut_right_edit();
+	else
+		mwindow->next_edit_handle(shift_down);
+}
+
+void MainEditing::panel_copy_selection()
+{
+	mwindow->copy();
+}
+
+void MainEditing::panel_overwrite_selection() {} // not used
+void MainEditing::panel_splice_selection() {} // not used
+
+void MainEditing::panel_set_inpoint()
+{
+	mwindow->set_inpoint();
+}
+
+void MainEditing::panel_set_outpoint()
+{
+	mwindow->set_outpoint();
+}
+
+void MainEditing::panel_unset_inoutpoint()
+{
+	mwindow->unset_inoutpoint();
+}
+
+void MainEditing::panel_to_clip()
 {
 	MWindowGUI *gui = mwindow->gui;
 	gui->unlock_window();
@@ -158,4 +244,39 @@ void MainEditing::to_clip()
 	gui->lock_window("MainEditing::to_clip");
 }
 
+
+void MainEditing::panel_cut()
+{
+	 mwindow->cut();
+}
+
+void MainEditing::panel_paste()
+{
+	mwindow->paste();
+}
+
+void MainEditing::panel_fit_selection()
+{
+	mwindow->fit_selection();
+}
+
+void MainEditing::panel_fit_autos(int all)
+{
+	mwindow->fit_autos(all);
+}
+
+void MainEditing::panel_set_editing_mode(int mode)
+{
+	mwindow->set_editing_mode(mode);
+}
+
+void MainEditing::panel_set_auto_keyframes(int v)
+{
+	mwindow->set_auto_keyframes(v);
+}
+
+void MainEditing::panel_set_labels_follow_edits(int v)
+{
+        mwindow->set_labels_follow_edits(v);
+}
 

@@ -779,8 +779,6 @@ CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow)
 		1, // use_keyframe
 		0, // use_splice
 		0, // use_overwrite
-		1, // use_lift
-		1, // use_extract
 		1, // use_copy
 		1, // use_paste
 		1, // use_undo
@@ -798,51 +796,70 @@ CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow)
 	this->cwindow = cwindow;
 }
 
-#define CWrapper(fn) void CWindowEditing::fn() { \
-	mwindow->gui->lock_window("CWrapper::" #fn); \
-	EditPanel::fn(); \
-	mwindow->gui->unlock_window(); \
-}
+#define relock_cm(s) \
+ cwindow->gui->unlock_window(); \
+ mwindow->gui->lock_window("CWindowEditing::" s)
+#define relock_mc(s) \
+ mwindow->gui->unlock_window(); \
+ cwindow->gui->lock_window("CWindowEditing::" s)
+#define panel_fn(fn, args, s) \
+ CWindowEditing::fn args { relock_cm(#fn); s; relock_mc(#fn); }
 
-CWrapper(copy_selection)
-CWrapper(splice_selection)
-CWrapper(overwrite_selection)
-CWrapper(set_inpoint)
-CWrapper(set_outpoint)
-CWrapper(unset_inoutpoint)
-CWrapper(toggle_label)
+// transmit lock to mwindow, and run mbutton->edit_panel->s
+#define panel_btn(fn, args, s) \
+ panel_fn(panel_##fn, args, mwindow->gui->mbuttons->edit_panel->panel_##s)
 
-#define CWrapper_cut(fn) void CWindowEditing::fn(int cut) { \
-	mwindow->gui->lock_window("CWrapper::" #fn); \
-	EditPanel::fn(cut); \
-	mwindow->gui->unlock_window(); \
-}
-CWrapper_cut(prev_label)
-CWrapper_cut(next_label)
-CWrapper_cut(prev_edit)
-CWrapper_cut(next_edit)
-
-void CWindowEditing::to_clip()
+double CWindowEditing::get_position()
 {
-	mwindow->to_clip(mwindow->edl, _("composer window: "), 0);
+	relock_cm("get_position");
+	double ret = mwindow->edl->local_session->get_selectionstart(1);
+	relock_mc("get_position");
+	return ret;
 }
+
+void CWindowEditing::set_position(double position)
+{
+	relock_cm("set_position");
+	set_position(position);
+	relock_mc("set_position");
+}
+
+void CWindowEditing::set_click_to_play(int v)
+{
+	relock_cm("set_click_to_play");
+	mwindow->edl->session->cwindow_click2play = v;
+	click2play->update(v);
+	relock_mc("set_click_to_play");
+}
+
+void panel_btn(stop_transport,(), stop_transport())
+void panel_btn(toggle_label,(), toggle_label())
+void panel_btn(next_label,(int cut), next_label(cut))
+void panel_btn(prev_label,(int cut), prev_label(cut))
+void panel_btn(next_edit,(int cut), next_edit(cut))
+void panel_btn(prev_edit,(int cut), prev_edit(cut))
+void panel_fn(panel_copy_selection,(), mwindow->copy())
+void CWindowEditing::panel_overwrite_selection() {} // not used
+void CWindowEditing::panel_splice_selection() {} // not used
+void panel_btn(set_inpoint,(), set_inpoint())
+void panel_btn(set_outpoint,(), set_outpoint())
+void panel_btn(unset_inoutpoint,(), unset_inoutpoint())
+void panel_fn(panel_to_clip,(), mwindow->to_clip(mwindow->edl, _("main window: "), 0))
+void panel_btn(cut,(), cut())
+void panel_btn(paste,(), paste())
+void panel_btn(fit_selection,(), fit_selection())
+void panel_btn(fit_autos,(int all), fit_autos(all))
+void panel_btn(set_editing_mode,(int mode), set_editing_mode(mode))
+void panel_btn(set_auto_keyframes,(int v), set_auto_keyframes(v))
+void panel_btn(set_labels_follow_edits,(int v), set_labels_follow_edits(v))
 
 
 CWindowMeters::CWindowMeters(MWindow *mwindow,
-	CWindowGUI *gui,
-	int x,
-	int y,
-	int h)
- : MeterPanel(mwindow,
-		gui,
-		x,
-		y,
-		-1,
-		h,
+	CWindowGUI *gui, int x, int y, int h)
+ : MeterPanel(mwindow, gui, x, y, -1, h,
 		mwindow->edl->session->audio_channels,
 		mwindow->edl->session->cwindow_meter,
-		0,
-		0)
+		0, 0)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

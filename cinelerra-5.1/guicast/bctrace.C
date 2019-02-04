@@ -309,6 +309,9 @@ void BC_Trace::dump_traces(FILE *fp)
 	}
 }
 
+void trace_info::set_owner() { owner = pthread_self(); }
+void trace_info::unset_owner() { owner = 0; }
+
 void BC_Trace::dump_locks(FILE *fp)
 {
 // Dump lock table
@@ -316,8 +319,12 @@ void BC_Trace::dump_locks(FILE *fp)
 	fprintf(fp,"signal_entry: lock table size=%d\n", lock_table.size);
 	for( trace_item *tp=lock_table.first; tp!=0; tp=tp->next ) {
 		lock_item *p=(lock_item*)tp;
-		fprintf(fp,"    %p %s %s %p%s\n", p->info, p->title,
-			p->loc, (void*)p->tid, p->is_owner ? " *" : "");
+		fprintf(fp,"    %p %s, %s %p%s",
+			p->info, p->title, p->loc,
+			(void*)p->tid, p->is_owner ? " *" : "");
+		if( p->info->owner && p->info->owner != p->tid )
+			fprintf(fp," %p", (void*)p->info->owner);
+		fprintf(fp,"\n");
 	}
 	int64_t lock_total = lock_table.total();
 	int64_t free_total = lock_free.total();

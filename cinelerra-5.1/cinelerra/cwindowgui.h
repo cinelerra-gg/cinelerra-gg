@@ -162,18 +162,30 @@ public:
 	CWindowEditing(MWindow *mwindow, CWindow *cwindow);
 	virtual ~CWindowEditing() {}
 
-	void copy_selection();
-	void splice_selection();
-	void overwrite_selection();
-	void set_inpoint();
-	void set_outpoint();
-	void unset_inoutpoint();
-	void to_clip();
-	void toggle_label();
-	void prev_label(int cut);
-	void next_label(int cut);
-	void prev_edit(int cut);
-	void next_edit(int cut);
+	double get_position();
+	void set_position(double position);
+	void set_click_to_play(int v);
+
+	void panel_stop_transport();
+	void panel_toggle_label();
+	void panel_next_label(int cut);
+	void panel_prev_label(int cut);
+	void panel_prev_edit(int cut);
+	void panel_next_edit(int cut);
+	void panel_copy_selection();
+	void panel_overwrite_selection();
+	void panel_splice_selection();
+	void panel_set_inpoint();
+	void panel_set_outpoint();
+	void panel_unset_inoutpoint();
+	void panel_to_clip();
+	void panel_cut();
+	void panel_paste();
+	void panel_fit_selection();
+	void panel_fit_autos(int all);
+	void panel_set_editing_mode(int mode);
+	void panel_set_auto_keyframes(int v);
+	void panel_set_labels_follow_edits(int v);
 
 	MWindow *mwindow;
 	CWindow *cwindow;

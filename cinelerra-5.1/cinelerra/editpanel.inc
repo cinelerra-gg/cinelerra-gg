@@ -26,25 +26,20 @@
 #define CWINDOW_ID 1
 #define VWINDOW_ID 2
 
+class EditPanel;
 class EditInPoint;
 class EditOutPoint;
 class EditDelInPoint;
 class EditDelOutPoint;
 class EditSplice;
 class EditOverwrite;
-class EditLift;
-class EditExtract;
 class EditToClip;
 class EditManualGoto;
 class EditCut;
 class EditCommercial;
 class EditClick2Play;
 class EditCopy;
-class EditAppend;
-class EditInsert;
 class EditPaste;
-class EditTransition;
-class EditPresentation;
 class EditUndo;
 class EditRedo;
 class EditLabelbutton;
@@ -58,6 +53,5 @@ class ArrowButton;
 class IBeamButton;
 class KeyFrameButton;
 class LockLabelsButton;
-class EditPanel;
 
 #endif

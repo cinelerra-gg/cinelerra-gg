@@ -97,26 +97,6 @@ public:
 	EditPanel *panel;
 };
 
-class EditLift : public BC_Button
-{
-public:
-	EditLift(MWindow *mwindow, EditPanel *panel, int x, int y);
-	~EditLift();
-	int handle_event();
-	MWindow *mwindow;
-	EditPanel *panel;
-};
-
-class EditExtract : public BC_Button
-{
-public:
-	EditExtract(MWindow *mwindow, EditPanel *panel, int x, int y);
-	~EditExtract();
-	int handle_event();
-	MWindow *mwindow;
-	EditPanel *panel;
-};
-
 class EditToClip : public BC_Button
 {
 public:
@@ -192,30 +172,6 @@ public:
 	EditPanel *panel;
 };
 
-class EditAppend : public BC_Button
-{
-public:
-	EditAppend(MWindow *mwindow, EditPanel *panel, int x, int y);
-	~EditAppend();
-
-	int handle_event();
-
-	MWindow *mwindow;
-	EditPanel *panel;
-};
-
-class EditInsert : public BC_Button
-{
-public:
-	EditInsert(MWindow *mwindow, EditPanel *panel, int x, int y);
-	~EditInsert();
-
-	int handle_event();
-
-	MWindow *mwindow;
-	EditPanel *panel;
-};
-
 class EditPaste : public BC_Button
 {
 public:
@@ -225,26 +181,6 @@ public:
 	int keypress_event();
 	int handle_event();
 
-	MWindow *mwindow;
-	EditPanel *panel;
-};
-
-class EditTransition : public BC_Button
-{
-public:
-	EditTransition(MWindow *mwindow, EditPanel *panel, int x, int y);
-	~EditTransition();
-	int handle_event();
-	MWindow *mwindow;
-	EditPanel *panel;
-};
-
-class EditPresentation : public BC_Button
-{
-public:
-	EditPresentation(MWindow *mwindow, EditPanel *panel, int x, int y);
-	~EditPresentation();
-	int handle_event();
 	MWindow *mwindow;
 	EditPanel *panel;
 };
@@ -389,9 +325,10 @@ public:
 class LockLabelsButton : public BC_Toggle
 {
 public:
-	LockLabelsButton(MWindow *mwindow, int x, int y);
+	LockLabelsButton(MWindow *mwindow, EditPanel *panel, int x, int y);
 	int handle_event();
 	MWindow *mwindow;
+	EditPanel *panel;
 };
 
 
@@ -405,8 +342,6 @@ public:
 		int use_keyframe,
 		int use_splice,   // Extra buttons
 		int use_overwrite,
-		int use_lift,
-		int use_extract,
 		int use_copy,  // Use copy when in EDITING_ARROW
 		int use_paste,
 		int use_undo,
@@ -430,20 +365,31 @@ public:
 	void reposition_buttons(int x, int y);
 	void create_objects();
 	int get_w();
-	virtual void copy_selection();
-	virtual void splice_selection();
-	virtual void overwrite_selection();
-	virtual void set_inpoint();
-	virtual void set_outpoint();
-	virtual void unset_inoutpoint();
-	virtual void to_clip() = 0;
-	virtual void toggle_label();
-	virtual void prev_label(int cut);
-	virtual void next_label(int cut);
-	virtual void prev_edit(int cut);
-	virtual void next_edit(int cut);
-	virtual double get_position();
-	virtual void set_position(double position);
+
+	virtual double get_position() = 0;
+	virtual void set_position(double position) = 0;
+	virtual void set_click_to_play(int v) = 0;
+
+	virtual void panel_stop_transport() = 0;
+	virtual void panel_toggle_label() = 0;
+	virtual void panel_next_label(int cut) = 0;
+	virtual void panel_prev_label(int cut) = 0;
+	virtual void panel_prev_edit(int cut) = 0;
+	virtual void panel_next_edit(int cut) = 0;
+	virtual void panel_copy_selection() = 0;
+	virtual void panel_overwrite_selection() = 0;
+	virtual void panel_splice_selection() = 0;
+	virtual void panel_set_inpoint() = 0;
+	virtual void panel_set_outpoint() = 0;
+	virtual void panel_unset_inoutpoint() = 0;
+	virtual void panel_to_clip() = 0;
+	virtual void panel_cut() = 0;
+	virtual void panel_paste() = 0;
+	virtual void panel_fit_selection() = 0;
+	virtual void panel_fit_autos(int all) = 0;
+	virtual void panel_set_editing_mode(int mode) = 0;
+	virtual void panel_set_auto_keyframes(int v) = 0;
+	virtual void panel_set_labels_follow_edits(int v) = 0;
 
 	MWindow *mwindow;
 	BC_WindowBase *subwindow;
@@ -456,8 +402,6 @@ public:
 	int use_keyframe;
 	int use_splice;
 	int use_overwrite;
-	int use_lift;
-	int use_extract;
 	int use_paste;
 	int use_undo;
 	int use_fit;
@@ -479,8 +423,6 @@ public:
 //	EditDelOutPoint *deloutpoint;
 	EditSplice *splice;
 	EditOverwrite *overwrite;
-	EditLift *lift;
-	EditExtract *extract;
 	EditToClip *clip;
 	EditCut *cut;
 	EditCommercial *commercial;

@@ -30,7 +30,6 @@
 Mutex::Mutex(const char *title, int recursive)
 {
 	this->title = title;
-	this->trace = 0;
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init(&attr);
 	pthread_mutex_init(&mutex, &attr);
@@ -66,7 +65,7 @@ int Mutex::lock(const char *location)
 
 	SET_LOCK(this, title, location);
 	if(pthread_mutex_lock(&mutex)) perror("Mutex::lock");
-
+	set_owner();
 
 
 // Update recursive status for the first lock
@@ -115,6 +114,7 @@ int Mutex::unlock()
 
 
 	UNSET_LOCK(this);
+	unset_owner();
 
 	int ret = pthread_mutex_unlock(&mutex);
 	if( ret ) fprintf(stderr, "Mutex::unlock: %s\n",strerror(ret));
@@ -126,6 +126,7 @@ int Mutex::trylock(const char *location)
 	if( count ) return EBUSY;
 	int ret = pthread_mutex_trylock(&mutex);
 	if( ret ) return ret;
+	set_owner();
 
 // Update recursive status for the first lock
 	if(recursive) {
@@ -155,6 +156,7 @@ int Mutex::reset()
 	pthread_mutexattr_init(&attr);
 	pthread_mutex_init(&mutex, &attr);
 	UNSET_ALL_LOCKS(this)
+	unset_owner();
 	trace = 0;
 	count = 0;
 	thread_id = 0;
