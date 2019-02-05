@@ -213,6 +213,7 @@ opencv.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
 openexr.cfg_vars?=LD_LIBRARY_PATH=$(call bld_path,ilmbase,usr/lib)
 openexr.cfg_params?=--enable-shared=no --with-ilmbase-prefix=$(call bld_path,ilmbase,usr)
 speech_tools.mak_params?=-j1
+tiff.cfg_params+= --enable-shared=no --disable-zstd
 twolame.cfg_params?=--enable-shared=no
 x264.cfg_params?= --enable-static --enable-pic
 x265.cfg_vars?=$(call cmake_config,source)
