@@ -266,7 +266,7 @@ int CommonRender::get_boundaries(int64_t &current_render_length)
 		}
 	}
 
-	if(renderengine->command->single_frame() && !renderengine->command->audio_toggle)
+	if(renderengine->command->single_frame() && !renderengine->command->toggle_audio)
 		current_render_length = 1;
 
 	if(current_render_length < 0) current_render_length = 0;
@@ -299,7 +299,7 @@ int CommonRender::advance_position(int64_t current_render_length)
 		current_position += current_render_length;
 
 	int64_t start_position, end_position;
-	int play_loop = renderengine->command->play_loop;
+	int play_loop = renderengine->command->loop_play;
 	int loop_playback = renderengine->get_edl()->local_session->loop_playback;
 	if( play_loop || !loop_playback ) {
 		start_position = tounits(renderengine->command->start_position, 0);

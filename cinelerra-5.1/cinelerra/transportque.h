@@ -19,13 +19,13 @@
  *
  */
 
-#ifndef TRANSPORTQUE_H
-#define TRANSPORTQUE_H
+#ifndef __TRANSPORTQUE_H__
+#define __TRANSPORTQUE_H__
 
 #include "canvas.inc"
 #include "condition.inc"
 #include "edl.inc"
-#include "preferences.inc"
+#include "playbackengine.inc"
 #include "transportque.inc"
 
 class TransportCommand
@@ -35,18 +35,13 @@ public:
 	~TransportCommand();
 
 	void reset();
-	static int single_frame(int command);
-	int single_frame();
-// Get the direction based on the command
-	static int get_direction(int command);
-	int get_direction();
-	static float get_speed(int command);
-	float get_speed();
 	void copy_from(TransportCommand *command);
 	TransportCommand& operator=(TransportCommand &command);
 // Get the range to play back from the EDL
-	void set_playback_range(EDL *edl=0, int use_inout=0,
-		int toggle_audio=0, int loop_play=0, int use_displacement=0);
+	void set_playback_range(EDL *edl, int use_inout, int do_displacement);
+	static int single_frame(int command);
+	static int get_direction(int command);
+	static float get_speed(int command, float speed=0);
 
 // Adjust playback range with in/out points for rendering
 	void playback_range_adjust_inout();
@@ -60,46 +55,34 @@ public:
 	void delete_edl();
 	void new_edl();
 
+	PlaybackEngine *engine;
 	int command;
 	int change_type;
-// lowest numbered second in playback range
-	double start_position;
-// highest numbered second in playback range
-	double end_position;
+// playback range
+	double start_position, end_position;
 	int infinite;
 // Position used when starting playback
 	double playbackstart;
-// start position at this=0/next=1 frame
+// start at this=0/next=1 frame
 	int displacement;
 // Send output to device
 	int realtime;
 // Use persistant starting point
 	int resume;
 // reverse audio duty
-	int audio_toggle;
+	int toggle_audio;
 // playback loop
-	int play_loop;
+	int loop_play;
+// SLOW,FAST play speed
+	float speed;
+
+	int single_frame() { return single_frame(command); }
+	int get_direction() { return get_direction(command); }
+	float get_speed() { return get_speed(command, speed); }
+	void set_playback_range() { set_playback_range(0, 0, 0); }
 private:
 // Copied to render engines
 	EDL *edl;
-};
-
-class TransportQue
-{
-public:
-	TransportQue();
-	~TransportQue();
-
-	int send_command(int command,
-// The change type is ORed to accumulate changes.
-		int change_type, EDL *new_edl, int realtime,
-// Persistent starting point
-		int resume = 0, int use_inout = 0, int toggle_audio = 0,
-		int loop_play = 0, int use_displacement = 0);
-	void update_change_type(int change_type);
-
-	TransportCommand command;
-	Condition *input_lock, *output_lock;
 };
 
 #endif

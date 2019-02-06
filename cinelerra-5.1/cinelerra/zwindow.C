@@ -231,11 +231,14 @@ void ZWindow::stop_playback(int wait)
 	zgui->playback_engine->stop_playback(wait);
 }
 
-void ZWindow::issue_command(int command, int wait_tracking,
-		int use_inout, int update_refresh, int toggle_audio, int loop_play)
+void ZWindow::handle_mixer(int command, int wait_tracking,
+		int use_inout, int toggle_audio, int loop_play, float speed)
 {
-	zgui->playback_engine->issue_command(edl, command,
-			wait_tracking, use_inout, update_refresh, toggle_audio, loop_play);
+	PlaybackEngine *engine = zgui->playback_engine;
+	engine->next_command->toggle_audio = toggle_audio;
+	engine->next_command->loop_play = loop_play;
+	engine->next_command->speed = speed;
+	engine->send_command(command, edl, wait_tracking, use_inout);
 }
 
 void ZWindow::update_mixer_ids()

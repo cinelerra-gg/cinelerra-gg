@@ -71,8 +71,8 @@ public:
 	void handle_close_event(int result);
 	void change_source(EDL *edl);
 	void stop_playback(int wait);
-	void issue_command(int command, int wait_tracking, int use_inout,
-			int update_refresh, int toggle_audio, int loop_play);
+	void handle_mixer(int command, int wait_tracking,
+		int use_inout, int toggle_audio, int loop_play, float speed);
 	void update_mixer_ids();
 	void set_title(const char *tp);
 	void reposition(int x, int y, int w, int h);

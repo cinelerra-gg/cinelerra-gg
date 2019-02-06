@@ -28,6 +28,7 @@
 #include "playbackengine.h"
 #include "playtransport.h"
 #include "preferences.h"
+#include "shuttle.h"
 #include "theme.h"
 #include "transportque.h"
 #include "vframe.h"
@@ -200,19 +201,39 @@ int PlayTransport::do_keypress(int key)
 		goto_end();
 		return result;
 	}
-// as in play_command
+
 	int ctrl_key = subwindow->ctrl_down() ? 1 : 0;
 	int shft_key = subwindow->shift_down() ? 1 : 0;
 	int alt_key = subwindow->alt_down() ? 1 : 0;
 	int use_inout = ctrl_key;
 	int toggle_audio = shft_key & ~ctrl_key;
 	int loop_play = shft_key & ctrl_key;
-	int command = -1, prev_command = engine->command->command;
-	using_inout = use_inout;
+	float speed = 0;
+	int command = -1;
+	int curr_command = engine->command->command;
 	subwindow->unlock_window();
 
 	result = 0;
-	switch( key ) {
+
+	if( key >= SKEY_MIN && key <= SKEY_MAX ) {
+		speed = SHUTTLE_MAX_SPEED *
+			 (key - (SKEY_MAX + SKEY_MIN)/2.f) /
+				((SKEY_MAX - SKEY_MIN) / 2.f);
+		if( speed < 0 ) {
+			speed = -speed;
+			command = speed < 1 ? SLOW_REWIND :
+				speed > 1 ? FAST_REWIND : NORMAL_REWIND;
+		}
+		else if( speed > 0 ) {
+			command = speed < 1 ? SLOW_FWD :
+				speed > 1 ? FAST_FWD : NORMAL_FWD;
+		}
+		else
+			command = STOP;
+		use_inout = 0;
+		loop_play = 0;
+	}
+	else switch( key ) {
 	case KPINS:	command = STOP;			break;
 	case KPPLUS:	command = FAST_REWIND;		break;
 	case KP6:	command = NORMAL_REWIND;	break;
@@ -222,8 +243,9 @@ int PlayTransport::do_keypress(int key)
 	case KP2:	command = SLOW_FWD;		break;
 	case KP3:	command = NORMAL_FWD;		break;
 	case KPENTER:	command = FAST_FWD;		break;
+
 	case ' ':
-		switch( prev_command ) {
+		switch( curr_command ) {
 		case COMMAND_NONE:
 		case CURRENT_FRAME:
 		case LAST_FRAME:
@@ -265,7 +287,7 @@ int PlayTransport::do_keypress(int key)
 		break;
 	}
 	if( command >= 0 ) {
-		handle_transport(command, 0, use_inout, 1, toggle_audio, loop_play);
+		handle_transport(command, 0, use_inout, toggle_audio, loop_play, speed);
 		result = 1;
 	}
 
@@ -276,24 +298,30 @@ int PlayTransport::do_keypress(int key)
 
 void PlayTransport::goto_start()
 {
-	handle_transport(REWIND, 1, 0);
+	handle_transport(REWIND, 1);
 }
 
 void PlayTransport::goto_end()
 {
-	handle_transport(GOTO_END, 1, 0);
+	handle_transport(GOTO_END, 1);
 }
 
 
 
-void PlayTransport::handle_transport(int command, int wait_tracking, int use_inout,
-		int update_refresh, int toggle_audio, int loop_play)
+void PlayTransport::handle_transport(int command, int wait_tracking,
+		int use_inout, int toggle_audio, int loop_play, float speed)
 {
 	EDL *edl = get_edl();
 	if( !edl ) return;
+	using_inout = use_inout;
+
 	if( !is_vwindow() )
-		mwindow->queue_mixers(edl, command, wait_tracking, use_inout, update_refresh, toggle_audio, 0);
-	engine->issue_command(edl, command, wait_tracking, use_inout, update_refresh, toggle_audio, loop_play);
+		mwindow->handle_mixers(edl, command, wait_tracking,
+				use_inout, toggle_audio, 0, speed);
+	engine->next_command->toggle_audio = toggle_audio;
+	engine->next_command->loop_play = loop_play;
+	engine->next_command->speed = speed;
+	engine->send_command(command, edl, wait_tracking, use_inout);
 }
 
 EDL* PlayTransport::get_edl()
@@ -344,7 +372,7 @@ int PTransportButton::play_command(const char *lock_msg, int command)
 	int toggle_audio = shft_key & ~ctrl_key;
 	int loop_play = shft_key & ctrl_key;
 	unlock_window();
-	transport->handle_transport(command, 0, use_inout, 0, toggle_audio, loop_play);
+	transport->handle_transport(command, 0, use_inout, toggle_audio, loop_play, 0);
 	lock_window(lock_msg);
 	return 1;
 }
@@ -462,7 +490,7 @@ StopButton::StopButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
 int StopButton::handle_event()
 {
 	unlock_window();
-	transport->handle_transport(STOP, 0, 0);
+	transport->handle_transport(STOP);
 	lock_window("StopButton::handle_event");
 	return 1;
 }
@@ -472,26 +500,27 @@ int StopButton::handle_event()
 void PlayTransport::change_position(double position)
 {
 	if( !get_edl() ) return;
-	int prev_command = engine->command->command;
+	int command = engine->command->command;
 // stop transport
-	if( prev_command != STOP && prev_command != COMMAND_NONE &&
-	    prev_command != SINGLE_FRAME_FWD && prev_command != SINGLE_FRAME_REWIND ) {
-		engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
+	if( command != STOP && command != COMMAND_NONE &&
+	    command != SINGLE_FRAME_FWD && command != SINGLE_FRAME_REWIND ) {
+		engine->transport_stop();
 		engine->interrupt_playback(0);
 	}
 	mwindow->gui->lock_window("PlayTransport::change_position");
 	mwindow->goto_position(position);
 	mwindow->gui->unlock_window();
 // restart command
-	switch(prev_command) {
+	switch( command ) {
 	case FAST_REWIND:
 	case NORMAL_REWIND:
 	case SLOW_REWIND:
 	case SLOW_FWD:
 	case NORMAL_FWD:
 	case FAST_FWD:
-		engine->que->send_command(prev_command, CHANGE_NONE,
-				get_edl(), 1, 1, using_inout, 0);
+		engine->next_command->realtime = 1;
+		engine->next_command->resume = 1;
+		engine->transport_command(command, CHANGE_NONE, get_edl(), using_inout);
 	}
 }
 

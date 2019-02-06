@@ -1192,8 +1192,11 @@ locking_message = event->xclient.message_type;
  		}
 		else {
 #endif
-
-		switch(keysym) {
+// shuttle speed codes
+		if( keysym >= SKEY_MIN && keysym <= SKEY_MAX ) {
+			key_pressed = keysym;
+		}
+		else switch( keysym ) {
 // block out extra keys
 		case XK_Alt_L:
 		case XK_Alt_R:

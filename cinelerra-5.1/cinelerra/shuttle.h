@@ -17,6 +17,8 @@
 // delay in ms before processing each XTest event
 // CurrentTime means no delay
 #define DELAY CurrentTime
+// playback max speed -64x .. 64x
+#define SHUTTLE_MAX_SPEED 64.
 
 // protocol for events from the shuttlepro HUD device
 //
@@ -194,7 +196,7 @@ public:
 	~Shuttle();
 
 	int send_button(unsigned int button, int press);
-	int send_key(KeySym keysym, int press);
+	int send_keycode(unsigned int keycode, int press, int send);
 	int send_keysym(KeySym keysym, int press);
 	void send_stroke_sequence(int kjs, int index);
 	void key(unsigned short code, unsigned int value);

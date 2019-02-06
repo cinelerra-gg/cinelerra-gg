@@ -131,4 +131,7 @@
 #define RETURN              13
 #define NEWLINE             13
 
+#define SKEY_MIN 0x3000000 // Shuttle speed codes
+#define SKEY_MAX 0x3010000
+
 #endif

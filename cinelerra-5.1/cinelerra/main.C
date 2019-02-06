@@ -42,6 +42,8 @@
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #ifdef LEAKER
 #define STRC(v) printf("==new %p from %p sz %jd\n", v, __builtin_return_address(0), n)
@@ -386,6 +388,14 @@ DISABLE_BUFFER
 	time_t et; time(&et);
 	long dt = et - st;
 	printf("Session time: %ld:%02ld:%02ld\n", dt/3600, dt%3600/60, dt%60);
+	struct rusage ru;
+	getrusage(RUSAGE_SELF, &ru);
+	long usr_ms = ru.ru_utime.tv_sec*1000 + ru.ru_utime.tv_usec/1000;
+	long us = usr_ms/1000;  int ums = usr_ms%1000;
+	long sys_ms = ru.ru_stime.tv_sec*1000 + ru.ru_stime.tv_usec/1000;
+	long ss = sys_ms/1000;  int sms = sys_ms%1000;
+	printf("Cpu time: user: %ld:%02ld:%02ld.%03d sys: %ld:%02ld:%02ld.%03d\n",
+		us/3600, us%3600/60, us%60, ums, ss/3600, ss%3600/60, ss%60, sms);
 	return 0;
 }
 

@@ -489,7 +489,7 @@ void VWindowGUI::stop_transport()
 {
 	if( !transport->is_stopped() ) {
 		unlock_window();
-		transport->handle_transport(STOP, 1, 0, 0);
+		transport->handle_transport(STOP, 1);
 		lock_window("VWindowGUI::panel_stop_transport");
 	}
 }

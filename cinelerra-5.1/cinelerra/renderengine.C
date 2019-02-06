@@ -195,7 +195,7 @@ void RenderEngine::get_duty()
 	    get_edl()->session->audio_channels )
 	{
 		do_audio = !command->single_frame() ? 1 : 0;
-		if( command->audio_toggle ) do_audio = !do_audio;
+		if( command->toggle_audio ) do_audio = !do_audio;
 	}
 
 //printf("RenderEngine::get_duty %d\n", __LINE__);
@@ -538,7 +538,8 @@ void RenderEngine::run()
 				playback_engine->tracking_position = position >= 0 ? position : 0;
 			}
 
-			if(!interrupted) playback_engine->command->command = STOP;
+			if( !interrupted )
+				playback_engine->command->command = STOP;
 			playback_engine->stop_tracking();
 
 		}

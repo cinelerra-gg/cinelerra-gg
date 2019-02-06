@@ -2348,7 +2348,7 @@ void MWindowGUI::stop_transport(const char *lock_msg)
 {
 	if( !mbuttons->transport->is_stopped() ) {
 		if( lock_msg ) unlock_window();
-		mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+		mbuttons->transport->handle_transport(STOP, 1);
 		if( lock_msg ) lock_window(lock_msg);
 	}
 }

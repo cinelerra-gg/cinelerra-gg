@@ -50,7 +50,7 @@ public:
 	int flip_vertical(int vertical, int &x, int &y);
 	int keypress_event();
 	int do_keypress(int key);
-// Abstract TransportQue::send_command.
+// Abstract transport send_command.
 // wait_tracking - causes stop to wail until the final tracking position
 // is updated before returning
 // use_inout - causes the in/out points to determine the beginning and end
@@ -59,9 +59,9 @@ public:
 // the refresh frame.
 // toggle_audio - reverses audio playback enable in RenderEngine::get_duty
 // loop_play - sets play_loop and plays btwn start/end position (in a loop)
+// speed - play speed for SLOW/FAST playback, zero defaults to slow=.5,fast=2.
 	void handle_transport(int command, int wait_tracking=0,
-		int use_inout=0, int update_refresh=1, int toggle_audio=0,
-		int loop_play=0);
+		int use_inout=0, int toggle_audio=0, int loop_play=0, float speed=0);
 	int pause_transport();
 	int reset_transport();
 	int get_w();

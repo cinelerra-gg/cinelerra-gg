@@ -52,12 +52,21 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	tracking_active = 0;
 	audio_cache = 0;
 	video_cache = 0;
-	last_command = STOP;
+	command = new TransportCommand();
+	command->command = STOP;
+	next_command = new TransportCommand();
+	next_command->change_type = CHANGE_ALL;
+	curr_command = new TransportCommand();
+	stop_command = new TransportCommand();
+	stop_command->command = STOP;
 	tracking_lock = new Mutex("PlaybackEngine::tracking_lock");
 	renderengine_lock = new Mutex("PlaybackEngine::renderengine_lock");
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
 	pause_lock = new Condition(0, "PlaybackEngine::pause_lock");
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
+        input_lock = new Condition(1, "PlaybackEngine::input_lock");
+        output_lock = new Condition(0, "PlaybackEngine::output_lock", 1);
+
 	render_engine = 0;
 	debug = 0;
 }
@@ -65,16 +74,11 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 PlaybackEngine::~PlaybackEngine()
 {
 	done = 1;
-	que->send_command(STOP,
-		CHANGE_NONE,
-		0,
-		0);
+	transport_stop();
 	interrupt_playback();
 
 	Thread::join();
 	delete preferences;
-	delete command;
-	delete que;
 	delete_render_engine();
 	delete audio_cache;
 	delete video_cache;
@@ -83,16 +87,17 @@ PlaybackEngine::~PlaybackEngine()
 	delete pause_lock;
 	delete start_lock;
 	delete renderengine_lock;
+	delete command;
+	delete next_command;
+	delete curr_command;
+	delete stop_command;
+        delete input_lock;
+        delete output_lock;
 }
 
 void PlaybackEngine::create_objects()
 {
 	preferences = new Preferences;
-	command = new TransportCommand;
-	que = new TransportQue;
-// Set the first change to maximum
-	que->command.change_type = CHANGE_ALL;
-
 	preferences->copy_from(mwindow->preferences);
 
 	done = 0;
@@ -158,7 +163,7 @@ void PlaybackEngine::create_cache()
 
 void PlaybackEngine::perform_change()
 {
-	switch(command->change_type)
+	switch( command->change_type )
 	{
 		case CHANGE_ALL:
 			create_cache();
@@ -294,7 +299,7 @@ double PlaybackEngine::get_tracking_position()
 // Interpolate
 		{
 			double loop_start, loop_end;
-			int play_loop = command->play_loop ? 1 : 0;
+			int play_loop = command->loop_play ? 1 : 0;
 			EDL *edl = command->get_edl();
 			int loop_playback = edl->local_session->loop_playback ? 1 : 0;
 			if( play_loop || !loop_playback ) {
@@ -360,22 +365,19 @@ void PlaybackEngine::run()
 
 	while( !done ) {
 // Wait for current command to finish
-		que->output_lock->lock("PlaybackEngine::run");
+		output_lock->lock("PlaybackEngine::run");
 		wait_render_engine();
 
 // Read the new command
-		que->input_lock->lock("PlaybackEngine::run");
-		if(done) return;
-
-		command->copy_from(&que->command);
-		que->command.reset();
-		que->input_lock->unlock();
+		input_lock->lock("PlaybackEngine::run");
+		if( done ) return;
+		command->copy_from(curr_command);
+		input_lock->unlock();
 //printf("PlaybackEngine::run 1 %d\n", command->command);
 
 		switch( command->command ) {
 // Parameter change only
 		case COMMAND_NONE:
-//			command->command = last_command;
 			perform_change();
 			break;
 
@@ -391,7 +393,6 @@ void PlaybackEngine::run()
 
 		case CURRENT_FRAME:
 		case LAST_FRAME:
-			last_command = command->command;
 			perform_change();
 			arm_render_engine();
 // Dispatch the command
@@ -402,7 +403,6 @@ void PlaybackEngine::run()
 		case SINGLE_FRAME_REWIND:
 // fall through
 		default:
-			last_command = command->command;
 			is_playing_back = 1;
 
 			perform_change();
@@ -425,7 +425,7 @@ void PlaybackEngine::run()
 
 void PlaybackEngine::stop_playback(int wait)
 {
-	que->send_command(STOP, CHANGE_NONE, 0, 0);
+	transport_stop();
 	interrupt_playback(wait);
 	renderengine_lock->lock("PlaybackEngine::stop_playback");
 	if(render_engine)
@@ -434,22 +434,20 @@ void PlaybackEngine::stop_playback(int wait)
 }
 
 
-void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
-		int use_inout, int update_refresh, int toggle_audio, int loop_play)
+void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int use_inout)
 {
-//printf("PlaybackEngine::issue_command 1 %d\n", command);
+//printf("PlaybackEngine::send_command 1 %d\n", command);
 // Stop requires transferring the output buffer to a refresh buffer.
-	int do_stop = 0, resume = 0;
-	int prev_command = this->command->command;
-	int prev_single_frame = this->command->single_frame();
-	int prev_audio = this->command->audio_toggle ?
-		 !prev_single_frame : prev_single_frame;
-	int cur_single_frame = TransportCommand::single_frame(command);
-	int cur_audio = toggle_audio ?
-		 !cur_single_frame : cur_single_frame;
+	int do_stop = 0, do_resume = 0;
+	int curr_command = this->command->command;
+	int curr_single_frame = TransportCommand::single_frame(curr_command);
+	int curr_audio = this->command->toggle_audio ?
+		!curr_single_frame : curr_single_frame;
+	int single_frame = TransportCommand::single_frame(command);
+	int next_audio = next_command->toggle_audio ? !single_frame : single_frame;
 
 // Dispatch command
-	switch(command) {
+	switch( command ) {
 	case FAST_REWIND:	// Commands that play back
 	case NORMAL_REWIND:
 	case SLOW_REWIND:
@@ -460,19 +458,18 @@ void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
 	case FAST_FWD:
 	case CURRENT_FRAME:
 	case LAST_FRAME:
-		if( !prev_single_frame &&
-		    prev_command == command &&
-		    cur_audio == prev_audio ) {
-// Same direction pressed twice and no change in audio state,  Stop
+		if( curr_command == command && !next_command->speed &&
+		    !curr_single_frame && curr_audio == next_audio ) {
+// Same direction pressed twice, not shuttle, and no change in audio state,  Stop
 			do_stop = 1;
 			break;
 		}
 // Resume or change direction
-		switch( prev_command ) {
+		switch( curr_command ) {
 		default:
-			que->send_command(STOP, CHANGE_NONE, 0, 0);
+			transport_stop();
 			interrupt_playback(wait_tracking);
-			resume = 1;
+			do_resume = 1;
 // fall through
 		case STOP:
 		case COMMAND_NONE:
@@ -480,10 +477,10 @@ void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
 		case SINGLE_FRAME_REWIND:
 		case CURRENT_FRAME:
 		case LAST_FRAME:
+			next_command->realtime = 1;
+			next_command->resume = do_resume;
 // Start from scratch
-			que->send_command(command, CHANGE_NONE, edl,
-				1, resume, use_inout, toggle_audio, loop_play,
-				mwindow->preferences->forward_render_displacement);
+			transport_command(command, CHANGE_NONE, edl, use_inout);
 			break;
 		}
 		break;
@@ -497,14 +494,52 @@ void PlaybackEngine::issue_command(EDL *edl, int command, int wait_tracking,
 	}
 
 	if( do_stop ) {
-		que->send_command(STOP, CHANGE_NONE, 0, 0);
+		transport_stop();
 		interrupt_playback(wait_tracking);
 	}
 }
 
+int PlaybackEngine::transport_stop()
+{
+	input_lock->lock("PlaybackEngine::transport_stop 1");
+	curr_command->copy_from(stop_command);
+	input_lock->unlock();
+	output_lock->unlock();
+	return 0;
+}
+
+int PlaybackEngine::transport_command(int command, int change_type, EDL *new_edl, int use_inout)
+{
+	input_lock->lock("PlaybackEngine::transport_command 1");
+	next_command->command = command;
+	next_command->change_type |= change_type;
+	if( new_edl ) {
+// Just change the EDL if the change requires it because renderengine
+// structures won't point to the new EDL otherwise and because copying the
+// EDL for every cursor movement is slow.
+		switch( change_type ) {
+		case CHANGE_EDL:
+		case CHANGE_ALL:
+			next_command->get_edl()->copy_all(new_edl);
+			break;
+		case CHANGE_PARAMS:
+			next_command->get_edl()->synchronize_params(new_edl);
+			break;
+		}
+		next_command->set_playback_range(new_edl, use_inout,
+				preferences->forward_render_displacement);
+	}
+	curr_command->copy_from(next_command);
+	next_command->reset();
+	input_lock->unlock();
+	output_lock->unlock();
+	return 0;
+}
+
 void PlaybackEngine::refresh_frame(int change_type, EDL *edl, int dir)
 {
-	que->send_command(dir >= 0 ? CURRENT_FRAME : LAST_FRAME,
-		change_type, edl, 1);
+	int command = dir >= 0 ? CURRENT_FRAME : LAST_FRAME;
+	next_command->realtime = 1;
+	transport_command(command, change_type, edl);
 }
 

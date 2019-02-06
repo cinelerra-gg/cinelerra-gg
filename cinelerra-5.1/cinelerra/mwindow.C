@@ -1259,10 +1259,10 @@ void MWindow::update_mixer_tracks()
 	zwindows_lock->unlock();
 }
 
-void MWindow::queue_mixers(EDL *edl, int command, int wait_tracking,
-		int use_inout, int update_refresh, int toggle_audio, int loop_play)
+void MWindow::handle_mixers(EDL *edl, int command, int wait_tracking,
+		int use_inout, int toggle_audio, int loop_play, float speed)
 {
-	zwindows_lock->lock("MWindow::queue_mixers");
+	zwindows_lock->lock("MWindow::handle_mixers");
 	for( int vidx=0; vidx<zwindows.size(); ++vidx ) {
 		ZWindow *zwindow = zwindows[vidx];
 		if( zwindow->idx < 0 ) continue;
@@ -1291,8 +1291,8 @@ void MWindow::queue_mixers(EDL *edl, int command, int wait_tracking,
 				track->record = track->play = 0;
 		}
 		zwindow->change_source(mixer_edl);
-		zwindow->issue_command(command,
-			wait_tracking, use_inout, update_refresh, toggle_audio, loop_play);
+		zwindow->handle_mixer(command, wait_tracking,
+				use_inout, toggle_audio, loop_play, speed);
 	}
 	zwindows_lock->unlock();
 }
@@ -1300,7 +1300,7 @@ void MWindow::queue_mixers(EDL *edl, int command, int wait_tracking,
 void MWindow::refresh_mixers(int dir)
 {
 	int command = dir >= 0 ? CURRENT_FRAME : LAST_FRAME;
-	queue_mixers(edl,command,0,0,1,0,0);
+	handle_mixers(edl, command, 0, 0, 0, 0, 0);
 }
 
 void MWindow::stop_mixers()
@@ -1308,7 +1308,7 @@ void MWindow::stop_mixers()
 	for( int vidx=0; vidx<zwindows.size(); ++vidx ) {
 		ZWindow *zwindow = zwindows[vidx];
 		if( zwindow->idx < 0 ) continue;
-		zwindow->issue_command(STOP, 0, 0, 0, 0, 0);
+		zwindow->handle_mixer(STOP, 0, 0, 0, 0, 0);
 	}
 }
 
@@ -1817,23 +1817,11 @@ void MWindow::stop_transport()
 
 void MWindow::undo_before(const char *description, void *creator)
 {
-	if( cwindow->playback_engine->is_playing_back ) {
-		undo_command = cwindow->playback_engine->command->command;
-		cwindow->playback_engine->que->send_command(STOP, CHANGE_NONE, 0, 0);
-		gui->unlock_window();
-		cwindow->playback_engine->interrupt_playback(1);
-		gui->lock_window(description);
-	}
 	undo->update_undo_before(description, creator);
 }
 
 void MWindow::undo_after(const char *description, uint32_t load_flags, int changes_made)
 {
-	if( undo_command != COMMAND_NONE ) {
-		cwindow->playback_engine->que->send_command(undo_command, CHANGE_NONE, edl, 1, 0);
-		undo_command = COMMAND_NONE;
-	}
-
 	undo->update_undo_after(description, load_flags, changes_made);
 }
 
@@ -3083,35 +3071,25 @@ void MWindow::sync_parameters(int change_type)
 	if( in_destructor ) return;
 
 // Sync engines which are playing back
-	if(cwindow->playback_engine->is_playing_back)
-	{
-		if(change_type == CHANGE_PARAMS)
-		{
+	if( cwindow->playback_engine->is_playing_back ) {
+		if( change_type == CHANGE_PARAMS ) {
 // TODO: block keyframes until synchronization is done
 			cwindow->playback_engine->sync_parameters(edl);
 		}
-		else
+		else {
 // Stop and restart
-		{
 			int command = cwindow->playback_engine->command->command;
-			cwindow->playback_engine->que->send_command(STOP,
-				CHANGE_NONE,
-				0,
-				0);
+			cwindow->playback_engine->transport_stop();
 // Waiting for tracking to finish would make the restart position more
 // accurate but it can't lock the window to stop tracking for some reason.
 // Not waiting for tracking gives a faster response but restart position is
 // only as accurate as the last tracking update.
 			cwindow->playback_engine->interrupt_playback(0);
-			cwindow->playback_engine->que->send_command(command,
-					change_type,
-					edl,
-					1,
-					0);
+			cwindow->playback_engine->next_command->realtime = 1;
+			cwindow->playback_engine->transport_command(command, change_type, edl, 0);
 		}
 	}
-	else
-	{
+	else {
 		cwindow->refresh_frame(change_type);
 	}
 }

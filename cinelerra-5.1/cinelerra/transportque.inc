@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef TRANSPORTQUE_INC
-#define TRANSPORTQUE_INC
+#ifndef __TRANSPORTQUE_INC__
+#define __TRANSPORTQUE_INC__
 
 // Directions
 #define PLAY_FORWARD 0
@@ -56,6 +56,5 @@
 #define CHANGE_NONE                  0x0
 
 class TransportCommand;
-class TransportQue;
 
 #endif

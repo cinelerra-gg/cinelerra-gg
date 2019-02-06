@@ -6,6 +6,7 @@
 #include "cstrdup.h"
 #include "file.h"
 #include "guicast.h"
+#include "keys.h"
 #include "linklist.h"
 #include "loadfile.h"
 #include "mainmenu.h"
@@ -41,6 +42,7 @@ static Time milliTimeClock()
 }
 
 KeySymMapping KeySymMapping::key_sym_mapping[] = {
+// button keycodes
 	{ "XK_Button_1", XK_Button_1 },
 	{ "XK_Button_2", XK_Button_2 },
 	{ "XK_Button_3", XK_Button_3 },
@@ -52,6 +54,22 @@ KeySymMapping KeySymMapping::key_sym_mapping[] = {
 
 KeySym KeySymMapping::to_keysym(const char *str)
 {
+	if( !strncmp("FWD_",str, 4) ) {
+		float speed = atof(str+4) / SHUTTLE_MAX_SPEED;
+		if( speed > SHUTTLE_MAX_SPEED ) return 0;
+		int key_code = (SKEY_MAX+SKEY_MIN)/2. +
+			(SKEY_MAX-SKEY_MIN)/2. * speed;
+		if( key_code > SKEY_MAX ) key_code = SKEY_MAX;
+		return key_code;
+	}
+	if( !strncmp("REV_",str, 4) ) {
+		float speed = atof(str+4) / SHUTTLE_MAX_SPEED;
+		if( speed > SHUTTLE_MAX_SPEED ) return 0;
+		int key_code = (SKEY_MAX+SKEY_MIN)/2. -
+			(SKEY_MAX-SKEY_MIN)/2. * speed;
+		if( key_code < SKEY_MIN ) key_code = SKEY_MIN;
+		return key_code;
+	}
 	for( KeySymMapping *ksp = &key_sym_mapping[0]; ksp->str; ++ksp )
 		if( !strcmp(str, ksp->str) ) return ksp->sym;
 	return 0;
@@ -61,6 +79,19 @@ const char *KeySymMapping::to_string(KeySym ks)
 {
 	for( KeySymMapping *ksp = &key_sym_mapping[0]; ksp->sym; ++ksp )
 		if( ksp->sym == ks ) return ksp->str;
+	if( ks >= SKEY_MIN && ks <= SKEY_MAX ) {
+		double speed = SHUTTLE_MAX_SPEED *
+			(ks-(SKEY_MAX+SKEY_MIN)/2.) / ((SKEY_MAX-SKEY_MIN)/2.);
+		static char text[BCSTRLEN];
+		sprintf(text, "%s_%0.3f", speed>=0 ? "FWD" : "REV", fabs(speed));
+		char *bp = strchr(text,'.');
+		if( bp ) {
+			char *cp = bp+strlen(bp);
+			while( --cp>bp && *cp=='0' ) *cp=0;
+			if( cp == bp ) *cp = 0;
+		}
+		return text;
+	}
 	return 0;
 }
 
@@ -400,6 +431,7 @@ int Shuttle::send_button(unsigned int button, int press)
 	memset(b, 0, sizeof(*b));
 	b->type = press ? ButtonPress : ButtonRelease;
 	b->time = milliTimeClock();
+	b->send_event = 1;
 	b->display = wdw->top_level->display;
 	b->root = wdw->top_level->rootwin;
 	b->window = win;
@@ -413,15 +445,21 @@ int Shuttle::send_button(unsigned int button, int press)
 	wdw->top_level->put_event((XEvent *) b);
 	return 0;
 }
-int Shuttle::send_key(KeySym keysym, int press)
+int Shuttle::send_keycode(unsigned int keycode, int press, int send)
 {
-	KeyCode keycode = XKeysymToKeycode(wdw->top_level->display, keysym);
-	if( debug )
-		printf("key: %04x %d\n", (unsigned)keycode, press);
+	if( debug ) {
+		const char *cp = !send ? 0 :
+			KeySymMapping::to_string(keycode);
+		if( cp )
+			printf("key: %s %d\n", cp, press);
+		else
+			printf("key: %04x %d\n", keycode, press);
+	}
 	XKeyEvent *k = new XKeyEvent();
 	memset(k, 0, sizeof(*k));
 	k->type = press ? KeyPress : KeyRelease;
 	k->time = milliTimeClock();
+	k->send_event = send;
 	k->display = wdw->top_level->display;
 	k->root = wdw->top_level->rootwin;
 	k->window = win;
@@ -440,7 +478,9 @@ int Shuttle::send_keysym(KeySym keysym, int press)
 {
 	return keysym >= XK_Button_1 && keysym <= XK_Scroll_Down ?
 		send_button((unsigned int)keysym - XK_Button_0, press) :
-		send_key(keysym, press ? True : False);
+		send_keycode((unsigned int)keysym, press, 1);
+//	unsigned int keycode = XKeysymToKeycode(wdw->top_level->display, keysym);
+//	return send_keycode(keycode, press, 0);
 }
 
 
@@ -481,7 +521,7 @@ void Shuttle::key(unsigned short code, unsigned int value)
 }
 
 
-void Shuttle:: shuttle(int value)
+void Shuttle::shuttle(int value)
 {
 	if( value < S_7 || value > S7 ) {
 		fprintf(stderr, "shuttle(%d) out of range\n", value);
@@ -595,7 +635,7 @@ int Shuttle::get_focused_window_translation()
 	Display *dpy = gui->display;
 	Window focus = 0;
 	int ret = 0, revert = 0;
-	char win_title[BCTEXTLEN];
+	char win_title[BCTEXTLEN];  win_title[0] = 0;
 	gui->lock_window("Shuttle::get_focused_window_translation");
 	XGetInputFocus(dpy, &focus, &revert);
 	if( last_focused != focus ) {
@@ -638,7 +678,8 @@ int Shuttle::get_focused_window_translation()
 			wdw = mwindow->cwindow->gui->canvas->get_canvas();
 		cin = FOCUS_CWINDOW;
 	}
-	else if( (wdw=mwindow->gui->mainmenu->load_file->thread->window) != 0 &&
+	else if( mwindow->gui->mainmenu->load_file->thread->running() &&
+		 (wdw=mwindow->gui->mainmenu->load_file->thread->window) != 0 &&
 		 wdw->win == focus )
 		cin = FOCUS_LOAD;
 	else {

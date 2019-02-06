@@ -3889,7 +3889,7 @@ int TrackCanvas::render_handle_frame(EDL *edl, int64_t pos, int mode)
 		PlaybackEngine *playback_engine = mwindow->cwindow->playback_engine;
 		if( playback_engine->is_playing_back )
 			playback_engine->stop_playback(1);
-		mwindow->cwindow->playback_engine->refresh_frame(CHANGE_EDL, edl, 0);
+		mwindow->cwindow->playback_engine->refresh_frame(CHANGE_NONE, edl, 0);
 		break; }
 	}
 	return result;

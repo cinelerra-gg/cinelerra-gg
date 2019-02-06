@@ -372,7 +372,7 @@ int CWindowRemoteHandler::remote_process_key(RemoteControl *remote_control, int 
 		transport->change_position(position);
 	}
 	else
-		transport->handle_transport(next_command, 0, 0);
+		transport->handle_transport(next_command);
 	return 1;
 }
 

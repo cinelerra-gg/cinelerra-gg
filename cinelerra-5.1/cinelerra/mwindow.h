@@ -211,8 +211,8 @@ public:
 	void undo_before(const char *description = "", void *creator = 0);
 	void undo_after(const char *description, uint32_t load_flags, int changes_made = 1);
 
-	void queue_mixers(EDL *edl, int command, int wait_tracking,
-		int use_inout, int update_refresh, int toggle_audio, int loop_play);
+	void handle_mixers(EDL *edl, int command, int wait_tracking,
+		int use_inout, int toggle_audio, int loop_play, float speed);
 	ZWindow *create_mixer(Indexable *indexable);
 	void create_mixers();
 	void refresh_mixers(int dir=1);

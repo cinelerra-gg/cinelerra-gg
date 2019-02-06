@@ -38,7 +38,7 @@
 #include "renderengine.inc"
 #include "thread.h"
 #include "bctimer.h"
-#include "transportque.inc"
+#include "transportque.h"
 
 class PlaybackEngine : public Thread
 {
@@ -81,9 +81,8 @@ public:
 	ChannelDB* get_channeldb();
 
 	void run();
+	void send_command(int command, EDL *edl, int wait_tracking, int use_inout);
 	void stop_playback(int wait);
-	void issue_command(EDL *edl, int command, int wait_tracking,
-		int use_inout, int update_refresh, int toggle_audio, int loop_play);
 	void refresh_frame(int change_type, EDL *edl, int dir=1);
 
 // Maintain caches through console changes
@@ -110,18 +109,20 @@ public:
 	Canvas *output;
 // Copy of main preferences
 	Preferences *preferences;
-// Next command
-	TransportQue *que;
-// Currently executing command
-	TransportCommand *command;
-// Last command which affected transport
-	int last_command;
-	int done;
-	int do_cwindow;
+
+	int transport_stop();
+	int transport_command(int command, int change_type=CHANGE_NONE,
+			EDL *new_edl=0, int use_inout=0);
+
+	Condition *input_lock, *output_lock;
+// active command
+	TransportCommand *command, *stop_command;
+	TransportCommand *curr_command, *next_command;
+
 // Render engine
 	RenderEngine *render_engine;
 
-// Used by label commands to get current position
+	int done;
 	int is_playing_back;
 
 // General purpose debugging register
