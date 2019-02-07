@@ -154,7 +154,8 @@ ffmpeg.cfg_params= \
 		-Wl,--end-group -lm -lstdc++ -pthread \
 		$(EXTRA_LIBS)" $(FFMPEG_EXTRA_CFG) \
 
-cmake_config=echo "exec cmake \$$$$@ $(1)" > ./configure; chmod +x ./configure;
+#cmake_config=echo "exec cmake \$$$$@ $(1)" > ./configure; chmod +x ./configure;
+cmake_config=echo "exec cmake $(1) \$$$$@" > ./configure; chmod +x ./configure;
 a52dec.mak_params?= ; cd $(call bld_path,a52dec,include); ln -sf . a52dec
 a52dec.cfg_vars?= CFLAGS+=" -U__FreeBSD__ $(call inc_path,djbfft)" LIBS+=" $(call ld_path,djbfft)"
 a52dec.cfg_params?=--enable-djbfft

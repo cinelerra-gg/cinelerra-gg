@@ -18,7 +18,7 @@ DEPENDS=( 'alsa-lib' 'atk' 'bzip2' 'cairo' 'expat' 'fftw' 'flac'
  'pango' 'pcre' 'pixman' 'xz' 'zlib' 'xorg-server' 'libva'
  'xorg-fonts-misc' 'ttf-dejavu' 'inkscape' 'dvdauthor' 'udftools' )
 
-makedepends=( 'autoconf' 'automake' 'yasm' 'nasm' 'cmake'
+makedepends=( 'autoconf' 'automake' 'yasm' 'nasm' 'cmake' 'libtool'
 	 'libxml2' 'perl-xml-libxml' 'perl-xml-parser'
 	 'xorg-mkfontdir' 'xorg-mkfontscale' )
 

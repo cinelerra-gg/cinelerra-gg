@@ -44,6 +44,7 @@ BuildRequires: libXft-devel
 BuildRequires: libXinerama-devel
 BuildRequires: libXv-devel
 BuildRequires: nasm
+BuildRequires: libtool
 BuildRequires: ncurses-devel
 BuildRequires: texinfo
 BuildRequires: udftools
