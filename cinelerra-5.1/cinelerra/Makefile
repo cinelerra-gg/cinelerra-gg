@@ -553,6 +553,9 @@ ydiff:	ydiff.C $(LIBRARIES)
 	@echo g++ -o $@ ydiff.C
 	@g++ $(CFLAGS) ydiff.C -o $@ $(LIBS)
 
+shdmp:	shdmp.C
+	@g++ $(CFLAGS) shdmp.C -o $@
+
 clean:
 	rm -rf $(OBJDIR)
 	rm -f shuttle_keys.h

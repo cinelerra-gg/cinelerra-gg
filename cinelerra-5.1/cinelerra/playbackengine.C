@@ -64,8 +64,8 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
 	pause_lock = new Condition(0, "PlaybackEngine::pause_lock");
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
-        input_lock = new Condition(1, "PlaybackEngine::input_lock");
-        output_lock = new Condition(0, "PlaybackEngine::output_lock", 1);
+	input_lock = new Condition(1, "PlaybackEngine::input_lock");
+	output_lock = new Condition(0, "PlaybackEngine::output_lock", 1);
 
 	render_engine = 0;
 	debug = 0;
@@ -74,9 +74,7 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 PlaybackEngine::~PlaybackEngine()
 {
 	done = 1;
-	transport_stop();
-	interrupt_playback();
-
+	transport_stop(0);
 	Thread::join();
 	delete preferences;
 	delete_render_engine();
@@ -89,10 +87,10 @@ PlaybackEngine::~PlaybackEngine()
 	delete renderengine_lock;
 	delete command;
 	delete next_command;
-	delete curr_command;
 	delete stop_command;
-        delete input_lock;
-        delete output_lock;
+	delete curr_command;
+	delete input_lock;
+	delete output_lock;
 }
 
 void PlaybackEngine::create_objects()
@@ -366,13 +364,20 @@ void PlaybackEngine::run()
 	while( !done ) {
 // Wait for current command to finish
 		output_lock->lock("PlaybackEngine::run");
+//printf("PlaybackEngine::run 0 %d\n", curr_command->command);
+		if( curr_command->command < 0 ) continue;
+// this covers a glitch that occurs when stop is asserted
+// when the render_engine starting, but not initialized
+		if( curr_command->command == STOP && render_engine )
+			render_engine->interrupt_playback();
 		wait_render_engine();
 
 // Read the new command
 		input_lock->lock("PlaybackEngine::run");
-		if( done ) return;
 		command->copy_from(curr_command);
+		curr_command->command = -1;
 		input_lock->unlock();
+		if( done ) break;
 //printf("PlaybackEngine::run 1 %d\n", command->command);
 
 		switch( command->command ) {
@@ -404,7 +409,6 @@ void PlaybackEngine::run()
 // fall through
 		default:
 			is_playing_back = 1;
-
 			perform_change();
 			arm_render_engine();
 
@@ -416,17 +420,14 @@ void PlaybackEngine::run()
 			start_render_engine();
 			break;
 		}
-
-
 //printf("PlaybackEngine::run 100\n");
 	}
 }
 
 
-void PlaybackEngine::stop_playback(int wait)
+void PlaybackEngine::stop_playback(int wait_tracking)
 {
-	transport_stop();
-	interrupt_playback(wait);
+	transport_stop(wait_tracking);
 	renderengine_lock->lock("PlaybackEngine::stop_playback");
 	if(render_engine)
 		render_engine->wait_done();
@@ -467,8 +468,7 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 // Resume or change direction
 		switch( curr_command ) {
 		default:
-			transport_stop();
-			interrupt_playback(wait_tracking);
+			transport_stop(wait_tracking);
 			do_resume = 1;
 // fall through
 		case STOP:
@@ -494,15 +494,16 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 	}
 
 	if( do_stop ) {
-		transport_stop();
-		interrupt_playback(wait_tracking);
+		transport_stop(wait_tracking);
 	}
 }
 
-int PlaybackEngine::transport_stop()
+int PlaybackEngine::transport_stop(int wait_tracking)
 {
 	input_lock->lock("PlaybackEngine::transport_stop 1");
 	curr_command->copy_from(stop_command);
+	interrupt_playback(wait_tracking);
+//printf("send: %d (STOP)\n", STOP);
 	input_lock->unlock();
 	output_lock->unlock();
 	return 0;
@@ -531,6 +532,11 @@ int PlaybackEngine::transport_command(int command, int change_type, EDL *new_edl
 	}
 	curr_command->copy_from(next_command);
 	next_command->reset();
+//static const char *types[] = { "NONE",
+// "FRAME_FWD", "NORMAL_FWD", "FAST_FWD", "FRAME_REV", "NORMAL_REV", "FAST_REV",
+// "STOP",  "PAUSE", "SLOW_FWD", "SLOW_REV", "REWIND", "GOTO_END", "CURRENT_FRAME",
+// "LAST_FRAME" };
+//printf("send= %d (%s)\n", command, types[command]);
 	input_lock->unlock();
 	output_lock->unlock();
 	return 0;

@@ -29,16 +29,16 @@
  K3 "c"		# Pro Only - Copy
  K4 "v"		# Pro Only - Paste
 
- S-7 REV_16	# Next 7 are reverse keys
+ S-7 REV_16	# Next 6 are reverse keys
  S-6 REV_8	#  the number on the end represents speed
  S-5 REV_4	#  number can be decimal up to 64
  S-4 REV_2	#  2 means 2x or double speed
  S-3 REV_1
- S-2 REV_0.5	#  note 0.25 represents 1/4 speed
- S-1 REV_0.25
- S0  XK_KP_0	# Stop
- S1  FWD_0.25	# Next 7 are forward keys
- S2  FWD_0.5
+ S-2 REV_0.5	#  note 0.5 represents 1/2 speed
+ S-1 XK_KP_0	# Because the Shuttle does not generate S0, have to use S1
+ S0  XK_KP_0	# Hardware does not generate S0
+ S1  XK_KP_0	# Because the Shuttle does not generate S0, have to use S1
+ S2  FWD_0.5	# Next 6 are forward keys
  S3  FWD_1
  S4  FWD_2
  S5  FWD_4
@@ -62,13 +62,21 @@
  K3 "c"		# Pro Only - Copy
  K4 "v"		# Pro Only - Paste
 
- S-3 XK_KP_Add  # Fast reverse
- S-2 XK_KP_6    # Play reverse
- S-1 XK_KP_5    # Slow reverse
- S0 XK_KP_0     # Stop
- S1 XK_KP_2     # Slow forward
- S2 XK_KP_3     # Play forward
- S3 XK_KP_Enter # Fast forward
+ S-7 REV_16
+ S-6 REV_8
+ S-5 REV_4
+ S-4 REV_2
+ S-3 REV_1
+ S-2 REV_0.5
+ S-1 XK_KP_0	# Because the Shuttle does not generate S0, have to use S1
+ S0  XK_KP_0	# Hardware does not generate S0
+ S1  XK_KP_0	# Because the Shuttle does not generate S0, have to use S1
+ S2  FWD_0.5
+ S3  FWD_1
+ S4  FWD_2
+ S5  FWD_4
+ S6  FWD_8
+ S7  FWD_16
  
  JL XK_KP_4     # Frame reverse
  JR XK_KP_1     # Frame forward
@@ -86,15 +94,23 @@
  K2 XK_Home	# Pro Only - Beginning 
  K3 "c"		# Pro Only - Copy
  K4 XK_End	# Pro Only - End
-
- S-3 XK_KP_Add  # Fast reverse
- S-2 XK_KP_6    # Play reverse
- S-1 XK_KP_5    # Slow reverse
- S0 XK_KP_0     # Stop
- S1 XK_KP_2     # Slow forward
- S2 XK_KP_3     # Play forward
- S3 XK_KP_Enter # Fast forward
  
+ S-7 REV_16
+ S-6 REV_8
+ S-5 REV_4
+ S-4 REV_2
+ S-3 REV_1
+ S-2 REV_0.5
+ S-1 XK_KP_0	# Because the Shuttle does not generate S0, have to use S1
+ S0  XK_KP_0	# Hardware does not generate S0
+ S1  XK_KP_0	# Because the Shuttle does not generate S0, have to use S1
+ S2  FWD_0.5
+ S3  FWD_1
+ S4  FWD_2
+ S5  FWD_4
+ S6  FWD_8
+ S7  FWD_16
+
  JL XK_KP_4     # Frame reverse
  JR XK_KP_1     # Frame forward
 

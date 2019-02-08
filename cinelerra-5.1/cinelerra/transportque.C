@@ -55,6 +55,7 @@ void TransportCommand::reset()
 	resume = 0;
 	toggle_audio = 0;
 	loop_play = 0;
+	displacement = 0;
 	speed = 0;
 // Don't reset the change type for commands which don't perform the change
 	if(command != STOP) change_type = 0;

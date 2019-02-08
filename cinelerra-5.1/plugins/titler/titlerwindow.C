@@ -934,7 +934,7 @@ void TitleWindow::check_style(const char *font_name, int update)
 
 TitleFont::TitleFont(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_PopupTextBox(window, &window->fonts, client->config.font,
-		x, y, 240, 300, LISTBOX_ICON_LIST)
+		x, y, 300, 300, LISTBOX_ICON_LIST)
 {
 	this->client = client;
 	this->window = window;

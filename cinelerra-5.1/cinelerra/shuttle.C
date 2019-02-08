@@ -99,18 +99,10 @@ TransName::TransName(int cin, const char *nm, const char *re)
 {
 	this->cin = cin;
 	this->name = cstrdup(nm);
-	this->err = regcomp(&this->regex, re, REG_NOSUB);
-	if( err ) {
-      		fprintf(stderr, "error compiling regex for [%s]: %s\n", name, re);
-		char emsg[BCTEXTLEN];
-		regerror(err, &regex, emsg, sizeof(emsg));
-      		fprintf(stderr, "regerror: %s\n", emsg);
-	}
 }
 TransName::~TransName()
 {
 	delete [] name;
-	regfree(&regex);
 }
 
 void Translation::init(int def)
@@ -398,9 +390,6 @@ Shuttle::Shuttle(MWindow *mwindow)
 	wx = wy = 0;
 	jogvalue = 0xffff;
 	shuttlevalue = 0xffff;
-	last_shuttle.tv_sec = 0;
-	last_shuttle.tv_usec = 0;
-	need_synthetic_shuttle = 0;
 	dev_name = 0;
 
 	done = -1;
@@ -490,10 +479,10 @@ static Stroke *fetch_stroke(Translation *translation, int kjs, int index)
 	if( translation ) {
 		switch( kjs ) {
 		default:
-		case KJS_KEY_DOWN:  ret = translation->key_down[index].first;	break;
-		case KJS_KEY_UP:    ret = translation->key_up[index].first;	break;
-		case KJS_JOG:	    ret = translation->jog[index].first;	break;
-		case KJS_SHUTTLE:   ret = translation->shuttles[index].first;	break;
+		case KJS_KEY_DOWN:  ret = translation->key_down[index].first;     break;
+		case KJS_KEY_UP:    ret = translation->key_up[index].first;       break;
+		case KJS_JOG:	    ret = translation->jog[index].first;          break;
+		case KJS_SHUTTLE:   ret = translation->shuttles[index-S_7].first; break;
 		}
 	}
 	return ret;
@@ -527,11 +516,9 @@ void Shuttle::shuttle(int value)
 		fprintf(stderr, "shuttle(%d) out of range\n", value);
 		return;
 	}
-	gettimeofday(&last_shuttle, 0);
-	need_synthetic_shuttle = value != 0;
-	if( value != shuttlevalue ) {
+	if( value != (int)shuttlevalue ) {
 		shuttlevalue = value;
-		send_stroke_sequence(KJS_SHUTTLE, value+7);
+		send_stroke_sequence(KJS_SHUTTLE, value);
 	}
 }
 
@@ -545,29 +532,14 @@ void Shuttle::shuttle(int value)
 // event either!
 void Shuttle::jog(unsigned int value)
 {
-	int direction;
-	struct timeval now;
-	struct timeval delta;
-
-	// We should generate a synthetic event for the shuttle going
-	// to the home position if we have not seen one recently
-	if( need_synthetic_shuttle ) {
-		gettimeofday( &now, 0 );
-		timersub( &now, &last_shuttle, &delta );
-
-		if( delta.tv_sec >= 1 || delta.tv_usec >= 5000 ) {
-			shuttle(0);
-			need_synthetic_shuttle = 0;
-		}
-	}
-
 	if( jogvalue != 0xffff ) {
 		value = value & 0xff;
-		direction = ((value - jogvalue) & 0x80) ? -1 : 1;
+		int direction = ((value - jogvalue) & 0x80) ? -1 : 1;
+		int index = direction > 0 ? 1 : 0;
 		while( jogvalue != value ) {
 			// driver fails to send an event when jogvalue == 0
 			if( jogvalue != 0 ) {
-	send_stroke_sequence(KJS_JOG, direction > 0 ? 1 : 0);
+				send_stroke_sequence(KJS_JOG, index);
 			}
 			jogvalue = (jogvalue + direction) & 0xff;
 		}
@@ -651,7 +623,7 @@ int Shuttle::get_focused_window_translation()
 			win_title[len] = 0;
 			XFree(list);
 			if( debug )
-				printf("new focus: %08x\n", (unsigned)focus);
+				printf("new focus: %08x %s\n", (unsigned)focus, win_title);
 		}
 		else {
 			last_focused = 0;
@@ -729,9 +701,7 @@ int Shuttle::get_focused_window_translation()
 		if( tr->is_default ) return 1;
 		for( int i=0; i<tr->names.size(); ++i ) {
 			TransName *name = tr->names[i];
-			if( name->cin != cin ) continue;
-			if( regexec(&name->regex, win_title, 0, NULL, 0) )
-				return 1;
+			if( name->cin == cin ) return 1;
 		}
 	}
 	tr = default_translation;
@@ -751,7 +721,8 @@ void Shuttle::handle_event()
 		if( debug )
 			printf("new translation: %s\n", tr->name);
 	}
-//fprintf(stderr, "event: (%d, %d, 0x%x)\n", ev.type, ev.code, ev.value);
+//	if( debug )
+//		printf("event: (%d, %d, 0x%x)\n", ev.type, ev.code, ev.value);
 	switch( ev.type ) {
 	case EVENT_TYPE_DONE:
 	case EVENT_TYPE_ACTIVE_KEY:
@@ -871,9 +842,7 @@ int Shuttle::read_config_file()
 				}
 			}
 			while( ws(*cp) ) ++cp;
-// regex in TransName constructor
 			trans->names.append(new TransName(cin, name, cp));
-			if( trans->names.last()->err ) { ret = 1;  break; }
 			ret = fgets(cp=line,sizeof(line),fp) ? 0 : 1;
 			if( ret ) {
 				fprintf(stderr, "hit eof, no translation def for: %s\n",

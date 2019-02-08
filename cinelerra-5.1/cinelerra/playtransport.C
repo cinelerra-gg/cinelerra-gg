@@ -502,11 +502,7 @@ void PlayTransport::change_position(double position)
 	if( !get_edl() ) return;
 	int command = engine->command->command;
 // stop transport
-	if( command != STOP && command != COMMAND_NONE &&
-	    command != SINGLE_FRAME_FWD && command != SINGLE_FRAME_REWIND ) {
-		engine->transport_stop();
-		engine->interrupt_playback(0);
-	}
+	engine->stop_playback(0);
 	mwindow->gui->lock_window("PlayTransport::change_position");
 	mwindow->goto_position(position);
 	mwindow->gui->unlock_window();

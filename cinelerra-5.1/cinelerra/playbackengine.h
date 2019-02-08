@@ -110,14 +110,15 @@ public:
 // Copy of main preferences
 	Preferences *preferences;
 
-	int transport_stop();
+	int transport_stop(int wait_tracking);
 	int transport_command(int command, int change_type=CHANGE_NONE,
 			EDL *new_edl=0, int use_inout=0);
 
 	Condition *input_lock, *output_lock;
 // active command
-	TransportCommand *command, *stop_command;
-	TransportCommand *curr_command, *next_command;
+	TransportCommand *command;
+// stop, next, queued commands
+	TransportCommand *stop_command, *next_command, *curr_command;
 
 // Render engine
 	RenderEngine *render_engine;

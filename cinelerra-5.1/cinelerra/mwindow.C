@@ -3079,12 +3079,11 @@ void MWindow::sync_parameters(int change_type)
 		else {
 // Stop and restart
 			int command = cwindow->playback_engine->command->command;
-			cwindow->playback_engine->transport_stop();
 // Waiting for tracking to finish would make the restart position more
 // accurate but it can't lock the window to stop tracking for some reason.
 // Not waiting for tracking gives a faster response but restart position is
 // only as accurate as the last tracking update.
-			cwindow->playback_engine->interrupt_playback(0);
+			cwindow->playback_engine->transport_stop(0);
 			cwindow->playback_engine->next_command->realtime = 1;
 			cwindow->playback_engine->transport_command(command, change_type, edl, 0);
 		}

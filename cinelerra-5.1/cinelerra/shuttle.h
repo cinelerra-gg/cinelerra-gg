@@ -9,7 +9,6 @@
 
 #include <linux/input.h>
 #include <sys/types.h>
-#include <regex.h>
 
 // Copyright 2013 Eric Messick (FixedImagePhoto.com/Contact)
 // reworked 2019 for cinelerra-gg by William Morrow (aka goodguy)
@@ -123,9 +122,8 @@ public:
 class TransName
 {
 public:
-	int cin, err;
+	int cin;
 	const char *name;
-	regex_t regex;
 
 	TransName(int cin, const char *nm, const char *re);
 	~TransName();
@@ -184,10 +182,7 @@ public:
 class Shuttle : public Thread
 {
 	int fd;
-	unsigned short jogvalue;
-	int shuttlevalue;
-	struct timeval last_shuttle;
-	int need_synthetic_shuttle;
+	unsigned short jogvalue, shuttlevalue;
 	const char *dev_name;
 	Translation *default_translation;
 	Translations translations;

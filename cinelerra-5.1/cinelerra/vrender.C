@@ -481,8 +481,9 @@ void VRender::run()
 			framerate_timer.update();
 		}
 		if(debug) printf("VRender::run %d done=%d\n", __LINE__, done);
-		if( !interrupt )
-			interrupt = renderengine->video->interrupt;
+		if( !interrupt ) interrupt = renderengine->interrupted;
+		if( !interrupt ) interrupt = renderengine->video->interrupt;
+		if( !interrupt ) interrupt = vconsole->interrupt;
 	}
 
 

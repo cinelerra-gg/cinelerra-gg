@@ -293,7 +293,9 @@ if(debug) printf("ARender::run %d\n", __LINE__);
 if(debug) printf("ARender::run %d\n", __LINE__);
 
 
-		if(vconsole->interrupt) interrupt = 1;
+		if( !interrupt ) interrupt = renderengine->interrupted;
+		if( !interrupt ) interrupt = renderengine->audio->get_interrupted();
+		if( !interrupt ) interrupt = vconsole->interrupt;
 	}
 
 if(debug) printf("ARender::run %d\n", __LINE__);
