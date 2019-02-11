@@ -131,6 +131,7 @@ public:
 // passing -1 causes automatic size detection
 		int canvas_w = -1,
 		int canvas_h = -1);
+	void update_geometry(EDL *edl, int x, int y, int w, int h);
 	void reposition_window(EDL *edl, int x, int y, int w, int h);
 	virtual void reset_translation() {};
 	virtual void close_source() {};

@@ -55,7 +55,6 @@ public:
 	void delete_edl();
 	void new_edl();
 
-	PlaybackEngine *engine;
 	int command;
 	int change_type;
 // playback range
@@ -67,6 +66,8 @@ public:
 	int displacement;
 // Send output to device
 	int realtime;
+// command must execute
+	int locked;
 // Use persistant starting point
 	int resume;
 // reverse audio duty

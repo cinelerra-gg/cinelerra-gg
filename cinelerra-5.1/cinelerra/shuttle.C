@@ -52,7 +52,28 @@ KeySymMapping KeySymMapping::key_sym_mapping[] = {
 	{ NULL, 0 }
 };
 
-KeySym KeySymMapping::to_keysym(const char *str)
+int KeySymMapping::get_mask(const char *&str)
+{
+	int mask = 0;
+	while( *str ) {
+		if( !strncmp("Shift-",str,6) ) {
+			mask |= ShiftMask;
+			str += 6;  continue;
+		}
+		if( !strncmp("Ctrl-",str,5) ) {
+			mask |= ControlMask;
+			str += 5;  continue;
+		}
+		else if( !strncmp("Alt-",str,4) ) {
+			mask |= Mod1Mask;
+			str += 4;  continue;
+		}
+		break;
+	}
+	return mask;
+}
+
+SKeySym KeySymMapping::to_keysym(const char *str)
 {
 	if( !strncmp("FWD_",str, 4) ) {
 		float speed = atof(str+4) / SHUTTLE_MAX_SPEED;
@@ -70,15 +91,26 @@ KeySym KeySymMapping::to_keysym(const char *str)
 		if( key_code < SKEY_MIN ) key_code = SKEY_MIN;
 		return key_code;
 	}
+	int mask = get_mask(str);
 	for( KeySymMapping *ksp = &key_sym_mapping[0]; ksp->str; ++ksp )
-		if( !strcmp(str, ksp->str) ) return ksp->sym;
+		if( !strcmp(str, ksp->str) )
+			return SKeySym(ksp->sym, mask);
 	return 0;
 }
 
-const char *KeySymMapping::to_string(KeySym ks)
+const char *KeySymMapping::to_string(SKeySym ks)
 {
-	for( KeySymMapping *ksp = &key_sym_mapping[0]; ksp->sym; ++ksp )
-		if( ksp->sym == ks ) return ksp->str;
+	for( KeySymMapping *ksp = &key_sym_mapping[0]; ksp->sym.key; ++ksp ) {
+		if( ksp->sym.key == ks.key ) {
+			static char string[BCSTRLEN];
+			char *sp = string, *ep = sp+sizeof(string);
+			if( ks.msk & Mod1Mask ) sp += snprintf(sp, ep-sp, "Alt-");
+			if( ks.msk & ControlMask ) sp += snprintf(sp, ep-sp, "Ctrl-");
+			if( ks.msk & ShiftMask ) sp += snprintf(sp, ep-sp, "Shift-");
+			snprintf(sp, ep-sp, "%s", ksp->str);
+			return string;
+		}
+	}
 	if( ks >= SKEY_MIN && ks <= SKEY_MAX ) {
 		double speed = SHUTTLE_MAX_SPEED *
 			(ks-(SKEY_MAX+SKEY_MIN)/2.) / ((SKEY_MAX-SKEY_MIN)/2.);
@@ -157,14 +189,14 @@ void Translation::clear()
 	for( int i=0; i<NUM_JOGS; ++i ) jog[i].clear();
 }
 
-void Translation::append_stroke(KeySym sym, int press)
+void Translation::append_stroke(SKeySym sym, int press)
 {
 	Stroke *s = pressed_strokes->append();
 	s->keysym = sym;
 	s->press = press;
 }
 
-void Translation::add_keysym(KeySym sym, int press_release)
+void Translation::add_keysym(SKeySym sym, int press_release)
 {
 //printf("add_keysym(0x%x, %d)\n", (int)sym, press_release);
 	switch( press_release ) {
@@ -199,9 +231,8 @@ void Translation::add_release(int all_keys)
 {
 //printf("add_release(%d)\n", all_keys);
 	modifiers.release(all_keys);
-	if( !all_keys ) {
+	if( !all_keys )
 		pressed_strokes = released_strokes;
-	}
 	if( keysym_down ) {
 		append_stroke(keysym_down, 0);
 		keysym_down = 0;
@@ -211,7 +242,7 @@ void Translation::add_release(int all_keys)
 
 void Translation::add_keystroke(const char *keySymName, int press_release)
 {
-	KeySym sym;
+	SKeySym sym;
 
 	if( is_key && !strncmp(keySymName, "RELEASE", 8) ) {
 		add_release(0);
@@ -225,13 +256,18 @@ void Translation::add_keystroke(const char *keySymName, int press_release)
 		fprintf(stderr, "unrecognized KeySym: %s\n", keySymName);
 }
 
-void Translation::add_string(const char *str)
+void Translation::add_string(char *&str)
 {
-	while( str && *str ) {
-		if( *str >= ' ' && *str <= '~' )
-			add_keysym((KeySym)(*str), PRESS_RELEASE);
-		++str;
+	int delim = *str++;
+	if( !delim ) return;
+	while( str && *str && *str!=delim ) {
+		if( *str < ' ' || *str > '~' ) continue;
+		int mask = KeySymMapping::get_mask((const char *&)str);
+		if( str[0] == '\\' && str[1] ) ++str;
+		add_keysym(SKeySym(*str++, mask), PRESS_RELEASE);
+		mask = 0;
 	}
+	if( *str == delim ) ++str;
 }
 
 int Translation::start_line(const char *key)
@@ -306,11 +342,11 @@ void Translation::finish_line()
 void Translation::print_line(const char *key)
 {
 	if( is_key ) {
-		print_strokes(key, "D", pressed_strokes);
-		print_strokes(key, "U", released_strokes);
+		print_strokes(key, "D", pressed);
+		print_strokes(key, "U", released);
 	}
 	else {
-		print_strokes(key, "", pressed_strokes);
+		print_strokes(key, "", pressed);
 	}
 	printf("\n");
 }
@@ -321,7 +357,7 @@ void Translation::print_line(const char *key)
 // PRESS_RELEASE -> released, but to be re-pressed if necessary
 // RELEASE -> up
 
-void Modifiers::mark_as_down(KeySym sym, int hold)
+void Modifiers::mark_as_down(SKeySym sym, int hold)
 {
 	Modifiers &modifiers = *this;
 	for( int i=0; i<size(); ++i ) {
@@ -336,7 +372,7 @@ void Modifiers::mark_as_down(KeySym sym, int hold)
 	s.press = hold ? HOLD : PRESS;
 }
 
-void Modifiers::mark_as_up(KeySym sym)
+void Modifiers::mark_as_up(SKeySym sym)
 {
 	Modifiers &modifiers = *this;
 	for( int i=0; i<size(); ++i ) {
@@ -378,7 +414,7 @@ void Modifiers::re_press()
 
 
 Shuttle::Shuttle(MWindow *mwindow)
- : Thread(0, 0, 0)
+ : Thread(1, 0, 0)
 {
 	this->mwindow = mwindow;
 
@@ -390,14 +426,25 @@ Shuttle::Shuttle(MWindow *mwindow)
 	wx = wy = 0;
 	jogvalue = 0xffff;
 	shuttlevalue = 0xffff;
-	dev_name = 0;
+	dev_index = -1;
 
 	done = -1;
 	failed = 0;
 	first_time = 1;
 	tr = 0;
+	debug = 0;
+	usb_direct = 0;
+
 	last_translation = 0;
 	last_focused = 0;
+
+#ifdef HAVE_SHUTTLE_USB
+	devsh = 0;
+	claimed = -1;
+	last_jog = 0;
+	last_shuttle = 0;
+	last_btns = 0;
+#endif
 
 	default_translation = new Translation(this);
 	config_path = 0;
@@ -434,15 +481,15 @@ int Shuttle::send_button(unsigned int button, int press)
 	wdw->top_level->put_event((XEvent *) b);
 	return 0;
 }
-int Shuttle::send_keycode(unsigned int keycode, int press, int send)
+int Shuttle::send_keycode(unsigned key, unsigned msk, int press, int send)
 {
 	if( debug ) {
 		const char *cp = !send ? 0 :
-			KeySymMapping::to_string(keycode);
+			KeySymMapping::to_string(SKeySym(key, msk));
 		if( cp )
 			printf("key: %s %d\n", cp, press);
 		else
-			printf("key: %04x %d\n", keycode, press);
+			printf("key: %04x/%04x %d\n", key, msk, press);
 	}
 	XKeyEvent *k = new XKeyEvent();
 	memset(k, 0, sizeof(*k));
@@ -457,17 +504,17 @@ int Shuttle::send_keycode(unsigned int keycode, int press, int send)
 	k->x = wx;
 	k->y = wy;
 	k->state = msk;
-	k->keycode = keycode;
+	k->keycode = key;
 	k->same_screen = 1;
 	wdw->top_level->put_event((XEvent *) k);
 	return 0;
 }
 
-int Shuttle::send_keysym(KeySym keysym, int press)
+int Shuttle::send_keysym(SKeySym keysym, int press)
 {
 	return keysym >= XK_Button_1 && keysym <= XK_Scroll_Down ?
 		send_button((unsigned int)keysym - XK_Button_0, press) :
-		send_keycode((unsigned int)keysym, press, 1);
+		send_keycode(keysym.key, keysym.msk, press, 1);
 //	unsigned int keycode = XKeysymToKeycode(wdw->top_level->display, keysym);
 //	return send_keycode(keycode, press, 0);
 }
@@ -562,22 +609,66 @@ void Shuttle::jogshuttle(unsigned short code, unsigned int value)
 	}
 }
 
-const char *Shuttle::probe()
+static const struct shuttle_dev {
+	const char *path;
+	unsigned vendor, product;
+} shuttle_devs[] = {
+	{ "/dev/input/by-id/usb-Contour_Design_ShuttleXpress-event-if00",
+		0x0b33, 0x0020 },
+	{ "/dev/input/by-id/usb-Contour_Design_ShuttlePRO_v2-event-if00",
+		0x0b33, 0x0030 },
+	{ "/dev/input/by-id/usb-Contour_Design_ShuttlePro-event-if00",
+		0x0b33, 0x0030 },
+};
+
+#ifdef HAVE_SHUTTLE_USB
+void Shuttle::usb_probe(int idx)
 {
-	struct stat st;
-	static const char *shuttle_devs[] = {
-		"/dev/input/by-id/usb-Contour_Design_ShuttleXpress-event-if00",
-		"/dev/input/by-id/usb-Contour_Design_ShuttlePRO_v2-event-if00",
-		"/dev/input/by-id/usb-Contour_Design_ShuttlePro-event-if00",
-	};
-	int ret = sizeof(shuttle_devs) / sizeof(shuttle_devs[0]);
-	while( --ret >= 0 && stat(shuttle_devs[ret] , &st) );
-	return ret >= 0 ? shuttle_devs[ret] : 0;
+	int ret = libusb_init(0);
+	if( ret < 0 ) return;
+	claimed = 0;
+	const struct shuttle_dev *s = &shuttle_devs[idx];
+	devsh = libusb_open_device_with_vid_pid(0, s->vendor, s->product);
+	if( devsh ) {
+		int sh_iface = SHUTTLE_INTERFACE;
+		libusb_detach_kernel_driver(devsh, sh_iface);
+		ret = libusb_claim_interface(devsh, sh_iface);
+		if( ret >= 0 ) claimed = 1;
+	}
+	if( !claimed )
+		usb_done();
 }
 
-void Shuttle::start(const char *dev_name)
+void Shuttle::usb_done()
 {
-	this->dev_name = dev_name;
+	if( devsh ) {
+		if( claimed > 0 ) {
+			int sh_iface = SHUTTLE_INTERFACE;
+			libusb_release_interface(devsh, sh_iface);
+			libusb_attach_kernel_driver(devsh, sh_iface);
+			claimed = 0;
+		}
+		libusb_close(devsh);
+		devsh = 0;
+	}
+	if( claimed >= 0 ) {
+		libusb_exit(0);
+		claimed = -1;
+	}
+}
+#endif
+
+int Shuttle::probe()
+{
+	struct stat st;
+	int ret = sizeof(shuttle_devs) / sizeof(shuttle_devs[0]);
+	while( --ret >= 0 && stat(shuttle_devs[ret].path , &st) );
+	return ret;
+}
+
+void Shuttle::start(int idx)
+{
+	this->dev_index = idx;
 	first_time = 1;
 	done = 0;
 	Thread::start();
@@ -708,19 +799,23 @@ int Shuttle::get_focused_window_translation()
 	return 0;
 }
 
-void Shuttle::handle_event()
+int Shuttle::load_translation()
 {
-	if( read_config_file() > 0 ) {
-		done = 1;
-		return;
-	}
+	if( read_config_file() > 0 )
+		return done = 1;
 	if( get_focused_window_translation() < 0 )
-		return;
+		return 0;
 	if( last_translation != tr ) {
 		last_translation = tr;
 		if( debug )
 			printf("new translation: %s\n", tr->name);
 	}
+	return 0;
+}
+
+void Shuttle::handle_event()
+{
+	if( load_translation() ) return;
 //	if( debug )
 //		printf("event: (%d, %d, 0x%x)\n", ev.type, ev.code, ev.value);
 	switch( ev.type ) {
@@ -741,7 +836,55 @@ void Shuttle::handle_event()
 
 void Shuttle::run()
 {
-	for( enable_cancel(); !done; sleep(1) ) {
+	if( dev_index < 0 ) return;
+	const char *dev_name = shuttle_devs[dev_index].path;
+
+#ifdef HAVE_SHUTTLE_USB
+	if( usb_direct )
+		usb_probe(dev_index);
+
+	disable_cancel();
+	while( devsh && !done ) {
+		int len = 0;
+		static const int IN_ENDPOINT = 0x81;
+		unsigned char dat[BCSTRLEN];
+		int ret = libusb_interrupt_transfer(devsh,
+				IN_ENDPOINT, dat, sizeof(dat), &len, 100);
+		if( ret != 0 ) {
+			if( ret == LIBUSB_ERROR_TIMEOUT ) continue;
+			printf("shuttle: %s\n  %s\n",
+				dev_name, libusb_strerror((libusb_error)ret));
+			sleep(1);  continue;
+		}
+		if( load_translation() ) break;
+		if( debug ) {
+			printf("shuttle: ");
+			for( int i=0; i<len; ++i ) printf(" %02x", dat[i]);
+			printf("\n");
+		}
+		if( last_shuttle != dat[0] )
+			shuttle((char)(last_shuttle = dat[0]));
+
+		if( last_jog != dat[1] )
+			jog(last_jog = dat[1]);
+
+		unsigned btns = (dat[4]<<8) | dat[3];
+		unsigned dif = last_btns ^ btns;
+		if( dif ) {
+			last_btns = btns;
+			for( int i=0; i<15; ++i ) {
+				unsigned msk = 1 << i;
+				if( !(dif & msk) ) continue;
+				key(i+EVENT_CODE_KEY1, btns & msk ? 1 : 0);
+			}
+		}
+	}
+	usb_done();
+#endif
+	usb_direct = 0;
+	enable_cancel();
+
+	for( ; !done; sleep(1) ) {
 		fd = open(dev_name, O_RDONLY);
 		if( fd < 0 ) {
 			perror(dev_name);
@@ -800,6 +943,7 @@ int Shuttle::read_config_file()
 	config_mtime = st.st_mtime;
 	translations.clear();
 	debug = 0;
+	usb_direct = 0;
 #define ws(ch) (ch==' ' || ch=='\t')
 	char line[BCTEXTLEN], *cp;
 	Translation *trans = 0;
@@ -871,6 +1015,9 @@ int Shuttle::read_config_file()
 			if( !strcmp(tok, "DEBUG") ) {
 				debug = 1;  goto skip;
 			}
+			if( !strcmp(tok, "USB_DIRECT") ) {
+				usb_direct = 1;  goto skip;
+			}
 			key = tok;
 			if( !trans ) {
 				fprintf(stderr, "no translation section defining key: %s\n", key);
@@ -882,13 +1029,21 @@ int Shuttle::read_config_file()
 				while( ws(*cp) ) ++cp;
 				if( !*cp || *cp == '#' || *cp == '\n' ) break;
 				if( *cp == '"' ) {
-					tok = ++cp;
-					while( *cp && *cp != '"' && *cp != '\n' ) {
-						if( *cp != '\\' ) { ++cp;  continue; }
-						for( char *bp=cp; *bp; ++bp ) bp[0] = bp[1];
+					while( *cp ) {
+						if( *cp == '"' )
+							trans->add_string(cp);
+						while( ws(*cp) ) ++cp;
+						if( !*cp || *cp == '#' || *cp == '\n' ) break;
+						tok = cp;
+						while( *cp && !ws(*cp) && *cp != '\n' ) ++cp;
+						*cp = 0;
+						SKeySym sym = KeySymMapping::to_keysym(tok);
+						if( !sym ) {
+							fprintf(stderr, "unknown keysym: %s\n", tok);
+							ret = 1;  break;
+						}
+						trans->add_keysym(sym, PRESS_RELEASE);
 					}
-					*cp++ = 0;
-					trans->add_string(tok);
 					continue;
 				}
 				tok = cp;

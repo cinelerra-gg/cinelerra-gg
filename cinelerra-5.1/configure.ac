@@ -54,6 +54,7 @@ CHECK_WITH([libzmpeg],[build libzmpeg],[LIBZMPEG],[yes])
 CHECK_WITH([commercial],[enable commercial capture],[COMMERCIAL],[yes])
 CHECK_WITH([thirdparty],[use thirdparty build],[CIN_3RDPARTY],[yes])
 CHECK_WITH([shuttle],[shuttle device],[SHUTTLE],[yes])
+CHECK_WITH([shuttle-usb],[use libusb for shuttle],[SHUTTLE_USB],[no])
 
 if test "x$WANT_LV2" != "xno"; then
   GTK2_LIBS=`pkg-config --libs gtk+-2.0`
@@ -823,7 +824,7 @@ if test "x$WANT_CIN_3RDPARTY" != "xno"; then
 fi
 for v in GL XFT XXF86VM OSS ALSA FIREWIRE DV DVB \
 	 VIDEO4LINUX2 ESOUND PACTL OPENEXR LV2 \
-	 COMMERCIAL LIBZMPEG SHUTTLE; do
+	 COMMERCIAL LIBZMPEG SHUTTLE SHUTTLE_USB; do
   eval vv="\$WANT_$v"
   if test "x$vv" != "xno"; then
     CFG_CFLAGS+=" -DHAVE_$v"
@@ -850,6 +851,7 @@ echo "  using: with-booby = $WANT_BOOBY"
 echo "  using: with-libzmpeg = $WANT_LIBZMPEG"
 echo "  using: with-commerical = $WANT_COMMERCIAL"
 echo "  using: with-shuttle = $WANT_SHUTTLE"
+echo "  using: with-shuttle-usb = $WANT_SHUTTLE_USB"
 echo ""
 echo "  using: thirdparty build = $WANT_CIN_3RDPARTY"
 echo "  using: single-user  = $WANT_CINBIN_BUILD"
@@ -872,6 +874,9 @@ if test "x$HAVE_DL" = "xyes"; then
 fi
 if test "x$WANT_BOOBY" != "xno"; then
   CFG_CFLAGS+=" -DBOOBY"
+fi
+if test "x$WANT_SHUTTLE_USB" != "xno"; then
+  EXTRA_LIBS+=' -lusb-1.0'
 fi
 
 # intel lock elision bugs

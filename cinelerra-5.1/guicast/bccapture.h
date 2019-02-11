@@ -44,6 +44,13 @@ public:
 	int get_w();
 	int get_h();
 
+	Window border[4];
+	int bar_w, bar_color;
+	Window bar(int x, int y, int w, int h, int color);
+	void bars_on(int bw, int color, int x, int y, int w, int h);
+	void bars_off();
+	void bars_reposition(int x, int y, int w, int h);
+
 	int w, h, default_depth;
 	unsigned char **row_data;
 

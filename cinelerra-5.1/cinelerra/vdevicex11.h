@@ -133,10 +133,8 @@ private:
 	int get_display_colormodel(int file_colormodel);
 
 // windows which overlay the screencap area
-#define SCREENCAP_BORDERS 4
 #define SCREENCAP_PIXELS 5
 #define SCREENCAP_COLOR GREEN
-	BC_Popup *screencap_border[SCREENCAP_BORDERS];
 
 // Bitmap to be written to device
 	BC_Bitmap *bitmap;

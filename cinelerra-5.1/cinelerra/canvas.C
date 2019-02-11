@@ -576,6 +576,22 @@ void Canvas::get_scrollbars(EDL *edl,
 //printf("Canvas::get_scrollbars 5 %d %d\n", get_xscroll(), get_yscroll());
 }
 
+
+void Canvas::update_geometry(EDL *edl, int x, int y, int w, int h)
+{
+	int redraw = 0;
+	if( this->x != x || this->y != y ||
+	    this->w != w || this->h != h ) redraw = 1;
+	if( !redraw ) {
+		int vx = x, vy = y, vw = w, vh = h;
+		get_scrollbars(edl, vx, vy, vw, vh);
+		if( vx != view_x || vy != view_y ||
+		    vw != view_w || vh != view_h ) redraw = 1;
+	}
+	if( !redraw ) return;
+	reposition_window(edl, x, y, w, y);
+}
+
 void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
 {
 	this->x = view_x = x;  this->y = view_y = y;
@@ -596,8 +612,6 @@ void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
 			canvas_subwindow->flash(0);
 		}
 	}
-
-
 	draw_refresh(0);
 }
 

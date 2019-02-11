@@ -1291,7 +1291,7 @@ void MWindow::handle_mixers(EDL *edl, int command, int wait_tracking,
 				track->record = track->play = 0;
 		}
 		zwindow->change_source(mixer_edl);
-		zwindow->handle_mixer(command, wait_tracking,
+		zwindow->handle_mixer(command, 0,
 				use_inout, toggle_audio, loop_play, speed);
 	}
 	zwindows_lock->unlock();
@@ -1589,10 +1589,15 @@ void MWindow::init_exportedl()
 void MWindow::init_shuttle()
 {
 #ifdef HAVE_SHUTTLE
-	const char *dev_name = Shuttle::probe();
-	if( dev_name ) {
+	int ret = Shuttle::probe();
+	if( ret >= 0 ) {
 		shuttle = new Shuttle(this);
-		shuttle->start(dev_name);
+		if( shuttle->read_config_file() > 0 ) {
+			printf("shuttle: bad config file\n");
+			delete shuttle;  shuttle = 0;
+			return;
+		}
+		shuttle->start(ret);
 	}
 #endif
 }

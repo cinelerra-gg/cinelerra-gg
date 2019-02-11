@@ -77,10 +77,6 @@ int VDeviceX11::reset_parameters()
 	capture_bitmap = 0;
 	color_model_selected = 0;
 	is_cleared = 0;
-
-	for( int i = 0; i < SCREENCAP_BORDERS; i++ ) {
-		screencap_border[i] = 0;
-	}
 	return 0;
 }
 
@@ -91,33 +87,9 @@ int VDeviceX11::open_input()
 		device->in_config->h,
 		device->in_config->screencapture_display);
 //printf("VDeviceX11::open_input 2\n");
-
-// create overlay
-	device->mwindow->gui->lock_window("VDeviceX11::close_all");
-
-	screencap_border[0] = new BC_Popup(device->mwindow->gui,
-			device->input_x - SCREENCAP_PIXELS, device->input_y - SCREENCAP_PIXELS,
-			device->in_config->w + SCREENCAP_PIXELS * 2, SCREENCAP_PIXELS,
-			SCREENCAP_COLOR, 1);
-	screencap_border[1] = new BC_Popup(device->mwindow->gui,
-			device->input_x - SCREENCAP_PIXELS, device->input_y,
-			SCREENCAP_PIXELS, device->in_config->h,
-			SCREENCAP_COLOR, 1);
-	screencap_border[2] = new BC_Popup(device->mwindow->gui,
-			device->input_x - SCREENCAP_PIXELS, device->input_y + device->in_config->h,
-			device->in_config->w + SCREENCAP_PIXELS * 2, SCREENCAP_PIXELS,
-			SCREENCAP_COLOR, 1);
-	screencap_border[3] = new BC_Popup(device->mwindow->gui,
-			device->input_x + device->in_config->w, device->input_y,
-			SCREENCAP_PIXELS, device->in_config->h,
-			SCREENCAP_COLOR, 1);
-usleep(500000);	// avoids a bug in gnome-shell 2017/10/19
-
-	for( int i=0; i<SCREENCAP_BORDERS; ++i )
-		screencap_border[i]->show_window(0);
-
-	device->mwindow->gui->flush();
-	device->mwindow->gui->unlock_window();
+	capture_bitmap->bars_on(SCREENCAP_PIXELS, SCREENCAP_COLOR,
+		device->input_x, device->input_y,
+		device->in_config->w, device->in_config->h);
 
 	return 0;
 }
@@ -186,15 +158,6 @@ int VDeviceX11::close_all()
 		output->unlock_canvas();
 	}
 
-	if( device->mwindow ) {
-		device->mwindow->gui->lock_window("VDeviceX11::close_all");
-		for( int i=0; i<SCREENCAP_BORDERS; ++i ) {
-			delete screencap_border[i];
-			screencap_border[i] = 0;
-		}
-		device->mwindow->gui->unlock_window();
-	}
-
 	reset_parameters();
 
 	return 0;
@@ -202,20 +165,9 @@ int VDeviceX11::close_all()
 
 int VDeviceX11::read_buffer(VFrame *frame)
 {
-//printf("VDeviceX11::read_buffer %d colormodel=%d\n", __LINE__, frame->get_color_model());
-	device->mwindow->gui->lock_window("VDeviceX11::close_all");
-
-	screencap_border[0]->reposition_window(device->input_x - SCREENCAP_PIXELS,
-			device->input_y - SCREENCAP_PIXELS);
-	screencap_border[1]->reposition_window(device->input_x - SCREENCAP_PIXELS,
-			device->input_y);
-	screencap_border[2]->reposition_window(device->input_x - SCREENCAP_PIXELS,
-			device->input_y + device->in_config->h);
-	screencap_border[3]->reposition_window(device->input_x + device->in_config->w,
-			device->input_y);
-	device->mwindow->gui->flush();
-	device->mwindow->gui->unlock_window();
-
+	capture_bitmap->bars_reposition(
+		device->input_x, device->input_y,
+		device->in_config->w, device->in_config->h);
 
 	capture_bitmap->capture_frame(frame,
 		device->input_x, device->input_y, device->do_cursor);

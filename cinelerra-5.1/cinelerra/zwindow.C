@@ -218,12 +218,12 @@ void ZWindow::handle_close_event(int result)
 
 void ZWindow::change_source(EDL *edl)
 {
-	if( this->edl && edl != this->edl )
+	if( this->edl == edl ) return;
+	if( !edl || !this->edl || this->edl->equivalent_output(edl) >= 0 )
+		zgui->playback_engine->refresh_frame(CHANGE_ALL, edl);
+	if( this->edl )
 		this->edl->remove_user();
 	this->edl = edl;
-	if( edl != 0 ) {
-		zgui->playback_engine->refresh_frame(CHANGE_ALL, edl);
-	}
 }
 
 void ZWindow::stop_playback(int wait)

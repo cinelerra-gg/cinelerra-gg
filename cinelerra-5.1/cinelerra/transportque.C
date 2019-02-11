@@ -47,19 +47,19 @@ TransportCommand::~TransportCommand()
 
 void TransportCommand::reset()
 {
+	command = COMMAND_NONE;
+	change_type = 0;
 	playbackstart = 0;
 	start_position = 0;
 	end_position = 0;
 	infinite = 0;
 	realtime = 0;
 	resume = 0;
+	locked = 0;
 	toggle_audio = 0;
 	loop_play = 0;
 	displacement = 0;
 	speed = 0;
-// Don't reset the change type for commands which don't perform the change
-	if(command != STOP) change_type = 0;
-	command = COMMAND_NONE;
 }
 
 EDL* TransportCommand::get_edl()
@@ -90,6 +90,7 @@ void TransportCommand::copy_from(TransportCommand *command)
 	this->playbackstart = command->playbackstart;
 	this->realtime = command->realtime;
 	this->resume = command->resume;
+	this->locked = command->locked;
 	this->toggle_audio = command->toggle_audio;
 	this->loop_play = command->loop_play;
 	this->displacement = command->displacement;

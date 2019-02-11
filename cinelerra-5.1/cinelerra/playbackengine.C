@@ -56,9 +56,12 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	command->command = STOP;
 	next_command = new TransportCommand();
 	next_command->change_type = CHANGE_ALL;
-	curr_command = new TransportCommand();
 	stop_command = new TransportCommand();
 	stop_command->command = STOP;
+	stop_command->realtime = 1;
+	sent_command = new TransportCommand();
+	sent_command->command = -1;
+	sent_lock = new Mutex("PlaybackEngine::sent");
 	tracking_lock = new Mutex("PlaybackEngine::tracking_lock");
 	renderengine_lock = new Mutex("PlaybackEngine::renderengine_lock");
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
@@ -74,7 +77,7 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 PlaybackEngine::~PlaybackEngine()
 {
 	done = 1;
-	transport_stop(0);
+	output_lock->unlock();
 	Thread::join();
 	delete preferences;
 	delete_render_engine();
@@ -88,7 +91,8 @@ PlaybackEngine::~PlaybackEngine()
 	delete command;
 	delete next_command;
 	delete stop_command;
-	delete curr_command;
+	delete sent_command;
+	delete sent_lock;
 	delete input_lock;
 	delete output_lock;
 }
@@ -161,16 +165,14 @@ void PlaybackEngine::create_cache()
 
 void PlaybackEngine::perform_change()
 {
-	switch( command->change_type )
-	{
+	switch( command->change_type ) {
 		case CHANGE_ALL:
 			create_cache();
 		case CHANGE_EDL:
 			create_render_engine();
+			break;
 		case CHANGE_PARAMS:
-			if(command->change_type != CHANGE_EDL &&
-				(uint32_t)command->change_type != CHANGE_ALL)
-				render_engine->get_edl()->synchronize_params(command->get_edl());
+			render_engine->get_edl()->synchronize_params(command->get_edl());
 		case CHANGE_NONE:
 			break;
 	}
@@ -364,23 +366,27 @@ void PlaybackEngine::run()
 	while( !done ) {
 // Wait for current command to finish
 		output_lock->lock("PlaybackEngine::run");
-//printf("PlaybackEngine::run 0 %d\n", curr_command->command);
-		if( curr_command->command < 0 ) continue;
-// this covers a glitch that occurs when stop is asserted
-// when the render_engine starting, but not initialized
-		if( curr_command->command == STOP && render_engine )
-			render_engine->interrupt_playback();
-		wait_render_engine();
+		if( done ) break;
 
 // Read the new command
-		input_lock->lock("PlaybackEngine::run");
-		command->copy_from(curr_command);
-		curr_command->command = -1;
-		input_lock->unlock();
-		if( done ) break;
+		sent_lock->lock("PlaybackEngine::run");
+		int command = sent_command->command;
+		if( command >= 0 ) {
+			this->command->copy_from(sent_command);
+//printf("sent command=%d\n", sent_command->command);
+			sent_command->command = -1;
+			if( sent_command->locked )
+				input_lock->unlock();
+		}
+		sent_lock->unlock();
+		if( command < 0 ) continue;
+
+		interrupt_playback(0);
+		wait_render_engine();
+
 //printf("PlaybackEngine::run 1 %d\n", command->command);
 
-		switch( command->command ) {
+		switch( command ) {
 // Parameter change only
 		case COMMAND_NONE:
 			perform_change();
@@ -442,9 +448,11 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 	int do_stop = 0, do_resume = 0;
 	int curr_command = this->command->command;
 	int curr_single_frame = TransportCommand::single_frame(curr_command);
+	int curr_direction = TransportCommand::get_direction(curr_command);
 	int curr_audio = this->command->toggle_audio ?
 		!curr_single_frame : curr_single_frame;
 	int single_frame = TransportCommand::single_frame(command);
+	int direction = TransportCommand::get_direction(command);
 	int next_audio = next_command->toggle_audio ? !single_frame : single_frame;
 
 // Dispatch command
@@ -468,7 +476,7 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 // Resume or change direction
 		switch( curr_command ) {
 		default:
-			transport_stop(wait_tracking);
+			transport_stop(curr_direction != direction ? 1 : 0);
 			do_resume = 1;
 // fall through
 		case STOP:
@@ -500,18 +508,25 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 
 int PlaybackEngine::transport_stop(int wait_tracking)
 {
-	input_lock->lock("PlaybackEngine::transport_stop 1");
-	curr_command->copy_from(stop_command);
-	interrupt_playback(wait_tracking);
-//printf("send: %d (STOP)\n", STOP);
-	input_lock->unlock();
+	interrupt_playback(0);
+	input_lock->lock("PlaybackEngine::transport_stop");
+	sent_lock->lock("PlaybackEngine::transport_stop");
+	sent_command->copy_from(stop_command);
+	sent_command->locked = wait_tracking ? 1 : 0;
+		if( !sent_command->locked )
+		input_lock->unlock();
+	sent_lock->unlock();
 	output_lock->unlock();
+	if( wait_tracking ) {
+		tracking_done->lock("PlaybackEngine::transport_stop");
+		tracking_done->unlock();
+	}
+//printf("send: %d (STOP) 0\n", STOP);
 	return 0;
 }
 
 int PlaybackEngine::transport_command(int command, int change_type, EDL *new_edl, int use_inout)
 {
-	input_lock->lock("PlaybackEngine::transport_command 1");
 	next_command->command = command;
 	next_command->change_type |= change_type;
 	if( new_edl ) {
@@ -530,15 +545,24 @@ int PlaybackEngine::transport_command(int command, int change_type, EDL *new_edl
 		next_command->set_playback_range(new_edl, use_inout,
 				preferences->forward_render_displacement);
 	}
-	curr_command->copy_from(next_command);
+
+	input_lock->lock("PlaybackEngine::transport_command");
+	next_command->locked =
+		next_command->change_type == CHANGE_NONE ||
+		next_command->change_type == CHANGE_PARAMS ? 0 : 1;
+	sent_lock->lock("PlaybackEngine::transport_command");
+	sent_command->copy_from(next_command);
+	if( !sent_command->locked )
+		input_lock->unlock();
 	next_command->reset();
+	sent_lock->unlock();
+	output_lock->unlock();
 //static const char *types[] = { "NONE",
 // "FRAME_FWD", "NORMAL_FWD", "FAST_FWD", "FRAME_REV", "NORMAL_REV", "FAST_REV",
 // "STOP",  "PAUSE", "SLOW_FWD", "SLOW_REV", "REWIND", "GOTO_END", "CURRENT_FRAME",
 // "LAST_FRAME" };
-//printf("send= %d (%s)\n", command, types[command]);
-	input_lock->unlock();
-	output_lock->unlock();
+//printf("send= %d (%s) %d\n", sent_command->command,
+// types[sent_command->command], sent_command->locked);
 	return 0;
 }
 

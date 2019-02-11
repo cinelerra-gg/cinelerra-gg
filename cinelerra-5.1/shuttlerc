@@ -1,6 +1,8 @@
 
 # uncomment to enable diagnostics
 #DEBUG
+# uncommet to use direct usb
+#USB_DIRECT
 
 # redefine default, use
 # also used for resources,load windows
@@ -17,17 +19,26 @@
 
 [Cinelerra]
 
- K5 XK_KP_0     # Stop
- K9 XK_KP_3     # Play
+# Most useful functions have to be on K5-K9 because Xpress only has 5 keys
+ K5 XK_Home  	# Beginning
+ K6 XK_KP_3	# Play, or if playing Stop
+ K7 XK_KP_0	# Stop
+ K8 XK_KP_6	# Reverse, or if playing Stop
+ K9 XK_End   	# End
+
+# K10 "["	# Switch if K14 not working
+# K11 "]"	# Switch if K15 not working
+ K10 Alt-XK_Left
+ K11 Alt-XK_Right
  K12 XK_Home    # Beginning
  K13 XK_End     # End
  K14 "["        # Toggle in
  K15 "]"        # Toggle out
 
- K1 "i"		# Pro Only - Clip
- K2 "x"		# Pro Only - Cut
- K3 "c"		# Pro Only - Copy
- K4 "v"		# Pro Only - Paste
+ K1 "i"		# Clip
+ K2 "x"		# Cut
+ K3 "c"		# Copy
+ K4 "v"		# Paste
 
  S-7 REV_16	# Next 6 are reverse keys
  S-6 REV_8	#  the number on the end represents speed
@@ -44,23 +55,30 @@
  S5  FWD_4
  S6  FWD_8
  S7  FWD_16
- 
+
  JL XK_KP_4     # Frame reverse
  JR XK_KP_1     # Frame forward
 
 [Composer]
 
- K5 XK_KP_0     # Stop
- K9 XK_KP_3     # Play
+# Most useful functions have to be on K5-K9 because Xpress only has 5 keys
+ K5 XK_Home  	# Beginning
+ K6 XK_KP_3	# Play, or if playing Stop
+ K7 "f"		# Go in or out of Fullscreen mode
+ K8 XK_KP_6	# Reverse, of if playing Stop
+ K9 XK_End   	# End
+
+ K10 "["	# Temporary until K14 Pro fixed
+ K11 "]"	# Temporary until K15 Pro fixed
  K12 XK_Home    # Beginning
  K13 XK_End     # End
  K14 "["        # Toggle in
  K15 "]"        # Toggle out
 
- K1 "i"		# Pro Only - Clip
- K2 "x"		# Pro Only - Cut
- K3 "c"		# Pro Only - Copy
- K4 "v"		# Pro Only - Paste
+ K1 "i"		# Clip
+ K2 "x"		# Cut
+ K3 "c"		# Copy
+ K4 "v"		# Paste
 
  S-7 REV_16
  S-6 REV_8
@@ -77,24 +95,31 @@
  S5  FWD_4
  S6  FWD_8
  S7  FWD_16
- 
+
  JL XK_KP_4     # Frame reverse
  JR XK_KP_1     # Frame forward
 
 [Viewer]
 
- K5 "v"		# Splice (Viewer only - button is on Xpress)
- K9 "b"		# Overwrite (Viewer only - button is on Xpress)
+# Most useful functions have to be on K6-K9 because Xpress only has 5 keys
+ K5 XK_Home  	# Beginning
+ K6 XK_KP_3	# Play, or if playing Stop
+ K7 "f"		# Go in or out of Fullscreen mode
+ K8 XK_KP_6	# Reverse, or if playing Stop
+ K9 XK_End   	# End
+
+ K10 "["	# Temporary until K14 Pro fixed
+ K11 "]"	# Temporary until K15 Pro fixed
  K12 XK_Home    # Beginning
  K13 XK_End     # End
  K14 "["        # Toggle in
  K15 "]"        # Toggle out
 
- K1 "i"		# Pro Only - Clip
- K2 XK_Home	# Pro Only - Beginning 
- K3 "c"		# Pro Only - Copy
- K4 XK_End	# Pro Only - End
- 
+ K1 "i"		# Clip
+ K2 "v"		# Splice
+ K3 "c"		# Copy
+ K4 "b"		# Overwrite
+
  S-7 REV_16
  S-6 REV_8
  S-5 REV_4

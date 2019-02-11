@@ -255,20 +255,11 @@ void CWindow::update(int dir, int overlays, int tool_window, int operation, int 
 	gui->canvas->update_zoom(mwindow->edl->session->cwindow_xscroll,
 			mwindow->edl->session->cwindow_yscroll,
 			mwindow->edl->session->cwindow_zoom);
-	gui->canvas->reposition_window(mwindow->edl,
-			mwindow->theme->ccanvas_x,
-			mwindow->theme->ccanvas_y,
-			mwindow->theme->ccanvas_w,
-			mwindow->theme->ccanvas_h);
-
-
-
+	gui->canvas->update_geometry(mwindow->edl,
+			mwindow->theme->ccanvas_x, mwindow->theme->ccanvas_y,
+			mwindow->theme->ccanvas_w, mwindow->theme->ccanvas_h);
 
 	gui->unlock_window();
-
-
-
-
 }
 
 int CWindow::update_position(double position)

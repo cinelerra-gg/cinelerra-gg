@@ -44,26 +44,29 @@ BC_Capture::BC_Capture(int w, int h, const char *display_path)
 
 	data = 0;
 	use_shm = 1;
+	for( int i=0; i<4; ++i ) border[i] = 0;
+	bar_w = 0;  bar_color = 0;
 	init_window(display_path);
 	allocate_data();
 }
 
-
 BC_Capture::~BC_Capture()
 {
+	bars_off();
 	delete_data();
 	XCloseDisplay(display);
 }
+
 
 int BC_Capture::init_window(const char *display_path)
 {
 	int bits_per_pixel;
 	if( display_path && display_path[0] == 0 ) display_path = NULL;
 	if( (display = XOpenDisplay(display_path)) == NULL ) {
-  		printf(_("cannot connect to X server.\n"));
-  		if( getenv("DISPLAY") == NULL )
-    		printf(_("'DISPLAY' environment variable not set.\n"));
-  		exit(-1);
+		printf(_("cannot connect to X server.\n"));
+		if( getenv("DISPLAY") == NULL )
+		printf(_("'DISPLAY' environment variable not set.\n"));
+		exit(-1);
 		return 1;
  	}
 
@@ -75,35 +78,82 @@ int BC_Capture::init_window(const char *display_path)
 	server_byte_order = (XImageByteOrder(display) == MSBFirst) ? 0 : 1;
 	char *data = 0;
 	XImage *ximage;
-	ximage = XCreateImage(display,
-					vis,
-					default_depth,
-					ZPixmap,
-					0,
-					data,
-					16,
-					16,
-					8,
-					0);
+	ximage = XCreateImage(display, vis, default_depth,
+			ZPixmap, 0, data, 16, 16, 8, 0);
 	bits_per_pixel = ximage->bits_per_pixel;
 	XDestroyImage(ximage);
 	bitmap_color_model = BC_WindowBase::evaluate_color_model(client_byte_order, server_byte_order, bits_per_pixel);
 
 // test shared memory
 // This doesn't ensure the X Server is on the local host
-    if( use_shm && !XShmQueryExtension(display) ) {
-        use_shm = 0;
-    }
+	if( use_shm && !XShmQueryExtension(display) )
+		use_shm = 0;
 	return 0;
 }
 
+Window BC_Capture::bar(int x, int y, int w, int h, int color)
+{
+	unsigned long mask = CWEventMask | CWBackPixel |
+			CWOverrideRedirect | CWSaveUnder;
+	XSetWindowAttributes attr;
+	memset(&attr, 0, sizeof(attr));
+	Screen *scr = XDefaultScreenOfDisplay(display);
+	Window root = RootWindowOfScreen(scr);
+	Visual *vis = DefaultVisualOfScreen(scr);
+	int depth = DefaultDepthOfScreen(scr);
+	attr.background_pixel = color;
+	attr.override_redirect = True;
+	attr.save_under = True;
+	Window win = XCreateWindow(display, root, x,y,w,h, 0,depth,
+			InputOutput, vis, mask, &attr);
+	XMapWindow(display, win);
+	return win;
+}
+
+void BC_Capture::bars_on(int bw, int color, int x, int y, int w, int h)
+{
+	this->bar_w = bw;
+	this->bar_color = color;
+	border[0] = bar(x-bw, y-bw, w+2*bw, bw, color);
+	border[1] = bar(x-bw, y,    bw,     h,  color);
+	border[2] = bar(x-bw, y+h,  w+2*bw, bw, color);
+	border[3] = bar(x+w,  y,    bw,     h,  color);
+	XFlush(display);
+}
+
+void BC_Capture::bars_off()
+{
+	for( int i=0; i<4; ++i ) {
+		if( !border[i] ) continue;
+		XUnmapWindow(display, border[i]);
+	}
+	for( int i=0; i<4; ++i ) {
+		if( !border[i] ) continue;
+		XDestroyWindow(display, border[i]);
+		border[i] = 0;
+	}
+	XFlush(display);
+}
+
+void BC_Capture::bars_reposition(int x, int y, int w, int h)
+{
+	int bw = this->bar_w;
+	if( border[0] )
+		XMoveResizeWindow(display, border[0], x-bw, y-bw, w+2*bw, bw);
+	if( border[1] )
+		XMoveResizeWindow(display, border[1], x-bw, y,    bw,     h );
+	if( border[2] )
+		XMoveResizeWindow(display, border[2], x-bw, y+h,  w+2*bw, bw);
+	if( border[3] )
+		XMoveResizeWindow(display, border[3], x+w,  y,    bw,     h );
+}
 
 int BC_Capture::allocate_data()
 {
 // try shared memory
 	if( !display ) return 1;
-    if( use_shm ) {
-	    ximage = XShmCreateImage(display, vis, default_depth, ZPixmap, (char*)NULL, &shm_info, w, h);
+	if( use_shm ) {
+		ximage = XShmCreateImage(display, vis, default_depth, ZPixmap, (char*)NULL, &shm_info, w, h);
 
 		shm_info.shmid = shmget(IPC_PRIVATE, h * ximage->bytes_per_line, IPC_CREAT | 0600);
 		if( shm_info.shmid == -1 ) {
@@ -118,7 +168,7 @@ int BC_Capture::allocate_data()
 // Crashes here if remote server.
 		BC_Resources::error = 0;
 		XShmAttach(display, &shm_info);
-    	XSync(display, False);
+		XSync(display, False);
 		if( BC_Resources::error ) {
 			XDestroyImage(ximage);
 			shmdt(shm_info.shmaddr);

@@ -10,6 +10,10 @@
 #include <linux/input.h>
 #include <sys/types.h>
 
+#ifdef HAVE_SHUTTLE_USB
+#include <libusb-1.0/libusb.h>
+#endif
+
 // Copyright 2013 Eric Messick (FixedImagePhoto.com/Contact)
 // reworked 2019 for cinelerra-gg by William Morrow (aka goodguy)
 
@@ -18,6 +22,7 @@
 #define DELAY CurrentTime
 // playback max speed -64x .. 64x
 #define SHUTTLE_MAX_SPEED 64.
+#define SHUTTLE_INTERFACE 0
 
 // protocol for events from the shuttlepro HUD device
 //
@@ -78,19 +83,34 @@ enum { JL=0,JR };
 #define FOCUS_VIEWER  4
 #define FOCUS_LOAD    5
 
+class SKeySym {
+public:
+	union {
+		struct { uint32_t key, msk; };
+		uint64_t v;
+	};
+	SKeySym() { v = 0; }
+	SKeySym(int k) { key = k;  msk = 0; }
+	SKeySym(unsigned k, unsigned m) { key = k;  msk = m; }
+	bool operator ==(SKeySym &ks) { return ks.v == v; }
+	operator int() { return key; }
+};
+
 class KeySymMapping {
 public:
-	static KeySym to_keysym(const char *str);
-	static const char *to_string(KeySym ks);
+	static int get_mask(const char *&str);
+	static SKeySym to_keysym(const char *str);
+	static const char *to_string(SKeySym ks);
 	static KeySymMapping key_sym_mapping[];
+
 	const char *str;
-	KeySym sym;
+	SKeySym sym;
 };
 
 class Stroke : public ListItem<Stroke>
 {
 public:
-	KeySym keysym;
+	SKeySym keysym;
 	int press; // 1:press, 0:release
 };
 
@@ -100,7 +120,7 @@ public:
 	Strokes() {}
 	~Strokes() {}
 	void clear() { while( last ) delete last; }
-	void add_stroke(KeySym keysym, int press=1) {
+	void add_stroke(SKeySym keysym, int press=1) {
 		Stroke *s = append();
 		s->keysym = keysym; s->press = press;
 	}
@@ -113,8 +133,8 @@ public:
 	Modifiers(Translation *trans) { this->trans = trans; }
 	~Modifiers() {}
 
-	void mark_as_down(KeySym sym, int hold);
-	void mark_as_up(KeySym sym);
+	void mark_as_down(SKeySym sym, int hold);
+	void mark_as_up(SKeySym sym);
 	void release(int allkeys);
 	void re_press();
 };
@@ -144,11 +164,11 @@ public:
 	~Translation();
 	void init(int def);
 	void clear();
-	void append_stroke(KeySym sym, int press);
+	void append_stroke(SKeySym sym, int press);
 	void add_release(int all_keys);
 	void add_keystroke(const char *keySymName, int press_release);
-	void add_keysym(KeySym sym, int press_release);
-	void add_string(const char *str);
+	void add_keysym(SKeySym sym, int press_release);
+	void add_string(char *&str);
 	int start_line(const char *key);
 	void print_strokes(const char *name, const char *up_dn, Strokes *strokes);
 	void print_stroke(Stroke *s);
@@ -162,7 +182,7 @@ public:
 	int first_release_stroke;
 	Strokes *pressed, *released;
 	Strokes *pressed_strokes, *released_strokes;
-	KeySym keysym_down;
+	SKeySym keysym_down;
 
 	Strokes key_down[NUM_KEYS];
 	Strokes key_up[NUM_KEYS];
@@ -183,7 +203,15 @@ class Shuttle : public Thread
 {
 	int fd;
 	unsigned short jogvalue, shuttlevalue;
-	const char *dev_name;
+	int dev_index;
+#ifdef HAVE_SHUTTLE_USB
+	struct libusb_device_handle *devsh;
+	void usb_probe(int idx);
+	void usb_done();
+	unsigned last_jog, last_shuttle, last_btns;
+	int claimed;
+#endif
+
 	Translation *default_translation;
 	Translations translations;
 public:
@@ -191,18 +219,19 @@ public:
 	~Shuttle();
 
 	int send_button(unsigned int button, int press);
-	int send_keycode(unsigned int keycode, int press, int send);
-	int send_keysym(KeySym keysym, int press);
+	int send_keycode(unsigned key, unsigned msk, int press, int send);
+	int send_keysym(SKeySym keysym, int press);
 	void send_stroke_sequence(int kjs, int index);
 	void key(unsigned short code, unsigned int value);
 	void shuttle(int value);
 	void jog(unsigned int value);
 	void jogshuttle(unsigned short code, unsigned int value);
-	void start(const char *dev_name);
+	void start(int idx);
 	void stop();
 	void handle_event();
+	int load_translation();
 	int get_focused_window_translation();
-	static const char *probe();
+	static int probe();
 	void run();
 	int read_config_file();
 	static BC_WindowBase *owns(BC_WindowBase *wdw, Window win);
@@ -211,6 +240,7 @@ public:
 	int failed;
 	int first_time;
 	int debug;
+	int usb_direct;
 
 	MWindow *mwindow;
 	Translation *tr, *last_translation;

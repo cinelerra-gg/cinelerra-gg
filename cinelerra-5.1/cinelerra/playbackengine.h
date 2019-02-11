@@ -115,10 +115,11 @@ public:
 			EDL *new_edl=0, int use_inout=0);
 
 	Condition *input_lock, *output_lock;
-// active command
-	TransportCommand *command;
-// stop, next, queued commands
-	TransportCommand *stop_command, *next_command, *curr_command;
+	Mutex *sent_lock;
+// active command, stop command
+	TransportCommand *command, *stop_command;
+// next command under construction, last sent command
+	TransportCommand *next_command, *sent_command;
 
 // Render engine
 	RenderEngine *render_engine;
