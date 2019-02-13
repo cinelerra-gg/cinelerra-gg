@@ -145,24 +145,19 @@ Track* CWindow::calculate_affected_track()
 }
 
 Auto* CWindow::calculate_affected_auto(Autos *autos,
-	int create,
-	int *created,
-	int redraw)
+		int create, int *created, int redraw)
 {
 	Auto* affected_auto = 0;
-	if(created) *created = 0;
+	if( created ) *created = 0;
 
-	if(create)
-	{
+	if( create ) {
 		int total = autos->total();
-		affected_auto = autos->get_auto_for_editing();
+		affected_auto = autos->get_auto_for_editing(-1, create);
 
 // Got created
-		if(total != autos->total())
-		{
-			if(created) *created = 1;
-			if(redraw)
-			{
+		if( total != autos->total() ) {
+			if( created ) *created = 1;
+			if( redraw ) {
 // May have to unlock CWindowGUI here.
 				mwindow->gui->lock_window("CWindow::calculate_affected_auto");
 				mwindow->gui->draw_overlays(1);
@@ -170,8 +165,7 @@ Auto* CWindow::calculate_affected_auto(Autos *autos,
 			}
 		}
 	}
-	else
-	{
+	else {
 		affected_auto = autos->get_prev_auto(PLAY_FORWARD, affected_auto);
 	}
 
@@ -180,39 +174,28 @@ Auto* CWindow::calculate_affected_auto(Autos *autos,
 
 
 
-void CWindow::calculate_affected_autos(FloatAuto **x_auto,
-	FloatAuto **y_auto,
-	FloatAuto **z_auto,
-	Track *track,
-	int use_camera,
-	int create_x,
-	int create_y,
-	int create_z)
+void CWindow::calculate_affected_autos(Track *track,
+		FloatAuto **x_auto, FloatAuto **y_auto, FloatAuto **z_auto,
+		int use_camera, int create_x, int create_y, int create_z,
+		int redraw)
 {
-	if(x_auto) (*x_auto) = 0;
-	if(y_auto) (*y_auto) = 0;
-	if(z_auto) (*z_auto) = 0;
+	if( x_auto ) *x_auto = 0;
+	if( y_auto ) *y_auto = 0;
+	if( z_auto ) *z_auto = 0;
+	if( !track ) return;
 
-	if(!track) return;
+	int ix = use_camera ? AUTOMATION_CAMERA_X : AUTOMATION_PROJECTOR_X, x_created = 0;
+	int iy = use_camera ? AUTOMATION_CAMERA_Y : AUTOMATION_PROJECTOR_Y, y_created = 0;
+	int iz = use_camera ? AUTOMATION_CAMERA_Z : AUTOMATION_PROJECTOR_Z, z_created = 0;
 
-	if(use_camera)
-	{
-		if(x_auto) (*x_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_CAMERA_X], create_x);
-		if(y_auto) (*y_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_CAMERA_Y], create_y);
-		if(z_auto) (*z_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_CAMERA_Z], create_z);
-	}
-	else
-	{
-		if(x_auto) (*x_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_PROJECTOR_X], create_x);
-		if(y_auto) (*y_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_PROJECTOR_Y], create_y);
-		if(z_auto) (*z_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_PROJECTOR_Z], create_z);
-	}
+	if( x_auto )
+		*x_auto = (FloatAuto*) calculate_affected_auto(track->automation->autos[ix],
+				create_x, &x_created, redraw);
+	if( y_auto )
+		*y_auto = (FloatAuto*) calculate_affected_auto(track->automation->autos[iy],
+				create_y, &y_created, redraw);
+	if( z_auto ) *z_auto = (FloatAuto*) calculate_affected_auto(track->automation->autos[iz],
+				create_z, &z_created, redraw);
 }
 
 void CWindow::stop_playback(int wait)

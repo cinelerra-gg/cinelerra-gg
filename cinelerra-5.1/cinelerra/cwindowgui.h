@@ -303,9 +303,12 @@ public:
 		int do_camera);
 	int do_ruler(int draw, int motion, int button_press, int button_release);
 	int test_zoom(int &redraw);
+	void create_keyframe(int do_camera);
+	void camera_keyframe();
+	void projector_keyframe();
+	void reset_keyframe(int do_camera);
 	void reset_camera();
 	void reset_projector();
-	void reset_keyframe(int do_camera);
 	void draw_crophandle(int x, int y);
 	void zoom_auto();
 

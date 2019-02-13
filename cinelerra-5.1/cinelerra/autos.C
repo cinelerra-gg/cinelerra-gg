@@ -280,7 +280,7 @@ Auto* Autos::get_auto_at_position(double position)
 }
 
 
-Auto* Autos::get_auto_for_editing(double position)
+Auto* Autos::get_auto_for_editing(double position, int create)
 {
 	if(position < 0) {
 		position = edl->local_session->get_selectionstart(1);
@@ -288,7 +288,8 @@ Auto* Autos::get_auto_for_editing(double position)
 
 	Auto *result = 0;
 	get_prev_auto(track->to_units(position, 0), PLAY_FORWARD, result);
-	if( edl->session->auto_keyframes && (!result || result->is_default ||
+	if( create > 0 ) create = edl->session->auto_keyframes;
+	if( create && (!result || result->is_default ||
               !EQUIV(track->from_units(result->position), position)) ) {
 //printf("Autos::get_auto_for_editing %p %p %p\n", default_auto, first, result);
 		position = edl->align_to_frame(position, 0);

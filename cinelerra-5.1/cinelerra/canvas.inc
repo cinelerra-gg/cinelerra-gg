@@ -23,5 +23,24 @@
 #define CANVAS_INC
 
 class Canvas;
+class CanvasOutput;
+class CanvasFullScreen;
+class CanvasXScroll;
+class CanvasYScroll;
+class CanvasFullScreenPopup;
+class CanvasSubWindowItem;
+class CanvasPopup;
+class CanvasZoomSize;
+class CanvasSizeSubMenu;
+class CanvasPopupSize;
+class CanvasPopupAuto;
+class CanvasPopupResetCamera;
+class CanvasPopupResetProjector;
+class CanvasPopupCameraKeyframe;
+class CanvasPopupProjectorKeyframe;
+class CanvasToggleControls;
+class CanvasFullScreenItem;
+class CanvasPopupResetTranslation;
+class CanvasPopupRemoveSource;
 
 #endif

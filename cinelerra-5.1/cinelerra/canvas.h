@@ -22,44 +22,28 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
+#include "canvas.inc"
 #include "edl.inc"
 #include "guicast.h"
 #include "mwindow.inc"
 #include "videodevice.inc"
-
 // Output for all X11 video
-
-class CanvasOutput;
-class CanvasFullScreen;
-class CanvasXScroll;
-class CanvasYScroll;
-class CanvasPopup;
-class CanvasFullScreenPopup;
-class CanvasToggleControls;
 
 // The EDL arguments can be set to 0 if the canvas_w and canvas_h are used
 class Canvas
 {
 public:
-	Canvas(MWindow *mwindow,
-		BC_WindowBase *subwindow,
-		int x,
-		int y,
-		int w,
-		int h,
-		int output_w,
-		int output_h,
+	Canvas(MWindow *mwindow, BC_WindowBase *subwindow,
+		int x, int y, int w, int h,
+		int output_w, int output_h,
 		int use_scrollbars);
 	virtual ~Canvas();
 
 	void reset();
 // Get dimensions given a zoom
 	void calculate_sizes(float aspect_ratio,
-		int output_w,
-		int output_h,
-		float zoom,
-		int &w,
-		int &h);
+		int output_w, int output_h, float zoom,
+		int &w, int &h);
 // Lock access to the canvas pointer.
 // Must be called before get_canvas or locking the canvas.
 	void lock_canvas(const char *location);
@@ -88,21 +72,23 @@ public:
 	virtual void status_event() {};
 
 
-	virtual void reset_camera() {};
-	virtual void reset_projector() {};
-	virtual void zoom_resize_window(float percentage) {};
-	virtual void zoom_auto() {};
-	virtual int cursor_leave_event() { return 0; };
-	virtual int cursor_enter_event() { return 0; };
-	virtual int button_release_event() { return 0; };
+	virtual void reset_camera() {}
+	virtual void reset_projector() {}
+	virtual void camera_keyframe() {}
+	virtual void projector_keyframe() {}
+	virtual void zoom_resize_window(float percentage) {}
+	virtual void zoom_auto() {}
+	virtual int cursor_leave_event() { return 0; }
+	virtual int cursor_enter_event() { return 0; }
+	virtual int button_release_event() { return 0; }
 	virtual int button_press_event();
-	virtual int cursor_motion_event() { return 0; };
+	virtual int cursor_motion_event() { return 0; }
 	virtual int need_overlays() { return 1; }
-	virtual void draw_overlays() { };
-	virtual void toggle_controls() { } ;
-	virtual int get_cwindow_controls() { return 0; };
+	virtual void draw_overlays() {}
+	virtual void toggle_controls() {}
+	virtual int get_cwindow_controls() { return 0; }
 	virtual int get_fullscreen() { return 0; }
-	virtual void set_fullscreen(int value) { };
+	virtual void set_fullscreen(int value) {}
 
 	int cursor_leave_event_base(BC_WindowBase *caller);
 	int cursor_enter_event_base(BC_WindowBase *caller);
@@ -335,6 +321,22 @@ public:
 	CanvasToggleControls *toggle_controls;
 };
 
+class CanvasZoomSize : public BC_MenuItem
+{
+public:
+	CanvasZoomSize(Canvas *canvas);
+
+	Canvas *canvas;
+};
+
+class CanvasSizeSubMenu : public BC_SubMenu
+{
+public:
+	CanvasSizeSubMenu(CanvasZoomSize *zoom_size);
+
+	CanvasZoomSize *zoom_size;
+};
+
 class CanvasPopupSize : public BC_MenuItem
 {
 public:
@@ -365,6 +367,22 @@ class CanvasPopupResetProjector : public BC_MenuItem
 {
 public:
 	CanvasPopupResetProjector(Canvas *canvas);
+	int handle_event();
+	Canvas *canvas;
+};
+
+class CanvasPopupCameraKeyframe : public BC_MenuItem
+{
+public:
+	CanvasPopupCameraKeyframe(Canvas *canvas);
+	int handle_event();
+	Canvas *canvas;
+};
+
+class CanvasPopupProjectorKeyframe : public BC_MenuItem
+{
+public:
+	CanvasPopupProjectorKeyframe(Canvas *canvas);
 	int handle_event();
 	Canvas *canvas;
 };

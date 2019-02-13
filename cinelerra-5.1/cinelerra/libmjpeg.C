@@ -1077,27 +1077,13 @@ int mjpeg_compress(mjpeg_t *mjpeg,
  * printf("mjpeg_compress %d %d %d %d\n",
  * mjpeg->output_w, mjpeg->output_h, mjpeg->coded_w, mjpeg->coded_h);
  */
-		BC_CModels::transfer(0,
-			row_pointers,
-			mjpeg->temp_rows[0][0],
-			mjpeg->temp_rows[1][0],
-			mjpeg->temp_rows[2][0],
-			y_plane,
-			u_plane,
-			v_plane,
-			0,
-			0,
-			mjpeg->output_w,
-			mjpeg->output_h,
-			0,
-			0,
-			mjpeg->output_w,
-			mjpeg->output_h,
-			mjpeg->color_model,
-			mjpeg->jpeg_color_model,
-			0,
-			mjpeg->output_w,
-			mjpeg->coded_w);
+		BC_CModels::transfer(0, row_pointers,
+			mjpeg->temp_rows[0][0], mjpeg->temp_rows[1][0], mjpeg->temp_rows[2][0],
+			y_plane, u_plane, v_plane,
+			0, 0, mjpeg->output_w, mjpeg->output_h,
+			0, 0, mjpeg->output_w, mjpeg->output_h,
+			mjpeg->color_model, mjpeg->jpeg_color_model, 0,
+			mjpeg->output_w, mjpeg->coded_w);
 	}
 
 /* Start the compressors on the image fields */
@@ -1245,27 +1231,12 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
  * mjpeg->color_model);
  */
 
-		BC_CModels::transfer(row_pointers,
-			0,
-			y_plane,
-			u_plane,
-			v_plane,
-			y_in,
-			u_in,
-			v_in,
-			0,
-			0,
-			mjpeg->output_w,
-			mjpeg->output_h,
-			0,
-			0,
-			mjpeg->output_w,
-			mjpeg->output_h,
-			mjpeg->jpeg_color_model,
-			mjpeg->color_model,
-			0,
-			mjpeg->coded_w,
-			mjpeg->rowspan ? mjpeg->rowspan : mjpeg->output_w);
+		BC_CModels::transfer(row_pointers, 0,
+			y_plane, u_plane, v_plane, y_in, u_in, v_in,
+			0, 0, mjpeg->output_w, mjpeg->output_h,
+			0, 0, mjpeg->output_w, mjpeg->output_h,
+			mjpeg->jpeg_color_model, mjpeg->color_model, 0,
+			mjpeg->coded_w, mjpeg->rowspan ? mjpeg->rowspan : mjpeg->output_w);
 //printf("mjpeg_decompress 8\n");
 	}
 	return 0;

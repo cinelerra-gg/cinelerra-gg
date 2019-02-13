@@ -555,6 +555,8 @@ ydiff:	ydiff.C $(LIBRARIES)
 
 shdmp:	shdmp.C
 	@g++ $(CFLAGS) shdmp.C -o $@
+shudmp:	shudmp.C
+	@g++ $(CFLAGS) shudmp.C -o $@ -lusb-1.0
 
 clean:
 	rm -rf $(OBJDIR)

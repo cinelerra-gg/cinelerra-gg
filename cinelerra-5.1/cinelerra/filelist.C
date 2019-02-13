@@ -352,49 +352,51 @@ int FileList::read_frame(VFrame *frame)
 		asset->single_frame = 1;
 // Allocate and decompress single frame into new temporary
 //printf("FileList::read_frame %d\n", frame->get_color_model());
-		if(!temp || temp->get_color_model() != frame->get_color_model())
-		{
-			if(temp) delete temp;
-			temp = 0;
-
-
-			if(!use_path() || frame->get_color_model() == BC_COMPRESSED)
-			{
+		if( !temp || temp->get_color_model() != frame->get_color_model() ) {
+			delete temp;  temp = 0;
+			int aw = asset->actual_width, ah = asset->actual_height;
+			int color_model = frame->get_color_model();
+			switch( color_model ) {
+			case BC_YUV420P:
+			case BC_YUV420PI:
+			case BC_YUV422P:
+				aw = (aw+1) & ~1;  ah = (ah+1) & ~1;
+				break;
+			case BC_YUV410P:
+			case BC_YUV411P:
+				aw = (aw+3) & ~3;  ah = (ah+3) & ~3;
+				break;
+			}
+			if( !use_path() || color_model == BC_COMPRESSED ) {
 				FILE *fd = fopen(asset->path, "rb");
-				if(fd)
-				{
+				if( fd ) {
 					struct stat ostat;
 					stat(asset->path, &ostat);
 
-					switch(frame->get_color_model())
-					{
-						case BC_COMPRESSED:
-							frame->allocate_compressed_data(ostat.st_size);
-							frame->set_compressed_size(ostat.st_size);
-							(void)fread(frame->get_data(), ostat.st_size, 1, fd);
-							break;
-						default:
-							data->allocate_compressed_data(ostat.st_size);
-							data->set_compressed_size(ostat.st_size);
-							(void)fread(data->get_data(), ostat.st_size, 1, fd);
-							temp = new VFrame(asset->actual_width, asset->actual_height,
-									frame->get_color_model(), 0);
-							read_frame(temp, data);
-							break;
+					switch(frame->get_color_model()) {
+					case BC_COMPRESSED:
+						frame->allocate_compressed_data(ostat.st_size);
+						frame->set_compressed_size(ostat.st_size);
+						(void)fread(frame->get_data(), ostat.st_size, 1, fd);
+						break;
+					default:
+						data->allocate_compressed_data(ostat.st_size);
+						data->set_compressed_size(ostat.st_size);
+						(void)fread(data->get_data(), ostat.st_size, 1, fd);
+						temp = new VFrame(aw, ah, color_model);
+						read_frame(temp, data);
+						break;
 					}
 
 					fclose(fd);
 				}
-				else
-				{
+				else {
 					eprintf(_("Error while opening \"%s\" for reading. \n%m\n"), asset->path);
 					result = 1;
 				}
 			}
-			else
-			{
-				temp = new VFrame(asset->actual_width, asset->actual_height,
-					frame->get_color_model(), 0);
+			else {
+				temp = new VFrame(aw, ah, color_model);
 				read_frame(temp, asset->path);
 			}
 		}

@@ -696,16 +696,14 @@ void CWindowCurveToggle::check_toggle_state(FloatAuto *x, FloatAuto *y, FloatAut
 
 int CWindowCurveToggle::handle_event()
 {
-	FloatAuto *x=0, *y=0, *z=0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-
-	if(track)
-	{	mwindow->cwindow->calculate_affected_autos(&x, &y, &z,
-			track, cfg.use_camera, 0,0,0); // don't create new keyframe
-
-		if(x)	x->change_curve_mode(cfg.mode);
-		if(y)	y->change_curve_mode(cfg.mode);
-		if(z)	z->change_curve_mode(cfg.mode);
+	if(track) {
+		FloatAuto *x=0, *y=0, *z=0;
+		mwindow->cwindow->calculate_affected_autos(track,
+			&x, &y, &z, cfg.use_camera, 0,0,0); // don't create new keyframe
+		if( x ) x->change_curve_mode(cfg.mode);
+		if( y ) y->change_curve_mode(cfg.mode);
+		if( z ) z->change_curve_mode(cfg.mode);
 
 		gui->update();
 		gui->update_preview();
@@ -748,17 +746,14 @@ void CWindowCameraGUI::create_objects()
 {
 	int x = 10, y = 10, x1;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	FloatAuto *x_auto = 0;
-	FloatAuto *y_auto = 0;
-	FloatAuto *z_auto = 0;
+	FloatAuto *x_auto = 0, *y_auto = 0, *z_auto = 0;
 	BC_Title *title;
 	BC_Button *button;
 
 	lock_window("CWindowCameraGUI::create_objects");
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			&y_auto, &z_auto, track, 1, 0, 0, 0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			&x_auto, &y_auto, &z_auto, 1, 0, 0, 0);
 	}
 
 	add_subwindow(title = new BC_Title(x, y, "X:"));
@@ -893,17 +888,9 @@ void CWindowCameraGUI::update()
 	FloatAuto *y_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			&y_auto,
-			&z_auto,
-			track,
-			1,
-			0,
-			0,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			&x_auto, &y_auto, &z_auto, 1, 0, 0, 0);
 	}
 
 	if(x_auto)
@@ -940,16 +927,9 @@ int CWindowCameraLeft::handle_event()
 	FloatAuto *x_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			0,
-			&z_auto,
-			track,
-			1,
-			1,
-			0,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			&x_auto, 0, &z_auto, 1, 1, 0, 0);
 	}
 
 	if(x_auto && z_auto)
@@ -1017,16 +997,9 @@ int CWindowCameraRight::handle_event()
 	FloatAuto *x_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			0,
-			&z_auto,
-			track,
-			1,
-			1,
-			0,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			&x_auto, 0, &z_auto, 1, 1, 0, 0);
 	}
 
 	if(x_auto && z_auto)
@@ -1064,16 +1037,9 @@ int CWindowCameraTop::handle_event()
 	FloatAuto *y_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(0,
-			&y_auto,
-			&z_auto,
-			track,
-			1,
-			0,
-			1,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			0, &y_auto, &z_auto, 1, 0, 1, 0);
 	}
 
 	if(y_auto && z_auto)
@@ -1139,16 +1105,9 @@ int CWindowCameraBottom::handle_event()
 	FloatAuto *y_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(0,
-			&y_auto,
-			&z_auto,
-			track,
-			1,
-			0,
-			1,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			0, &y_auto, &z_auto, 1, 0, 1, 0);
 	}
 
 	if(y_auto && z_auto)
@@ -1196,16 +1155,9 @@ void CWindowProjectorGUI::create_objects()
 	BC_Button *button;
 
 	lock_window("CWindowProjectorGUI::create_objects");
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			&y_auto,
-			&z_auto,
-			track,
-			0,
-			0,
-			0,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			&x_auto, &y_auto, &z_auto, 0, 0, 0, 0);
 	}
 
 	add_subwindow(title = new BC_Title(x, y, "X:"));
@@ -1337,17 +1289,9 @@ void CWindowProjectorGUI::update()
 	FloatAuto *y_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			&y_auto,
-			&z_auto,
-			track,
-			0,
-			0,
-			0,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			&x_auto, &y_auto, &z_auto, 0, 0, 0, 0);
 	}
 
 	if(x_auto)
@@ -1381,16 +1325,9 @@ int CWindowProjectorLeft::handle_event()
 	FloatAuto *x_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			0,
-			&z_auto,
-			track,
-			0,
-			1,
-			0,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			&x_auto, 0, &z_auto, 0, 1, 0, 0);
 	}
 	if(x_auto && z_auto)
 	{
@@ -1447,16 +1384,9 @@ int CWindowProjectorRight::handle_event()
 	FloatAuto *x_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			0,
-			&z_auto,
-			track,
-			0,
-			1,
-			0,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			&x_auto, 0, &z_auto, 0, 1, 0, 0);
 	}
 
 	if(x_auto && z_auto)
@@ -1485,16 +1415,9 @@ int CWindowProjectorTop::handle_event()
 	FloatAuto *y_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(0,
-			&y_auto,
-			&z_auto,
-			track,
-			0,
-			0,
-			1,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			0, &y_auto, &z_auto, 0, 0, 1, 0);
 	}
 
 	if(y_auto && z_auto)
@@ -1551,16 +1474,9 @@ int CWindowProjectorBottom::handle_event()
 	FloatAuto *y_auto = 0;
 	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(0,
-			&y_auto,
-			&z_auto,
-			track,
-			0,
-			0,
-			1,
-			0);
+	if( track ) {
+		mwindow->cwindow->calculate_affected_autos(track,
+			0, &y_auto, &z_auto, 0, 0, 1, 0);
 	}
 
 	if(y_auto && z_auto)

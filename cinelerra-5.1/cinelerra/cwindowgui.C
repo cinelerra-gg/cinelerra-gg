@@ -609,8 +609,24 @@ int CWindowGUI::keypress_event()
 		case KEY_F8:	cwindow_operation = CWINDOW_EYEDROP;	break;
 		case KEY_F9:	cwindow_operation = CWINDOW_TOOL_WINDOW; break;
 		case KEY_F10:	cwindow_operation = CWINDOW_TITLESAFE;	break;
-		case KEY_F11:	canvas->reset_camera();	   result = 1;	break;
-		case KEY_F12:	canvas->reset_projector(); result = 1;	break;
+		}
+	}
+	if( !result && cwindow_operation < 0 && !ctrl_down() ) {
+		switch( get_keypress() ) {
+		case KEY_F11:
+			if( !shift_down() )
+				canvas->reset_camera();
+			else
+				canvas->camera_keyframe();
+			result = 1;
+			break;
+		case KEY_F12:
+			if( !shift_down() )
+				canvas->reset_projector();
+			else
+				canvas->projector_keyframe();
+			result = 1;
+			break;
 		}
 	}
 
@@ -2499,25 +2515,52 @@ void CWindowCanvas::draw_safe_regions()
 	get_canvas()->set_opaque();
 }
 
+
+void CWindowCanvas::create_keyframe(int do_camera)
+{
+	Track *affected_track = gui->cwindow->calculate_affected_track();
+	if( affected_track ) {
+		double pos = mwindow->edl->local_session->get_selectionstart(1);
+		int64_t position = affected_track->to_units(pos, 0);
+		int ix = do_camera ? AUTOMATION_CAMERA_X : AUTOMATION_PROJECTOR_X;
+		int iy = do_camera ? AUTOMATION_CAMERA_Y : AUTOMATION_PROJECTOR_Y;
+		int iz = do_camera ? AUTOMATION_CAMERA_Z : AUTOMATION_PROJECTOR_Z;
+		FloatAuto *prev, *next;
+		FloatAutos **autos = (FloatAutos**)affected_track->automation->autos;
+		FloatAutos *x_autos = autos[ix];  prev = 0;  next = 0;
+		float x_value = x_autos->get_value(position, PLAY_FORWARD, prev, next);
+		FloatAutos *y_autos = autos[iy];  prev = 0;  next = 0;
+		float y_value = y_autos->get_value(position, PLAY_FORWARD, prev, next);
+		FloatAutos *z_autos = autos[iz];  prev = 0;  next = 0;
+		float z_value = z_autos->get_value(position, PLAY_FORWARD, prev, next);
+		FloatAuto *x_keyframe = 0, *y_keyframe = 0, *z_keyframe = 0;
+
+		gui->cwindow->calculate_affected_autos(affected_track,
+			&x_keyframe, &y_keyframe, &z_keyframe,
+			do_camera, -1, -1, -1, 0);
+		x_keyframe->set_value(x_value);
+		y_keyframe->set_value(y_value);
+		z_keyframe->set_value(z_value);
+
+		mwindow->sync_parameters(CHANGE_PARAMS);
+		gui->update_tool();
+		mwindow->gui->lock_window("CWindow::camera_keyframe");
+		mwindow->gui->draw_overlays(1);
+		mwindow->gui->unlock_window();
+	}
+}
+
+void CWindowCanvas::camera_keyframe() { create_keyframe(1); }
+void CWindowCanvas::projector_keyframe() { create_keyframe(0); }
+
 void CWindowCanvas::reset_keyframe(int do_camera)
 {
-	FloatAuto *x_keyframe = 0;
-	FloatAuto *y_keyframe = 0;
-	FloatAuto *z_keyframe = 0;
-	Track *affected_track = 0;
-
-	affected_track = gui->cwindow->calculate_affected_track();
-
-	if(affected_track)
-	{
-		gui->cwindow->calculate_affected_autos(&x_keyframe,
-			&y_keyframe,
-			&z_keyframe,
-			affected_track,
-			do_camera,
-			1,
-			1,
-			1);
+	Track *affected_track = gui->cwindow->calculate_affected_track();
+	if( affected_track ) {
+		FloatAuto *x_keyframe = 0, *y_keyframe = 0, *z_keyframe = 0;
+		gui->cwindow->calculate_affected_autos(affected_track,
+			&x_keyframe, &y_keyframe, &z_keyframe,
+			do_camera, 1, 1, 1);
 
 		x_keyframe->set_value(0);
 		y_keyframe->set_value(0);
@@ -2525,18 +2568,15 @@ void CWindowCanvas::reset_keyframe(int do_camera)
 
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		gui->update_tool();
+		mwindow->gui->lock_window("CWindow::camera_keyframe");
+		mwindow->gui->draw_overlays(1);
+		mwindow->gui->unlock_window();
 	}
 }
 
-void CWindowCanvas::reset_camera()
-{
-	reset_keyframe(1);
-}
+void CWindowCanvas::reset_camera() { reset_keyframe(1); }
+void CWindowCanvas::reset_projector() { reset_keyframe(0); }
 
-void CWindowCanvas::reset_projector()
-{
-	reset_keyframe(0);
-}
 
 int CWindowCanvas::test_crop(int button_press, int &redraw)
 {

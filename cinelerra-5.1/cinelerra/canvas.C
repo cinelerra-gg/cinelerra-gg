@@ -1050,19 +1050,36 @@ CanvasPopup::~CanvasPopup()
 {
 }
 
+CanvasZoomSize::CanvasZoomSize(Canvas *canvas)
+ : BC_MenuItem(_("Zoom..."))
+{
+	this->canvas = canvas;
+}
+
+CanvasSizeSubMenu::CanvasSizeSubMenu(CanvasZoomSize *zoom_size)
+{
+	this->zoom_size = zoom_size;
+}
+
 void CanvasPopup::create_objects()
 {
 	add_item(new BC_MenuItem("-"));
 	add_item(new CanvasFullScreenItem(canvas));
-	add_item(new CanvasPopupSize(canvas, _("Zoom 25%"), 0.25));
-	add_item(new CanvasPopupSize(canvas, _("Zoom 33%"), 0.33));
-	add_item(new CanvasPopupSize(canvas, _("Zoom 50%"), 0.5));
-	add_item(new CanvasPopupSize(canvas, _("Zoom 75%"), 0.75));
-	add_item(new CanvasPopupSize(canvas, _("Zoom 100%"), 1.0));
-	add_item(new CanvasPopupSize(canvas, _("Zoom 150%"), 1.5));
-	add_item(new CanvasPopupSize(canvas, _("Zoom 200%"), 2.0));
-	add_item(new CanvasPopupSize(canvas, _("Zoom 300%"), 3.0));
-	add_item(new CanvasPopupSize(canvas, _("Zoom 400%"), 4.0));
+
+	CanvasZoomSize *zoom_size = new CanvasZoomSize(canvas);
+	add_item(zoom_size);
+	CanvasSizeSubMenu *submenu = new CanvasSizeSubMenu(zoom_size);
+	zoom_size->add_submenu(submenu);
+
+	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 25%"), 0.25));
+	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 33%"), 0.33));
+	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 50%"), 0.5));
+	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 75%"), 0.75));
+	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 100%"), 1.0));
+	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 150%"), 1.5));
+	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 200%"), 2.0));
+	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 300%"), 3.0));
+	submenu->add_submenuitem(new CanvasPopupSize(canvas, _("Zoom 400%"), 4.0));
 }
 
 void CanvasPopup::use_cwindow()
@@ -1070,6 +1087,8 @@ void CanvasPopup::use_cwindow()
 	add_item(new CanvasPopupAuto(canvas));
 	add_item(new CanvasPopupResetCamera(canvas));
 	add_item(new CanvasPopupResetProjector(canvas));
+	add_item(new CanvasPopupCameraKeyframe(canvas));
+	add_item(new CanvasPopupProjectorKeyframe(canvas));
 	add_item(toggle_controls = new CanvasToggleControls(canvas));
 }
 
@@ -1115,7 +1134,7 @@ int CanvasPopupSize::handle_event()
 
 
 CanvasPopupResetCamera::CanvasPopupResetCamera(Canvas *canvas)
- : BC_MenuItem(_("Reset camera"), "F11", KEY_F11)
+ : BC_MenuItem(_("Reset camera"), _("F11"), KEY_F11)
 {
 	this->canvas = canvas;
 }
@@ -1125,16 +1144,39 @@ int CanvasPopupResetCamera::handle_event()
 	return 1;
 }
 
-
-
 CanvasPopupResetProjector::CanvasPopupResetProjector(Canvas *canvas)
- : BC_MenuItem(_("Reset projector"), "F12", KEY_F12)
+ : BC_MenuItem(_("Reset projector"), _("F12"), KEY_F12)
 {
 	this->canvas = canvas;
 }
 int CanvasPopupResetProjector::handle_event()
 {
 	canvas->reset_projector();
+	return 1;
+}
+
+
+CanvasPopupCameraKeyframe::CanvasPopupCameraKeyframe(Canvas *canvas)
+ : BC_MenuItem(_("Camera keyframe"), _("Shift-F11"), KEY_F11)
+{
+	this->canvas = canvas;
+	set_shift(1);
+}
+int CanvasPopupCameraKeyframe::handle_event()
+{
+	canvas->camera_keyframe();
+	return 1;
+}
+
+CanvasPopupProjectorKeyframe::CanvasPopupProjectorKeyframe(Canvas *canvas)
+ : BC_MenuItem(_("Projector keyframe"), _("Shift-F12"), KEY_F12)
+{
+	this->canvas = canvas;
+	set_shift(1);
+}
+int CanvasPopupProjectorKeyframe::handle_event()
+{
+	canvas->projector_keyframe();
 	return 1;
 }
 

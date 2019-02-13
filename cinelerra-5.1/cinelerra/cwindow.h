@@ -59,14 +59,10 @@ public:
 		int *created = 0,
 		int redraw = 1);
 // Same as before.  Provide 0 to Auto arguments to have them ignored.
-	void calculate_affected_autos(FloatAuto **x_auto,
-		FloatAuto **y_auto,
-		FloatAuto **z_auto,
-		Track *track,
-		int use_camera,
-		int create_x,
-		int create_y,
-		int create_z);
+	void calculate_affected_autos( Track *track,
+		FloatAuto **x_auto, FloatAuto **y_auto, FloatAuto **z_auto,
+		int use_camera, int create_x, int create_y, int create_z,
+		int redraw=1);
 	void show_window();
 	void hide_window();
 	int update_position(double position);

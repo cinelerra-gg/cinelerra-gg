@@ -62,8 +62,9 @@ public:
 // Returns auto at exact position, null if non-existent. ignores autokeyframming and align on frames
 	Auto* get_auto_at_position(double position = -1);
 
-// Get keyframe for editing with automatic creation if enabled
-	Auto* get_auto_for_editing(double position = -1);
+// Get keyframe for editing with creation
+// create: <0: always new keyframe, =0: no new keyframe, >0: auto keyframe
+	Auto* get_auto_for_editing(double position=-1, int create=1);
 
 // Insert keyframe at the point if it doesn't exist
 // Interpolate its value if possible
