@@ -1505,7 +1505,9 @@ void TitleColorPopup::handle_done_event(int result)
 {
 	if( !result ) {
 		char txt[BCSTRLEN];  sprintf(txt, "<%s #%06x>", _(KW_COLOR), color_value);
+		window->lock_window("TitleColorPopup::handle_done_event");
 		window->insert_ibeam(txt);
+		window->unlock_window();
 	}
 }
 
@@ -1527,7 +1529,9 @@ void TitlePngPopup::handle_done_event(int result)
 	BrowseButtonWindow *gui = (BrowseButtonWindow *)get_gui();
 	const char *path = gui->get_submitted_path();
 	char txt[BCSTRLEN];  sprintf(txt, "<%s %s>", _(KW_PNG), path);
+	window->lock_window("TitlePngPopup::handle_done_event");
 	window->insert_ibeam(txt);
+	window->unlock_window();
 }
 
 BC_Window *TitlePngPopup::new_gui()

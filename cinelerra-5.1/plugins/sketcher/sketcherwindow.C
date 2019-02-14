@@ -122,7 +122,9 @@ void SketcherCurveColor::handle_done_event(int result)
 	if( ci >= 0 && ci < config.curves.size() ) {
 		SketcherCurve *cv = config.curves[ci];
 		cv->color = color;
+		gui->lock_window("SketcherCurveColor::handle_done_event");
 		gui->curve_list->update(ci);
+		gui->unlock_window();
 		gui->send_configure_change();
 	}
 }
