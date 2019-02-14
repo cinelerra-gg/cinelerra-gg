@@ -168,7 +168,7 @@ void MainError::append_error(const char *string)
 void MainError::show_error_local(const char *string)
 {
 // assume user won't get to closing the GUI here
-	lock_window("MainError::show_error_local");
+	lock_dialog("MainError::show_error_local");
 	if( get_gui() ) {
 		MainErrorGUI *gui = (MainErrorGUI*)get_gui();
 		gui->lock_window("MainError::show_error_local");
@@ -186,7 +186,7 @@ void MainError::show_error_local(const char *string)
 		append_error(string);
 		start();
 	}
-	unlock_window();
+	unlock_dialog();
 }
 
 

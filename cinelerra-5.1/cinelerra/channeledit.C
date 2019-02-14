@@ -703,7 +703,6 @@ void ConfirmScanThread::handle_done_event(int result)
 	gui->channel_picker->save_scan_defaults(&gui->thread->scan_params);
 	if(!result)
 	{
-		get_gui()->hide_window();
 		gui->lock_window("ConfirmScanThread::handle_done_event");
 		gui->scan();
 		gui->unlock_window();

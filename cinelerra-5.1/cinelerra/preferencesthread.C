@@ -174,10 +174,10 @@ int PreferencesThread::update_framerate()
 {
 	if(thread_running)
 	{
-		lock_gui("PreferencesThread::update_framerate");
+		lock_dialog("PreferencesThread::update_framerate");
 		PreferencesWindow *window = (PreferencesWindow*)get_gui();
 		if(window) window->update_framerate();
-		unlock_gui();
+		unlock_dialog();
 	}
 	return 0;
 }
@@ -187,10 +187,10 @@ void PreferencesThread::update_rates()
 {
 	if(thread_running)
 	{
-		lock_gui("PreferencesThread::update_framerate");
+		lock_dialog("PreferencesThread::update_framerate");
 		PreferencesWindow *window = (PreferencesWindow*)get_gui();
 		if(window) window->update_rates();
-		unlock_gui();
+		unlock_dialog();
 	}
 }
 

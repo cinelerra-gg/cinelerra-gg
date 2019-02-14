@@ -63,8 +63,8 @@ public:
 	BC_Window* get_gui();
 
 // Called by user to access the gui pointer
-	void lock_window(const char *location);
-	void unlock_window();
+	void lock_dialog(const char *location);
+	void unlock_dialog();
 
 // Called by user to close the GUI from outside the thread
 	void close_window();

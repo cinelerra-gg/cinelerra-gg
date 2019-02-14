@@ -399,7 +399,7 @@ int AssetViewPopup::button_press_event()
 		vedl->set_outpoint(end);
 		vedl->local_session->set_selectionstart(start);
 		vedl->local_session->set_selectionend(end);
-		vwindow->update_position(CHANGE_NONE, 0, 1, 0);
+		vwindow->update_position();
 		return 1;
 	}
 	else {

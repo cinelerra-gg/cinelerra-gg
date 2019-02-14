@@ -218,13 +218,13 @@ void KeyFrameThread::handle_close_event(int result)
 
 void KeyFrameThread::close_window()
 {
-	lock_window("KeyFrameThread::close_window");
+	lock_dialog("KeyFrameThread::close_window");
 	if( get_gui() ) {
 		get_gui()->lock_window("KeyFrameThread::close_window");
 		get_gui()->set_done(1);
 		get_gui()->unlock_window();
 	}
-	unlock_window();
+	unlock_dialog();
 }
 
 
@@ -261,7 +261,7 @@ void KeyFrameThread::update_gui(int update_value_text)
 		update_values();
 		mwindow->gui->unlock_window();
 
-		lock_window("KeyFrameThread::update_gui");
+		lock_dialog("KeyFrameThread::update_gui");
 		KeyFrameWindow *window = (KeyFrameWindow*)get_gui();
 		if( window ) {
 			window->lock_window("KeyFrameThread::update_gui");
@@ -280,7 +280,7 @@ void KeyFrameThread::update_gui(int update_value_text)
 			}
 			window->unlock_window();
 		}
-		unlock_window();
+		unlock_dialog();
 	}
 #endif
 }

@@ -590,7 +590,7 @@ void VWindowEditing::set_position(double position)
 		if( position < 0 ) position = 0;
 		edl->local_session->set_selectionstart(position);
 		edl->local_session->set_selectionend(position);
-		vwindow->update_position(CHANGE_NONE, 0, 1);
+		vwindow->update_position();
 	}
 }
 
@@ -620,9 +620,7 @@ void VWindowEditing::panel_toggle_label()
 void VWindowEditing::panel_next_label(int cut)
 {
 	if( !vwindow->get_edl() ) return;
-	vwindow->gui->unlock_window();
-	vwindow->playback_engine->interrupt_playback(1);
-	vwindow->gui->lock_window("VWindowEditing::next_label");
+	vwindow->interrupt_playback(1);
 
 	EDL *edl = vwindow->get_edl();
 	Label *current = edl->labels->next_label(
@@ -631,16 +629,14 @@ void VWindowEditing::panel_next_label(int cut)
 		edl->tracks->total_length();
 	edl->local_session->set_selectionstart(position);
 	edl->local_session->set_selectionend(position);
-	vwindow->update_position(CHANGE_NONE, 0, 1, 0);
+	vwindow->update_position();
 	vwindow->gui->timebar->update(1);
 }
 
 void VWindowEditing::panel_prev_label(int cut)
 {
 	if( !vwindow->get_edl() ) return;
-	vwindow->gui->unlock_window();
-	vwindow->playback_engine->interrupt_playback(1);
-	vwindow->gui->lock_window("VWindowEditing::prev_label");
+	vwindow->interrupt_playback(1);
 
 	EDL *edl = vwindow->get_edl();
 	Label *current = edl->labels->prev_label(
@@ -648,7 +644,7 @@ void VWindowEditing::panel_prev_label(int cut)
 	double position = !current ? 0 : current->position;
 	edl->local_session->set_selectionstart(position);
 	edl->local_session->set_selectionend(position);
-	vwindow->update_position(CHANGE_NONE, 0, 1, 0);
+	vwindow->update_position();
 	vwindow->gui->timebar->update(1);
 }
 
@@ -818,9 +814,7 @@ void VWindowCanvas::zoom_resize_window(float percentage)
 
 void VWindowCanvas::close_source()
 {
-	gui->unlock_window();
-	gui->vwindow->playback_engine->interrupt_playback(1);
-	gui->lock_window("VWindowCanvas::close_source");
+	gui->vwindow->interrupt_playback(1);
 	gui->vwindow->delete_source(1, 1);
 }
 

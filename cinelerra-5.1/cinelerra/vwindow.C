@@ -188,7 +188,7 @@ void VWindow::change_source(int edl_number)
 		this->edl = mwindow->edl->get_vwindow_edl(edl_number);
 		this->edl->Garbage::add_user();
 		gui->change_source(get_edl(), get_edl()->local_session->clip_title);
-		update_position(CHANGE_ALL, 1, 1, 1);
+		update_position(CHANGE_ALL);
 	}
 	else
 	{
@@ -230,8 +230,7 @@ void VWindow::change_source(Indexable *indexable)
 
 // Update GUI
 	gui->change_source(this->edl, title);
-	update_position(CHANGE_ALL, 1, 1, 1);
-
+	update_position(CHANGE_ALL);
 	gui->unlock_window();
 }
 
@@ -265,7 +264,7 @@ void VWindow::change_source(EDL *edl)
 
 // Update GUI
 		gui->change_source(edl, edl->local_session->clip_title);
-		update_position(CHANGE_ALL, 1, 1, 1);
+		update_position(CHANGE_ALL);
 	}
 	else
 		gui->change_source(edl, _("Viewer"));
@@ -275,28 +274,20 @@ void VWindow::change_source(EDL *edl)
 
 void VWindow::goto_start()
 {
-	if(get_edl())
-	{
+	if( get_edl() ) {
 		get_edl()->local_session->set_selectionstart(0);
 		get_edl()->local_session->set_selectionend(0);
-		update_position(CHANGE_NONE,
-			0,
-			1,
-			0);
+		update_position();
 	}
 }
 
 void VWindow::goto_end()
 {
-	if(get_edl())
-	{
+	if( get_edl() ) {
 		double position = get_edl()->tracks->total_length();
 		get_edl()->local_session->set_selectionstart(position);
 		get_edl()->local_session->set_selectionend(position);
-		update_position(CHANGE_NONE,
-			0,
-			1,
-			0);
+		update_position();
 	}
 }
 
@@ -307,23 +298,16 @@ void VWindow::update(int do_timebar)
 	gui->edit_panel->update();
 }
 
-void VWindow::update_position(int change_type,
-	int use_slider,
-	int update_slider,
-	int lock_window)
+void VWindow::update_position(int change_type)
 {
 	EDL *edl = get_edl();
-	if(edl)
-	{
-//printf("VWindow::update_position %d\n", __LINE__);
-//edl->dump();
+	if(edl) {
+		gui->unlock_window();
 		playback_engine->refresh_frame(change_type, edl);
-
+		gui->lock_window("VWindow::update_position");
 		double position = edl->local_session->get_selectionstart(1);
-		if(lock_window) gui->lock_window("VWindow::update_position");
 		gui->clock->update(position);
 		gui->timebar->update(1);
-		if(lock_window) gui->unlock_window();
 	}
 }
 
@@ -332,23 +316,23 @@ void VWindow::stop_playback(int wait)
 	playback_engine->stop_playback(wait);
 }
 
+void VWindow::interrupt_playback(int wait)
+{
+	gui->unlock_window();
+	playback_engine->interrupt_playback(wait);
+	gui->lock_window("VWindow::interrupt_playback");
+}
+
 int VWindow::update_position(double position)
 {
 	EDL *edl = get_edl();
-	if(edl)
-	{
-		gui->unlock_window();
-
-		playback_engine->interrupt_playback(1);
-
+	if(edl) {
+		interrupt_playback(1);
 		position = mwindow->edl->align_to_frame(position, 0);
 		position = MAX(0, position);
-
 		edl->local_session->set_selectionstart(position);
 		edl->local_session->set_selectionend(position);
-
-		gui->lock_window("VWindow::update_position 1");
-		update_position(CHANGE_NONE, 0, 1, 0);
+		update_position();
 	}
 
 	return 1;
@@ -357,8 +341,7 @@ int VWindow::update_position(double position)
 void VWindow::set_inpoint()
 {
 	EDL *edl = get_edl();
-	if(edl)
-	{
+	if(edl) {
 		edl->set_inpoint(edl->local_session->get_selectionstart(1));
 		gui->timebar->update(1);
 	}

@@ -91,6 +91,7 @@ int Mutex::unlock()
 {
 	if( count <= 0 ) {
 		printf("Mutex::unlock not locked: %s\n", title);
+		booby();
 		return 0;
 	}
 // Remove from recursive status

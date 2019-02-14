@@ -1,7 +1,7 @@
 
 # uncomment to enable diagnostics
 #DEBUG
-# uncommet to use direct usb
+# uncomment to use direct usb
 #USB_DIRECT
 
 # redefine default, use
@@ -21,17 +21,15 @@
 
 # Most useful functions have to be on K5-K9 because Xpress only has 5 keys
  K5 XK_Home  	# Beginning
- K6 XK_KP_3	# Play, or if playing Stop
+ K6 XK_KP_6	# Reverse, or if playing Stop
  K7 XK_KP_0	# Stop
- K8 XK_KP_6	# Reverse, or if playing Stop
+ K8 XK_KP_3	# Play, or if playing Stop
  K9 XK_End   	# End
 
-# K10 "["	# Switch if K14 not working
-# K11 "]"	# Switch if K15 not working
- K10 Alt-XK_Left
- K11 Alt-XK_Right
- K12 XK_Home    # Beginning
- K13 XK_End     # End
+ K10 Alt-XK_Left  # Go to previous edit
+ K11 Alt-XK_Right # Go to next edit
+ K12 Ctrl-XK_Left  # Go to previous label
+ K13 Ctrl-XK_Right # Go to next label 
  K14 "["        # Toggle in
  K15 "]"        # Toggle out
 
@@ -63,18 +61,18 @@
 
 # Most useful functions have to be on K5-K9 because Xpress only has 5 keys
  K5 XK_Home  	# Beginning
- K6 XK_KP_3	# Play, or if playing Stop
+ K6 XK_KP_6	# Reverse, or if playing Stop
  K7 "f"		# Go in or out of Fullscreen mode
- K8 XK_KP_6	# Reverse, of if playing Stop
+ K8 XK_KP_3	# Play, of if playing Stop
  K9 XK_End   	# End
 
- K10 "["	# Temporary until K14 Pro fixed
- K11 "]"	# Temporary until K15 Pro fixed
- K12 XK_Home    # Beginning
- K13 XK_End     # End
+ K10 Alt-XK_Left  # Go to previous edit
+ K11 Alt-XK_Right # Go to next edit
+ K12 Ctrl-XK_Left  # Go to previous label
+ K13 Ctrl-XK_Right # Go to next label 
  K14 "["        # Toggle in
  K15 "]"        # Toggle out
-
+ 
  K1 "i"		# Clip
  K2 "x"		# Cut
  K3 "c"		# Copy
@@ -103,18 +101,18 @@
 
 # Most useful functions have to be on K6-K9 because Xpress only has 5 keys
  K5 XK_Home  	# Beginning
- K6 XK_KP_3	# Play, or if playing Stop
+ K6 XK_KP_6	# Reverse, or if playing Stop
  K7 "f"		# Go in or out of Fullscreen mode
- K8 XK_KP_6	# Reverse, or if playing Stop
+ K8 XK_KP_3	# Play, or if playing Stop
  K9 XK_End   	# End
 
- K10 "["	# Temporary until K14 Pro fixed
- K11 "]"	# Temporary until K15 Pro fixed
- K12 XK_Home    # Beginning
- K13 XK_End     # End
+ K10 "["	# Toggle in if no K14
+ K11 "]"	# Toggle in if no K15
+ K12 Alt-XK_Left  # Go to previous edit
+ K13 Alt-XK_Right # Go to next edit
  K14 "["        # Toggle in
  K15 "]"        # Toggle out
-
+ 
  K1 "i"		# Clip
  K2 "v"		# Splice
  K3 "c"		# Copy

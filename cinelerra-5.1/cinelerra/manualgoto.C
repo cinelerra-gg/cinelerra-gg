@@ -64,7 +64,9 @@ void ManualGoto::handle_done_event(int result)
 	case '-':  new_position = current_position - new_position;  break;
 	default: break;
 	}
+	panel->subwindow->lock_window("ManualGoto::handle_done_event");
 	panel->set_position(new_position);
+	panel->subwindow->unlock_window();
 }
 
 
@@ -81,7 +83,7 @@ ManualGotoWindow::~ManualGotoWindow()
 
 void ManualGotoWindow::reset_data(double position)
 {
-	lock_window();
+	lock_window("ManualGotoWindow::reset_data");
 	update_position(position);
 	signtitle->update("=");
 	unlock_window();

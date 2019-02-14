@@ -51,12 +51,12 @@ BC_DialogThread::~BC_DialogThread()
 	delete window_lock;
 }
 
-void BC_DialogThread::lock_window(const char *location)
+void BC_DialogThread::lock_dialog(const char *location)
 {
 	window_lock->lock(location);
 }
 
-void BC_DialogThread::unlock_window()
+void BC_DialogThread::unlock_dialog()
 {
 	window_lock->unlock();
 }
@@ -107,17 +107,6 @@ void BC_DialogThread::run()
 	handle_close_event(result);
 }
 
-void BC_DialogThread::lock_gui(const char *location)
-{
-	window_lock->lock(location);
-}
-
-void BC_DialogThread::unlock_gui()
-{
-	window_lock->unlock();
-}
-
-
 BC_Window* BC_DialogThread::new_gui()
 {
 	printf("BC_DialogThread::new_gui called\n");
@@ -139,14 +128,14 @@ void BC_DialogThread::handle_close_event(int result)
 
 void BC_DialogThread::close_window()
 {
-	lock_window("BC_DialogThread::close_window");
+	lock_dialog("BC_DialogThread::close_window");
 	if(gui)
 	{
 		gui->lock_window("BC_DialogThread::close_window");
 		gui->set_done(1);
 		gui->unlock_window();
 	}
-	unlock_window();
+	unlock_dialog();
 	join();
 }
 

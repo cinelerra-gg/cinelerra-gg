@@ -62,10 +62,7 @@ public:
 	Indexable* get_source();
 	void update(int do_timebar);
 
-	void update_position(int change_type = CHANGE_NONE,
-		int use_slider = 1,
-		int update_slider = 0,
-		int lock_window = 0);
+	void update_position(int change_type = CHANGE_NONE);
 	int update_position(double position);
 	void set_inpoint();
 	void set_outpoint();
@@ -77,6 +74,7 @@ public:
 	void goto_start();
 	void goto_end();
 	void stop_playback(int wait);
+	void interrupt_playback(int wait);
 
 	VTracking *playback_cursor;
 

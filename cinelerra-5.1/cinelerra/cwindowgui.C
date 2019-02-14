@@ -841,6 +841,7 @@ CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow)
 #define panel_btn(fn, args, s) \
  panel_fn(panel_##fn, args, mwindow->gui->mbuttons->edit_panel->panel_##s)
 
+
 double CWindowEditing::get_position()
 {
 	relock_cm("get_position");
@@ -852,17 +853,18 @@ double CWindowEditing::get_position()
 void CWindowEditing::set_position(double position)
 {
 	relock_cm("set_position");
-	set_position(position);
+	mwindow->gui->mbuttons->edit_panel->set_position(position);
 	relock_mc("set_position");
 }
 
 void CWindowEditing::set_click_to_play(int v)
 {
-	relock_cm("set_click_to_play");
+	relock_cm("set_position");
 	mwindow->edl->session->cwindow_click2play = v;
+	relock_mc("set_position");
 	click2play->update(v);
-	relock_mc("set_click_to_play");
 }
+
 
 void panel_btn(stop_transport,(), stop_transport())
 void panel_btn(toggle_label,(), toggle_label())
