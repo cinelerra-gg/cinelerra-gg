@@ -404,11 +404,7 @@ int CPanelZoom::handle_event()
 			track->automation->autos[aidx], 1);
 	if( !z_auto ) return 1;
 	z_auto->set_value(zoom);
-	gui->subwindow->update_tool();
-	mwindow->gui->lock_window("CPanelZoom::handle_event 1");
-	mwindow->gui->draw_overlays(1);
-	mwindow->gui->unlock_window();
-	mwindow->sync_parameters(CHANGE_PARAMS);
+	gui->subwindow->sync_parameters(CHANGE_PARAMS, 1, 1);
 	return 1;
 }
 

@@ -807,15 +807,10 @@ void CWindowCameraGUI::create_objects()
 
 void CWindowCameraGUI::update_preview()
 {
-	mwindow->gui->lock_window("CWindowCameraGUI::update_preview");
-	mwindow->restart_brender();
-	mwindow->gui->draw_overlays(1);
-	mwindow->sync_parameters(CHANGE_PARAMS);
-	mwindow->gui->unlock_window();
-	mwindow->cwindow->refresh_frame(CHANGE_NONE);
-	mwindow->cwindow->gui->lock_window("CWindowCameraGUI::update_preview");
-	mwindow->cwindow->gui->canvas->draw_refresh();
-	mwindow->cwindow->gui->unlock_window();
+	CWindowGUI *cgui = mwindow->cwindow->gui;
+	cgui->lock_window("CWindowCameraGUI::update_preview");
+	cgui->sync_parameters(CHANGE_PARAMS, 0, 1);
+	cgui->unlock_window();
 }
 
 
@@ -1210,15 +1205,10 @@ void CWindowProjectorGUI::create_objects()
 
 void CWindowProjectorGUI::update_preview()
 {
-	mwindow->gui->lock_window("CWindowProjectorGUI::update_preview");
-	mwindow->restart_brender();
-	mwindow->sync_parameters(CHANGE_PARAMS);
-	mwindow->gui->draw_overlays(1);
-	mwindow->gui->unlock_window();
-	mwindow->cwindow->refresh_frame(CHANGE_NONE);
-	mwindow->cwindow->gui->lock_window("CWindowProjectorGUI::update_preview");
-	mwindow->cwindow->gui->canvas->draw_refresh();
-	mwindow->cwindow->gui->unlock_window();
+	CWindowGUI *cgui = mwindow->cwindow->gui;
+	cgui->lock_window("CWindowProjectorGUI::update_preview");
+	cgui->sync_parameters(CHANGE_PARAMS, 0, 1);
+	cgui->unlock_window();
 }
 
 void CWindowProjectorGUI::handle_event()
@@ -2203,15 +2193,10 @@ void CWindowMaskGUI::handle_event()
 
 void CWindowMaskGUI::update_preview()
 {
-	mwindow->gui->lock_window("CWindowMaskGUI::update_preview");
-	mwindow->restart_brender();
-	mwindow->sync_parameters(CHANGE_PARAMS);
-	mwindow->gui->draw_overlays(1);
-	mwindow->gui->unlock_window();
-	mwindow->cwindow->refresh_frame(CHANGE_NONE);
-	mwindow->cwindow->gui->lock_window("CWindowMaskGUI::update_preview");
-	mwindow->cwindow->gui->canvas->draw_refresh();
-	mwindow->cwindow->gui->unlock_window();
+	CWindowGUI *cgui = mwindow->cwindow->gui;
+	cgui->lock_window("CWindowMaskGUI::update_preview");
+	cgui->sync_parameters(CHANGE_PARAMS, 0, 1);
+	cgui->unlock_window();
 }
 
 

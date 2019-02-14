@@ -115,7 +115,6 @@ public:
 			EDL *new_edl=0, int use_inout=0);
 
 	Condition *input_lock, *output_lock;
-	Mutex *sent_lock;
 // active command, stop command
 	TransportCommand *command, *stop_command;
 // next command under construction, last sent command

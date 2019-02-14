@@ -671,6 +671,22 @@ void CWindowGUI::keyboard_zoomout()
 //	}
 }
 
+void CWindowGUI::sync_parameters(int change_type, int tool, int overlay)
+{
+	if( tool ) update_tool();
+	if( change_type < 0 && !overlay ) return;
+	unlock_window();
+	if( change_type >= 0 ) {
+		mwindow->restart_brender();
+		mwindow->sync_parameters(CHANGE_PARAMS);
+	}
+	if( overlay ) {
+		mwindow->gui->lock_window("CWindow::camera_keyframe");
+		mwindow->gui->draw_overlays(1);
+		mwindow->gui->unlock_window();
+	}
+	lock_window("CWindowGUI::sync_parameters");
+}
 
 void CWindowGUI::drag_motion()
 {
@@ -741,7 +757,7 @@ int CWindowGUI::drag_stop()
 			mwindow->gui->update(1, NORMAL_DRAW, 1, 1, 0, 1, 0);
 			mwindow->undo->update_undo_after(_("insert assets"), LOAD_ALL);
 			mwindow->gui->unlock_window();
-			mwindow->sync_parameters(CHANGE_ALL);
+			sync_parameters(CHANGE_ALL);
 		}
 	}
 
@@ -2542,11 +2558,7 @@ void CWindowCanvas::create_keyframe(int do_camera)
 		y_keyframe->set_value(y_value);
 		z_keyframe->set_value(z_value);
 
-		mwindow->sync_parameters(CHANGE_PARAMS);
-		gui->update_tool();
-		mwindow->gui->lock_window("CWindow::camera_keyframe");
-		mwindow->gui->draw_overlays(1);
-		mwindow->gui->unlock_window();
+		gui->sync_parameters(CHANGE_PARAMS, 1, 1);
 	}
 }
 
@@ -2566,11 +2578,7 @@ void CWindowCanvas::reset_keyframe(int do_camera)
 		y_keyframe->set_value(0);
 		z_keyframe->set_value(1);
 
-		mwindow->sync_parameters(CHANGE_PARAMS);
-		gui->update_tool();
-		mwindow->gui->lock_window("CWindow::camera_keyframe");
-		mwindow->gui->draw_overlays(1);
-		mwindow->gui->unlock_window();
+		gui->sync_parameters(CHANGE_PARAMS, 1, 1);
 	}
 }
 
@@ -2892,12 +2900,15 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	int64_t position = track->to_units(
 		mwindow->edl->local_session->get_selectionstart(1),
 		0);
-
-	track->automation->get_projector(&center_x,
-		&center_y,
-		&center_z,
-		position,
-		PLAY_FORWARD);
+	if( do_camera ) {
+		track->automation->get_camera(&center_x,
+			&center_y, &center_z, position, PLAY_FORWARD);
+// follow image, not camera
+		center_x = -center_x;  center_y = -center_y;
+	}
+	else
+		track->automation->get_projector(&center_x,
+			&center_y, &center_z, position, PLAY_FORWARD);
 
 //	center_x += track->track_w / 2;
 //	center_y += track->track_h / 2;
@@ -3086,6 +3097,7 @@ int CWindowCanvas::test_bezier(int button_press,
 				last_center_y = gui->affected_y->get_value();
 				float dx = cursor_x - gui->x_origin;
 				float dy = cursor_y - gui->y_origin;
+// follow image, not camera
 				if(gui->current_operation == CWINDOW_CAMERA ) {
 					dx = -dx;  dy = -dy;
 				}
@@ -3117,7 +3129,7 @@ int CWindowCanvas::test_bezier(int button_press,
 
 		if(gui->affected_track)
 		{
-			if(gui->current_operation == CWINDOW_CAMERA)
+			if( do_camera )
 				mwindow->undo->update_undo_before(_("camera"), this);
 			else
 				mwindow->undo->update_undo_before(_("projector"), this);
@@ -3329,38 +3341,9 @@ int CWindowCanvas::cursor_motion_event()
 		}
 	}
 
+	int change_type = rerender ? CHANGE_PARAMS : -1;
+	gui->sync_parameters(change_type, redraw, redraw_canvas);
 
-// If the window is never unlocked before calling send_command the
-// display shouldn't get stuck on the old video frame although it will
-// flicker between the old video frame and the new video frame.
-
-	if(redraw)
-	{
-		draw_refresh();
-		gui->update_tool();
-	}
-
-	if(redraw_canvas)
-	{
-		gui->unlock_window();
-
-
-		mwindow->gui->lock_window("CWindowCanvas::cursor_motion_event 1");
-		mwindow->gui->draw_overlays(1);
-		mwindow->gui->unlock_window();
-
-		gui->lock_window("CWindowCanvas::cursor_motion_event 1");
-	}
-
-	if(rerender)
-	{
-		gui->unlock_window();
-		mwindow->restart_brender();
-		mwindow->sync_parameters(CHANGE_PARAMS);
-		mwindow->cwindow->refresh_frame(CHANGE_NONE);
-		if(!redraw) gui->update_tool();
-		gui->lock_window("CWindowCanvas::cursor_motion_event 2");
-	}
 	return result;
 }
 
@@ -3426,31 +3409,9 @@ int CWindowCanvas::button_press_event()
 		}
 	}
 
-	if(redraw)
-	{
-		draw_refresh();
-		gui->unlock_window();
+	int change_type = rerender ? CHANGE_PARAMS : -1;
+	gui->sync_parameters(change_type, redraw, redraw_canvas);
 
-
-		mwindow->gui->lock_window("CWindowCanvas::button_press_event 1");
-		mwindow->gui->draw_overlays(1);
-		mwindow->gui->unlock_window();
-		gui->update_tool();
-
-		gui->lock_window("CWindowCanvas::button_press_event 1");
-	}
-
-// rerendering can also be caused by press event
-	if(rerender)
-	{
-		gui->unlock_window();
-
-		mwindow->restart_brender();
-		mwindow->sync_parameters(CHANGE_PARAMS);
-		mwindow->cwindow->refresh_frame(CHANGE_NONE);
-		if(!redraw) gui->update_tool();
-		gui->lock_window("CWindowCanvas::button_press_event 2");
-	}
 	return result;
 }
 

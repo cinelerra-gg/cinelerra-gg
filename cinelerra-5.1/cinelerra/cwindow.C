@@ -211,24 +211,24 @@ void CWindow::run()
 void CWindow::update(int dir, int overlays, int tool_window, int operation, int timebar)
 {
 
-	if(dir)
+	if( dir )
 		refresh_frame(CHANGE_NONE, dir);
 
 	gui->lock_window("CWindow::update 2");
 // Create tool window
-	if(operation)
+	if( operation )
 		gui->set_operation(mwindow->edl->session->cwindow_operation);
 
 // Updated by video device.
-	if(overlays && !dir)
+	if( overlays && !dir )
 		gui->canvas->draw_refresh();
 
 // Update tool parameters
 // Never updated by someone else
-	if(tool_window || dir)
+	if( tool_window || dir )
 		gui->update_tool();
 
-	if(timebar)
+	if( timebar )
 		gui->timebar->update(1);
 
 	double zoom = !mwindow->edl->session->cwindow_scrollbars ?

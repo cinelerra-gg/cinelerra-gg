@@ -648,18 +648,16 @@ Display* BC_WindowBase::init_display(const char *display_name)
 
 	if(display_name && display_name[0] == 0) display_name = NULL;
 	if((display = XOpenDisplay(display_name)) == NULL) {
-  		printf("BC_WindowBase::init_display: cannot connect to X server %s\n",
+		printf("BC_WindowBase::init_display: cannot connect to X server %s\n",
 			display_name);
-  		if(getenv("DISPLAY") == NULL) {
+		if(getenv("DISPLAY") == NULL) {
 			printf(_("'DISPLAY' environment variable not set.\n"));
-  			exit(1);
+			exit(1);
 		}
-		else {
 // Try again with default display.
-			if((display = XOpenDisplay(0)) == NULL) {
-				printf("BC_WindowBase::init_display: cannot connect to default X server.\n");
-				exit(1);
-			}
+		if((display = XOpenDisplay(0)) == NULL) {
+			printf("BC_WindowBase::init_display: cannot connect to default X server.\n");
+			exit(1);
 		}
  	}
 
@@ -873,7 +871,7 @@ int BC_WindowBase::keysym_lookup(XEvent *event)
 //  wkey_string[0], wkey_string[1], wkey_string[2], wkey_string[3]);
 
 		Status stat;
-  		int ret = Xutf8LookupString(input_context, (XKeyEvent*)event,
+		int ret = Xutf8LookupString(input_context, (XKeyEvent*)event,
 				keys_return, KEYPRESSLEN, &keysym, &stat);
 //printf("keysym_lookup 2 %d %d %lx %x %x\n", ret, stat, keysym, keys_return[0], keys_return[1]);
 		if( stat == XLookupBoth ) return ret;
@@ -1031,8 +1029,7 @@ locking_message = event->xclient.message_type;
 
 //printf("BC_WindowBase::dispatch_event %d %d\n", __LINE__, button_number);
 		event_win = event->xany.window;
-		if (button_number < 6)
-  		{
+		if (button_number < 6) {
 			if(button_number < 4)
 				button_down = 1;
 			button_pressed = event->xbutton.button;
@@ -2112,13 +2109,11 @@ int BC_WindowBase::init_colors()
 	switch(color_model)
 	{
 		case BC_RGB8:
-			if(private_color)
-			{
-  				cmap = XCreateColormap(display, rootwin, vis, AllocNone);
+			if(private_color) {
+				cmap = XCreateColormap(display, rootwin, vis, AllocNone);
 				create_private_colors();
 			}
-			else
-			{
+			else {
 	 		  	cmap = DefaultColormap(display, screen);
 				create_shared_colors();
 			}
@@ -3319,13 +3314,10 @@ int BC_WindowBase::unlock_window()
 	if(top_level)
 	{
 		UNSET_LOCK(this);
-
-// 		if(!top_level->window_lock)
-// 		{
-// 			printf("BC_WindowBase::unlock_window %d %s already unlocked\n",
-// 				__LINE__,
-// 				title);
-// 		}
+		if( !top_level->window_lock ) {
+			printf("BC_WindowBase::unlock_window %s not locked\n", title);
+			booby();
+		}
 		if( top_level->window_lock > 0 )
 			if( --top_level->window_lock == 0 )
 				top_level->display_lock_owner = 0;
@@ -3427,7 +3419,7 @@ void BC_WindowBase::grab_cursor()
 }
 void BC_WindowBase::ungrab_cursor()
 {
-       XUngrabPointer(top_level->display, CurrentTime);
+	XUngrabPointer(top_level->display, CurrentTime);
 }
 
 // for get_root_w/h
@@ -4412,79 +4404,63 @@ void BC_WindowBase::get_win_coordinates(int abs_x, int abs_y, int *x, int *y)
 #ifdef HAVE_LIBXXF86VM
 void BC_WindowBase::closest_vm(int *vm, int *width, int *height)
 {
-   int foo,bar;
-   *vm = 0;
-   if(XF86VidModeQueryExtension(top_level->display,&foo,&bar)) {
-	   int vm_count,i;
-	   XF86VidModeModeInfo **vm_modelines;
-	   XF86VidModeGetAllModeLines(top_level->display,XDefaultScreen(top_level->display),&vm_count,&vm_modelines);
-	   for (i = 0; i < vm_count; i++) {
-		   if (vm_modelines[i]->hdisplay < vm_modelines[*vm]->hdisplay && vm_modelines[i]->hdisplay >= *width)
-			   *vm = i;
-	   }
-	   display = top_level->display;
-	   if (vm_modelines[*vm]->hdisplay == *width)
-		   *vm = -1;
-	   else
-	   {
-		   *width = vm_modelines[*vm]->hdisplay;
-		   *height = vm_modelines[*vm]->vdisplay;
-	   }
-   }
+	int foo,bar;
+	*vm = 0;
+	if(XF86VidModeQueryExtension(top_level->display,&foo,&bar)) {
+		int vm_count,i;
+		XF86VidModeModeInfo **vm_modelines;
+		XF86VidModeGetAllModeLines(top_level->display,
+			XDefaultScreen(top_level->display), &vm_count,&vm_modelines);
+		for( i = 0; i < vm_count; i++ ) {
+			if( vm_modelines[i]->hdisplay < vm_modelines[*vm]->hdisplay &&
+			    vm_modelines[i]->hdisplay >= *width )
+				*vm = i;
+		}
+		display = top_level->display;
+		if( vm_modelines[*vm]->hdisplay == *width )
+			*vm = -1;
+		else {
+			*width = vm_modelines[*vm]->hdisplay;
+			*height = vm_modelines[*vm]->vdisplay;
+		}
+	}
 }
 
 void BC_WindowBase::scale_vm(int vm)
 {
-   int foo,bar,dotclock;
-   if(XF86VidModeQueryExtension(top_level->display,&foo,&bar))
-   {
-	   int vm_count;
-	   XF86VidModeModeInfo **vm_modelines;
-	   XF86VidModeModeLine vml;
-	   XF86VidModeGetAllModeLines(top_level->display,XDefaultScreen(top_level->display),&vm_count,&vm_modelines);
-	   XF86VidModeGetModeLine(top_level->display,XDefaultScreen(top_level->display),&dotclock,&vml);
-	   orig_modeline.dotclock = dotclock;
-	   orig_modeline.hdisplay = vml.hdisplay;
-	   orig_modeline.hsyncstart = vml.hsyncstart;
-	   orig_modeline.hsyncend = vml.hsyncend;
-	   orig_modeline.htotal = vml.htotal;
-	   orig_modeline.vdisplay = vml.vdisplay;
-	   orig_modeline.vsyncstart = vml.vsyncstart;
-	   orig_modeline.vsyncend = vml.vsyncend;
-	   orig_modeline.vtotal = vml.vtotal;
-	   orig_modeline.flags = vml.flags;
-	   orig_modeline.privsize = vml.privsize;
-	   // orig_modeline.private = vml.private;
-	   XF86VidModeSwitchToMode(top_level->display,XDefaultScreen(top_level->display),vm_modelines[vm]);
-	   XF86VidModeSetViewPort(top_level->display,XDefaultScreen(top_level->display),0,0);
-	   XFlush(top_level->display);
-   }
+	int foo,bar,dotclock;
+	if( XF86VidModeQueryExtension(top_level->display,&foo,&bar) ) {
+		int vm_count;
+		XF86VidModeModeInfo **vm_modelines;
+		XF86VidModeModeLine vml;
+		XF86VidModeGetAllModeLines(top_level->display,
+			XDefaultScreen(top_level->display), &vm_count,&vm_modelines);
+		XF86VidModeGetModeLine(top_level->display,
+			XDefaultScreen(top_level->display), &dotclock,&vml);
+		orig_modeline.dotclock = dotclock;
+		orig_modeline.hdisplay = vml.hdisplay;
+		orig_modeline.hsyncstart = vml.hsyncstart;
+		orig_modeline.hsyncend = vml.hsyncend;
+		orig_modeline.htotal = vml.htotal;
+		orig_modeline.vdisplay = vml.vdisplay;
+		orig_modeline.vsyncstart = vml.vsyncstart;
+		orig_modeline.vsyncend = vml.vsyncend;
+		orig_modeline.vtotal = vml.vtotal;
+		orig_modeline.flags = vml.flags;
+		orig_modeline.privsize = vml.privsize;
+		// orig_modeline.private = vml.private;
+		XF86VidModeSwitchToMode(top_level->display,XDefaultScreen(top_level->display),vm_modelines[vm]);
+		XF86VidModeSetViewPort(top_level->display,XDefaultScreen(top_level->display),0,0);
+		XFlush(top_level->display);
+	}
 }
 
 void BC_WindowBase::restore_vm()
 {
-   XF86VidModeSwitchToMode(top_level->display,XDefaultScreen(top_level->display),&orig_modeline);
-   XFlush(top_level->display);
+	XF86VidModeSwitchToMode(top_level->display,XDefaultScreen(top_level->display),&orig_modeline);
+	XFlush(top_level->display);
 }
-
-
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #ifndef SINGLE_THREAD

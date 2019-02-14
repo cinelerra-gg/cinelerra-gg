@@ -13,6 +13,7 @@
 void booby();
 #else
 #define BT
+#define booby(s) do {} while(0)
 #endif
 
 class BC_Trace
