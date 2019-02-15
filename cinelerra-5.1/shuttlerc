@@ -29,7 +29,7 @@
  K10 Alt-XK_Left  # Go to previous edit
  K11 Alt-XK_Right # Go to next edit
  K12 Ctrl-XK_Left  # Go to previous label
- K13 Ctrl-XK_Right # Go to next label 
+ K13 Ctrl-XK_Right # Go to next label
  K14 "["        # Toggle in
  K15 "]"        # Toggle out
 
@@ -69,10 +69,10 @@
  K10 Alt-XK_Left  # Go to previous edit
  K11 Alt-XK_Right # Go to next edit
  K12 Ctrl-XK_Left  # Go to previous label
- K13 Ctrl-XK_Right # Go to next label 
+ K13 Ctrl-XK_Right # Go to next label
  K14 "["        # Toggle in
  K15 "]"        # Toggle out
- 
+
  K1 "i"		# Clip
  K2 "x"		# Cut
  K3 "c"		# Copy
@@ -108,11 +108,11 @@
 
  K10 "["	# Toggle in if no K14
  K11 "]"	# Toggle in if no K15
- K12 Alt-XK_Left  # Go to previous edit
- K13 Alt-XK_Right # Go to next edit
+ K12 Ctrl-XK_Left  # Go to previous label
+ K13 Ctrl-XK_Right # Go to next label
  K14 "["        # Toggle in
  K15 "]"        # Toggle out
- 
+
  K1 "i"		# Clip
  K2 "v"		# Splice
  K3 "c"		# Copy
