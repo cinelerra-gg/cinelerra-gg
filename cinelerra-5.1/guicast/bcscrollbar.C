@@ -86,16 +86,14 @@ void BC_ScrollBar::set_images(VFrame **data)
 
 void BC_ScrollBar::calculate_dimensions(int &w, int &h)
 {
-	switch(orientation)
-	{
+	w = h = pixels;
+	switch( orientation ) {
 		case SCROLL_HORIZ:
-			w = pixels;
 			h = data[SCROLL_HANDLE_UP]->get_h();
 			break;
 
 		case SCROLL_VERT:
 			w = data[SCROLL_HANDLE_UP]->get_w();
-			h = pixels;
 			break;
 	}
 }

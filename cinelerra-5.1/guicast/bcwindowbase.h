@@ -251,6 +251,7 @@ public:
 	int lock_window(const char *location = 0);
 	int unlock_window();
 	int get_window_lock();
+	int break_lock();
 
 	BC_MenuBar* add_menubar(BC_MenuBar *menu_bar);
 	BC_WindowBase* add_subwindow(BC_WindowBase *subwindow);

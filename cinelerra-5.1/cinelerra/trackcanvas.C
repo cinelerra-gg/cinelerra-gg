@@ -3993,7 +3993,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 // Snap to nearby values
 		old_value = current->get_value();
 		if(shift_down()) {
-			double value1, value2, distance1, distance2;
+			double value1, value2, distance1=-1, distance2=-1;
 
 			if(current->previous) {
 				int autogrouptype = current->previous->autos->autogrouptype;

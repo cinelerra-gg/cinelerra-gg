@@ -847,7 +847,7 @@ void Shuttle::run()
 	while( devsh && !done ) {
 		int len = 0;
 		static const int IN_ENDPOINT = 0x81;
-		unsigned char dat[BCSTRLEN];
+		unsigned char dat[5];
 		int ret = libusb_interrupt_transfer(devsh,
 				IN_ENDPOINT, dat, sizeof(dat), &len, 100);
 		if( ret != 0 ) {

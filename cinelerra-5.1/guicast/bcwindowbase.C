@@ -3334,6 +3334,23 @@ int BC_WindowBase::unlock_window()
 	return 0;
 }
 
+int BC_WindowBase::break_lock()
+{
+	if( !top_level ) return 0;
+	if( top_level != this ) return top_level->break_lock();
+	if( top_level->display_lock_owner != pthread_self() ) return 0;
+	if( top_level->window_lock != 1 ) return 0;
+	UNSET_LOCK(this);
+	window_lock = 0;
+	display_lock_owner = 0;
+#ifdef SINGLE_THREAD
+	BC_Display::unlock_display();
+#else
+	XUnlockDisplay(display);
+#endif
+	return 1;
+}
+
 void BC_WindowBase::set_done(int return_value)
 {
 	if(done_set) return;

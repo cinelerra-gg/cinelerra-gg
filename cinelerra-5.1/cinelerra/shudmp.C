@@ -58,7 +58,7 @@ int main(int ac, char **av)
 		while( !done ) {
 			int len = 0;
 			static const int IN_ENDPOINT = 0x81;
-			unsigned char dat[64];
+			unsigned char dat[5];
 			int ret = libusb_interrupt_transfer(devsh,
 					IN_ENDPOINT, dat, sizeof(dat), &len, 100);
 			if( ret != 0 ) {

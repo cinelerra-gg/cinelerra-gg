@@ -742,7 +742,7 @@ do_layer3(uint8_t *zframe, int zframe_size, float **zoutput, int render)
   /* max 39 for short[13][3] mode, mixed: 38, long: 22 */
   int scalefacs[2][39]; 
   l3_sideinfo_t sideinfo;
-  int ms_stereo, i_stereo;
+  int ms_stereo=0, i_stereo=0;
   int sfreq = sampling_frequency_code;
   int stereo1, granules;
   int output_offset = 0;
@@ -798,8 +798,8 @@ do_layer3(uint8_t *zframe, int zframe_size, float **zoutput, int render)
       ptr = bsbuf + ssize - prev_len;
       memcpy(ptr, prev, prev_len);
       past_framesize += prev_framesize;
-    }
-//}
+//  }
+  }
   if( ptr && past_framesize >= prev_len ) {
     stream->use_ptr(ptr);
     for( gr=0; gr<granules; ++gr ) {

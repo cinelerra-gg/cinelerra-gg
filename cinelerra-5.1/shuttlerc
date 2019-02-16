@@ -1,7 +1,7 @@
 
 # uncomment to enable diagnostics
 #DEBUG
-# uncomment to use direct usb
+# recommend uncommenting USB_DIRECT and avoid problems
 #USB_DIRECT
 
 # redefine default, use
@@ -106,8 +106,8 @@
  K8 XK_KP_3	# Play, or if playing Stop
  K9 XK_End   	# End
 
- K10 "["	# Toggle in if no K14
- K11 "]"	# Toggle in if no K15
+ K10 Shift-Ctrl-XK_KP_3 # Loop play between In and Out pointers
+ K11 "l"	# Add label at position
  K12 Ctrl-XK_Left  # Go to previous label
  K13 Ctrl-XK_Right # Go to next label
  K14 "["        # Toggle in

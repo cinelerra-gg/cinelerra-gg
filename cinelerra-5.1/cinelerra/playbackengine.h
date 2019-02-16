@@ -110,6 +110,7 @@ public:
 // Copy of main preferences
 	Preferences *preferences;
 
+	int put_command(TransportCommand *command, int reset);
 	int transport_stop(int wait_tracking);
 	int transport_command(int command, int change_type=CHANGE_NONE,
 			EDL *new_edl=0, int use_inout=0);

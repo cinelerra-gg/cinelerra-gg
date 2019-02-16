@@ -349,13 +349,9 @@ int64_t RenderEngine::sync_position()
 // Use audio device
 // No danger of race conditions because the output devices are closed after all
 // threads join.
-	if(do_audio)
-	{
+	if( do_audio )
 		return audio->current_position();
-	}
-
-	if(do_video)
-	{
+	if( do_video ) {
 		int64_t result = timer.get_scaled_difference(
 			get_edl()->session->sample_rate);
 		return result;
@@ -366,8 +362,7 @@ int64_t RenderEngine::sync_position()
 
 int RenderEngine::start_command()
 {
-	if(command->realtime && !is_nested)
-	{
+	if( command->realtime && !is_nested ) {
 		interrupt_lock->lock("RenderEngine::start_command");
 		start_lock->lock("RenderEngine::start_command 1");
 		Thread::start();
@@ -379,15 +374,8 @@ int RenderEngine::start_command()
 
 void RenderEngine::arm_render_threads()
 {
-	if(do_audio)
-	{
-		arender->arm_command();
-	}
-
-	if(do_video)
-	{
-		vrender->arm_command();
-	}
+	if( do_audio ) arender->arm_command();
+	if( do_video ) vrender->arm_command();
 }
 
 
@@ -396,15 +384,10 @@ void RenderEngine::start_render_threads()
 // Synchronization timer.  Gets reset once again after the first video frame.
 	timer.update();
 
-	if(do_audio)
-	{
-		arender->start_command();
-	}
+	if( do_audio ) arender->start_command();
+	if( do_video ) vrender->start_command();
 
-	if(do_video)
-	{
-		vrender->start_command();
-	}
+	start_lock->unlock();
 }
 
 void RenderEngine::update_framerate(float framerate)
@@ -415,29 +398,18 @@ void RenderEngine::update_framerate(float framerate)
 
 void RenderEngine::wait_render_threads()
 {
-	if(do_audio)
-	{
-		arender->Thread::join();
-	}
-
-	if(do_video)
-	{
-		vrender->Thread::join();
-	}
+	if( do_audio ) arender->Thread::join();
+	if( do_video ) vrender->Thread::join();
 }
 
 void RenderEngine::interrupt_playback()
 {
+	if( interrupted ) return;
 	interrupt_lock->lock("RenderEngine::interrupt_playback");
-	interrupted = 1;
-	if(do_audio && arender)
-	{
-		arender->interrupt_playback();
-	}
-
-	if(do_video && vrender)
-	{
-		vrender->interrupt_playback();
+	if( !interrupted ) {
+		interrupted = 1;
+		if( do_audio && arender ) arender->interrupt_playback();
+		if( do_video && vrender ) vrender->interrupt_playback();
 	}
 	interrupt_lock->unlock();
 }
@@ -445,25 +417,15 @@ void RenderEngine::interrupt_playback()
 int RenderEngine::close_output()
 {
 // Nested engines share devices
-	if(!is_nested)
-	{
-		if(audio)
-		{
-			audio->close_all();
-			delete audio;
-			audio = 0;
-		}
-
-
-
-		if(video)
-		{
-			video->close_all();
-			delete video;
-			video = 0;
-		}
+	if( is_nested ) return 0;
+	if( audio ) {
+		audio->close_all();
+		delete audio;  audio = 0;
 	}
-
+	if( video ) {
+		video->close_all();
+		delete video;  video = 0;
+	}
 	return 0;
 }
 
@@ -497,58 +459,33 @@ void RenderEngine::get_module_levels(ArrayList<double> *module_levels, int64_t p
 void RenderEngine::run()
 {
 	render_active->lock("RenderEngine::run");
-	start_render_threads();
-	start_lock->unlock();
+
 	interrupt_lock->unlock();
-
+	start_render_threads();
 	wait_render_threads();
-
-	interrupt_lock->lock("RenderEngine::run");
-
-
-	if(interrupted)
-	{
-		playback_engine->tracking_position = playback_engine->get_tracking_position();
-	}
+	interrupt_lock->lock("RenderEngine::wait_render_threads");
 
 	close_output();
 
-// Fix the tracking position
-	if(playback_engine)
-	{
-		if(command->command == CURRENT_FRAME || command->command == LAST_FRAME)
-		{
-//printf("RenderEngine::run 4.1 %d\n", playback_engine->tracking_position);
-			playback_engine->tracking_position = command->playbackstart;
-		}
-		else
-		{
-// Make sure transport doesn't issue a pause command next
-//printf("RenderEngine::run 4.1 %d\n", playback_engine->tracking_position);
-			if(!interrupted)
-			{
-				playback_engine->tracking_position =
-					command->get_direction() == PLAY_FORWARD ?
-						command->end_position : command->start_position;
-			}
-
-			if( playback_engine->is_playing_back && command->displacement ) {
-				double position = playback_engine->tracking_position -
-					1./command->get_edl()->session->frame_rate;
-				playback_engine->tracking_position = position >= 0 ? position : 0;
-			}
-
-			if( !interrupted )
-				playback_engine->command->command = STOP;
-			playback_engine->stop_tracking();
-
+	if( playback_engine && playback_engine->is_playing_back ) {
+		double position = interrupted ?
+			playback_engine->get_tracking_position() :
+			command->get_direction() == PLAY_FORWARD ?
+				command->end_position :
+				command->start_position;
+		playback_engine->command->command = STOP;
+		if( playback_engine->is_playing_back && command->displacement ) {
+			position -= 1./command->get_edl()->session->frame_rate;
+			if( position < 0 ) position = 0;
 		}
 		playback_engine->is_playing_back = 0;
+		playback_engine->tracking_position = position;
+		playback_engine->stop_tracking();
 	}
 
-	input_lock->unlock();
-	interrupt_lock->unlock();
 	render_active->unlock();
+	interrupt_lock->unlock();
+	input_lock->unlock();
 }
 
 void RenderEngine::wait_done()

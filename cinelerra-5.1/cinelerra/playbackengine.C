@@ -128,26 +128,25 @@ int PlaybackEngine::create_render_engine()
 void PlaybackEngine::delete_render_engine()
 {
 	renderengine_lock->lock("PlaybackEngine::delete_render_engine");
-	delete render_engine;
-	render_engine = 0;
+	delete render_engine;  render_engine = 0;
 	renderengine_lock->unlock();
 }
 
 void PlaybackEngine::arm_render_engine()
 {
-	if(render_engine)
+	if( render_engine )
 		render_engine->arm_command(command);
 }
 
 void PlaybackEngine::start_render_engine()
 {
-	if(render_engine) render_engine->start_command();
+	if( render_engine )
+		render_engine->start_command();
 }
 
 void PlaybackEngine::wait_render_engine()
 {
-	if(command->realtime && render_engine)
-	{
+	if( command->realtime && render_engine ) {
 		render_engine->join();
 	}
 }
@@ -180,14 +179,14 @@ void PlaybackEngine::sync_parameters(EDL *edl)
 {
 // TODO: lock out render engine from keyframe deletions
 	command->get_edl()->synchronize_params(edl);
-	if(render_engine) render_engine->get_edl()->synchronize_params(edl);
+	if( render_engine )
+		render_engine->get_edl()->synchronize_params(edl);
 }
-
 
 void PlaybackEngine::interrupt_playback(int wait_tracking)
 {
 	renderengine_lock->lock("PlaybackEngine::interrupt_playback");
-	if(render_engine)
+	if( render_engine )
 		render_engine->interrupt_playback();
 	renderengine_lock->unlock();
 
@@ -195,22 +194,19 @@ void PlaybackEngine::interrupt_playback(int wait_tracking)
 	pause_lock->unlock();
 
 // Wait for tracking to finish if it is running
-	if(wait_tracking)
-	{
+	if( wait_tracking ) {
 		tracking_done->lock("PlaybackEngine::interrupt_playback");
 		tracking_done->unlock();
 	}
 }
 
-
 // Return 1 if levels exist
 int PlaybackEngine::get_output_levels(double *levels, long position)
 {
 	int result = 0;
-	if(render_engine && render_engine->do_audio)
-	{
-		result = 1;
+	if( render_engine && render_engine->do_audio ) {
 		render_engine->get_output_levels(levels, position);
+		result = 1;
 	}
 	return result;
 }
@@ -219,10 +215,9 @@ int PlaybackEngine::get_output_levels(double *levels, long position)
 int PlaybackEngine::get_module_levels(ArrayList<double> *module_levels, long position)
 {
 	int result = 0;
-	if(render_engine && render_engine->do_audio)
-	{
-		result = 1;
+	if( render_engine && render_engine->do_audio ) {
 		render_engine->get_module_levels(module_levels, position);
+		result = 1;
 	}
 	return result;
 }
@@ -287,10 +282,8 @@ double PlaybackEngine::get_tracking_position()
 
 
 // Don't interpolate when every frame is played.
-		if(command->get_edl()->session->video_every_frame &&
-			render_engine &&
-			render_engine->do_video)
-		{
+		if( command->get_edl()->session->video_every_frame &&
+		    render_engine && render_engine->do_video ) {
 			result = tracking_position;
 		}
 		else
@@ -422,7 +415,7 @@ void PlaybackEngine::stop_playback(int wait_tracking)
 {
 	transport_stop(wait_tracking);
 	renderengine_lock->lock("PlaybackEngine::stop_playback");
-	if(render_engine)
+	if( render_engine )
 		render_engine->wait_done();
 	renderengine_lock->unlock();
 }
@@ -491,12 +484,23 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 	}
 }
 
+int PlaybackEngine::put_command(TransportCommand *command, int reset)
+{
+// commands can deadlock updating tracking,meters,clock...
+	int mlocked = mwindow->gui->break_lock();
+	input_lock->lock("PlaybackEngine::put_command");
+	sent_command->copy_from(command);
+	if( reset )
+		command->reset();
+	output_lock->unlock();
+	if( mlocked )
+		mwindow->gui->lock_window("PlaybackEngine::put_command");
+	return 0;
+}
+
 int PlaybackEngine::transport_stop(int wait_tracking)
 {
-	interrupt_playback(0);
-	input_lock->lock("PlaybackEngine::transport_stop");
-	sent_command->copy_from(stop_command);
-	output_lock->unlock();
+	put_command(stop_command, 0);
 	if( wait_tracking ) {
 		tracking_done->lock("PlaybackEngine::transport_stop");
 		tracking_done->unlock();
@@ -525,13 +529,7 @@ int PlaybackEngine::transport_command(int command, int change_type, EDL *new_edl
 		next_command->set_playback_range(new_edl, use_inout,
 				preferences->forward_render_displacement);
 	}
-
-	interrupt_playback(0);
-	input_lock->lock("PlaybackEngine::transport_command");
-	sent_command->copy_from(next_command);
-	next_command->reset();
-	output_lock->unlock();
-
+	put_command(next_command, 1);
 //static const char *types[] = { "NONE",
 // "FRAME_FWD", "NORMAL_FWD", "FAST_FWD", "FRAME_REV", "NORMAL_REV", "FAST_REV",
 // "STOP",  "PAUSE", "SLOW_FWD", "SLOW_REV", "REWIND", "GOTO_END", "CURRENT_FRAME",
