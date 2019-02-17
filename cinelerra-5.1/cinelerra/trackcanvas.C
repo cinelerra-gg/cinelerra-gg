@@ -3817,23 +3817,28 @@ void TrackCanvas::update_drag_handle()
 			!session->drag_edit ? 0 : session->drag_edit->group_id);
 
 		double position = -1;
+		int show_edge = !session->drag_handle ? 1 : 2;
 		switch( handle_mode ) {
 		case MOVE_RIPPLE:
+		case MOVE_EDGE:
+			position = session->drag_handle ?
+				session->drag_position : session->drag_start;
+			show_edge = 3 - show_edge;
+			break;
 		case MOVE_ROLL:
 		case MOVE_SLIDE:
 			position = session->drag_position;
 			break;
 		case MOVE_SLIP:
-		case MOVE_EDGE:
 			position = session->drag_start;
+			show_edge = 3 - show_edge;
 			break;
 		}
 
 		if( position < 0 ) position = 0;
 		Track *track = session->drag_handle_track();
 		int64_t pos = track->to_units(position, 0);
-		render_handle_frame(edl, pos, shift_down() ? 0 :
-			session->drag_handle ? 1 : 2);
+		render_handle_frame(edl, pos, shift_down() ? 0 : show_edge);
 		edl->remove_user();
 	}
 }
@@ -3857,8 +3862,6 @@ int TrackCanvas::render_handle_frame(EDL *edl, int64_t pos, int mode)
 		CICache *video_cache = new CICache(preferences);
 		render_engine->set_vcache(video_cache);
 		render_engine->arm_command(&command);
-		int64_t left = pos-1;
-		if( left < 0 ) left = 0;
 		VRender *vrender = render_engine->vrender;
 		result = vrender &&
 			!vrender->process_buffer(&vlt, left, 0) &&
@@ -3884,12 +3887,12 @@ int TrackCanvas::render_handle_frame(EDL *edl, int64_t pos, int mode)
 		Track *track = mwindow->session->drag_handle_track();
 		double position = track->from_units(mode == 1 ? left : pos);
 		if( position < 0 ) position = 0;
-		edl->local_session->set_selectionstart(position);
-		edl->local_session->set_selectionend(position);
 		PlaybackEngine *playback_engine = mwindow->cwindow->playback_engine;
 		if( playback_engine->is_playing_back )
 			playback_engine->stop_playback(1);
-		mwindow->cwindow->playback_engine->refresh_frame(CHANGE_NONE, edl, 0);
+		edl->local_session->set_selectionstart(position);
+		edl->local_session->set_selectionend(position);
+		mwindow->cwindow->playback_engine->refresh_frame(CHANGE_EDL, edl, 0);
 		break; }
 	}
 	return result;

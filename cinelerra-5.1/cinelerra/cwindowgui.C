@@ -668,14 +668,17 @@ void CWindowGUI::keyboard_zoomout()
 //	}
 }
 
-void CWindowGUI::sync_parameters(int change_type, int tool, int overlay)
+void CWindowGUI::sync_parameters(int change_type, int redraw, int overlay)
 {
-	if( tool ) update_tool();
+	if( redraw ) {
+		update_tool();
+		canvas->draw_refresh();
+	}
 	if( change_type < 0 && !overlay ) return;
 	unlock_window();
 	if( change_type >= 0 ) {
 		mwindow->restart_brender();
-		mwindow->sync_parameters(CHANGE_PARAMS);
+		mwindow->sync_parameters(change_type);
 	}
 	if( overlay ) {
 		mwindow->gui->lock_window("CWindow::camera_keyframe");

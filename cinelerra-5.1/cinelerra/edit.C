@@ -451,9 +451,10 @@ int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
 	switch( edit_mode ) {
 	case MOVE_RIPPLE:
 		edits_moved = rest_moved = 1;
-		if( prev ) prev->trim(cut_length);
-		for( Edit *edit=this; edit; edit=edit->next )
-			edit->startproject += cut_length;
+		startsource += cut_length;
+		length -= cut_length;
+		for( Edit *edit=next; edit; edit=edit->next )
+			edit->startproject -= cut_length;
 		break;
 	case MOVE_ROLL:
 		if( prev ) prev->trim(cut_length);
@@ -500,6 +501,7 @@ int Edit::shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
 
 	switch( edit_mode ) {
 	case MOVE_RIPPLE:
+	case MOVE_EDGE:
 		rest_moved = 1;
 		length += cut_length;
 		for( Edit *edit=next; edit; edit=edit->next )
@@ -526,12 +528,6 @@ int Edit::shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
 			next->startsource += cut_length;
 			next->trim(-cut_length);
 		}
-		break;
-	case MOVE_EDGE:
-		edits_moved = 1;
-		if( prev ) prev->trim(cut_length);
-		startproject += cut_length;
-		length -= cut_length;
 		break;
 	}
 	trim(0);

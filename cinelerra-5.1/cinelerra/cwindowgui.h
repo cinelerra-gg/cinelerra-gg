@@ -86,7 +86,7 @@ public:
 	void keyboard_zoomout();
 	void update_meters();
 	void stop_transport(const char *lock_msg);
-	void sync_parameters(int change_type, int tool=0, int overlay=0);
+	void sync_parameters(int change_type, int redraw=0, int overlay=0);
 
 	MWindow *mwindow;
 	CWindow *cwindow;
