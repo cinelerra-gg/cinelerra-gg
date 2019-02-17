@@ -132,7 +132,7 @@ int PlayTransport::get_w()
 
 int PlayTransport::is_stopped()
 {
-	return engine->command->command == STOP ? 1 : 0;
+	return engine->is_playing_back ? 0 : 1;
 }
 
 int PlayTransport::flip_vertical(int vertical, int &x, int &y)

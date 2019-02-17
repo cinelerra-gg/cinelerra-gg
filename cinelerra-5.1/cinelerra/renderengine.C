@@ -398,8 +398,10 @@ void RenderEngine::update_framerate(float framerate)
 
 void RenderEngine::wait_render_threads()
 {
+	interrupt_lock->unlock();
 	if( do_audio ) arender->Thread::join();
 	if( do_video ) vrender->Thread::join();
+	interrupt_lock->lock("RenderEngine::wait_render_threads");
 }
 
 void RenderEngine::interrupt_playback()
@@ -460,10 +462,8 @@ void RenderEngine::run()
 {
 	render_active->lock("RenderEngine::run");
 
-	interrupt_lock->unlock();
 	start_render_threads();
 	wait_render_threads();
-	interrupt_lock->lock("RenderEngine::wait_render_threads");
 
 	close_output();
 
@@ -473,8 +473,7 @@ void RenderEngine::run()
 			command->get_direction() == PLAY_FORWARD ?
 				command->end_position :
 				command->start_position;
-		playback_engine->command->command = STOP;
-		if( playback_engine->is_playing_back && command->displacement ) {
+		if( command->displacement ) {
 			position -= 1./command->get_edl()->session->frame_rate;
 			if( position < 0 ) position = 0;
 		}

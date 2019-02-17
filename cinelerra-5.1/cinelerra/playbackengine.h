@@ -126,6 +126,7 @@ public:
 
 	int done;
 	int is_playing_back;
+	int send_active;
 
 // General purpose debugging register
 	int debug;

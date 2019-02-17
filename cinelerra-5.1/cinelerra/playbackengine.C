@@ -61,6 +61,7 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	stop_command->realtime = 1;
 	sent_command = new TransportCommand();
 	sent_command->command = -1;
+	send_active = 0;
 	tracking_lock = new Mutex("PlaybackEngine::tracking_lock");
 	renderengine_lock = new Mutex("PlaybackEngine::renderengine_lock");
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
@@ -358,10 +359,14 @@ void PlaybackEngine::run()
 // Wait for current command to finish
 		output_lock->lock("PlaybackEngine::run");
 		if( done ) break;
-//printf("sent command=%d\n", sent_command->command);
 // Read the new command
+		input_lock->lock("PlaybackEngine::run");
 		command->copy_from(sent_command);
+//printf("sent command=%d\n", sent_command->command);
+		int active = this->send_active;
+		this->send_active = 0;
 		input_lock->unlock();
+		if( !active ) continue;
 
 		interrupt_playback(0);
 		wait_render_engine();
@@ -415,8 +420,10 @@ void PlaybackEngine::stop_playback(int wait_tracking)
 {
 	transport_stop(wait_tracking);
 	renderengine_lock->lock("PlaybackEngine::stop_playback");
-	if( render_engine )
+	if( render_engine ) {
+		render_engine->interrupt_playback();
 		render_engine->wait_done();
+	}
 	renderengine_lock->unlock();
 }
 
@@ -425,13 +432,14 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 {
 //printf("PlaybackEngine::send_command 1 %d\n", command);
 // Stop requires transferring the output buffer to a refresh buffer.
-	int do_stop = 0, do_resume = 0;
+	int do_stop = 0;
 	int curr_command = this->command->command;
 	int curr_single_frame = TransportCommand::single_frame(curr_command);
 	int curr_audio = this->command->toggle_audio ?
 		!curr_single_frame : curr_single_frame;
 	int single_frame = TransportCommand::single_frame(command);
 	int next_audio = next_command->toggle_audio ? !single_frame : single_frame;
+	float next_speed = next_command->speed;
 
 // Dispatch command
 	switch( command ) {
@@ -445,17 +453,17 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 	case FAST_FWD:
 	case CURRENT_FRAME:
 	case LAST_FRAME:
-		if( curr_command == command && !next_command->speed &&
-		    !curr_single_frame && curr_audio == next_audio ) {
+// run shuttle as no prev command
+		if( next_speed ) curr_command = COMMAND_NONE;
 // Same direction pressed twice, not shuttle, and no change in audio state,  Stop
-			do_stop = 1;
-			break;
-		}
+		if( curr_command == command && !curr_single_frame &&
+		    curr_audio == next_audio ) { do_stop = 1;  break; }
+
 // Resume or change direction
 		switch( curr_command ) {
 		default:
 			transport_stop(0);
-			do_resume = 1;
+			next_command->resume = 1;
 // fall through
 		case STOP:
 		case COMMAND_NONE:
@@ -464,7 +472,6 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 		case CURRENT_FRAME:
 		case LAST_FRAME:
 			next_command->realtime = 1;
-			next_command->resume = do_resume;
 // Start from scratch
 			transport_command(command, CHANGE_NONE, edl, use_inout);
 			break;
@@ -486,15 +493,16 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 
 int PlaybackEngine::put_command(TransportCommand *command, int reset)
 {
-// commands can deadlock updating tracking,meters,clock...
-	int mlocked = mwindow->gui->break_lock();
 	input_lock->lock("PlaybackEngine::put_command");
+	int prev_change_type = sent_command->change_type;
 	sent_command->copy_from(command);
-	if( reset )
-		command->reset();
+// run only last command, sum change type
+	if( send_active )
+		sent_command->change_type |= prev_change_type;
+	send_active = 1;
+	if( reset ) command->reset();
 	output_lock->unlock();
-	if( mlocked )
-		mwindow->gui->lock_window("PlaybackEngine::put_command");
+	input_lock->unlock();
 	return 0;
 }
 

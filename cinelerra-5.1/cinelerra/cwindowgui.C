@@ -572,10 +572,7 @@ int CWindowGUI::keypress_event()
 
 	if( !result && cwindow_operation < 0 && ctrl_down() && shift_down() ) {
 		switch( get_keypress() ) {
-		case KEY_F1:
-		case KEY_F2:
-		case KEY_F3:
-		case KEY_F4:
+		case KEY_F1 ... KEY_F4: // mainmenu, load layout
 			resend_event(mwindow->gui);
 			result = 1;
 			break;
