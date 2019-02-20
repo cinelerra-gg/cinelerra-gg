@@ -619,6 +619,8 @@ static const struct shuttle_dev {
 		0x0b33, 0x0030 },
 	{ "/dev/input/by-id/usb-Contour_Design_ShuttlePro-event-if00",
 		0x0b33, 0x0030 },
+	{ "/dev/input/by-id/usb-Contour_Design_ShuttlePRO_v2-event-joystick",
+		0x0b33, 0x0030 },
 };
 
 #ifdef HAVE_SHUTTLE_USB

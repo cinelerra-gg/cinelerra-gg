@@ -51,6 +51,7 @@ BC_FileBoxRecent::BC_FileBoxRecent(BC_FileBox *filebox, int x, int y)
 		0, 0, 1, 0, 1)
 {
 	this->filebox = filebox;
+	set_tooltip(_("Recent paths"));
 }
 
 int BC_FileBoxRecent::handle_event()
@@ -173,7 +174,7 @@ int BC_FileBoxListBox::evaluate_query(char *string)
 
 
 BC_FileBoxTextBox::BC_FileBoxTextBox(int x, int y, BC_FileBox *filebox)
- : BC_TextBox(x, y, filebox->get_w() - 20, 1,
+ : BC_TextBox(x, y, filebox->get_w() - x - 20, 1,
 	filebox->want_directory ?  filebox->directory : filebox->filename)
 {
 	this->filebox = filebox;
@@ -194,8 +195,8 @@ int BC_FileBoxTextBox::handle_event()
 }
 
 
-BC_FileBoxDirectoryText::BC_FileBoxDirectoryText(int x, int y, BC_FileBox *filebox)
- : BC_TextBox(x, y, filebox->get_w() - 40, 1, filebox->fs->get_current_dir())
+BC_FileBoxDirectoryText::BC_FileBoxDirectoryText(int x, int y, int w, BC_FileBox *filebox)
+ : BC_TextBox(x, y, w, 1, filebox->fs->get_current_dir())
 {
 	this->filebox = filebox;
 }
@@ -624,10 +625,12 @@ void BC_FileBox::create_objects()
 	y += directory_title_margin + 3;
 
 	add_subwindow(recent_popup = new BC_FileBoxRecent(this, x, y));
-	add_subwindow(directory_title = new BC_FileBoxDirectoryText(x, y, this));
-	directory_title->reposition_window(x, y, get_w() - recent_popup->get_w() -  20, 1);
-	x += directory_title->get_w() + 8;
-	recent_popup->reposition_window(x, y, directory_title->get_w(), 200);
+	BC_Title *dir_title;
+	add_subwindow(dir_title = new BC_Title(x, y, _("Directory:")));
+	int x1 = x + dir_title->get_w() + 10, w1 = get_w()-x1 - recent_popup->get_w()-20;
+	add_subwindow(directory_title = new BC_FileBoxDirectoryText(x1, y, w1, this));
+	x1 += directory_title->get_w() + 8;
+	recent_popup->reposition_window(x1, y, directory_title->get_w(), 200);
 
 	x = 10;
 	y += directory_title->get_h() + 5;
@@ -665,7 +668,9 @@ void BC_FileBox::create_objects()
 	listbox = 0;
 	create_listbox(x, y, get_display_mode());
 	y += listbox->get_h() + 10;
-	add_subwindow(textbox = new BC_FileBoxTextBox(x, y, this));
+	add_subwindow(file_title = new BC_Title(x, y, _("File:")));
+	x1 = x + file_title->get_w() + 10;
+	add_subwindow(textbox = new BC_FileBoxTextBox(x1, y, this));
 	y += textbox->get_h() + 10;
 
 	if(!want_directory) {
@@ -741,10 +746,8 @@ int BC_FileBox::resize_event(int w, int h)
 		w - (get_w() - filter_text->get_w()),
 		1);
 	directory_title->reposition_window(
-		directory_title->get_x(),
-		directory_title->get_y(),
-		get_w() - recent_popup->get_w() -  20,
-		1);
+		directory_title->get_x(), directory_title->get_y(),
+		get_w()-directory_title->get_x() - recent_popup->get_w()-20, 1);
 	recent_popup->reposition_window(
 		directory_title->get_x() + directory_title->get_w() + 8,
 		directory_title->get_y(),
@@ -754,6 +757,8 @@ int BC_FileBox::resize_event(int w, int h)
 		search_text->get_y(),
 		get_w() - search_text->get_x() -  40,
 		1);
+	file_title->reposition_window(file_title->get_x(),
+		h - (get_h() - file_title->get_y()));
 	textbox->reposition_window(textbox->get_x(),
 		h - (get_h() - textbox->get_y()),
 		w - (get_w() - textbox->get_w()),

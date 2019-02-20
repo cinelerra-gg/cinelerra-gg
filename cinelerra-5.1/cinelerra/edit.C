@@ -452,9 +452,10 @@ int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
 	case MOVE_RIPPLE:
 		edits_moved = rest_moved = 1;
 		startsource += cut_length;
-		length -= cut_length;
+		cut_length = -cut_length;
+		length += cut_length;
 		for( Edit *edit=next; edit; edit=edit->next )
-			edit->startproject -= cut_length;
+			edit->startproject += cut_length;
 		break;
 	case MOVE_ROLL:
 		if( prev ) prev->trim(cut_length);
@@ -579,11 +580,11 @@ int Edit::follow_edits(int64_t start, int64_t end, int64_t cut_length,
 		}
 		if( edit_plugins ) {
 			if( cut_length > 0 ) {
-				track->clear(end, end+cut_length, 0, 0, 1, 0, 0);
+				track->clear(end, end+cut_length, 0, 0, -1, 0, 0);
 				track->shift_effects(start, cut_length, 1, 0);
 			}
 			else if( cut_length < 0 ) {
-				track->clear(start+cut_length, start, 0, 0, 1, 0, 0);
+				track->clear(start+cut_length, start, 0, 0, -1, 0, 0);
 				track->shift_effects(end+cut_length, -cut_length, 1, 0);
 			}
 		}

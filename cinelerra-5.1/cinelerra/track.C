@@ -1186,9 +1186,10 @@ int Track::clear(int64_t start, int64_t end,
 	if( edit_autos )
 		automation->clear(start, end, 0, 1);
 	if( edit_plugins ) {
+		int edit_keyframes = edit_plugins < 0 ? 1 : edit_autos;
 		for(int i = 0; i < plugin_set.total; i++) {
 			if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
-				plugin_set.values[i]->clear(start, end, edit_autos);
+				plugin_set.values[i]->clear(start, end, edit_keyframes);
 		}
 	}
 	if( edit_edits )

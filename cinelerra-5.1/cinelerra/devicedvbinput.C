@@ -254,6 +254,79 @@ int DeviceDVBInput::dvb_open()
 	if( !ret && table >= CHANLIST_SIZE ) ret = 1;
 
 	struct dvb_frontend_parameters frontend_param;
+#if 1
+	if( !ret ) {
+		uint32_t frequency = chanlists[table].list[index].freq * 1000;
+		class dtv_props : public ArrayList<dtv_property> {
+		public:
+			void add(int c, int d) {
+				dtv_property &p = append();
+				memset(&p, 0, sizeof(p));
+				p.cmd = c;  p.u.data = d;
+			}
+		} props;
+
+		switch( table ) {
+		case NTSC_DVB:
+		case NTSC_BCAST:
+		case NTSC_HRC:
+		case NTSC_BCAST_JP:
+			props.add(DTV_DELIVERY_SYSTEM, SYS_ATSC);
+			props.add(DTV_FREQUENCY, frequency);
+			props.add(DTV_INVERSION, INVERSION_AUTO);
+			props.add(DTV_MODULATION, VSB_8);
+//			frontend_param.u.vsb.modulation = VSB_8;
+			break;
+		case PAL_EUROPE:
+		case PAL_E_EUROPE:
+		case PAL_ITALY:
+		case PAL_NEWZEALAND:
+		case PAL_AUSTRALIA:
+		case PAL_IRELAND:
+		case CATV_DVB:
+		case NTSC_CABLE:
+		case NTSC_CABLE_JP:
+//			props.add(DTV_DELIVERY_SYSTEM, SYS_DVBT);
+//			if( t->delsys == SYS_DVBT2 ) { props.add(DTV_STREAM_ID, 0 /* id */); }
+			props.add(DTV_FREQUENCY, frequency /* 174.00MHz ... 862.00MHz */);
+//			props.add(DTV_INVERSION, INVERSION_AUTO);
+			props.add(DTV_BANDWIDTH_HZ, 6000000 /* 6/7/8 Mhz */);
+			props.add(DTV_CODE_RATE_HP, FEC_AUTO);
+			props.add(DTV_CODE_RATE_LP, FEC_AUTO);
+			props.add(DTV_MODULATION, QAM_AUTO);
+			props.add(DTV_TRANSMISSION_MODE, TRANSMISSION_MODE_AUTO);
+			props.add(DTV_GUARD_INTERVAL, GUARD_INTERVAL_AUTO);
+			props.add(DTV_HIERARCHY, HIERARCHY_AUTO);
+//			frontend_param.u.qam.modulation = QAM_AUTO;
+			break;
+		default:
+			fprintf(stderr,
+				"DeviceDVBInput::dvb_open bad table index=%d\n", table);
+			ret = 2;
+			break;
+		}
+		struct dtv_properties dtv_props;
+		memset(&dtv_props, 0, sizeof(dtv_props));
+		props.add(DTV_TUNE, 0);
+		dtv_props.num = props.size();
+		dtv_props.props = &props[0];
+		if( ioctl(frontend_fd, FE_SET_PROPERTY, &dtv_props) < 0 ) {
+			fprintf(stderr,
+				"DeviceDVBInput::dvb_open FE_SET_PROPERY frequency=%d: %s\n",
+				frequency, strerror(errno));
+			ret = 2;
+		}
+	}
+
+#else
+// older version
+	if( !ret && ioctl(frontend_fd, FE_SET_FRONTEND, &frontend_param) < 0 ) {
+		fprintf(stderr,
+			"DeviceDVBInput::dvb_open FE_SET_FRONTEND frequency=%d: %s\n",
+			frontend_param.frequency, strerror(errno));
+		ret = 2;
+	}
+
 	if( !ret ) {
 		uint32_t frequency = chanlists[table].list[index].freq * 1000;
 		if( frequency < fe_info.frequency_min ||
@@ -299,6 +372,7 @@ int DeviceDVBInput::dvb_open()
 			frontend_param.frequency, strerror(errno));
 		ret = 2;
 	}
+#endif
 
 	if( !ret && wait_signal(333,3) ) {
 		fprintf(stderr,

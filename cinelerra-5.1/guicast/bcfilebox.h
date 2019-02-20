@@ -121,7 +121,7 @@ public:
 class BC_FileBoxDirectoryText : public BC_TextBox
 {
 public:
-	BC_FileBoxDirectoryText(int x, int y, BC_FileBox *filebox);
+	BC_FileBoxDirectoryText(int x, int y, int w, BC_FileBox *filebox);
 	int handle_event();
 	BC_FileBox *filebox;
 };
@@ -314,6 +314,7 @@ private:
 
 	BC_Pixmap *icons[TOTAL_ICONS];
 	BC_FileBoxRecent *recent_popup;
+	BC_Title *file_title;
 	BC_FileBoxTextBox *textbox;
 	BC_FileBoxListBox *listbox;
 	BC_Title *filter_title;
