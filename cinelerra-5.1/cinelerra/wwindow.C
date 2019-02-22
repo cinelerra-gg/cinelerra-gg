@@ -32,6 +32,7 @@ WWindow::WWindow(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 	this->result = 0;
+	this->gui = 0;
 }
 
 WWindow::~WWindow()
@@ -59,7 +60,7 @@ BC_Window* WWindow::new_gui()
 	BC_DisplayInfo display_info;
 	int x = display_info.get_abs_cursor_x();
 	int y = display_info.get_abs_cursor_y();
-	WWindowGUI *gui = new WWindowGUI(this, x, y);
+	gui = new WWindowGUI(this, x, y);
 	gui->create_objects();
 	return gui;
 }

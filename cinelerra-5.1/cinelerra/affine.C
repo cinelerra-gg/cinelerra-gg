@@ -811,10 +811,10 @@ void AffineEngine::rotate(VFrame *output,
 
 // All subscripts are clockwise around the quadrangle
 	angle = angle * 2 * M_PI / 360;
-	double angle1 = atan((double)(in_pivot_y - in_y) / (double)(in_pivot_x - in_x)) + angle;
-	double angle2 = atan((double)(in_x + in_w - in_pivot_x) / (double)(in_pivot_y - in_y)) + angle;
-	double angle3 = atan((double)(in_y + in_h - in_pivot_y) / (double)(in_x + in_w - in_pivot_x)) + angle;
-	double angle4 = atan((double)(in_pivot_x - in_x) / (double)(in_y + in_h - in_pivot_y)) + angle;
+	double angle1 = atan2((double)(in_pivot_y - in_y), (double)(in_pivot_x - in_x)) + angle;
+	double angle2 = atan2((double)(in_x + in_w - in_pivot_x), (double)(in_pivot_y - in_y)) + angle;
+	double angle3 = atan2((double)(in_y + in_h - in_pivot_y), (double)(in_x + in_w - in_pivot_x)) + angle;
+	double angle4 = atan2((double)(in_pivot_x - in_x), (double)(in_y + in_h - in_pivot_y)) + angle;
 	double radius1 = DISTANCE(in_x, in_y, in_pivot_x, in_pivot_y);
 	double radius2 = DISTANCE(in_x + in_w, in_y, in_pivot_x, in_pivot_y);
 	double radius3 = DISTANCE(in_x + in_w, in_y + in_h, in_pivot_x, in_pivot_y);

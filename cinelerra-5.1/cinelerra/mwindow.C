@@ -249,6 +249,10 @@ MWindow::~MWindow()
 	run_lock->lock("MWindow::~MWindow");
 	in_destructor = 1;
 //printf("MWindow::~MWindow %d\n", __LINE__);
+	if( wwindow && wwindow->is_running() )
+		wwindow->close_window();
+	if( twindow && twindow->is_running() )
+		twindow->close_window();
 	gui->remote_control->deactivate();
 	gui->record->stop();
 #ifdef HAVE_DVB
@@ -286,16 +290,12 @@ MWindow::~MWindow()
 	if( cwindow && cwindow->gui ) cwindow->gui->close(0);
 	if( lwindow && lwindow->gui ) lwindow->gui->close(0);
 	if( gwindow && gwindow->gui ) gwindow->gui->close(0);
-	if( twindow && twindow->is_running() ) twindow->close_window();
-	if( wwindow && wwindow->is_running() ) wwindow->close_window();
 	vwindows.remove_all_objects();
 	zwindows.remove_all_objects();
 	gui->close(0);
 	if( awindow ) awindow->join();
 	if( cwindow ) cwindow->join();
 	if( lwindow ) lwindow->join();
-	if( twindow ) twindow->join();
-	if( wwindow ) wwindow->join();
 	if( gwindow ) gwindow->join();
 	join();
 #else
@@ -307,8 +307,6 @@ MWindow::~MWindow()
 	close_gui(cwindow);
 	close_gui(lwindow);
 	close_gui(gwindow);
-	close_gui(twindow);
-	close_gui(wwindow);
 	vwindows.remove_all_objects();
 	zwindows.remove_all_objects();
 	gui->close(0);

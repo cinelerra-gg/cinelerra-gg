@@ -106,12 +106,12 @@ char* BC_PopupMenu::get_text()
 	return text;
 }
 
-void BC_PopupMenu::set_text(const char *text)
+void BC_PopupMenu::set_text(const char *text, int color)
 {
 	if(use_title)
 	{
 		strcpy(this->text, text);
-		draw_title(1);
+		draw_title(1, color);
 	}
 }
 
@@ -230,7 +230,7 @@ BC_MenuItem* BC_PopupMenu::get_item(int i)
 	return menu_popup->menu_items.values[i];
 }
 
-int BC_PopupMenu::draw_title(int flush)
+int BC_PopupMenu::draw_title(int flush, int color)
 {
 	if(!use_title) return 0;
 	BC_Resources *resources = get_resources();
@@ -240,7 +240,8 @@ int BC_PopupMenu::draw_title(int flush)
 	draw_3segmenth(0, 0, w, images[status]);
 
 // Overlay text
-	set_color(get_resources()->popup_title_text);
+	if( color < 0 ) color = get_resources()->popup_title_text;
+	set_color(color);
 	int offset = 0;
 	if(status == BUTTON_DN)
 		offset = 1;

@@ -11823,7 +11823,7 @@ msgstr "RGBShift"
 
 #: plugins/rotate/rotate.C:310
 msgid "Draw pivot"
-msgstr "Schwenkpunkt darstellen"
+msgstr "Schwenkpunkt\ndarstellen"
 
 #: plugins/rotate/rotate.C:503
 msgid "Degrees"

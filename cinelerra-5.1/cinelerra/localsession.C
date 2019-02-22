@@ -101,6 +101,7 @@ LocalSession::LocalSession(EDL *edl)
 	automation_maxs[AUTOGROUPTYPE_INT255] = 255;
 
 	zoombar_showautotype = AUTOGROUPTYPE_AUDIO_FADE;
+	zoombar_showautocolor = -1;
 
 	floatauto_type = FloatAuto::SMOOTH;
 

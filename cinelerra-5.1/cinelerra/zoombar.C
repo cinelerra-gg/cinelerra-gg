@@ -149,8 +149,21 @@ int ZoomBar::draw()
 
 void ZoomBar::update_autozoom()
 {
+	update_autozoom(mwindow->edl->local_session->zoombar_showautocolor);
+}
+
+void ZoomBar::update_autozoom(int grouptype, int color)
+{
+	mwindow->edl->local_session->zoombar_showautotype = grouptype;
+	update_autozoom(color);
+}
+
+void ZoomBar::update_autozoom(int color)
+{
 	char string[BCTEXTLEN];
 	int autogroup_type = mwindow->edl->local_session->zoombar_showautotype;
+	mwindow->edl->local_session->zoombar_showautocolor = color;
+	if( color < 0 ) color = get_resources()->default_text_color;
 	switch( autogroup_type ) {
 	case AUTOGROUPTYPE_AUDIO_FADE:
 	case AUTOGROUPTYPE_VIDEO_FADE:
@@ -173,8 +186,9 @@ void ZoomBar::update_autozoom()
 	}
 	auto_zoom_text->update(string);
 	const char *group_name = AutoTypeMenu::to_text(autogroup_type);
-	auto_type->set_text(group_name);
+	auto_type->set_text(group_name, color);
 }
+
 
 int ZoomBar::update()
 {

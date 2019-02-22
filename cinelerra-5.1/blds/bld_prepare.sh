@@ -15,7 +15,7 @@ dir="$1"
 
 case "$dir" in
 "centos")
-  yum -y install nasm libavc1394-devel libusb-devel flac-devel \
+  yum -y install nasm libavc1394-devel libusbx-devel flac-devel \
     libjpeg-devel libdv-devel libdvdnav-devel libdvdread-devel \
     libtheora-devel libiec61883-devel uuid-devel giflib-devel \
     ncurses-devel ilmbase-devel fftw-devel OpenEXR-devel \
@@ -38,7 +38,7 @@ case "$dir" in
 "fedora")
   dnf install groups "Development Tools"
   dnf -y --best --allowerasing \
-    install nasm yasm libavc1394-devel libusb-devel flac-devel \
+    install nasm yasm libavc1394-devel libusbx-devel flac-devel \
     libjpeg-devel libdv-devel libdvdnav-devel libdvdread-devel \
     libtheora-devel libiec61883-devel esound-devel uuid-devel \
     giflib-devel ncurses-devel ilmbase-devel fftw-devel OpenEXR-devel \
@@ -62,7 +62,8 @@ case "$dir" in
     libdvdnav-devel libdvdread-devel libiec61883-devel libuuid-devel \
     ilmbase-devel fftw3-devel libsndfile-devel libtheora-devel flac-devel \
     libtiff-devel inkscape cmake patch libnuma-devel lzma-devel udftools git \
-    yasm autoconf automake rpm-build libjbig-devel libvdpau-devel gtk2-devel
+    yasm autoconf automake rpm-build libjbig-devel libvdpau-devel gtk2-devel \
+    libusb-1_0-devel
     if [ ! -f /usr/lib64/libtermcap.so ]; then
       ln -s libtermcap.so.2 /usr/lib64/libtermcap.so
     fi
@@ -73,7 +74,7 @@ case "$dir" in
     texinfo libpng12-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
     libtiff5-dev exuberant-ctags ttf-bitstream-vera xfonts-75dpi xfonts-100dpi \
-    fonts-dejavu libopenexr-dev festival libfftw3-dev gdb \
+    fonts-dejavu libopenexr-dev festival libfftw3-dev gdb libusb-1.0-0-dev \
     libdc1394-22-dev libflac-dev libjbig-dev libvdpau-dev \
     inkscape libsndfile1-dev libtheora-dev cmake udftools libxml2-utils git \
     autoconf automake debhelper libgtk2.0-dev
@@ -86,7 +87,7 @@ case "$dir" in
     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
     libtiff5-dev exuberant-ctags ttf-bitstream-vera xfonts-75dpi xfonts-100dpi \
     fonts-dejavu libopenexr-dev libavc1394-dev festival-dev fftw3-dev gdb \
-    libdc1394-22-dev libiec61883-dev libflac-dev libjbig-dev \
+    libdc1394-22-dev libiec61883-dev libflac-dev libjbig-dev libusb-1.0-0-dev \
     libvdpau-dev libsndfile1-dev libtheora-dev cmake udftools libxml2-utils \
     git inkscape autoconf automake debhelper libgtk2.0-dev
   ;;

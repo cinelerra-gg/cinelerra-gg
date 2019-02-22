@@ -54,7 +54,6 @@ CHECK_WITH([libzmpeg],[build libzmpeg],[LIBZMPEG],[yes])
 CHECK_WITH([commercial],[enable commercial capture],[COMMERCIAL],[yes])
 CHECK_WITH([thirdparty],[use thirdparty build],[CIN_3RDPARTY],[yes])
 CHECK_WITH([shuttle],[shuttle device],[SHUTTLE],[yes])
-CHECK_WITH([shuttle-usb],[use libusb for shuttle],[SHUTTLE_USB],[no])
 
 if test "x$WANT_LV2" != "xno"; then
   GTK2_LIBS=`pkg-config --libs gtk+-2.0`
@@ -577,12 +576,15 @@ CHECK_LIB([vdpau], [vdpau], [vdp_device_create_x11])
 AC_DEFUN([CHECK_WANT], [
 RESULT=yes
 # WANT_$1
-if test "x$WANT_$1" != "xyes" -a "x$WANT_$1" != "xno" ; then
+if test "x$WANT_$1" != "xno" ; then
 AC_ARG_WITH(m4_tolower([$1]),
  AC_HELP_STRING([m4_join([-],[--with],m4_tolower([$1]))], [$3] (auto)),
   [WANT_$1=$withval],[WANT_$1=$2])
  m4_quote($4)
  if test "x$RESULT" = "xno" -a "x$PKG_$1" = "x"; then
+  if test "x$WANT_$1" = "xyes" ; then
+    AC_MSG_ERROR([required for $1 support.])
+  fi
   echo "=== want $1 Failed."
   WANT_$1=no
  elif test "x$WANT_$1" = "xauto" ; then
@@ -637,6 +639,10 @@ CHECK_WANT([ESOUND], [no], [use esd], [
  CHECK_HEADERS([esound], [esound headers], [esd.h])
  CHECK_LIB([audiofile], [audiofile], [afOpenFile])
  CHECK_HEADERS([audiofile], [audiofile headers], [audiofile.h])])
+
+CHECK_WANT([SHUTTLE_USB], [yes], [use libusb-1.0], [
+ CHECK_LIB([libusbx], [usb-1.0], [libusb_init])
+ CHECK_HEADERS([libusbx], [libusb headers], [libusb-1.0/libusb.h])])
 
 CHECK_WANT([LV2], [auto], [use lv2], [
  saved_CFLAGS="$CFLAGS"
@@ -850,8 +856,6 @@ echo "  using: with-noelision = $WANT_NOELISION"
 echo "  using: with-booby = $WANT_BOOBY"
 echo "  using: with-libzmpeg = $WANT_LIBZMPEG"
 echo "  using: with-commerical = $WANT_COMMERCIAL"
-echo "  using: with-shuttle = $WANT_SHUTTLE"
-echo "  using: with-shuttle-usb = $WANT_SHUTTLE_USB"
 echo ""
 echo "  using: thirdparty build = $WANT_CIN_3RDPARTY"
 echo "  using: single-user  = $WANT_CINBIN_BUILD"
@@ -874,9 +878,6 @@ if test "x$HAVE_DL" = "xyes"; then
 fi
 if test "x$WANT_BOOBY" != "xno"; then
   CFG_CFLAGS+=" -DBOOBY"
-fi
-if test "x$WANT_SHUTTLE_USB" != "xno"; then
-  EXTRA_LIBS+=' -lusb-1.0'
 fi
 
 # intel lock elision bugs

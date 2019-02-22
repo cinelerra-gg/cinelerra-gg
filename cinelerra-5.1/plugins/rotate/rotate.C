@@ -263,12 +263,7 @@ int RotateReset::handle_event()
 
 
 RotateWindow::RotateWindow(RotateEffect *plugin)
- : PluginClientWindow(plugin,
-	250,
-	230,
-	250,
-	230,
-	0)
+ : PluginClientWindow(plugin, 300, 230, 300, 230, 0)
 {
 	this->plugin = plugin;
 }
@@ -279,58 +274,26 @@ void RotateWindow::create_objects()
 {
 	int x = 10, y = 10;
 	BC_Title *title;
-
-
-
 	add_tool(new BC_Title(x, y, _("Rotate")));
-	x += 50;
-	y += 20;
-	add_tool(toggle0 = new RotateToggle(this,
-		plugin,
-		plugin->config.angle == 0,
-		x,
-		y,
-		0,
-		"0"));
-    x += RADIUS;
-    y += RADIUS;
-	add_tool(toggle90 = new RotateToggle(this,
-		plugin,
-		plugin->config.angle == 90,
-		x,
-		y,
-		90,
-		"90"));
-    x -= RADIUS;
-    y += RADIUS;
-	add_tool(toggle180 = new RotateToggle(this,
-		plugin,
-		plugin->config.angle == 180,
-		x,
-		y,
-		180,
-		"180"));
-    x -= RADIUS;
-    y -= RADIUS;
-	add_tool(toggle270 = new RotateToggle(this,
-		plugin,
-		plugin->config.angle == 270,
-		x,
-		y,
-		270,
-		"270"));
+	x += 50;  y += 20;
+	add_tool(toggle0 = new RotateToggle(this, plugin,
+		plugin->config.angle == 0, x, y, 0, "0"));
+    x += RADIUS;  y += RADIUS;
+	add_tool(toggle90 = new RotateToggle(this, plugin,
+		plugin->config.angle == 90, x, y, 90, "90"));
+    x -= RADIUS;  y += RADIUS;
+	add_tool(toggle180 = new RotateToggle(this, plugin,
+		plugin->config.angle == 180, x, y, 180, "180"));
+    x -= RADIUS;  y -= RADIUS;
+	add_tool(toggle270 = new RotateToggle(this, plugin,
+		plugin->config.angle == 270, x, y, 270, "270"));
 //	add_subwindow(bilinear = new RotateInterpolate(plugin, 10, y + 60));
-	x += 120;
-	y -= 50;
+	x += 150;  y -= 50;
 	add_tool(fine = new RotateFine(this, plugin, x, y));
 	y += fine->get_h() + 10;
 	add_tool(text = new RotateText(this, plugin, x, y));
 	y += 25;
 	add_tool(new BC_Title(x, y, _("Degrees")));
-
-
-
-
 
 	y += text->get_h() + 10;
 	add_subwindow(title = new BC_Title(x, y, _("Pivot (x,y):")));
@@ -511,7 +474,7 @@ int RotateEffect::process_buffer(VFrame *frame,
 //printf("RotateEffect::process_buffer %d\n", __LINE__);
 
 
-	if(config.angle == 0)
+	if(config.angle == 0 && !config.draw_pivot)
 	{
 		read_frame(frame,
 			0,
@@ -574,13 +537,13 @@ int RotateEffect::process_buffer(VFrame *frame,
 #define DRAW_CENTER(components, type, max) \
 { \
 	type **rows = (type**)get_output()->get_rows(); \
-	if( (center_x >= 0 && center_x < w) || (center_y >= 0 && center_y < h) ) \
+	if( (center_x >= 0 && center_x < w) && (center_y >= 0 && center_y < h) ) \
 	{ \
-		type *hrow = rows[center_y] + components * (center_x - CENTER_W / 2); \
 		for(int i = center_x - CENTER_W / 2; i <= center_x + CENTER_W / 2; i++) \
 		{ \
 			if(i >= 0 && i < w) \
 			{ \
+				type *hrow = rows[center_y] + components * i; \
 				hrow[0] = max - hrow[0]; \
 				hrow[1] = max - hrow[1]; \
 				hrow[2] = max - hrow[2]; \

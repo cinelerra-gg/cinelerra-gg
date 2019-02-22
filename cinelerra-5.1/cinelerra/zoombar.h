@@ -42,6 +42,8 @@ public:
 	void redraw_time_dependancies();
 	int update();          // redraw the current values
 	void update_autozoom();
+	void update_autozoom(int grouptype, int color);
+	void update_autozoom(int color);
 	int update_clocks();
 	int update_playback(int64_t new_position);       // update the playback position
 	int set_selection(int which_one);

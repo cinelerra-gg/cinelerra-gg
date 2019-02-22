@@ -2227,10 +2227,9 @@ int TrackCanvas::do_keyframes(int cursor_x,
 
 						if( !result && buttonpress && i == AUTOMATION_SPEED )
 							mwindow->speed_after(-1);
-						int current_grouptype = mwindow->edl->local_session->zoombar_showautotype;
-						if( result && buttonpress && grouptype != current_grouptype ) {
-							mwindow->edl->local_session->zoombar_showautotype = grouptype;
-						        mwindow->gui->zoombar->update_autozoom();
+						if( result && buttonpress ) {
+							int color = GWindowGUI::auto_colors[i];
+							mwindow->gui->zoombar->update_autozoom(grouptype, color);
 						}
 						break; }
 
@@ -2336,7 +2335,6 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	if(result) {
 		new_cursor = UPRIGHT_ARROW_CURSOR;
 	}
-
 
 	return result;
 }
@@ -4035,7 +4033,8 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			float change = value - old_value;
 			current->adjust_to_new_coordinates(position, value);
 			update_ganged_autos(change, current->autos->track, current);
-			show_message(current, 1,", %.2f", current->get_value());
+			int color = GWindowGUI::auto_colors[current->autos->autoidx];
+			show_message(current, color, ", %.2f", current->get_value());
 		}
 		break;
 
@@ -4054,7 +4053,8 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				value * levered_position(position - current->position,
 				                         current->get_control_in_position()));
 			update_ganged_autos(0, current->autos->track, current);
-			show_message(current, 1,", %.2f", current->get_control_in_value());
+			int color = GWindowGUI::auto_colors[current->autos->autoidx];
+			show_message(current, color, ", %.2f", current->get_control_in_value());
 		}
 		break; }
 
@@ -4068,7 +4068,8 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				value * levered_position(position - current->position,
 				                         current->get_control_out_position()));
 			update_ganged_autos(0, current->autos->track, current);
-			show_message(current, 1,", %.2f", current->get_control_out_value());
+			int color = GWindowGUI::auto_colors[current->autos->autoidx];
+			show_message(current, color, ", %.2f", current->get_control_out_value());
 		}
 		break; }
 	}
@@ -4088,7 +4089,7 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 		result = 1;
 		current->value = value;
 		current->position = position;
-		show_message(current, 0,", %d", current->value);
+		show_message(current, -1, ", %d", current->value);
 	}
 
 	return result;
@@ -4105,7 +4106,7 @@ int TrackCanvas::update_drag_auto(int cursor_x, int cursor_y)
 	{
 		result = 1;
 		current->position = position;
-		show_message(current, 0,"");
+		show_message(current, -1, "");
 
 		double position_f = current->autos->track->from_units(current->position);
 		double center_f = (mwindow->edl->local_session->get_selectionstart(1) +
@@ -4169,7 +4170,7 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 		mwindow->session->track_highlighted = track;
 		result = 1;
 		current->position = position;
-		show_message(current, 0,"");
+		show_message(current, -1, "");
 
 		double position_f = current->autos->track->from_units(current->position);
 		double center_f = (mwindow->edl->local_session->get_selectionstart(1) +
@@ -4679,6 +4680,9 @@ int TrackCanvas::button_release_event()
 			break;
 		}
 	}
+
+	if( mwindow->edl->local_session->zoombar_showautocolor >= 0 )
+		mwindow->gui->zoombar->update_autozoom(-1);
 
 	if (result)
 		cursor_update(0);
@@ -5275,7 +5279,7 @@ int TrackCanvas::button_press_event()
 			gui->stop_transport("TrackCanvas::button_press_event");
 		}
 
-		int update_overlay = 0, update_cursor = 0, rerender = 0;
+		int update_overlay = 0, update_cursor = 0, rerender = 0, update_message = 0;
 
 		if(get_buttonpress() == WHEEL_UP) {
 			if(shift_down())
@@ -5338,6 +5342,7 @@ int TrackCanvas::button_press_event()
 
 				if( do_tracks(cursor_x, cursor_y, 1) ) break;
 
+				update_message = 1;
 				result = 0;
 			} while(0);
 			else if( ibeam_mode() ) do {
@@ -5370,6 +5375,7 @@ int TrackCanvas::button_press_event()
 				if( get_buttonpress() != LEFT_BUTTON ) break;
 				rerender = start_selection(position);
 				mwindow->session->current_operation = SELECT_REGION;
+				update_message = 1;
 				update_cursor = 1;
 			} while(0);
 		}
@@ -5383,9 +5389,12 @@ int TrackCanvas::button_press_event()
 			gui->update_patchbay();
 		}
 
-		if( update_overlay ) {
+		if( update_message )
+			gui->default_message();
+
+		if( update_overlay )
 			gui->draw_overlays(1);
-		}
+
 		if( update_cursor < 0 ) {
 // double_click edit
 			gui->swindow->update_selection();
@@ -5462,11 +5471,11 @@ double TrackCanvas::time_visible()
 }
 
 
-void TrackCanvas::show_message(Auto *current, int show_curve_type, const char *fmt, ...)
+void TrackCanvas::show_message(Auto *current, int color, const char *fmt, ...)
 {
 	char string[BCTEXTLEN];
 	char *cp = string, *ep = cp + sizeof(string)-1;
-	if( show_curve_type ) {
+	if( color >= 0 ) {
 		cp += snprintf(string, ep-cp, "%-8s ",
 			FloatAuto::curve_name(((FloatAuto*)current)->curve_mode));
 	}
@@ -5482,7 +5491,7 @@ void TrackCanvas::show_message(Auto *current, int show_curve_type, const char *f
 	va_start(ap, fmt);
 	vsnprintf(cp, ep-cp, fmt, ap);
 	va_end(ap);
-	gui->show_message(string);
+	gui->show_message(string, color);
 }
 
 // Patchbay* TrackCanvas::get_patchbay()

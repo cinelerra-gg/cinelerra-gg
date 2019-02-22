@@ -398,23 +398,26 @@ int BatchRenderThread::test_edl_files()
 		FILE *fp = fopen(path, "r");
 		if( fp ) {
 			if( warn && mwindow && !is_script ) {
-				fseek(fp, 0, SEEK_END);
-				int64_t sz = ftell(fp);
-				fseek(fp, 0, SEEK_SET);
-				char *bfr = new char[sz+1];
-				int64_t len = fread(bfr, 1, sz+1, fp);
-				if( len == sz ) {
-					FileXML file;
-					XMLBuffer data(bfr, len, 0);
-					file.set_shared_input(&data);
+				char *bfr = 0;  size_t sz = 0;
+				struct stat st;
+				if( !fstat(fileno(fp), &st) ) {
+					sz = st.st_size;
+					bfr = new char[sz+1];
+					if( fread(bfr, 1, sz+1, fp) != sz )
+						ret = 1;
+					else
+						bfr[sz] = 0;
+				}
+				if( !ret ) {
 					EDL *edl = new EDL; edl->create_objects();
-					edl->load_xml(&file, LOAD_ALL);
+					XMLBuffer data(bfr, sz, 0);
+					{ FileXML file;
+					file.set_shared_input(&data);
+					edl->load_xml(&file, LOAD_ALL); }
 					double pos = edl->equivalent_output(mwindow->edl);
 					if( pos >= 0 ) ++not_equiv;
 					edl->remove_user();
 				}
-				else
-					ret = 1;
 				delete [] bfr;
 			}
 			fclose(fp);
@@ -1047,7 +1050,9 @@ void BatchRenderSaveList::run()
 	int result2 = filewindow.run_window();
 	if( !result2 ) {
 		strcpy(thread->batch_path, filewindow.get_submitted_path());
+		thread->gui->lock_window("BatchRenderSaveList::run");
 		thread->gui->batch_path->update(thread->batch_path);
+		thread->gui->unlock_window();
 		thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", thread->batch_path);
 		thread->save_jobs(thread->batch_path);
 	}

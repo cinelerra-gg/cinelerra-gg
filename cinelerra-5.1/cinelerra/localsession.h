@@ -102,7 +102,7 @@ public:
 
 	float automation_mins[AUTOGROUPTYPE_COUNT];
 	float automation_maxs[AUTOGROUPTYPE_COUNT];
-	int zoombar_showautotype;
+	int zoombar_showautotype, zoombar_showautocolor;
 // Default type of float keyframe
 	int floatauto_type;
 

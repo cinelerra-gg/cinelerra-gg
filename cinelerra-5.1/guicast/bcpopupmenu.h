@@ -64,11 +64,11 @@ public:
 	int total_items();
 	BC_MenuItem* get_item(int i);
 // Set title of menu
-	void set_text(const char *text);
+	void set_text(const char *text, int color=-1);
 // Set icon of menu.  Disables text.
 	void set_icon(BC_Pixmap *pixmap);
 // Draw title of menu
-	int draw_title(int flush);
+	int draw_title(int flush, int color=-1);
 	int reposition_window(int x, int y);
 	int deactivate();
 	int activate_menu();

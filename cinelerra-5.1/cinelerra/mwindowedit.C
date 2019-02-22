@@ -862,6 +862,9 @@ void MWindow::finish_modify_handles()
 	double position = -1;
 	switch( edit_mode ) {
 	case MOVE_RIPPLE:
+		position = !session->drag_handle ?
+			session->drag_start : session->drag_position;
+		break;
 	case MOVE_ROLL:
 	case MOVE_SLIDE:
 		position = session->drag_position;

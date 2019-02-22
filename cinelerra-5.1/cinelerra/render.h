@@ -228,6 +228,7 @@ public:
 
 	MWindow *mwindow;
 	Render *render;
+	int64_t render_frames;
 };
 
 class RenderToTracks;

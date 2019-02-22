@@ -97,7 +97,7 @@ void BC_Toggle::calculate_extents(BC_WindowBase *gui,
 
 	if( caption ) {
 		*text_w = gui->get_text_width(font, caption);
-		*text_h = gui->get_text_height(font);
+		*text_h = gui->get_text_height(font, caption);
 
 		if( resources->toggle_highlight_bg ) {
 			*text_w += resources->toggle_text_margin * 2;

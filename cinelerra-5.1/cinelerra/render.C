@@ -661,6 +661,7 @@ RenderThread::RenderThread(MWindow *mwindow, Render *render)
 {
 	this->mwindow = mwindow;
 	this->render = render;
+	render_frames = 0;
 }
 
 RenderThread::~RenderThread()
@@ -672,7 +673,7 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 	int strategy, int range_type)
 {
 // Total length in seconds
-	double total_length;
+	double total_length = 0;
 	RenderFarmServer *farm_server = 0;
 	FileSystem fs;
 	const int debug = 0;
@@ -737,6 +738,7 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 			render->result = 1;
 		}
 	}
+	render_frames = render->default_asset->frame_rate * total_length;
 
 // Generate packages
 	if(!render->result)
@@ -807,25 +809,15 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 
 // Perform local rendering
 
-
 	if(!render->result)
 	{
 		render->start_progress();
-
-
-
 
 		MainPackageRenderer package_renderer(render);
 		render->result = package_renderer.initialize(mwindow,
 				command->get_edl(),   // Copy of master EDL
 				render->preferences,
 				render->default_asset);
-
-
-
-
-
-
 
 		while(!render->result)
 		{
@@ -856,13 +848,7 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 
 		} // file_number
 
-
-
 printf("Render::render_single: Session finished.\n");
-
-
-
-
 
 		if( strategy == SINGLE_PASS_FARM ||
 		    strategy == FILE_PER_LABEL_FARM ) {
@@ -904,10 +890,8 @@ if(debug) printf("Render::render %d\n", __LINE__);
 
 // Delete the progress box
 		render->stop_progress();
-
 if(debug) printf("Render::render %d\n", __LINE__);
 	}
-
 
 // Paste all packages into timeline if desired
 
@@ -988,6 +972,8 @@ if(debug) printf("Render::render %d\n", __LINE__);
 
 void RenderThread::run()
 {
+	Timer render_timer;
+
 	if( mwindow )
 		render->preferences->copy_from(mwindow->preferences);
 
@@ -1071,6 +1057,10 @@ void RenderThread::run()
 		}
 	}
 	render->completion->unlock();
+	double render_time = render_timer.get_difference() / 1000.0;
+	double render_rate = render_time > 0 ? render_frames / render_time : 0;
+	printf("** rendered %jd frames in %0.3f secs, %0.3f fps\n",
+		render_frames, render_time, render_rate);
 
 	if( render->mode == Render::INTERACTIVE && render->beep )
 		mwindow->beep(3000., 1.5, 0.5);
