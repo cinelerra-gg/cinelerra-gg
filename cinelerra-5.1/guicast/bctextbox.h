@@ -396,8 +396,11 @@ public:
 };
 
 
+class BC_TumbleTextBox;
 class BC_TumbleTextBoxText;
-class BC_TumbleTextBoxTumble;
+class BC_FTextTumbler;
+class BC_ITextTumbler;
+
 
 class BC_TumbleTextBox
 {
@@ -416,6 +419,8 @@ public:
 	int create_objects();
 	void reset();
 	virtual int handle_event();
+	virtual int handle_up_event();
+	virtual int handle_down_event();
 	const char* get_text();
 	const wchar_t* get_wtext();
 	BC_TextBox* get_textbox();
@@ -438,7 +443,8 @@ public:
 	void set_tooltip(const char *text);
 
 	friend class BC_TumbleTextBoxText;
-	friend class BC_TumbleTextBoxTumble;
+	friend class BC_FTextTumbler;
+	friend class BC_ITextTumbler;
 
 private:
 	int x, y, text_w;
@@ -462,6 +468,36 @@ public:
 	int handle_event();
 	int button_press_event();
 	BC_TumbleTextBox *popup;
+};
+
+class BC_FTextTumbler : public BC_FTumbler
+{
+public:
+	BC_FTextTumbler(BC_TumbleTextBox *tumble_text,
+			float min_f, float max_f, int x, int y)
+	 : BC_FTumbler(tumble_text->textbox, min_f, max_f, x, y) {
+		this->tumble_text = tumble_text;
+	}
+	~BC_FTextTumbler() {}
+	int handle_up_event() { return tumble_text->handle_up_event(); }
+	int handle_down_event() { return tumble_text->handle_down_event(); }
+
+	BC_TumbleTextBox *tumble_text;
+};
+
+class BC_ITextTumbler : public BC_ITumbler
+{
+public:
+	BC_ITextTumbler(BC_TumbleTextBox *tumble_text,
+			int64_t min, int64_t max, int x, int y)
+	 : BC_ITumbler(tumble_text->textbox, min, max, x, y) {
+		this->tumble_text = tumble_text;
+	}
+	~BC_ITextTumbler() {}
+	int handle_up_event() { return tumble_text->handle_up_event(); }
+	int handle_down_event() { return tumble_text->handle_down_event(); }
+
+	BC_TumbleTextBox *tumble_text;
 };
 
 

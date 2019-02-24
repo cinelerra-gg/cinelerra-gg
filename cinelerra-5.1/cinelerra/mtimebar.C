@@ -657,10 +657,6 @@ void MTimeBar::activate_timeline()
 }
 
 
-
-
-
-
 TimeBarPopupItem::TimeBarPopupItem(MWindow *mwindow,
 	TimeBarPopup *menu,
 	const char *text,
@@ -683,11 +679,7 @@ int TimeBarPopupItem::handle_event()
 
 
 TimeBarPopup::TimeBarPopup(MWindow *mwindow)
- : BC_PopupMenu(0,
-		0,
-		0,
-		"",
-		0)
+ : BC_PopupMenu(0, 0, 0, "", 0)
 {
 	this->mwindow = mwindow;
 }
@@ -700,47 +692,26 @@ TimeBarPopup::~TimeBarPopup()
 void TimeBarPopup::create_objects()
 {
 	add_item(items[0] = new TimeBarPopupItem(mwindow,
-		this,
-		TIME_HMS_TEXT,
-		TIME_HMS));
+		this, TIME_HMS_TEXT, TIME_HMS));
 	add_item(items[1] = new TimeBarPopupItem(mwindow,
-		this,
-		TIME_HMSF_TEXT,
-		TIME_HMSF));
+		this, TIME_HMSF_TEXT, TIME_HMSF));
 	add_item(items[2] = new TimeBarPopupItem(mwindow,
-		this,
-		TIME_FRAMES_TEXT,
-		TIME_FRAMES));
+		this, TIME_FRAMES_TEXT, TIME_FRAMES));
 	add_item(items[3] = new TimeBarPopupItem(mwindow,
-		this,
-		TIME_SAMPLES_TEXT,
-		TIME_SAMPLES));
+		this, TIME_SAMPLES_TEXT, TIME_SAMPLES));
 	add_item(items[4] = new TimeBarPopupItem(mwindow,
-		this,
-		TIME_SAMPLES_HEX_TEXT,
-		TIME_SAMPLES_HEX));
+		this, TIME_SAMPLES_HEX_TEXT, TIME_SAMPLES_HEX));
 	add_item(items[5] = new TimeBarPopupItem(mwindow,
-		this,
-		TIME_SECONDS_TEXT,
-		TIME_SECONDS));
+		this, TIME_SECONDS_TEXT, TIME_SECONDS));
 	add_item(items[6] = new TimeBarPopupItem(mwindow,
-		this,
-		TIME_FEET_FRAMES_TEXT,
-		TIME_FEET_FRAMES));
+		this, TIME_FEET_FRAMES_TEXT, TIME_FEET_FRAMES));
 }
 
 void TimeBarPopup::update()
 {
-	for(int i = 0; i < TOTAL_TIMEFORMATS; i++)
-	{
-		if(items[i]->value == mwindow->edl->session->time_format)
-		{
-			items[i]->set_checked(1);
-		}
-		else
-		{
-			items[i]->set_checked(0);
-		}
+	int time_format = mwindow->edl->session->time_format;
+	for( int i=0; i<TOTAL_TIMEFORMATS; ++i ) {
+		items[i]->set_checked(items[i]->value == time_format);
 	}
 }
 

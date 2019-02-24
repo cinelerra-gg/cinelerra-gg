@@ -22,8 +22,16 @@
 #ifndef TRANSITIONPOPUP_INC
 #define TRANSITIONPOPUP_INC
 
+class TransitionUnitsItem;
+class TransitionUnitsPopup;
 class TransitionLengthThread;
+class TransitionLengthDialog;
+class TransitionLengthText;
 class TransitionPopup;
-
+class TransitionPopupAttach;
+class TransitionPopupDetach;
+class TransitionPopupShow;
+class TransitionPopupOn;
+class TransitionPopupLength;
 
 #endif

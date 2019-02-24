@@ -45,11 +45,11 @@ TransitionLengthThread::~TransitionLengthThread()
 	close_window();
 }
 
-void TransitionLengthThread::start(Transition *transition,
-	double length)
+void TransitionLengthThread::start(Transition *transition, double length)
 {
 	this->transition = transition;
-	this->length = this->orig_length = length;
+	this->orig_length = length;
+	this->new_length = length;
 	BC_DialogThread::start();
 }
 
@@ -58,51 +58,94 @@ BC_Window* TransitionLengthThread::new_gui()
 	BC_DisplayInfo display_info;
 	int x = display_info.get_abs_cursor_x() - 150;
 	int y = display_info.get_abs_cursor_y() - 50;
-	TransitionLengthDialog *gui = new TransitionLengthDialog(mwindow,
-		this,
-		x,
-		y);
+	TransitionLengthDialog *gui = new TransitionLengthDialog(mwindow, this, x, y);
 	gui->create_objects();
 	return gui;
 }
 
 void TransitionLengthThread::handle_close_event(int result)
 {
-	if(!result)
-	{
-		if(transition)
-		{
-			mwindow->set_transition_length(transition, length);
-		}
+	if( !result ) {
+		if( transition )
+			mwindow->set_transition_length(transition, new_length);
 		else
-		{
-			mwindow->set_transition_length(length);
+			mwindow->set_transition_length(new_length);
+	}
+	else
+		update(orig_length);
+}
+
+int TransitionLengthThread::update(double length)
+{
+	if( !EQUIV(this->new_length, length) ) {
+		this->new_length = length;
+		if( transition ) {
+			transition->length = transition->track->to_units(length, 1);
+			mwindow->sync_parameters(CHANGE_EDL);
+			mwindow->gui->lock_window();
+			mwindow->gui->draw_overlays(1);
+			mwindow->gui->unlock_window();
 		}
 	}
+	return 1;
 }
 
 
+TransitionUnitsItem::TransitionUnitsItem(TransitionUnitsPopup *popup,
+		const char *text, int id)
+ : BC_MenuItem(text)
+{
+        this->popup = popup;
+	this->id = id;
+}
 
+TransitionUnitsItem::~TransitionUnitsItem()
+{
+}
 
+int TransitionUnitsItem::handle_event()
+{
+	TransitionUnitsPopup *units_popup = (TransitionUnitsPopup *)get_popup_menu();
+	TransitionLengthDialog *gui = units_popup->gui;
+	TransitionLengthText *length_text = gui->text;
+	EDLSession *session = gui->mwindow->edl->session;
+	double length = gui->thread->new_length;
+	char text[BCSTRLEN];
+	units_popup->units = id;
+	Units::totext(text, length, units_popup->units, session->sample_rate,
+			session->frame_rate, session->frames_per_foot);
+	length_text->update(text);
+	units_popup->set_text(get_text());
+	return 1;
+}
 
+TransitionUnitsPopup::TransitionUnitsPopup(TransitionLengthDialog *gui, int x, int y)
+ : BC_PopupMenu(x, y, 100, "", 1)
+{
+	this->gui = gui;
+	units = TIME_SECONDS;
+}
 
+TransitionUnitsPopup::~TransitionUnitsPopup()
+{
+}
 
+void TransitionUnitsPopup::create_objects()
+{
+	TransitionUnitsItem *units_item;
+	add_item(units_item = new TransitionUnitsItem(this, _("Seconds"), TIME_SECONDS));
+	add_item(new TransitionUnitsItem(this, _("Frames"), TIME_FRAMES));
+	add_item(new TransitionUnitsItem(this, _("Samples"), TIME_SAMPLES));
+	add_item(new TransitionUnitsItem(this, _("H:M:S.xxx"), TIME_HMS));
+	add_item(new TransitionUnitsItem(this, _("H:M:S:frm"), TIME_HMSF));
+	set_text(units_item->get_text());
+}
 
 
 TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow,
-	TransitionLengthThread *thread,
-	int x,
-	int y)
- : BC_Window(_(PROGRAM_NAME ": Transition length"),
-	x,
-	y,
-	300,
-	100,
-	-1,
-	-1,
-	0,
-	0,
-	1)
+	TransitionLengthThread *thread, int x, int y)
+ : BC_Window(_(PROGRAM_NAME ": Transition length"), x, y,
+		300, 100, -1, -1, 0, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -116,9 +159,12 @@ TransitionLengthDialog::~TransitionLengthDialog()
 void TransitionLengthDialog::create_objects()
 {
 	lock_window("TransitionLengthDialog::create_objects");
-	add_subwindow(new BC_Title(10, 10, _("Seconds:")));
-	text = new TransitionLengthText(mwindow, this, 100, 10);
+	add_subwindow(units_popup = new TransitionUnitsPopup(this, 10, 10));
+	units_popup->create_objects();
+	text = new TransitionLengthText(mwindow, this, 160, 10);
 	text->create_objects();
+	text->set_precision(3);
+	text->set_increment(0.1);
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
@@ -132,21 +178,10 @@ int TransitionLengthDialog::close_event()
 }
 
 
-
-
-
-
 TransitionLengthText::TransitionLengthText(MWindow *mwindow,
-	TransitionLengthDialog *gui,
-	int x,
-	int y)
- : BC_TumbleTextBox(gui,
- 	(float)gui->thread->length,
-	(float)0,
-	(float)100,
-	x,
-	y,
-	100)
+	TransitionLengthDialog *gui, int x, int y)
+ : BC_TumbleTextBox(gui, (float)gui->thread->new_length,
+		0.f, 100.f, x, y, 100)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -154,26 +189,49 @@ TransitionLengthText::TransitionLengthText(MWindow *mwindow,
 
 int TransitionLengthText::handle_event()
 {
-	double result = atof(get_text());
-	if(!EQUIV(result, gui->thread->length))
-	{
-		gui->thread->length = result;
-		mwindow->gui->lock_window();
-		mwindow->gui->update(0, NORMAL_DRAW, 0, 0, 0, 0, 0);
-		mwindow->gui->unlock_window();
-	}
-
-	return 1;
+	const char *text = get_text();
+	int units = gui->units_popup->units;
+	EDLSession *session = gui->mwindow->edl->session;
+	double result = Units::text_to_seconds(text, session->sample_rate,
+		units, session->frame_rate, session->frames_per_foot);
+	return gui->thread->update(result);
 }
 
+int TransitionLengthText::handle_up_down(int dir)
+{
+	double delta = 0;
+	int units = gui->units_popup->units;
+	EDLSession *session = gui->mwindow->edl->session;
+	switch( units ) {
+	case TIME_SECONDS:
+	case TIME_HMS:
+		delta = 0.1;
+		break;
+	case TIME_HMSF:
+	case TIME_FRAMES:
+		delta = session->frame_rate > 0 ? 1./session->frame_rate : 0;
+		break;
+	case TIME_SAMPLES:
+		delta = session->sample_rate > 0 ? 1./session->sample_rate : 0;
+		break;
+	}
+	double length = gui->thread->new_length + delta * dir;
+	char text[BCSTRLEN];
+	Units::totext(text, length, units,
+		session->sample_rate, session->frame_rate,
+		session->frames_per_foot);
+	update(text);
+	return gui->thread->update(length);
+}
 
-
-
-
-
-
-
-
+int TransitionLengthText::handle_up_event()
+{
+	return handle_up_down(+1);
+}
+int TransitionLengthText::handle_down_event()
+{
+	return handle_up_down(-1);
+}
 
 
 TransitionPopup::TransitionPopup(MWindow *mwindow, MWindowGUI *gui)
@@ -203,7 +261,6 @@ void TransitionPopup::create_objects()
 int TransitionPopup::update(Transition *transition)
 {
 	this->transition = transition;
-	this->length = transition->edit->track->from_units(transition->length);
 	show->set_checked(transition->show);
 	on->set_checked(transition->on);
 	char len_text[50];
@@ -211,9 +268,6 @@ int TransitionPopup::update(Transition *transition)
 	length_item->set_text(len_text);
 	return 0;
 }
-
-
-
 
 
 TransitionPopupAttach::TransitionPopupAttach(MWindow *mwindow, TransitionPopup *popup)
@@ -232,11 +286,6 @@ int TransitionPopupAttach::handle_event()
 //	popup->dialog_thread->start();
 	return 1;
 }
-
-
-
-
-
 
 
 TransitionPopupDetach::TransitionPopupDetach(MWindow *mwindow, TransitionPopup *popup)
@@ -276,10 +325,6 @@ int TransitionPopupOn::handle_event()
 }
 
 
-
-
-
-
 TransitionPopupShow::TransitionPopupShow(MWindow *mwindow, TransitionPopup *popup)
  : BC_MenuItem(_("Show"))
 {
@@ -298,12 +343,6 @@ int TransitionPopupShow::handle_event()
 }
 
 
-
-
-
-
-
-
 TransitionPopupLength::TransitionPopupLength(MWindow *mwindow, TransitionPopup *popup)
  : BC_MenuItem(_("Length"))
 {
@@ -317,8 +356,9 @@ TransitionPopupLength::~TransitionPopupLength()
 
 int TransitionPopupLength::handle_event()
 {
-	popup->length_thread->start(popup->transition,
-		popup->length);
+	Transition *transition = popup->transition;
+	double length = transition->edit->track->from_units(transition->length);
+	popup->length_thread->start(popup->transition, length);
 	return 1;
 }
 

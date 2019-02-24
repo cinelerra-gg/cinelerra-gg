@@ -2628,17 +2628,6 @@ void BC_PopupTextBox::reposition_window(int x, int y)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
 	int64_t default_value, int x, int y)
  : BC_TextBox(x, y, popup->text_w, 1, default_value)
@@ -2681,7 +2670,6 @@ int BC_TumbleTextBoxText::button_press_event()
 	}
 	return 0;
 }
-
 
 
 
@@ -2787,11 +2775,25 @@ int BC_TumbleTextBox::create_objects()
 	x += textbox->get_w();
 
 	tumbler = use_float ?
-		(BC_Tumbler *)new BC_FTumbler(textbox, min_f, max_f, x, y) :
-		(BC_Tumbler *)new BC_ITumbler(textbox, min, max, x, y);
+		(BC_Tumbler *)new BC_FTextTumbler(this, min_f, max_f, x, y) :
+		(BC_Tumbler *)new BC_ITextTumbler(this, min, max, x, y);
 	parent_window->add_subwindow(tumbler);
 	tumbler->set_increment(increment);
 	return 0;
+}
+
+int BC_TumbleTextBox::handle_up_event()
+{
+	return use_float ?
+		((BC_FTumbler *)tumbler)->BC_FTumbler::handle_up_event() :
+		((BC_ITumbler *)tumbler)->BC_ITumbler::handle_up_event() ;
+}
+
+int BC_TumbleTextBox::handle_down_event()
+{
+	return use_float ?
+		((BC_FTumbler *)tumbler)->BC_FTumbler::handle_down_event() :
+		((BC_ITumbler *)tumbler)->BC_ITumbler::handle_down_event() ;
 }
 
 const char* BC_TumbleTextBox::get_text()

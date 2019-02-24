@@ -29,12 +29,30 @@
 #include "transition.inc"
 #include "transitionpopup.inc"
 
-class TransitionPopupOn;
-class TransitionPopupShow;
-class TransitionPopupAttach;
-class TransitionPopupDetach;
-class TransitionPopupLength;
-class TransitionLengthText;
+class TransitionUnitsItem : public BC_MenuItem
+{
+public:
+	TransitionUnitsItem(TransitionUnitsPopup *popup, const char *text, int id);
+	~TransitionUnitsItem();
+
+	int handle_event();
+
+	TransitionUnitsPopup *popup;
+	int id;
+};
+
+class TransitionUnitsPopup : public BC_PopupMenu
+{
+public:
+	TransitionUnitsPopup(TransitionLengthDialog *gui, int x, int y);
+	~TransitionUnitsPopup();
+
+	void create_objects();
+
+	TransitionLengthDialog *gui;
+	int units;
+};
+
 
 class TransitionLengthThread : public BC_DialogThread
 {
@@ -46,14 +64,14 @@ public:
 		double length);
 	BC_Window* new_gui();
 	void handle_close_event(int result);
+	int update(double length);
 
 	MWindow *mwindow;
 
 	Transition *transition;
-	double length;
 	double orig_length;
+	double new_length;
 };
-
 
 class TransitionLengthDialog : public BC_Window
 {
@@ -69,6 +87,7 @@ public:
 
 	MWindow *mwindow;
 	TransitionLengthThread *thread;
+	TransitionUnitsPopup *units_popup;
 	TransitionLengthText *text;
 	double length;
 };
@@ -81,6 +100,10 @@ public:
 		int x,
 		int y);
 	int handle_event();
+	int handle_up_down(int dir);
+	int handle_up_event();
+	int handle_down_event();
+
 	MWindow *mwindow;
 	TransitionLengthDialog *gui;
 };
@@ -98,7 +121,6 @@ public:
 // Acquired through the update command as the plugin currently being operated on
 // Can't be dereferenced.
 	Transition *transition;
-	double length;
 
 // Set when the user clicks a transition.
 	MWindow *mwindow;
