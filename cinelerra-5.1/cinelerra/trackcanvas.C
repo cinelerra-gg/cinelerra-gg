@@ -5322,6 +5322,7 @@ int TrackCanvas::button_press_event()
 				if( do_keyframes(cursor_x, cursor_y,
 					0, get_buttonpress(), new_cursor,
 					update_cursor, rerender) ) break;
+				update_message = 1;
 // Test edit boundaries
 				if( do_edit_handles(cursor_x, cursor_y,
 					1, rerender, update_overlay, new_cursor,
@@ -5342,7 +5343,6 @@ int TrackCanvas::button_press_event()
 
 				if( do_tracks(cursor_x, cursor_y, 1) ) break;
 
-				update_message = 1;
 				result = 0;
 			} while(0);
 			else if( ibeam_mode() ) do {
@@ -5358,6 +5358,7 @@ int TrackCanvas::button_press_event()
 					update_overlay = 1;
 					break;
 				}
+				update_message = 1;
 // Test edit boundaries
 				if( do_edit_handles(cursor_x, cursor_y,
 					1, rerender, update_overlay, new_cursor, update_cursor) ) break;
@@ -5375,7 +5376,6 @@ int TrackCanvas::button_press_event()
 				if( get_buttonpress() != LEFT_BUTTON ) break;
 				rerender = start_selection(position);
 				mwindow->session->current_operation = SELECT_REGION;
-				update_message = 1;
 				update_cursor = 1;
 			} while(0);
 		}

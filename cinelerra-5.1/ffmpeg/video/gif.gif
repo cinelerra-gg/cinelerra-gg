@@ -1,0 +1,3 @@
+gif gif
+# full duration would require probe to read entire file
+# use file.opts with duration=<secs> to read animations

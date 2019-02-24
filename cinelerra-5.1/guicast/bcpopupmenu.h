@@ -56,6 +56,7 @@ public:
 	static int calculate_w(int w_argument);
 	static int calculate_h(VFrame **data = 0);
 	virtual int handle_event() { return 0; };
+	virtual int draw_face(int dx);
 	char* get_text();
 	int initialize();
 	int add_item(BC_MenuItem *item);
@@ -63,12 +64,13 @@ public:
 	int remove_item(BC_MenuItem *item);
 	int total_items();
 	BC_MenuItem* get_item(int i);
+	int get_margin();
 // Set title of menu
-	void set_text(const char *text, int color=-1);
+	void set_text(const char *text);
 // Set icon of menu.  Disables text.
 	void set_icon(BC_Pixmap *pixmap);
 // Draw title of menu
-	int draw_title(int flush, int color=-1);
+	int draw_title(int flush);
 	int reposition_window(int x, int y);
 	int deactivate();
 	int activate_menu();

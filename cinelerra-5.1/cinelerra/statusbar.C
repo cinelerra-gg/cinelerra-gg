@@ -105,7 +105,23 @@ void StatusBar::resize_event()
 
 void StatusBar::show_message(const char *text, int color)
 {
-	if( color < 0 ) color = mwindow->theme->message_normal;
+	int mx = mwindow->theme->mstatus_message_x;
+	int my = mwindow->theme->mstatus_message_y;
+	int tx = status_text->get_x(), th = status_text->get_h();
+	if( color >= 0 ) {
+		set_color(color);
+		int bb = th/4, bh = th - bb*2;
+		draw_box(mx+bb,my+bb, bh,bh);
+		flash(mx,my, th,th);  mx += 5;
+		if( (mx+=th) != tx )
+			status_text->reposition_window(mx, my);
+	}
+	else if( tx != mx ) {
+		draw_top_background(get_parent(), mx,my, th,th);
+		flash(mx,my, th,th);
+		status_text->reposition_window(mx, my);
+	}
+	color = mwindow->theme->message_normal;
 	status_text->set_color(color);
 	status_text->update(text);
 }

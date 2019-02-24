@@ -113,6 +113,7 @@ public:
 	void create_objects();
 	static const char* to_text(int shape);
 	static int from_text(char *text);
+	int draw_face(int dx);
 	int handle_event();
 	MWindow *mwindow;
 	ZoomBar *zoombar;
