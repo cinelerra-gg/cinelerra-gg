@@ -2906,7 +2906,7 @@ void CWindowCanvas::draw_bezier(int do_camera)
 		track->automation->get_camera(&center_x,
 			&center_y, &center_z, position, PLAY_FORWARD);
 // follow image, not camera
-		center_x = -center_x;  center_y = -center_y;
+		center_x = -center_x * center_z;  center_y = -center_y * center_z;
 	}
 	else
 		track->automation->get_projector(&center_x,
@@ -2964,114 +2964,71 @@ int CWindowCanvas::test_bezier(int button_press,
 
 // Processing drag operation.
 // Create keyframe during first cursor motion.
-	if(!button_press)
-	{
+	if( !button_press ) {
 
 		float cursor_x = get_cursor_x();
 		float cursor_y = get_cursor_y();
 		canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
 
-		if(gui->current_operation == CWINDOW_CAMERA ||
-			gui->current_operation == CWINDOW_PROJECTOR)
-		{
-			if(!gui->ctrl_down() && gui->shift_down() && !gui->translating_zoom)
-			{
+		if( gui->current_operation == CWINDOW_CAMERA ||
+		    gui->current_operation == CWINDOW_PROJECTOR ) {
+			if( !gui->ctrl_down() && gui->shift_down() && !gui->translating_zoom ) {
 				gui->translating_zoom = 1;
 				gui->reset_affected();
 			}
-			else
-			if(!gui->ctrl_down() && !gui->shift_down() && gui->translating_zoom)
-			{
+			else if( !gui->ctrl_down() && !gui->shift_down() && gui->translating_zoom ) {
 				gui->translating_zoom = 0;
 				gui->reset_affected();
 			}
 
 // Get target keyframe
-			float last_center_x;
-			float last_center_y;
-			float last_center_z;
-			int created;
-
-			if(!gui->affected_x && !gui->affected_y && !gui->affected_z)
-			{
-				FloatAutos *affected_x_autos;
-				FloatAutos *affected_y_autos;
-				FloatAutos *affected_z_autos;
+			if( !gui->affected_x && !gui->affected_y && !gui->affected_z ) {
 				if(!gui->affected_track) return 0;
+				FloatAutos *affected_x_autos, *affected_y_autos, *affected_z_autos;
+				FloatAutos** autos = (FloatAutos**) gui->affected_track->automation->autos;
+				if( mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA ) {
+					affected_x_autos = autos[AUTOMATION_CAMERA_X];
+					affected_y_autos = autos[AUTOMATION_CAMERA_Y];
+					affected_z_autos = autos[AUTOMATION_CAMERA_Z];
+				}
+				else {
+					affected_x_autos = autos[AUTOMATION_PROJECTOR_X];
+					affected_y_autos = autos[AUTOMATION_PROJECTOR_Y];
+					affected_z_autos = autos[AUTOMATION_PROJECTOR_Z];
+				}
 				double position = mwindow->edl->local_session->get_selectionstart(1);
 				int64_t track_position = gui->affected_track->to_units(position, 0);
-
-				if(mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA)
-				{
-					affected_x_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_CAMERA_X];
-					affected_y_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_CAMERA_Y];
-					affected_z_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_CAMERA_Z];
+				FloatAuto *prev_x = 0, *next_x = 0;
+				float new_x = affected_x_autos->get_value(track_position, PLAY_FORWARD, prev_x, next_x);
+				FloatAuto *prev_y = 0, *next_y = 0;
+				float new_y = affected_y_autos->get_value(track_position, PLAY_FORWARD, prev_y, next_y);
+				FloatAuto *prev_z = 0, *next_z = 0;
+				float new_z = affected_z_autos->get_value(track_position, PLAY_FORWARD, prev_z, next_z);
+				int zooming = gui->translating_zoom, created;
+				gui->affected_x = (FloatAuto*)gui->cwindow->calculate_affected_auto(
+							affected_x_autos, !zooming, &created, 0);
+				if( created ) {
+					gui->affected_x->set_value(new_x);
+					redraw_canvas = 1;
 				}
-				else
-				{
-					affected_x_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_X];
-					affected_y_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Y];
-					affected_z_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Z];
+				gui->affected_y = (FloatAuto*)gui->cwindow->calculate_affected_auto(
+							affected_y_autos, !zooming, &created, 0);
+				if( created ) {
+					gui->affected_y->set_value(new_y);
+					redraw_canvas = 1;
 				}
-
-
-				if(gui->translating_zoom)
-				{
-					FloatAuto *previous = 0;
-					FloatAuto *next = 0;
-					float new_z = affected_z_autos->get_value(
-						track_position,
-						PLAY_FORWARD,
-						previous,
-						next);
-					gui->affected_z =
-						(FloatAuto*)gui->cwindow->calculate_affected_auto(
-							affected_z_autos, 1, &created, 0);
-					if(created) {
-						gui->affected_z->set_value(new_z);
-						redraw_canvas = 1;
-					}
+				gui->affected_z = (FloatAuto*)gui->cwindow->calculate_affected_auto(
+							affected_z_autos, zooming, &created, 0);
+				if( created ) {
+					gui->affected_z->set_value(new_z);
+					redraw_canvas = 1;
 				}
-				else
-				{
-					FloatAuto *previous = 0;
-					FloatAuto *next = 0;
-					float new_x = affected_x_autos->get_value(
-						track_position,
-						PLAY_FORWARD,
-						previous,
-						next);
-					previous = 0;
-					next = 0;
-					float new_y = affected_y_autos->get_value(
-						track_position,
-						PLAY_FORWARD,
-						previous,
-						next);
-					gui->affected_x =
-						(FloatAuto*)gui->cwindow->calculate_affected_auto(
-							affected_x_autos, 1, &created, 0);
-					if(created) {
-						gui->affected_x->set_value(new_x);
-						redraw_canvas = 1;
-					}
-					gui->affected_y =
-						(FloatAuto*)gui->cwindow->calculate_affected_auto(
-							affected_y_autos, 1, &created, 0);
-					if(created) {
-						gui->affected_y->set_value(new_y);
-						redraw_canvas = 1;
-					}
-				}
-
 				calculate_origin();
 
-				if(gui->translating_zoom)
-				{
+				if( gui->translating_zoom ) {
 					gui->center_z = gui->affected_z->get_value();
 				}
-				else
-				{
+				else {
 					gui->center_x = gui->affected_x->get_value();
 					gui->center_y = gui->affected_y->get_value();
 				}
@@ -3080,41 +3037,36 @@ int CWindowCanvas::test_bezier(int button_press,
 				redraw = 1;
 			}
 
-			if(gui->translating_zoom)
-			{
-				last_center_z = gui->affected_z->get_value();
+			float x_val = gui->affected_x->get_value();
+			float y_val = gui->affected_y->get_value();
+			float z_val = gui->affected_z->get_value();
+
+			if( gui->translating_zoom ) {
 				float z = gui->center_z + (cursor_y - gui->y_origin) / 128;
 				if( z < 0 ) z = 0;
-				if(!EQUIV(last_center_z, z))
-				{
+				if( !EQUIV(z_val, z) ) {
 					rerender = 1;
 					redraw = 1;
 					redraw_canvas = 1;
 				}
 				gui->affected_z->set_value(z);
 			}
-			else
-			{
-				last_center_x = gui->affected_x->get_value();
-				last_center_y = gui->affected_y->get_value();
+			else {
 				float dx = cursor_x - gui->x_origin;
 				float dy = cursor_y - gui->y_origin;
 // follow image, not camera
-				if(gui->current_operation == CWINDOW_CAMERA ) {
-					dx = -dx;  dy = -dy;
+				if( gui->current_operation == CWINDOW_CAMERA ) {
+					dx = -dx / z_val;  dy = -dy / z_val;
 				}
 				float x = gui->center_x + dx;
 				float y = gui->center_y + dy;
 				gui->affected_x->set_value(x);
 				gui->affected_y->set_value(y);
-				if( !EQUIV(last_center_x, x) || !EQUIV(last_center_y, y) )
-				{
+				if( !EQUIV(x_val, x) || !EQUIV(y_val, y) ) {
 					rerender = 1;
 					redraw = 1;
 					redraw_canvas = 1;
 				}
-				gui->affected_x->set_value(x);
-				gui->affected_y->set_value(y);
 			}
 		}
 

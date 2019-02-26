@@ -932,9 +932,9 @@ int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2
 }
 
 
-void MWindowGUI::show_message(const char *message, int color)
+void MWindowGUI::show_message(const char *message, int msg_color, int bar_color)
 {
-	statusbar->show_message(message, color);
+	statusbar->show_message(message, msg_color, bar_color);
 }
 
 void MWindowGUI::update_default_message()

@@ -167,7 +167,7 @@ audiofile.cfg_params?=--enable-shared=no
 audiofile.mak_params?=LIBS="-lm -lstdc++"
 flac.cfg_params?= --enable-shared=no
 flac.cflags?="$(call inc_path,libogg,include) $(call ld_path,libogg,src/.libs)"
-giflib.cfg_params?=--enable-shared=no
+giflib.cfg_params=echo "exec true" > ./configure; chmod +x ./configure;
 ilmbase.cfg_vars= CFLAGS+=" -Wno-narrowing" CXXFLAGS+=" -Wno-narrowing"
 ilmbase.cfg_params?=--prefix=$(call bld_path,ilmbase,usr)
 ilmbase.mak_params?=; $(MAKE) -C ilmbase* install; cd $(call bld_path,ilmbase); ln -sf lib64 usr/lib

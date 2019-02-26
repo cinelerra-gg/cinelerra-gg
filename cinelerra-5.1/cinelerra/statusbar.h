@@ -34,7 +34,7 @@ public:
 	StatusBar(MWindow *mwindow, MWindowGUI *gui);
 	~StatusBar();
 
-	void show_message(const char *text, int color=-1);
+	void show_message(const char *text, int msg_color=-1, int box_color=-1);
 	void update_default_message();
 	void reset_default_message();
 	void default_message();

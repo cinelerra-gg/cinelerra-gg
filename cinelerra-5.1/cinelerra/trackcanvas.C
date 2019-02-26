@@ -5471,11 +5471,11 @@ double TrackCanvas::time_visible()
 }
 
 
-void TrackCanvas::show_message(Auto *current, int color, const char *fmt, ...)
+void TrackCanvas::show_message(Auto *current, int box_color, const char *fmt, ...)
 {
 	char string[BCTEXTLEN];
 	char *cp = string, *ep = cp + sizeof(string)-1;
-	if( color >= 0 ) {
+	if( box_color >= 0 ) {
 		cp += snprintf(string, ep-cp, "%-8s ",
 			FloatAuto::curve_name(((FloatAuto*)current)->curve_mode));
 	}
@@ -5491,7 +5491,7 @@ void TrackCanvas::show_message(Auto *current, int color, const char *fmt, ...)
 	va_start(ap, fmt);
 	vsnprintf(cp, ep-cp, fmt, ap);
 	va_end(ap);
-	gui->show_message(string, color);
+	gui->show_message(string, -1, box_color);
 }
 
 // Patchbay* TrackCanvas::get_patchbay()

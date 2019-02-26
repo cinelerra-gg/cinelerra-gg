@@ -564,7 +564,7 @@ clean:
 
 
 tags:
-	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-*
+	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-* ../thirdparty/giflib-*
 
 
 $(OBJDIR)/%.o:		%.C

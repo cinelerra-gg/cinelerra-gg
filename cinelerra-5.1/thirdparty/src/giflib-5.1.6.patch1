@@ -1,0 +1,13 @@
+--- a/Makefile	2019-02-12 07:26:13.000000000 -0700
++++ b/Makefile	2019-02-24 17:51:20.557618626 -0700
+@@ -7,8 +7,8 @@
+ 
+ #
+ CC    = gcc
+-OFLAGS = -O0 -g
+-#OFLAGS  = -O2 -fwhole-program
++#OFLAGS = -O0 -g
++OFLAGS  = -O2 -g
+ CFLAGS  = -std=gnu99 -fPIC -Wall -Wno-format-truncation $(OFLAGS)
+ LDFLAGS = -g
+ 

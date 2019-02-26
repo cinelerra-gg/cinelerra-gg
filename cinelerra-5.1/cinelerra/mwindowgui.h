@@ -164,7 +164,7 @@ public:
 	int menu_w();
 	int menu_h();
 // Draw on the status bar only.
-	void show_message(const char *message, int color=-1);
+	void show_message(const char *message, int msg_color=-1, int box_color=-1);
 	void update_default_message();
 	void reset_default_message();
 	void default_message();

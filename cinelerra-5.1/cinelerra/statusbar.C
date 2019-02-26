@@ -103,13 +103,13 @@ void StatusBar::resize_event()
 	flash(0);
 }
 
-void StatusBar::show_message(const char *text, int color)
+void StatusBar::show_message(const char *text, int msg_color, int box_color)
 {
 	int mx = mwindow->theme->mstatus_message_x;
 	int my = mwindow->theme->mstatus_message_y;
 	int tx = status_text->get_x(), th = status_text->get_h();
-	if( color >= 0 ) {
-		set_color(color);
+	if( box_color >= 0 ) {
+		set_color(box_color);
 		int bb = th/4, bh = th - bb*2;
 		draw_box(mx+bb,my+bb, bh,bh);
 		flash(mx,my, th,th);  mx += 5;
@@ -121,10 +121,12 @@ void StatusBar::show_message(const char *text, int color)
 		flash(mx,my, th,th);
 		status_text->reposition_window(mx, my);
 	}
-	color = mwindow->theme->message_normal;
-	status_text->set_color(color);
+	if( msg_color < 0 )
+		msg_color = mwindow->theme->message_normal;
+	status_text->set_color(msg_color);
 	status_text->update(text);
 }
+
 void StatusBar::reset_default_message()
 {
 	status_color = -1;

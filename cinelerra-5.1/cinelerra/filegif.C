@@ -31,16 +31,6 @@
 
 
 static int gif_err = 0;
-#define GIF_ERR ,&gif_err
-#define GifErrorString(s) Gif##ErrorString(gif_err)
-#define GifLastError(s) gif_err
-
-const char *gifErrorString()
-{
-	static char msg[32];
-	snprintf(msg, sizeof(msg), "Gif Error %d", GifLastError());
-	return msg;
-}
 
 FileGIF::FileGIF(Asset *asset, File *file)
  : FileList(asset, file, "GIFLIST", ".gif", FILE_GIF, FILE_GIF_LIST)
@@ -113,9 +103,9 @@ int FileGIF::read_frame_header(char *path)
 static int input_func(GifFileType *gif_file, GifByteType *buffer, int bytes)
 {
 	FileGIF *file = (FileGIF*)gif_file->UserData;
-	if(file->offset + bytes > file->size) bytes = file->size - file->offset;
-	if(bytes > 0)
-	{
+	if( file->offset + bytes > file->size )
+		bytes = file->size - file->offset;
+	if( bytes > 0 ) {
 		memcpy(buffer, file->data + file->offset, bytes);
 		file->offset += bytes;
 	}
@@ -128,156 +118,108 @@ int FileGIF::read_frame(VFrame *output, VFrame *input)
 	offset = 0;
 	size = input->get_compressed_size();
 
-	GifFileType *gif_file;
-	GifRowType *gif_buffer;
-	gif_file = DGifOpen(this, input_func GIF_ERR);
-
-
-	if(gif_file == 0)
-	{
-		eprintf("FileGIF::read_frame %d: %s\n", __LINE__, GifErrorString());
+	GifFileType *gif_file = DGifOpen(this, input_func, &gif_err);
+	if( !gif_file ) {
+		eprintf("FileGIF::read_frame %d: %s\n", __LINE__, GifErrorString(gif_err));
 		return 1;
 	}
-	gif_buffer = (GifRowType*)malloc(sizeof(GifRowType) * gif_file->SHeight);
+
+	GifRowType *gif_buffer = (GifRowType*)malloc(sizeof(GifRowType) * gif_file->SHeight);
 	int row_size = gif_file->SWidth * sizeof(GifPixelType);
 	gif_buffer[0] = (GifRowType)malloc(row_size);
 
-	for(int i = 0; i < gif_file->SWidth; i++)
-	{
+	for( int i=0; i<gif_file->SWidth; ++i )
 		gif_buffer[0][i] = gif_file->SBackGroundColor;
-	}
-
-	for(int i = 0; i < gif_file->SHeight; i++)
-	{
+	for( int i=0; i<gif_file->SHeight; ++i ) {
 		gif_buffer[i] = (GifRowType)malloc(row_size);
 		memcpy(gif_buffer[i], gif_buffer[0], row_size);
 	}
 
+	int ret = 0, done = 0;
 	GifRecordType record_type;
-	do
-	{
-		if(DGifGetRecordType(gif_file, &record_type) == GIF_ERROR)
-		{
-			eprintf("FileGIF::read_frame %d: %s\n", __LINE__, GifErrorString());
+	while( !ret && !done ) {
+		if( DGifGetRecordType(gif_file, &record_type) == GIF_ERROR ) {
+			eprintf("FileGIF::read_frame %d: %s\n", __LINE__, GifErrorString(gif_err));
+			ret = 1;
 			break;
 		}
 
-		switch(record_type)
-		{
-			case IMAGE_DESC_RECORD_TYPE:
-			{
-				if(DGifGetImageDesc(gif_file) == GIF_ERROR)
-				{
-					eprintf("FileGIF::read_frame %d: %s\n", __LINE__, GifErrorString());
-					break;
-				}
-
-				int row = gif_file->Image.Top;
-				int col = gif_file->Image.Left;
-				int width = gif_file->Image.Width;
-				int height = gif_file->Image.Height;
-				if(gif_file->Image.Left + gif_file->Image.Width > gif_file->SWidth ||
-		 		  gif_file->Image.Top + gif_file->Image.Height > gif_file->SHeight)
-				{
-					DGifCloseFile(gif_file GIF_ERR);
-					for(int k = 0; k < gif_file->SHeight; k++)
-					{
-						free(gif_buffer[k]);
-					}
-					free(gif_buffer);
-					return 1;
-				}
-
-				if (gif_file->Image.Interlace)
-				{
-				    static int InterlacedOffset[] = { 0, 4, 2, 1 };
-				    static int InterlacedJumps[] = { 8, 8, 4, 2 };
-/* Need to perform 4 passes on the images: */
-		    		for (int i = 0; i < 4; i++)
-					{
-						for (int j = row + InterlacedOffset[i];
-							j < row + height;
-							j += InterlacedJumps[i])
-						{
-			    			if (DGifGetLine(gif_file,
-								&gif_buffer[j][col],
-								width) == GIF_ERROR)
-							{
-								DGifCloseFile(gif_file GIF_ERR);
-								for(int k = 0; k < gif_file->SHeight; k++)
-								{
-									free(gif_buffer[k]);
-								}
-								free(gif_buffer);
-								return 1;
-			    			}
-						}
-					}
-				}
-				else
-				{
-		    		for (int i = 0; i < height; i++)
-					{
-						if (DGifGetLine(gif_file, &gif_buffer[row++][col],
-							width) == GIF_ERROR)
-						{
-							DGifCloseFile(gif_file GIF_ERR);
-							for(int k = 0; k < gif_file->SHeight; k++)
-							{
-								free(gif_buffer[k]);
-							}
-							free(gif_buffer);
-			    			return 1;
-						}
-		    		}
-				}
-
+		switch( record_type ) {
+		case IMAGE_DESC_RECORD_TYPE: {
+			if( DGifGetImageDesc(gif_file) == GIF_ERROR ) {
+				eprintf("FileGIF::read_frame %d: %s\n", __LINE__, GifErrorString(gif_err));
 				break;
 			}
-			default:
-				break;
+			int row = gif_file->Image.Top;
+			int col = gif_file->Image.Left;
+			int width = gif_file->Image.Width;
+			int height = gif_file->Image.Height;
+			int ret = 0;
+			if( gif_file->Image.Left + gif_file->Image.Width > gif_file->SWidth ||
+	 		    gif_file->Image.Top + gif_file->Image.Height > gif_file->SHeight )
+				ret = 1;
+			if( !ret && gif_file->Image.Interlace ) {
+				static int InterlacedOffset[] = { 0, 4, 2, 1 };
+				static int InterlacedJumps[] = { 8, 8, 4, 2 };
+/* Need to perform 4 passes on the images: */
+				for( int i=0; i<4; ++i ) {
+					int j = row + InterlacedOffset[i];
+					for( ; !ret && j<row + height; j+=InterlacedJumps[i] ) {
+			    			if( DGifGetLine(gif_file, &gif_buffer[j][col], width) == GIF_ERROR )
+							ret = 1;
+					}
+				}
+			}
+			else {
+		    		for( int i=0; !ret && i<height; ++i ) {
+					if (DGifGetLine(gif_file, &gif_buffer[row++][col], width) == GIF_ERROR)
+						ret = 1;
+				}
+			}
+			break; }
+		case EXTENSION_RECORD_TYPE: {
+			int ExtFunction = 0;
+			GifByteType *ExtData = 0;
+			if( DGifGetExtension(gif_file, &ExtFunction, &ExtData) == GIF_ERROR )
+				ret = 1;
+			while( !ret && ExtData ) {
+				if( DGifGetExtensionNext(gif_file, &ExtData) == GIF_ERROR )
+					ret = 1;
+			}
+			break; }
+		case TERMINATE_RECORD_TYPE:
+			done = 1;
+			break;
+		default:
+			break;
 		}
-
-	} while(record_type != TERMINATE_RECORD_TYPE);
-
-
-	//int background = gif_file->SBackGroundColor;
-	ColorMapObject *color_map = (gif_file->Image.ColorMap
-		? gif_file->Image.ColorMap
-		: gif_file->SColorMap);
-	if(!color_map)
-	{
-		DGifCloseFile(gif_file GIF_ERR);
-		for(int k = 0; k < gif_file->SHeight; k++)
-		{
-			free(gif_buffer[k]);
-		}
-		free(gif_buffer);
-		return 1;
 	}
 
-	int screen_width = gif_file->SWidth;
-	int screen_height = gif_file->SHeight;
-	for(int i = 0; i < screen_height; i++)
-	{
-		GifRowType gif_row = gif_buffer[i];
-		unsigned char *out_ptr = output->get_rows()[i];
-		for(int j = 0; j < screen_width; j++)
-		{
-			GifColorType *color_map_entry = &color_map->Colors[gif_row[j]];
-			*out_ptr++ = color_map_entry->Red;
-			*out_ptr++ = color_map_entry->Green;
-			*out_ptr++ = color_map_entry->Blue;
+	ColorMapObject *color_map = 0;
+	if( !ret ) {
+		//int background = gif_file->SBackGroundColor;
+		color_map = gif_file->Image.ColorMap;
+		if( !color_map ) color_map = gif_file->SColorMap;
+		if( !color_map ) ret = 1;
+	}
+	if( !ret ) {
+		int screen_width = gif_file->SWidth;
+		int screen_height = gif_file->SHeight;
+		for( int i=0; i<screen_height; ++i ) {
+			GifRowType gif_row = gif_buffer[i];
+			unsigned char *out_ptr = output->get_rows()[i];
+			for( int j=0; j<screen_width; ++j ) {
+				GifColorType *color_map_entry = &color_map->Colors[gif_row[j]];
+				*out_ptr++ = color_map_entry->Red;
+				*out_ptr++ = color_map_entry->Green;
+				*out_ptr++ = color_map_entry->Blue;
+			}
 		}
 	}
-
-
-	for(int k = 0; k < gif_file->SHeight; k++)
-	{
+	for( int k=0; k<gif_file->SHeight; ++k )
 		free(gif_buffer[k]);
-	}
 	free(gif_buffer);
-	DGifCloseFile(gif_file GIF_ERR);
-	return 0;
+	DGifCloseFile(gif_file, &gif_err);
+	return ret;
 }
 

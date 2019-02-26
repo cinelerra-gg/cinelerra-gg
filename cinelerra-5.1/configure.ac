@@ -225,10 +225,9 @@ PKG_3RD([flac],[auto],
   [ include ])
 
 PKG_3RD([giflib],[yes],
-  [giflib-5.1.4],
-  [ lib/.libs/libgif.a \
-    util/libgetarg.a ],
-  [ lib ])
+  [giflib-5.1.6],
+  [ libgif.a ],
+  [ . ])
 
 PKG_3RD([ilmbase],[auto],
   [ilmbase-2.2.1],
@@ -436,29 +435,36 @@ AC_DEFUN([REQUIRE_PROG], [
  fi
 ])
 
-# Checks for programs.
+## arch dep tests
+ARCH=`uname -m`
+I86=`expr "x$ARCH" : 'xi[346]86.*'`
+X86=`expr "x$ARCH" : 'x..._64*'`
 
-REQUIRE_PROG(NASM, [nasm])
-REQUIRE_PROG(YASM, [yasm])
+if test "x$I86$X86" != "x00" ; then
+  # Checks for ix86 programs.
+  REQUIRE_PROG(NASM, [nasm])
+  # libx264 nasm fix
+  AC_MSG_CHECKING([nasm x264 compatible])
+  echo "vmovdqa32 [[eax]]{k1}{z}, zmm0" > conftest.asm
+  nasm conftest.asm -o conftest.o > /dev/null 2>&1
+  if test $? != 0 ; then
+   AC_MSG_RESULT([no])
+   AC_MSG_WARN([libx264 built without assembly code])
+   X264_CFG_PARAMS="$X264_CFG_PARAMS --disable-asm"
+  else
+   AC_MSG_RESULT([yes])
+  fi
+  rm -f conftest.asm conftest.o
+  REQUIRE_PROG(YASM, [yasm])
+fi
+## end arch dep tests
+
 REQUIRE_PROG(OBJCOPY, [objcopy])
 if test "x$FATAL_ERROR" != "x"; then
  AC_MSG_ERROR("fatal eror.")
 fi
 CHECK_PROG(PACTL, [pactl])
 WANT_PACTL=$PROG_PACTL
-
-# libx264 nasm fix
-AC_MSG_CHECKING([nasm x264 compatible])
-echo "vmovdqa32 [[eax]]{k1}{z}, zmm0" > conftest.asm
-nasm conftest.asm -o conftest.o > /dev/null 2>&1
-if test $? != 0 ; then
- AC_MSG_RESULT([no])
- AC_MSG_WARN([libx264 built without assembly code])
- X264_CFG_PARAMS="$X264_CFG_PARAMS --disable-asm"
-else
- AC_MSG_RESULT([yes])
-fi
-rm -f conftest.asm conftest.o
 
 AC_CHECK_DECL([X_HAVE_UTF8_STRING],,[no_utf=yes],[#include <X11/Xlib.h>])
 if test "$no_utf" = "yes"; then
