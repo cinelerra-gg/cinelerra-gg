@@ -1,5 +1,6 @@
+diff -ur a/Makefile b/Makefile
 --- a/Makefile	2019-02-12 07:26:13.000000000 -0700
-+++ b/Makefile	2019-02-24 17:51:20.557618626 -0700
++++ b/Makefile	2019-02-25 18:33:26.360039018 -0700
 @@ -7,8 +7,8 @@
  
  #
@@ -7,7 +8,16 @@
 -OFLAGS = -O0 -g
 -#OFLAGS  = -O2 -fwhole-program
 +#OFLAGS = -O0 -g
-+OFLAGS  = -O2 -g
++OFLAGS  = -O2
  CFLAGS  = -std=gnu99 -fPIC -Wall -Wno-format-truncation $(OFLAGS)
  LDFLAGS = -g
+ 
+@@ -61,7 +61,7 @@
+ LDLIBS=libgif.a -lm
+ 
+ all: libgif.so libgif.a $(UTILS)
+-	$(MAKE) -C doc
++#	$(MAKE) -C doc
+ 
+ $(UTILS):: libgif.a
  
