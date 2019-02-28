@@ -113,28 +113,26 @@ int FileList::open_file(int rd, int wr)
 			if(stream)
 			{
 				char string[BCTEXTLEN];
-				(void)fread(string, strlen(list_prefix), 1, stream);
+				int len = strlen(list_prefix);
+				int ret = fread(string, 1, strlen(list_prefix), stream);
 				fclose(stream);
-
-				if(!strncasecmp(string, list_prefix, strlen(list_prefix)))
-				{
-
-//printf("FileList::open_file %d\n", __LINE__);
+				result = len == ret ? 0 : 1;
+				if( !result && !strncasecmp(string, list_prefix, len)) {
 					asset->format = list_type;
-
-// Open index here or get frame size from file.
 					result = read_list_header();
-//printf("FileList::open_file %d %s\n", __LINE__, path_list.values[0]);
-					if(!result) result = read_frame_header(path_list.values[0]);
+					if( !result )
+						result = read_frame_header(path_list.values[0]);
+				}
+				else if( !result && frame_type != FILE_UNKNOWN ) {
+					asset->format = frame_type;
+					result = read_frame_header(asset->path);
+					asset->video_length = -1;
 				}
 				else
-				{
-//printf("FileList::open_file 2\n", asset->use_header);
-//printf("FileList::open_file %d\n", __LINE__);
-					asset->format = frame_type;
+					result = 1;
+				if( !result ) {
 					int width = asset->width;
 					int height = asset->height;
-					result = read_frame_header(asset->path);
 					asset->actual_width = asset->width;
 					if( width ) asset->width = width;
 					asset->actual_height = asset->height;
@@ -142,9 +140,7 @@ int FileList::open_file(int rd, int wr)
 					asset->layers = 1;
 					if( !asset->frame_rate )
 						asset->frame_rate = 1;
-					asset->video_length = -1;
 				}
-				result = 0;
 			}
 			else
 				eprintf(_("Error while opening \"%s\" for reading. \n%m\n"), asset->path);

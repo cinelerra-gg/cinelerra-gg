@@ -122,6 +122,7 @@ class C41Window : public PluginClientWindow
 {
 public:
 	C41Window(C41Effect *client);
+	void create_objects();
 
 	void update();
 	void update_magic();

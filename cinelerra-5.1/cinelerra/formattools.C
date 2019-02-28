@@ -375,9 +375,8 @@ void FormatTools::update_extension()
 				extension_ptr++;
 			}
 
-			if(*ptr1 == 0 &&
-				*extension_ptr != 0 &&
-				*extension_ptr != '/')
+			if( (!*ptr1 && (*extension_ptr && *extension_ptr != '/')) ||
+			    (*ptr1 && (!*extension_ptr || *extension_ptr == '/')) )
 				need_extension = 1;
 		}
 

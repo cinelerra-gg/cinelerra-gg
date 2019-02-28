@@ -415,8 +415,11 @@ int File::probe()
 			return FILE_OK;
 		}
 		if( !strcmp(pref->name,"GIF") ) { // GIF file
-			if( !FileGIF::check_sig(this->asset)) continue;
-			file = new FileGIF(this->asset, this);
+			if( FileGIFList::check_sig(this->asset) )
+				file = new FileGIFList(this->asset, this);
+			else if( FileGIF::check_sig(this->asset) )
+				file = new FileGIF(this->asset, this);
+			else continue;
 			return FILE_OK;
 		}
 #ifdef HAVE_EXR
@@ -526,9 +529,12 @@ int File::open_file(Preferences *preferences,
 		break;
 
 	case FILE_GIF:
-	case FILE_GIF_LIST:
 		file = new FileGIF(this->asset, this);
 		break;
+	case FILE_GIF_LIST:
+		file = new FileGIFList(this->asset, this);
+		break;
+
 #ifdef HAVE_OPENEXR
 	case FILE_EXR:
 	case FILE_EXR_LIST:
@@ -1149,6 +1155,7 @@ int File::read_frame(VFrame *frame, int is_thread)
 
 		if( !temp_frame ) {
 			temp_frame = new VFrame(asset->width, asset->height, supported_colormodel, 0);
+			temp_frame->clear_frame();
 		}
 
 //			printf("File::read_frame %d\n", __LINE__);
@@ -1215,6 +1222,8 @@ int File::strtoformat(const char *format)
 	if( !strcasecmp(format, _(EXR_NAME)) ) return FILE_EXR;
 	if( !strcasecmp(format, _(EXR_LIST_NAME)) ) return FILE_EXR_LIST;
 	if( !strcasecmp(format, _(FLAC_NAME)) ) return FILE_FLAC;
+	if( !strcasecmp(format, _(GIF_NAME)) ) return FILE_GIF;
+	if( !strcasecmp(format, _(GIF_LIST_NAME)) ) return FILE_GIF_LIST;
 	if( !strcasecmp(format, _(CR2_NAME)) ) return FILE_CR2;
 	if( !strcasecmp(format, _(CR2_LIST_NAME)) ) return FILE_CR2_LIST;
 	if( !strcasecmp(format, _(MPEG_NAME)) ) return FILE_MPEG;
@@ -1249,6 +1258,8 @@ const char* File::formattostr(int format)
 	case FILE_CR2:		return _(CR2_NAME);
 	case FILE_CR2_LIST:	return _(CR2_LIST_NAME);
 	case FILE_FLAC:		return _(FLAC_NAME);
+	case FILE_GIF:		return _(GIF_NAME);
+	case FILE_GIF_LIST:	return _(GIF_LIST_NAME);
 	case FILE_EXR:		return _(EXR_NAME);
 	case FILE_EXR_LIST:	return _(EXR_LIST_NAME);
 #ifdef HAVE_LIBZMPEG
@@ -1397,6 +1408,8 @@ int File::renders_video(int format)
 	case FILE_CR2_LIST:
 	case FILE_EXR:
 	case FILE_EXR_LIST:
+	case FILE_GIF:
+	case FILE_GIF_LIST:
 	case FILE_PNG:
 	case FILE_PNG_LIST:
 	case FILE_PPM:
@@ -1468,19 +1481,21 @@ const char* File::get_tag(int format)
 	case FILE_RAWDV:        return "dv";
 	case FILE_DB:           return "db";
 	case FILE_EXR:          return "exr";
-	case FILE_EXR_LIST:     return "exr";
+	case FILE_EXR_LIST:     return "exrs";
 	case FILE_FLAC:         return "flac";
 	case FILE_JPEG:         return "jpg";
-	case FILE_JPEG_LIST:    return "jpg";
+	case FILE_JPEG_LIST:    return "jpgs";
+	case FILE_GIF:          return "gif";
+	case FILE_GIF_LIST:     return "gifs";
 	case FILE_PCM:          return "pcm";
 	case FILE_PNG:          return "png";
-	case FILE_PNG_LIST:     return "png";
+	case FILE_PNG_LIST:     return "pngs";
 	case FILE_PPM:          return "ppm";
-	case FILE_PPM_LIST:     return "ppm";
+	case FILE_PPM_LIST:     return "ppms";
 	case FILE_TGA:          return "tga";
-	case FILE_TGA_LIST:     return "tga";
+	case FILE_TGA_LIST:     return "tgas";
 	case FILE_TIFF:         return "tif";
-	case FILE_TIFF_LIST:    return "tif";
+	case FILE_TIFF_LIST:    return "tifs";
 	case FILE_VMPEG:        return "m2v";
 	case FILE_WAV:          return "wav";
 	case FILE_FFMPEG:       return "ffmpg";

@@ -104,6 +104,8 @@ N_("EXR")
 N_("EXR Sequence")
 N_("FFMPEG")
 N_("FLAC")
+N_("GIF")
+N_("GIF Sequence")
 N_("JPEG")
 N_("JPEG Sequence")
 N_("Microsoft WAV")
@@ -139,6 +141,8 @@ N_("Unknown sound")
 #define EXR_NAME		"EXR"
 #define FFMPEG_NAME		"FFMPEG"
 #define FLAC_NAME		"FLAC"
+#define GIF_NAME		"GIF"
+#define GIF_LIST_NAME		"GIF Sequence"
 #define JPEG_LIST_NAME		"JPEG Sequence"
 #define JPEG_NAME		"JPEG"
 #define MPEG_NAME		"MPEG Stream"	// For capture only

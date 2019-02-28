@@ -227,8 +227,12 @@ C41Window::C41Window(C41Effect *plugin)
 	plugin->config.window_w, plugin->config.window_h,
 	500, 510, 1)
 {
-	int x = 10, y = 10;
+}
 
+void C41Window::create_objects()
+{
+	int x = 10, y = 10;
+	C41Effect *plugin = (C41Effect *)client;
 	add_subwindow(active = new C41Enable(plugin,
 		&plugin->config.active, x, y, _("Activate processing")));
 	y += 40;

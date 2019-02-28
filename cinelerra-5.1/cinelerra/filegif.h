@@ -22,13 +22,16 @@
 #ifndef FILEGIF_H
 #define FILEGIF_H
 
+#include "arraylist.h"
 #include "file.inc"
 #include "filelist.h"
 #include "vframe.inc"
 
+#include "gif_lib.h"
+
 // This header file is representative of any single frame file format.
 
-class FileGIF : public FileList
+class FileGIF : public FileBase
 {
 public:
 	FileGIF(Asset *asset, File *file);
@@ -37,14 +40,57 @@ public:
 	static int get_best_colormodel(Asset *asset, int driver);
 	static int check_sig(Asset *asset);
 	int colormodel_supported(int colormodel);
+	int open_file(int rd, int wr);
+	int ropen_path(const char *path);
+	int wopen_path(const char *path);
+	int wopen_data(VFrame *frame);
+	int open_gif();
+	int close_file();
+	int set_video_position(int64_t pos);
 
 	int read_frame_header(char *path);
-	int read_frame(VFrame *output, VFrame *input);
+	int read_frame(VFrame *output);
+	int read_next_image(VFrame *output);
+	int scan_gif();
+	int write_frames(VFrame ***frames, int len);
+	int write_frame(VFrame *frame);
 
-	unsigned char *data;
-	int offset;
-	int size;
+	int64_t offset;
+	int err, eof;
+	int fd, depth, writes;
+	int rows, row_size;
+	FILE *fp;
+	GifFileType *gif_file;
+	GifPixelType *bg;
+	GifRowType *buffer;
+	ArrayList<int64_t> file_pos;
+	VFrame *output;
 };
 
+class FileGIFList : public FileList
+{
+public:
+	FileGIFList(Asset *asset, File *file);
+	~FileGIFList();
+
+	static int check_sig(Asset *asset);
+	int colormodel_supported(int colormodel);
+	int get_best_colormodel(Asset *asset, int driver);
+	int read_frame_header(char *path);
+	int use_path() { return 1; }
+	int read_frame(VFrame *output, char *path);
+	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
+	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
+};
+
+class GIFUnit : public FrameWriterUnit
+{
+public:
+	GIFUnit(FileGIFList *file, FrameWriter *writer);
+	~GIFUnit();
+
+	FileGIFList *file;
+	VFrame *temp_frame;
+};
 
 #endif

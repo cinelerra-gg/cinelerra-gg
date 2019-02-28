@@ -1,0 +1,125 @@
+diff -ur a/quantize.c b/quantize.c
+--- a/quantize.c	2019-02-11 07:43:57.000000000 -0700
++++ b/quantize.c	2019-02-27 17:20:06.369498072 -0700
+# SortRGBAxis is static and not locked, qsort recoded
+# GAErrorToken is also static and not locked, not fixed
+@@ -11,8 +11,9 @@
+ 
+ ******************************************************************************/
+ 
+-#include <stdlib.h>
+ #include <stdio.h>
++#include <stdlib.h>
++
+ #include "gif_lib.h"
+ #include "gif_lib_private.h"
+ 
+@@ -22,8 +23,6 @@
+ #define BITS_PER_PRIM_COLOR 5
+ #define MAX_PRIM_COLOR      0x1f
+ 
+-static int SortRGBAxis;
+-
+ typedef struct QuantizedColorType {
+     GifByteType RGB[3];
+     GifByteType NewColorIndex;
+@@ -31,6 +30,40 @@
+     struct QuantizedColorType *Pnext;
+ } QuantizedColorType;
+ 
++static int QCmpr(QuantizedColorType *a, QuantizedColorType *b, int i)
++{
++	int i0 = i, i1 = i+1, i2 = i+2;
++	if( i1 >= 3 ) i1 -= 3;
++	if( i2 >= 3 ) i2 -= 3;
++	/* sort on all axes of the color space! */
++	int hash_a = (a->RGB[i0] << 16) | (a->RGB[i1] << 8) | (a->RGB[i2] << 0);
++	int hash_b = (b->RGB[i0] << 16) | (b->RGB[i1] << 8) | (b->RGB[i2] << 0);
++	return hash_a - hash_b;
++}
++
++static int QSplit(QuantizedColorType **q, int l, int r, int i)
++{
++	int m;
++	QuantizedColorType *t;
++	for(;;) {
++		while( QCmpr(q[r],q[l], i) >= 0 ) if( ++l == r ) return r;
++		t = q[l];  q[l] = q[r];  q[r] = t;  m = l;  l = r;  r = m;
++		while( QCmpr(q[l],q[r], i) >= 0 ) if( r == --l ) return r;
++		t = q[l];  q[l] = q[r];  q[r] = t;  m = l;  l = r;  r = m;
++	}
++}
++
++static void QSort(QuantizedColorType **q, int ll, int rr, int i)
++{
++	for(;;) {
++		int l = ll+1;  if( l == rr ) return;
++		int r = rr-1;  if( l == r ) return;
++		int m = QSplit(q, l, r, i);
++		QSort(q, ll, m, i);
++		ll = m;
++	}
++}
++
+ typedef struct NewColorMapType {
+     GifByteType RGBMin[3], RGBWidth[3];
+     unsigned int NumEntries; /* # of QuantizedColorType in linked list below */
+@@ -41,7 +74,6 @@
+ static int SubdivColorMap(NewColorMapType * NewColorSubdiv,
+                           unsigned int ColorMapSize,
+                           unsigned int *NewColorMapSize);
+-static int SortCmpRtn(const void *Entry1, const void *Entry2);
+ 
+ /******************************************************************************
+  Quantize high resolution image into lower one. Input image consists of a
+@@ -198,6 +230,7 @@
+                unsigned int ColorMapSize,
+                unsigned int *NewColorMapSize) {
+ 
++    int SortRGBAxis = 0;
+     unsigned int i, j, Index = 0;
+     QuantizedColorType *QuantizedColor, **SortArray;
+ 
+@@ -234,19 +267,7 @@
+              j++, QuantizedColor = QuantizedColor->Pnext)
+             SortArray[j] = QuantizedColor;
+ 
+-	/*
+-	 * Because qsort isn't stable, this can produce differing 
+-	 * results for the order of tuples depending on platform
+-	 * details of how qsort() is implemented.
+-	 *
+-	 * We mitigate this problem by sorting on all three axes rather
+-	 * than only the one specied by SortRGBAxis; that way the instability
+-	 * can only become an issue if there are multiple color indices
+-	 * referring to identical RGB tuples.  Older versions of this 
+-	 * sorted on only the one axis.
+-	 */
+-        qsort(SortArray, NewColorSubdiv[Index].NumEntries,
+-              sizeof(QuantizedColorType *), SortCmpRtn);
++        QSort(SortArray, -1, NewColorSubdiv[Index].NumEntries, SortRGBAxis);
+ 
+         /* Relink the sorted list into one: */
+         for (j = 0; j < NewColorSubdiv[Index].NumEntries - 1; j++)
+@@ -310,21 +331,4 @@
+  Routine called by qsort to compare two entries.
+ *****************************************************************************/
+ 
+-static int
+-SortCmpRtn(const void *Entry1,
+-           const void *Entry2) {
+-	   QuantizedColorType *entry1 = (*((QuantizedColorType **) Entry1));
+-	   QuantizedColorType *entry2 = (*((QuantizedColorType **) Entry2));
+-
+-	   /* sort on all axes of the color space! */
+-	   int hash1 = entry1->RGB[SortRGBAxis] * 256 * 256
+-	   			+ entry1->RGB[(SortRGBAxis+1) % 3] * 256
+-				+ entry1->RGB[(SortRGBAxis+2) % 3];
+-	   int hash2 = entry2->RGB[SortRGBAxis] * 256 * 256
+-	   			+ entry2->RGB[(SortRGBAxis+1) % 3] * 256
+-				+ entry2->RGB[(SortRGBAxis+2) % 3];
+-
+-    return hash1 - hash2;
+-}
+-
+ /* end */
