@@ -139,7 +139,7 @@ int FileList::open_file(int rd, int wr)
 					if( height ) asset->height = height;
 					asset->layers = 1;
 					if( !asset->frame_rate )
-						asset->frame_rate = 1;
+						asset->frame_rate = 10;
 				}
 			}
 			else

@@ -178,9 +178,8 @@ libaom.cfg_vars?=$(call cmake_config,aom-master)
 libaom.cfg_params?= -DENABLE_SHARED=no -DCMAKE_INSTALL_LIBDIR=lib \
  -DCMAKE_INSTALL_PREFIX=$(call bld_path,libaom)/usr/local
 libaom.mak_params?= ; $(MAKE) -C libaom* install
-libwebp.cfg_vars?= ./autogen.sh ;
-libwebp.cfg_params?=--enable-shared=no
-libwebp.mak_params?=; $(MAKE) -C libwebp* install DESTDIR=$(call bld_path,libwebp)
+libwebp.cfg_vars?= mkdir build && cd build && $(call cmake_config,..)
+libwebp.mak_params?= -C build all install DESTDIR=$(call bld_path,libwebp)
 mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,.libs)"
 mjpegtools.mak_params?=; ln -s . $(call bld_path,mjpegtools,utils)/mjpegtools 
 mjpegtools.cfg_params?= --enable-shared=no --without-libsdl --without-v4l

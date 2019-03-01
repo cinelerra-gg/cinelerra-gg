@@ -436,9 +436,9 @@ AC_DEFUN([REQUIRE_PROG], [
 ])
 
 ## arch dep tests
-ARCH=`uname -m`
-I86=`expr "x$ARCH" : 'xi[346]86.*'`
-X86=`expr "x$ARCH" : 'x..._64*'`
+ARCH=[`uname -m`]
+I86=[`expr "x$ARCH" : 'xi[346]86.*'`]
+X86=[`expr "x$ARCH" : 'x..._64*'`]
 
 if test "x$I86$X86" != "x00" ; then
   # Checks for ix86 programs.

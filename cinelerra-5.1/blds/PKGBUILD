@@ -1,7 +1,7 @@
 # Maintainer: goodguy <lists.cinelerra-gg.org>
 pkgname=cin
 pkgver=5.1
-pkgrel=20190131
+pkgrel=20190228
 pkgdesc="Cinelerra git://git.cinelerra-gg.org/goodguy/cinelerra.git ($pkgrel)"
 arch=('x86_64')
 url="https://www.cinelerra-gg.org"

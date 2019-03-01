@@ -171,7 +171,7 @@ int FileGIF::open_gif()
 		if( height ) asset->height = height;
 		asset->layers = 1;
 		if( !asset->frame_rate )
-			asset->frame_rate = 1;
+			asset->frame_rate = 10;
 		asset->video_data = 1;
 		row_size = gif_file->SWidth * sizeof(GifPixelType);
 		bg = (GifRowType)malloc(row_size);
@@ -185,11 +185,6 @@ int FileGIF::open_gif()
 		}
 		result = scan_gif();
 		asset->video_length = file_pos.size();
-	}
-	if( !result ) {
-		asset->video_data = 1;
-		if( !asset->frame_rate )
-			asset->frame_rate = 10;
 	}
 	return result;
 }

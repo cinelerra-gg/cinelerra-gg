@@ -329,10 +329,12 @@ void ResizeAssetThread::update()
 	char string[BCTEXTLEN];
 	asset->width = w;
 	asset->height = h;
+	fwindow->lock_window("ResizeAssetThread::update");
 	sprintf(string, "%d", asset->width);
 	fwindow->win_width->update(string);
 	sprintf(string, "%d", asset->height);
 	fwindow->win_height->update(string);
+	fwindow->unlock_window();
 }
 
 ResizeAssetButton::ResizeAssetButton(AssetEditWindow *fwindow, int x, int y)
