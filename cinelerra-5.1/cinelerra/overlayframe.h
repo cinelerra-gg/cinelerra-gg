@@ -334,7 +334,6 @@ ZTYP(float);	ZTYP(double);
   ALPHA_STORE(out, ofs, mx); \
   out[3] = aclip(a, mx)
 
-
 #define BLEND_SWITCH(FN) \
 	switch( mode ) { \
         case TRANSFER_NORMAL: 		FN(NORMAL); \
@@ -420,6 +419,23 @@ public:
 
 	void process_package(LoadPackage *package);
 	DirectEngine *engine;
+
+	DirectPackage *pkg;
+	int ix, iy, ox, ow;
+	VFrame *output, *input;
+	int mode;
+	float fade;
+
+	void rgb_float();
+	void rgba_float();
+	void rgb888();
+	void yuv888();
+	void rgba8888();
+	void yuva8888();
+	void rgb161616();
+	void yuv161616();
+	void rgba16161616();
+	void yuva16161616();
 };
 
 class NNUnit : public LoadClient
@@ -429,8 +445,25 @@ public:
 	~NNUnit();
 
 	void process_package(LoadPackage *package);
-
 	NNEngine *engine;
+
+	NNPackage *pkg;
+	int ix, iy, ox, ow;
+	VFrame *output, *input;
+	int mode;
+	float fade;
+	int *ly;
+
+	void rgb_float();
+	void rgba_float();
+	void rgb888();
+	void yuv888();
+	void rgba8888();
+	void yuva8888();
+	void rgb161616();
+	void yuv161616();
+	void rgba16161616();
+	void yuva16161616();
 };
 
 class SampleUnit : public LoadClient
@@ -440,8 +473,28 @@ public:
 	~SampleUnit();
 
 	void process_package(LoadPackage *package);
-
 	SampleEngine *engine;
+
+	SamplePackage *pkg;
+	VFrame *voutput, *vinput;
+	int mode;
+	float fade;
+
+	int i1i, i2i, o1i, o2i, oh, kd;
+	float i1f, i2f, o1f, o2f, *k;
+	int *lookup_sx0, *lookup_sx1, *lookup_sk;
+	float *lookup_wacc;
+
+	void rgb_float();
+	void rgba_float();
+	void rgb888();
+	void yuv888();
+	void rgba8888();
+	void yuva8888();
+	void rgb161616();
+	void yuv161616();
+	void rgba16161616();
+	void yuva16161616();
 };
 
 

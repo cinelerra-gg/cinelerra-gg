@@ -11,8 +11,10 @@ all:	$(OUTPUT)
 clean:
 	rm -rf $(OBJDIR) xfer*.[Ch]
 
+BFLAGS:=-Ofast
+
 $(OBJDIR)/%.o:          %.C
-	$(CXX) -I.. `cat $(OBJDIR)/c_flags` -O3 -DMSGQUAL=$* -c $< -o $@
+	$(CXX) -I.. `cat $(OBJDIR)/c_flags` $(BFLAGS) -DMSGQUAL=$* -c $< -o $@
 
 $(OUTPUT): $(patsubst %.C,$(OBJDIR)/%.o,$(wildcard *.C))
 	touch $@

@@ -1,5 +1,5 @@
 
-CFLAGS += -I../ -I$(CINELERRA) -I$(GUICAST) -I../colors -fPIC
+CFLAGS += -I../ -I$(CINELERRA) -I$(GUICAST) -I../colors -fPIC -Ofast
 
 CFLAGS += $(static_incs)
 LFLAGS += $(static_libs)

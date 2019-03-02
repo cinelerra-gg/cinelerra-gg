@@ -1,7 +1,39 @@
 export TOPDIR ?= $(CURDIR)/..
 include $(TOPDIR)/global_config
 
-OBJS := \
+OVERLAYS := \
+	$(OBJDIR)/overlay_direct_rgb161616.o \
+	$(OBJDIR)/overlay_direct_rgb888.o \
+	$(OBJDIR)/overlay_direct_rgba16161616.o \
+	$(OBJDIR)/overlay_direct_rgba8888.o \
+	$(OBJDIR)/overlay_direct_rgba_float.o \
+	$(OBJDIR)/overlay_direct_rgb_float.o \
+	$(OBJDIR)/overlay_direct_yuv161616.o \
+	$(OBJDIR)/overlay_direct_yuv888.o \
+	$(OBJDIR)/overlay_direct_yuva16161616.o \
+	$(OBJDIR)/overlay_direct_yuva8888.o \
+	$(OBJDIR)/overlay_nearest_rgb161616.o \
+	$(OBJDIR)/overlay_nearest_rgb888.o \
+	$(OBJDIR)/overlay_nearest_rgba16161616.o \
+	$(OBJDIR)/overlay_nearest_rgba8888.o \
+	$(OBJDIR)/overlay_nearest_rgba_float.o \
+	$(OBJDIR)/overlay_nearest_rgb_float.o \
+	$(OBJDIR)/overlay_nearest_yuv161616.o \
+	$(OBJDIR)/overlay_nearest_yuv888.o \
+	$(OBJDIR)/overlay_nearest_yuva16161616.o \
+	$(OBJDIR)/overlay_nearest_yuva8888.o \
+	$(OBJDIR)/overlay_sample_rgb161616.o \
+	$(OBJDIR)/overlay_sample_rgb888.o \
+	$(OBJDIR)/overlay_sample_rgba16161616.o \
+	$(OBJDIR)/overlay_sample_rgba8888.o \
+	$(OBJDIR)/overlay_sample_rgba_float.o \
+	$(OBJDIR)/overlay_sample_rgb_float.o \
+	$(OBJDIR)/overlay_sample_yuv161616.o \
+	$(OBJDIR)/overlay_sample_yuv888.o \
+	$(OBJDIR)/overlay_sample_yuva16161616.o \
+	$(OBJDIR)/overlay_sample_yuva8888.o \
+
+OBJS := $(OVERLAYS) \
 	$(OBJDIR)/aattachmentpoint.o \
 	$(OBJDIR)/aautomation.o \
 	$(OBJDIR)/aboutprefs.o \
@@ -187,8 +219,8 @@ OBJS := \
 	$(OBJDIR)/mwindowmove.o \
 	$(OBJDIR)/mwindow.o \
 	$(OBJDIR)/new.o \
-	$(OBJDIR)/overlaydirect.o \
 	$(OBJDIR)/overlayframe.o \
+	$(OBJDIR)/overlaydirect.o \
 	$(OBJDIR)/overlaynearest.o \
 	$(OBJDIR)/overlaysample.o \
 	$(OBJDIR)/packagedispatcher.o \
@@ -564,18 +596,14 @@ clean:
 
 
 tags:
-	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-* ../thirdparty/giflib-*
+	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-*
 
+$(OBJDIR)/fileexr.o:	BFLAGS:= -Wno-deprecated
+$(OBJDIR)/sha1.o:	BFLAGS:= -O3
+$(OVERLAYS):		BFLAGS:= -Ofast -g0
 
 $(OBJDIR)/%.o:		%.C
-	$(CXX) `cat $(OBJDIR)/c_flags` -DMSGQUAL=$* -c $< -o $@
-
-
-$(OBJDIR)/fileexr.o:	fileexr.C
-	$(CXX) `cat $(OBJDIR)/c_flags` -Wno-deprecated -DMSGQUAL=$* -c $< -o $@
-
-$(OBJDIR)/sha1.o:	sha1.C sha1.h
-	$(CXX) `cat $(OBJDIR)/c_flags` -O3 -c $< -o $@
+	$(CXX) `cat $(OBJDIR)/c_flags` $(BFLAGS) -DMSGQUAL=$* -c $< -o $@
 
 #lv2
 ifneq ($(WANT_LV2),no)
@@ -588,7 +616,6 @@ $(OBJDIR)/pluginlv2ui.o $(OBJDIR)/lv2ui.o:
 	$(CXX) `cat $(OBJDIR)/c_flags` $(GTK2_INCS) -DMSGQUAL=$* -c $< -o $@
 
 $(OBJDIR)/shuttle.o:	shuttle.C shuttle_keys.h
-	$(CXX) `cat $(OBJDIR)/c_flags` -DMSGQUAL=$* -c $< -o $@
 shuttle_keys.h: /usr/include/X11/keysymdef.h
 	sed < /usr/include/X11/keysymdef.h > shuttle_keys.h -f shuttle.sed
 

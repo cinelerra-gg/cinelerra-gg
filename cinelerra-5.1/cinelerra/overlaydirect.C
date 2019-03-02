@@ -1,48 +1,7 @@
 #include "overlayframe.h"
+#include "overlaydirect.h"
 
 /* Direct translate / blend **********************************************/
-
-#define XBLEND(FN, temp_type, type, max, components, ofs, round) { \
-	temp_type opcty = fade * max + round, trnsp = max - opcty; \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
-	ix *= components;  ox *= components; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) { \
-		type* in_row = input_rows[i + iy] + ix; \
-		type* output = output_rows[i] + ox; \
-		for(int j = 0; j < ow; j++) { \
-			if( components == 4 ) { \
-				temp_type r, g, b, a; \
-				ALPHA4_BLEND(FN, temp_type, in_row, output, max, ofs, ofs, round); \
-				ALPHA4_STORE(output, ofs, max); \
-			} \
-			else { \
-				temp_type r, g, b; \
-				ALPHA3_BLEND(FN, temp_type, in_row, output, max, ofs, ofs, round); \
-				ALPHA3_STORE(output, ofs, max); \
-			} \
-			in_row += components;  output += components; \
-		} \
-	} \
-	break; \
-}
-
-#define XBLEND_ONLY(FN) { \
-	switch(input->get_color_model()) { \
-	case BC_RGB_FLOAT:	XBLEND(FN, z_float,   z_float,    1.f,    3, 0,      0.f); \
-	case BC_RGBA_FLOAT:	XBLEND(FN, z_float,   z_float,    1.f,    4, 0,      0.f); \
-	case BC_RGB888:		XBLEND(FN, z_int32_t, z_uint8_t,  0xff,   3, 0,      .5f); \
-	case BC_YUV888:		XBLEND(FN, z_int32_t, z_uint8_t,  0xff,   3, 0x80,   .5f); \
-	case BC_RGBA8888:	XBLEND(FN, z_int32_t, z_uint8_t,  0xff,   4, 0,      .5f); \
-	case BC_YUVA8888:	XBLEND(FN, z_int32_t, z_uint8_t,  0xff,   4, 0x80,   .5f); \
-	case BC_RGB161616:	XBLEND(FN, z_int64_t, z_uint16_t, 0xffff, 3, 0,      .5f); \
-	case BC_YUV161616:	XBLEND(FN, z_int64_t, z_uint16_t, 0xffff, 3, 0x8000, .5f); \
-	case BC_RGBA16161616:	XBLEND(FN, z_int64_t, z_uint16_t, 0xffff, 4, 0,      .5f); \
-	case BC_YUVA16161616:	XBLEND(FN, z_int64_t, z_uint16_t, 0xffff, 4, 0x8000, .5f); \
-	} \
-	break; \
-}
 
 DirectPackage::DirectPackage()
 {
@@ -60,21 +19,29 @@ DirectUnit::~DirectUnit()
 
 void DirectUnit::process_package(LoadPackage *package)
 {
-	DirectPackage *pkg = (DirectPackage*)package;
-
-	VFrame *output = engine->output;
-	VFrame *input = engine->input;
-	int mode = engine->mode;
-	float fade =
-		BC_CModels::has_alpha(input->get_color_model()) &&
+	pkg = (DirectPackage*)package;
+	output = engine->output;
+	input = engine->input;
+	mode = engine->mode;
+	fade = BC_CModels::has_alpha(input->get_color_model()) &&
 		mode == TRANSFER_REPLACE ? 1.f : engine->alpha;
+	ix = engine->in_x1;
+	ox = engine->out_x1;
+	ow = engine->out_x2 - ox;
+	iy = engine->in_y1 - engine->out_y1;
 
-	int ix = engine->in_x1;
-	int ox = engine->out_x1;
-	int ow = engine->out_x2 - ox;
-	int iy = engine->in_y1 - engine->out_y1;
-
-	BLEND_SWITCH(XBLEND_ONLY);
+	switch(input->get_color_model()) {
+	case BC_RGB_FLOAT:	rgb_float();	break;
+	case BC_RGBA_FLOAT:	rgba_float();	break;
+	case BC_RGB888:		rgb888();	break;
+	case BC_YUV888:		yuv888();	break;
+	case BC_RGBA8888:	rgba8888();	break;
+	case BC_YUVA8888:	yuva8888();	break;
+	case BC_RGB161616:	rgb161616();	break;
+	case BC_YUV161616:	yuv161616();	break;
+	case BC_RGBA16161616:	rgba16161616();	break;
+	case BC_YUVA16161616:	yuva16161616();  break;
+	}
 }
 
 DirectEngine::DirectEngine(int cpus)

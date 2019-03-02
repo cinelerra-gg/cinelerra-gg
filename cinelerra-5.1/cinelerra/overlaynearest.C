@@ -1,50 +1,7 @@
 #include "overlayframe.h"
+#include "overlaynearest.h"
 
 /* Nearest Neighbor scale / translate / blend ********************/
-
-#define XBLEND_3NN(FN, temp_type, type, max, components, ofs, round) { \
-	temp_type opcty = fade * max + round, trnsp = max - opcty; \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
-	ox *= components; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) { \
-		int *lx = engine->in_lookup_x; \
-		type* in_row = input_rows[*ly++]; \
-		type* output = output_rows[i] + ox; \
-		for(int j = 0; j < ow; j++) { \
-			in_row += *lx++; \
-			if( components == 4 ) { \
-				temp_type r, g, b, a; \
-				ALPHA4_BLEND(FN, temp_type, in_row, output, max, ofs, ofs, round); \
-				ALPHA4_STORE(output, ofs, max); \
-			} \
-			else { \
-				temp_type r, g, b; \
-				ALPHA3_BLEND(FN, temp_type, in_row, output, max, ofs, ofs, round); \
-				ALPHA3_STORE(output, ofs, max); \
-			} \
-			output += components; \
-		} \
-	} \
-	break; \
-}
-
-#define XBLEND_NN(FN) { \
-	switch(input->get_color_model()) { \
-	case BC_RGB_FLOAT:	XBLEND_3NN(FN, z_float,   z_float,    1.f,    3, 0,       0.f); \
-	case BC_RGBA_FLOAT:	XBLEND_3NN(FN, z_float,   z_float,    1.f,    4, 0,       0.f); \
-	case BC_RGB888:		XBLEND_3NN(FN, z_int32_t, z_uint8_t,  0xff,   3, 0,      .5f); \
-	case BC_YUV888:		XBLEND_3NN(FN, z_int32_t, z_uint8_t,  0xff,   3, 0x80,   .5f); \
-	case BC_RGBA8888:	XBLEND_3NN(FN, z_int32_t, z_uint8_t,  0xff,   4, 0,      .5f); \
-	case BC_YUVA8888:	XBLEND_3NN(FN, z_int32_t, z_uint8_t,  0xff,   4, 0x80,   .5f); \
-	case BC_RGB161616:	XBLEND_3NN(FN, z_int64_t, z_uint16_t, 0xffff, 3, 0,      .5f); \
-	case BC_YUV161616:	XBLEND_3NN(FN, z_int64_t, z_uint16_t, 0xffff, 3, 0x8000, .5f); \
-	case BC_RGBA16161616:	XBLEND_3NN(FN, z_int64_t, z_uint16_t, 0xffff, 4, 0,      .5f); \
-	case BC_YUVA16161616:	XBLEND_3NN(FN, z_int64_t, z_uint16_t, 0xffff, 4, 0x8000, .5f); \
-	} \
-	break; \
-}
 
 NNPackage::NNPackage()
 {
@@ -62,19 +19,29 @@ NNUnit::~NNUnit()
 
 void NNUnit::process_package(LoadPackage *package)
 {
-	NNPackage *pkg = (NNPackage*)package;
-	VFrame *output = engine->output;
-	VFrame *input = engine->input;
-	int mode = engine->mode;
-	float fade =
-		BC_CModels::has_alpha(input->get_color_model()) &&
+	pkg = (NNPackage*)package;
+	output = engine->output;
+	input = engine->input;
+	mode = engine->mode;
+	fade = BC_CModels::has_alpha(input->get_color_model()) &&
 		mode == TRANSFER_REPLACE ? 1.f : engine->alpha;
 
-	int ox = engine->out_x1i;
-	int ow = engine->out_x2i - ox;
-	int *ly = engine->in_lookup_y + pkg->out_row1;
+	ox = engine->out_x1i;
+	ow = engine->out_x2i - ox;
+	ly = engine->in_lookup_y + pkg->out_row1;
 
-	BLEND_SWITCH(XBLEND_NN);
+	switch(input->get_color_model()) {
+	case BC_RGB_FLOAT:	rgb_float();	break;
+	case BC_RGBA_FLOAT:	rgba_float();	break;
+	case BC_RGB888:		rgb888();	break;
+	case BC_YUV888:		yuv888();	break;
+	case BC_RGBA8888:	rgba8888();	break;
+	case BC_YUVA8888:	yuva8888();	break;
+	case BC_RGB161616:	rgb161616();	break;
+	case BC_YUV161616:	yuv161616();	break;
+	case BC_RGBA16161616:	rgba16161616();	break;
+	case BC_YUVA16161616:	yuva16161616();  break;
+	}
 }
 
 NNEngine::NNEngine(int cpus)

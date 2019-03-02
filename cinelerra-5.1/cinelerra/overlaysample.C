@@ -1,92 +1,8 @@
 #include "overlayframe.h"
+#include "overlaysample.h"
 
 /* Fully resampled scale / translate / blend ******************************/
 /* resample into a temporary row vector, then blend */
-
-#define XSAMPLE(FN, temp_type, type, max, components, ofs, round) { \
-	float temp[oh*components]; \
-	temp_type opcty = fade * max + round, trnsp = max - opcty; \
-	type **output_rows = (type**)voutput->get_rows() + o1i; \
-	type **input_rows = (type**)vinput->get_rows(); \
- \
-	for(int i = pkg->out_col1; i < pkg->out_col2; i++) { \
-		type *input = input_rows[i - engine->col_out1 + engine->row_in]; \
-		float *tempp = temp; \
-		if( !k ) { /* direct copy case */ \
-			type *ip = input + i1i * components; \
-			for(int j = 0; j < oh; j++) { \
-				*tempp++ = *ip++; \
-				*tempp++ = *ip++ - ofs; \
-				*tempp++ = *ip++ - ofs; \
-				if( components == 4 ) *tempp++ = *ip++; \
-			} \
-		} \
-		else { /* resample */ \
-			for(int j = 0; j < oh; j++) { \
-				float racc=0.f, gacc=0.f, bacc=0.f, aacc=0.f; \
-				int ki = lookup_sk[j], x = lookup_sx0[j]; \
-				type *ip = input + x * components; \
-				while(x < lookup_sx1[j]) { \
-					float kv = k[abs(ki >> INDEX_FRACTION)]; \
-					/* handle fractional pixels on edges of input */ \
-					if(x == i1i) kv *= i1f; \
-					if(++x == i2i) kv *= i2f; \
-					racc += kv * *ip++; \
-					gacc += kv * (*ip++ - ofs); \
-					bacc += kv * (*ip++ - ofs); \
-					if( components == 4 ) { aacc += kv * *ip++; } \
-					ki += kd; \
-				} \
-				float wacc = lookup_wacc[j]; \
-				*tempp++ = racc * wacc; \
-				*tempp++ = gacc * wacc; \
-				*tempp++ = bacc * wacc; \
-				if( components == 4 ) { *tempp++ = aacc * wacc; } \
-			} \
-		} \
- \
-		/* handle fractional pixels on edges of output */ \
-		temp[0] *= o1f;   temp[1] *= o1f;   temp[2] *= o1f; \
-		if( components == 4 ) temp[3] *= o1f; \
-		tempp = temp + (oh-1)*components; \
-		tempp[0] *= o2f;  tempp[1] *= o2f;  tempp[2] *= o2f; \
-		if( components == 4 ) tempp[3] *= o2f; \
-		tempp = temp; \
-		/* blend output */ \
-		for(int j = 0; j < oh; j++) { \
-			type *output = output_rows[j] + i * components; \
-			if( components == 4 ) { \
-				temp_type r, g, b, a; \
-				ALPHA4_BLEND(FN, temp_type, tempp, output, max, 0, ofs, round); \
-				ALPHA4_STORE(output, ofs, max); \
-			} \
-			else { \
-				temp_type r, g, b; \
-				ALPHA3_BLEND(FN, temp_type, tempp, output, max, 0, ofs, round); \
-				ALPHA3_STORE(output, ofs, max); \
-			} \
-			tempp += components; \
-		} \
-	} \
-	break; \
-}
-
-#define XBLEND_SAMPLE(FN) { \
-        switch(vinput->get_color_model()) { \
-        case BC_RGB_FLOAT:      XSAMPLE(FN, z_float,   z_float,    1.f,    3, 0.f,    0.f); \
-        case BC_RGBA_FLOAT:     XSAMPLE(FN, z_float,   z_float,    1.f,    4, 0.f,    0.f); \
-        case BC_RGB888:         XSAMPLE(FN, z_int32_t, z_uint8_t,  0xff,   3, 0,      .5f); \
-        case BC_YUV888:         XSAMPLE(FN, z_int32_t, z_uint8_t,  0xff,   3, 0x80,   .5f); \
-        case BC_RGBA8888:       XSAMPLE(FN, z_int32_t, z_uint8_t,  0xff,   4, 0,      .5f); \
-        case BC_YUVA8888:       XSAMPLE(FN, z_int32_t, z_uint8_t,  0xff,   4, 0x80,   .5f); \
-        case BC_RGB161616:      XSAMPLE(FN, z_int64_t, z_uint16_t, 0xffff, 3, 0,      .5f); \
-        case BC_YUV161616:      XSAMPLE(FN, z_int64_t, z_uint16_t, 0xffff, 3, 0x8000, .5f); \
-        case BC_RGBA16161616:   XSAMPLE(FN, z_int64_t, z_uint16_t, 0xffff, 4, 0,      .5f); \
-        case BC_YUVA16161616:   XSAMPLE(FN, z_int64_t, z_uint16_t, 0xffff, 4, 0x8000, .5f); \
-        } \
-        break; \
-}
-
 
 SamplePackage::SamplePackage()
 {
@@ -104,7 +20,7 @@ SampleUnit::~SampleUnit()
 
 void SampleUnit::process_package(LoadPackage *package)
 {
-	SamplePackage *pkg = (SamplePackage*)package;
+	pkg = (SamplePackage*)package;
 
 	float i1  = engine->in1;
 	float i2  = engine->in2;
@@ -114,36 +30,46 @@ void SampleUnit::process_package(LoadPackage *package)
 	if(i2 - i1 <= 0 || o2 - o1 <= 0)
 		return;
 
-	VFrame *voutput = engine->output;
-	VFrame *vinput = engine->input;
-	int mode = engine->mode;
-	float fade =
-		BC_CModels::has_alpha(vinput->get_color_model()) &&
+	voutput = engine->output;
+	vinput = engine->input;
+	mode = engine->mode;
+	fade = BC_CModels::has_alpha(vinput->get_color_model()) &&
 		mode == TRANSFER_REPLACE ? 1.f : engine->alpha;
 
-	//int   iw  = vinput->get_w();
-	int   i1i = floor(i1);
-	int   i2i = ceil(i2);
-	float i1f = 1.f - i1 + i1i;
-	float i2f = 1.f - i2i + i2;
+	//iw  = vinput->get_w();
+	i1i = floor(i1);
+	i2i = ceil(i2);
+	i1f = 1.f - i1 + i1i;
+	i2f = 1.f - i2i + i2;
 
-	int   o1i = floor(o1);
-	int   o2i = ceil(o2);
-	float o1f = 1.f - o1 + o1i;
-	float o2f = 1.f - o2i + o2;
-	int   oh  = o2i - o1i;
+	o1i = floor(o1);
+	o2i = ceil(o2);
+	o1f = 1.f - o1 + o1i;
+	o2f = 1.f - o2i + o2;
+	oh  = o2i - o1i;
 
-	float *k  = engine->kernel->lookup;
-	//float kw  = engine->kernel->width;
-	//int   kn  = engine->kernel->n;
-	int   kd = engine->kd;
+	k  = engine->kernel->lookup;
+	//kw  = engine->kernel->width;
+	//kn  = engine->kernel->n;
+	kd = engine->kd;
 
-	int *lookup_sx0 = engine->lookup_sx0;
-	int *lookup_sx1 = engine->lookup_sx1;
-	int *lookup_sk = engine->lookup_sk;
-	float *lookup_wacc = engine->lookup_wacc;
+	lookup_sx0 = engine->lookup_sx0;
+	lookup_sx1 = engine->lookup_sx1;
+	lookup_sk = engine->lookup_sk;
+	lookup_wacc = engine->lookup_wacc;
 
-	BLEND_SWITCH(XBLEND_SAMPLE);
+	switch( vinput->get_color_model() ) {
+	case BC_RGB_FLOAT:	rgb_float();	break;
+	case BC_RGBA_FLOAT:	rgba_float();	break;
+	case BC_RGB888:		rgb888();	break;
+	case BC_YUV888:		yuv888();	break;
+	case BC_RGBA8888:	rgba8888();	break;
+	case BC_YUVA8888:	yuva8888();	break;
+	case BC_RGB161616:	rgb161616();	break;
+	case BC_YUV161616:	yuv161616();	break;
+	case BC_RGBA16161616:	rgba16161616();	break;
+	case BC_YUVA16161616:	yuva16161616();  break;
+	}
 }
 
 
