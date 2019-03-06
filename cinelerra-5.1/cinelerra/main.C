@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 			break; }
 
 		case DO_BATCHRENDER: {
-			BatchRenderThread *thread = new BatchRenderThread;
+			BatchRenderThread *thread = new BatchRenderThread(0);
 			thread->start_rendering(config_path,
 				batch_path);
 			break; }

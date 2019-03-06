@@ -30,6 +30,7 @@
 #include "browsebutton.inc"
 #include "filexml.inc"
 #include "formattools.h"
+#include "indexable.inc"
 #include "keyframe.inc"
 #include "mwindow.inc"
 #include "preferences.inc"
@@ -55,14 +56,19 @@ public:
 class BatchRenderJob
 {
 public:
-	BatchRenderJob(Preferences *preferences, int labeled=0, int farmed=-1);
-	~BatchRenderJob();
-
+	BatchRenderJob(const char *tag,
+		Preferences *preferences, int labeled, int farmed);
+	BatchRenderJob(Preferences *preferences, int labeled, int farmed);
+	BatchRenderJob(const char *tag);
+	virtual ~BatchRenderJob();
+	virtual BatchRenderJob *copy();
+	virtual void load(FileXML *file);
+	virtual void save(FileXML *file);
+	virtual int get_strategy();
+	virtual char *create_script(EDL *edl, ArrayList<Indexable *> *idxbls);
 	void copy_from(BatchRenderJob *src);
-	void load(FileXML *file);
-	void save(FileXML *file);
-	int get_strategy();
 
+	const char *tag;
 // Source EDL to render
 	char edl_path[BCTEXTLEN];
 // Destination file for output
@@ -84,8 +90,7 @@ public:
 class BatchRenderThread : public BC_DialogThread
 {
 public:
-	BatchRenderThread(MWindow *mwindow);
-	BatchRenderThread();
+	BatchRenderThread(MWindow *mwindow=0);
 	~BatchRenderThread();
 	void handle_close_event(int result);
 	BC_Window* new_gui();
@@ -119,6 +124,7 @@ public:
 	void update_active(int number);
 	void update_done(int number, int create_list, double elapsed_time);
 	void move_batch(int src, int dst);
+	void start(int do_farmed, int do_labeled);
 	static void trap_hook(FILE *fp, void *vp);
 
 	MWindow *mwindow;
@@ -135,6 +141,8 @@ public:
 	static const char *column_titles[BATCHRENDER_COLUMNS];
 	static int column_widths[BATCHRENDER_COLUMNS];
 	int list_width[BATCHRENDER_COLUMNS];
+	int do_farmed;
+	int do_labeled;
 // job being edited
 	int current_job;
 // job being rendered

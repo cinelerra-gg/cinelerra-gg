@@ -34,6 +34,7 @@
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "indexable.h"
 #include "keyframe.h"
 #include "keys.h"
 #include "labels.h"
@@ -55,7 +56,9 @@
 #include "transportque.h"
 #include "vframe.h"
 
-// Farmed is not present if not preferences->use_renderfarm
+#include "dvdcreate.h"
+#include "bdcreate.h"
+
 int BatchRenderThread::column_widths[] = { 42, 42, 42, 222, 222, 150 };
 const char *BatchRenderThread::column_titles[] = {
 	N_("Enabled"), N_("Labeled"), N_("Farmed"), N_("Output"), N_("EDL"), N_("Elapsed")
@@ -70,13 +73,14 @@ BatchRenderMenuItem::BatchRenderMenuItem(MWindow *mwindow)
 
 int BatchRenderMenuItem::handle_event()
 {
-	mwindow->batch_render->start();
+	mwindow->batch_render->start(1, 1);
 	return 1;
 }
 
-
-BatchRenderJob::BatchRenderJob(Preferences *preferences, int labeled, int farmed)
+BatchRenderJob::BatchRenderJob(const char *tag,
+		Preferences *preferences, int labeled, int farmed)
 {
+	this->tag = tag;
 	this->preferences = preferences;
 	this->labeled = labeled;
 	this->farmed = farmed >= 0 ? farmed : preferences->use_renderfarm;
@@ -84,6 +88,11 @@ BatchRenderJob::BatchRenderJob(Preferences *preferences, int labeled, int farmed
 	edl_path[0] = 0;
 	enabled = 1;
 	elapsed = 0;
+}
+
+BatchRenderJob::BatchRenderJob(Preferences *preferences, int labeled, int farmed)
+ : BatchRenderJob("JOB", preferences, labeled, farmed)
+{
 }
 
 BatchRenderJob::~BatchRenderJob()
@@ -101,13 +110,20 @@ void BatchRenderJob::copy_from(BatchRenderJob *src)
 	elapsed = 0;
 }
 
+BatchRenderJob *BatchRenderJob::copy()
+{
+	BatchRenderJob *t = new BatchRenderJob(tag, preferences, labeled, farmed);
+	t->copy_from(this);
+	return t;
+}
+
 void BatchRenderJob::load(FileXML *file)
 {
 	int result = 0;
 
 	enabled = file->tag.get_property("ENABLED", enabled);
 	farmed = file->tag.get_property("FARMED", farmed);
-	labeled = file->tag.get_property("STRATEGY", labeled);
+	labeled = file->tag.get_property("LABELED", labeled);
 	edl_path[0] = 0;
 	file->tag.get_property("EDL_PATH", edl_path);
 	elapsed = file->tag.get_property("ELAPSED", elapsed);
@@ -130,6 +146,8 @@ void BatchRenderJob::load(FileXML *file)
 
 void BatchRenderJob::save(FileXML *file)
 {
+	char end_tag[BCSTRLEN];  end_tag[0] = '/';
+	strcpy(&end_tag[1], file->tag.get_title());
 	file->tag.set_property("ENABLED", enabled);
 	file->tag.set_property("FARMED", farmed);
 	file->tag.set_property("LABELED", labeled);
@@ -148,16 +166,19 @@ void BatchRenderJob::save(FileXML *file)
 	defaults.save_string(string);
 	file->append_text(string);
 	free(string);
-	file->tag.set_title("/JOB");
+	file->tag.set_title(end_tag);
 	file->append_tag();
 	file->append_newline();
 }
 
+char *BatchRenderJob::create_script(EDL *edl, ArrayList<Indexable *> *idxbls)
+{
+	return 0;
+}
+
 int BatchRenderJob::get_strategy()
 {
-// if set, overrides farmed, labeled
-	int use_renderfarm = farmed && preferences->use_renderfarm ? 1 : 0;
-	return Render::get_strategy(use_renderfarm, labeled);
+	return Render::get_strategy(farmed, labeled);
 }
 
 
@@ -174,21 +195,8 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
 	warn = 1;
 	render = 0;
 	batch_path[0] = 0;
-}
-
-BatchRenderThread::BatchRenderThread()
- : BC_DialogThread()
-{
-	mwindow = 0;
-	current_job = 0;
-	rendering_job = -1;
-	is_rendering = 0;
-	default_job = 0;
-	boot_defaults = 0;
-	preferences = 0;
-	warn = 1;
-	render = 0;
-	batch_path[0] = 0;
+	do_farmed = 0;
+	do_labeled = 0;
 }
 
 BatchRenderThread::~BatchRenderThread()
@@ -196,6 +204,7 @@ BatchRenderThread::~BatchRenderThread()
 	close_window();
 	delete boot_defaults;
 	delete preferences;
+	delete default_job;
 	delete render;
 }
 
@@ -211,6 +220,13 @@ void BatchRenderThread::reset(const char *path)
 	jobs.remove_all_objects();
 }
 
+void BatchRenderThread::start(int do_farmed, int do_labeled)
+{
+	this->do_farmed = do_farmed;
+	this->do_labeled = do_labeled;
+	BC_DialogThread::start();
+}
+
 void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
@@ -223,7 +239,7 @@ BC_Window* BatchRenderThread::new_gui()
 {
 	current_start = 0.0;
 	current_end = 0.0;
-	default_job = new BatchRenderJob(mwindow->preferences);
+	default_job = new BatchRenderJob(mwindow->preferences, 0, -1);
 	load_jobs(batch_path, mwindow->preferences);
 	load_defaults(mwindow->defaults);
 	this->gui = new BatchRenderGUI(mwindow, this,
@@ -250,7 +266,17 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
 				warn = file.tag.get_property("WARN", 1);
 			}
 			else if( file.tag.title_is("JOB") ) {
-				BatchRenderJob *job =  new BatchRenderJob(preferences);
+				BatchRenderJob *job =  new BatchRenderJob(preferences, 0,0);
+				jobs.append(job);
+				job->load(&file);
+			}
+			else if( file.tag.title_is("DVD_JOB") ) {
+				DVD_BatchRenderJob *job =  new DVD_BatchRenderJob(preferences, 0,0,0,0);
+				jobs.append(job);
+				job->load(&file);
+			}
+			else if( file.tag.title_is("BD_JOB") ) {
+				BD_BatchRenderJob *job =  new BD_BatchRenderJob(preferences, 0,0);
 				jobs.append(job);
 				job->load(&file);
 			}
@@ -267,8 +293,8 @@ void BatchRenderThread::save_jobs(char *path)
 	file.append_newline();
 
 	for( int i = 0; i < jobs.total; i++ ) {
-		file.tag.set_title("JOB");
-		jobs.values[i]->save(&file);
+		file.tag.set_title(jobs[i]->tag);
+		jobs[i]->save(&file);
 	}
 	file.tag.set_title("/JOBS");
 	file.append_tag();
@@ -322,8 +348,7 @@ char* BatchRenderThread::create_path(char *string)
 
 void BatchRenderThread::new_job()
 {
-	BatchRenderJob *result = new BatchRenderJob(mwindow->preferences);
-	result->copy_from(get_current_job());
+	BatchRenderJob *result = get_current_job()->copy();
 	jobs.append(result);
 	current_job = jobs.total - 1;
 	gui->create_list(1);
@@ -481,14 +506,9 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 			command->playback_range_adjust_inout();
 
 // Create test packages
-			packages->create_packages(mwindow,
-				command->get_edl(),
-				preferences,
-				job->get_strategy(),
-				job->asset,
-				command->start_position,
-				command->end_position,
-				0);
+			packages->create_packages(mwindow, command->get_edl(),
+				preferences, job->get_strategy(), job->asset,
+				command->start_position, command->end_position, 0);
 
 // Append output paths allocated to total
 			packages->get_package_paths(paths);
@@ -693,7 +713,7 @@ void BatchRenderGUI::create_objects()
 
 	int x = mwindow->theme->batchrender_x1;
 	int y = 5;
-	int x1 = x, x2 = get_w()/2 + 10; // mwindow->theme->batchrender_x2;
+	int x1 = x, x2 = get_w()/2 + 30; // mwindow->theme->batchrender_x2;
 	int y1 = 5, y2 = 5;
 
 // output file
@@ -701,16 +721,21 @@ void BatchRenderGUI::create_objects()
 	y1 += output_path_title->get_h() + mwindow->theme->widget_border;
 
 	format_tools = new BatchFormat(mwindow, this, thread->get_current_asset());
-	format_tools->set_w(get_w() / 2);
+	format_tools->set_w(x2 - 40);
 	BatchRenderJob *current_job = thread->get_current_job();
 	format_tools->create_objects(x1, y1, 1, 1, 1, 1, 0, 1, 0, 0,
-			&current_job->labeled, 0);
-	if( mwindow->preferences->use_renderfarm ) {
+			thread->do_labeled ? &current_job->labeled : 0, 0);
+	if( thread->do_labeled < 0 )
+		format_tools->labeled_files->disable();
+	if( thread->do_farmed ) {
 		use_renderfarm = new BatchRenderUseFarm(thread, x1, y1,
 			&current_job->farmed);
 		add_subwindow(use_renderfarm);
 		y1 += use_renderfarm->get_h() + 10;
+		if( thread->do_farmed < 0 )
+			use_renderfarm->disable();
 	}
+
 // input EDL
 	add_subwindow(edl_path_title = new BC_Title(x2, y2, _("EDL Path:")));
 	y2 += edl_path_title->get_h() + mwindow->theme->widget_border;
@@ -795,7 +820,7 @@ int BatchRenderGUI::resize_event(int w, int h)
 	output_path_title->reposition_window(x1, y1);
 	y1 += output_path_title->get_h() + mwindow->theme->widget_border;
 	format_tools->reposition_window(x1, y1);
-	if( use_renderfarm )
+	if( thread->do_farmed )
 		use_renderfarm->reposition_window(x1, y1);
 // input EDL
 	x = x2, y = y2;
@@ -867,9 +892,11 @@ void BatchRenderGUI::create_list(int update_widget)
 	list_columns = 0;
 	list_titles[list_columns] = _(column_titles[ENABLED_COL]);
 	list_width[list_columns++] = thread->list_width[ENABLED_COL];
-	list_titles[list_columns] = _(column_titles[LABELED_COL]);
-	list_width[list_columns++] = thread->list_width[LABELED_COL];
-	if( mwindow->preferences->use_renderfarm ) {
+	if( thread->do_labeled > 0 ) {
+		list_titles[list_columns] = _(column_titles[LABELED_COL]);
+		list_width[list_columns++] = thread->list_width[LABELED_COL];
+	}
+	if( thread->do_farmed > 0 ) {
 		list_titles[list_columns] = _(column_titles[FARMED_COL]);
 		list_width[list_columns++] = thread->list_width[FARMED_COL];
 	}
@@ -884,23 +911,24 @@ void BatchRenderGUI::create_list(int update_widget)
 		BatchRenderJob *job = thread->jobs.values[i];
 		char string[BCTEXTLEN];
 		BC_ListBoxItem *enabled = new BC_ListBoxItem(job->enabled ? "X" : " ");
-		BC_ListBoxItem *labeled = new BC_ListBoxItem(job->labeled ? "X" : " ");
-		BC_ListBoxItem *farmed  = !mwindow->preferences->use_renderfarm ? 0 :
-			new BC_ListBoxItem(job->farmed  ? "X" : " ");
+		BC_ListBoxItem *labeled = thread->do_labeled > 0 ?
+			new BC_ListBoxItem(job->labeled ? "X" : " ") : 0;
+		BC_ListBoxItem *farmed  = thread->do_farmed > 0 ?
+			new BC_ListBoxItem(job->farmed  ? "X" : " ") : 0;
 		BC_ListBoxItem *out_path = new BC_ListBoxItem(job->asset->path);
 		BC_ListBoxItem *edl_path = new BC_ListBoxItem(job->edl_path);
 		BC_ListBoxItem *elapsed = new BC_ListBoxItem(!job->elapsed ? _("Unknown") :
 			Units::totext(string, job->elapsed, TIME_HMS2));
 		int col = 0;
 		list_items[col++].append(enabled);
-		list_items[col++].append(labeled);
+		if( labeled ) list_items[col++].append(labeled);
 		if( farmed ) list_items[col++].append(farmed);
 		list_items[col++].append(out_path);
 		list_items[col++].append(edl_path);
 		list_items[col].append(elapsed);
 		if( i == thread->current_job ) {
 			enabled->set_selected(1);
-			labeled->set_selected(1);
+			if( labeled ) labeled->set_selected(1);
 			if( farmed ) farmed->set_selected(1);
 			out_path->set_selected(1);
 			edl_path->set_selected(1);
@@ -908,7 +936,7 @@ void BatchRenderGUI::create_list(int update_widget)
 		}
 		if( i == thread->rendering_job ) {
 			enabled->set_color(RED);
-			labeled->set_color(RED);
+			if( labeled ) labeled->set_color(RED);
 			if( farmed ) farmed->set_color(RED);
 			out_path->set_color(RED);
 			edl_path->set_color(RED);
@@ -926,8 +954,8 @@ void BatchRenderGUI::create_list(int update_widget)
 void BatchRenderGUI::change_job()
 {
 	BatchRenderJob *job = thread->get_current_job();
-	format_tools->update(job->asset, &job->labeled);
-	if( use_renderfarm ) use_renderfarm->update(&job->farmed);
+	format_tools->update(job->asset, thread->do_labeled ? &job->labeled : 0);
+	if( thread->do_farmed ) use_renderfarm->update(&job->farmed);
 	edl_path_text->update(job->edl_path);
 }
 
@@ -1201,9 +1229,10 @@ int BatchRenderList::selection_changed()
 	int col_x = 0, changed = 1;
 	if( cursor_x < (col_x += thread->list_width[ENABLED_COL]) )
 		job->enabled = !job->enabled;
-	else if( cursor_x < (col_x += thread->list_width[LABELED_COL]) )
+	else if( thread->do_labeled > 0 &&
+		 cursor_x < (col_x += thread->list_width[LABELED_COL]) )
 		job->labeled = job->edl_path[0] != '@' ? !job->labeled : 0;
-	else if( thread->gui->use_renderfarm &&
+	else if( thread->do_farmed > 0 &&
 		 cursor_x < (col_x += thread->list_width[FARMED_COL]) )
 		job->farmed = job->edl_path[0] != '@' ? !job->farmed : 0;
 	else
@@ -1219,8 +1248,9 @@ int BatchRenderList::column_resize_event()
 {
 	int col = 0;
 	thread->list_width[ENABLED_COL] = get_column_width(col++);
-	thread->list_width[LABELED_COL] = get_column_width(col++);
-	if( thread->gui->use_renderfarm )
+	if( thread->do_labeled > 0 )
+		thread->list_width[LABELED_COL] = get_column_width(col++);
+	if( thread->do_farmed > 0 )
 		thread->list_width[FARMED_COL] = get_column_width(col++);
 	thread->list_width[OUTPUT_COL] = get_column_width(col++);
 	thread->list_width[EDL_COL] = get_column_width(col++);

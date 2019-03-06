@@ -96,6 +96,164 @@ int CreateDVD_MenuItem::handle_event()
 }
 
 
+DVD_BatchRenderJob::DVD_BatchRenderJob(Preferences *preferences,
+		int labeled, int farmed, int standard, int muxed)
+ : BatchRenderJob("DVD_JOB", preferences, labeled, farmed)
+{
+	this->standard = standard;
+	this->muxed = muxed;
+
+	chapter = -1;
+	edl = 0;
+	fp =0;
+}
+
+void DVD_BatchRenderJob::copy_from(DVD_BatchRenderJob *src)
+{
+	standard = src->standard;
+	muxed = src->muxed;
+	BatchRenderJob::copy_from(src);
+}
+
+DVD_BatchRenderJob *DVD_BatchRenderJob::copy()
+{
+	DVD_BatchRenderJob *t = new DVD_BatchRenderJob(preferences,
+		labeled, farmed, standard, muxed);
+	t->copy_from(this);
+	return t;
+}
+
+void DVD_BatchRenderJob::load(FileXML *file)
+{
+	standard = file->tag.get_property("STANDARD", standard);
+	muxed = file->tag.get_property("MUXED", muxed);
+	BatchRenderJob::load(file);
+}
+
+void DVD_BatchRenderJob::save(FileXML *file)
+{
+	file->tag.set_property("STANDARD", standard);
+	file->tag.set_property("MUXED", muxed);
+	BatchRenderJob::save(file);
+}
+
+void DVD_BatchRenderJob::create_chapter(double pos)
+{
+	fprintf(fp,"%s", !chapter++? "\" chapters=\"" : ",");
+	int secs = pos, mins = secs/60;
+	int frms = (pos-secs) * edl->session->frame_rate;
+	fprintf(fp,"%d:%02d:%02d.%d", mins/60, mins%60, secs%60, frms);
+}
+
+char *DVD_BatchRenderJob::create_script(EDL *edl, ArrayList<Indexable *> *idxbls)
+{
+	char script[BCTEXTLEN];
+	strcpy(script, edl_path);
+	this->edl = edl;
+	this->fp = 0;
+	char *bp = strrchr(script,'/');
+	int fd = -1;
+	if( bp ) {
+		strcpy(bp, "/dvd.sh");
+		fd = open(script, O_WRONLY+O_CREAT+O_TRUNC, 0755);
+	}
+	if( fd >= 0 )
+		fp = fdopen(fd, "w");
+	if( !fp ) {
+		char err[BCTEXTLEN], msg[BCTEXTLEN];
+		strerror_r(errno, err, sizeof(err));
+		sprintf(msg, _("Unable to save: %s\n-- %s"), script, err);
+		MainError::show_error(msg);
+		return 0;
+	}
+
+	fprintf(fp,"#!/bin/bash\n");
+	fprintf(fp,"dir=`dirname $0`\n");
+	fprintf(fp,"echo \"running %s\"\n", script);
+	fprintf(fp,"\n");
+	const char *exec_path = File::get_cinlib_path();
+	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
+	int file_seq = farmed || labeled ? 1 : 0;
+ 	if( !muxed ) {
+		if( file_seq ) {
+			fprintf(fp, "cat > $dir/dvd.m2v $dir/dvd.m2v0*\n");
+			fprintf(fp, "mplex -M -f 8 -o $dir/dvd.mpg $dir/dvd.m2v $dir/dvd.ac3\n");
+			file_seq = 0;
+		}
+		else
+			fprintf(fp, "mplex -f 8 -o $dir/dvd.mpg $dir/dvd.m2v $dir/dvd.ac3\n");
+	}
+	fprintf(fp,"rm -rf $dir/iso\n");
+	fprintf(fp,"mkdir -p $dir/iso\n");
+	fprintf(fp,"\n");
+// dvdauthor ver 0.7.0 requires this to work
+	int norm = dvd_formats[standard].norm;
+	const char *name = dvd_norms[norm].name;
+	fprintf(fp,"export VIDEO_FORMAT=%s\n", name);
+	fprintf(fp,"dvdauthor -x - <<eof\n");
+	fprintf(fp,"<dvdauthor dest=\"$dir/iso\">\n");
+	fprintf(fp,"  <vmgm>\n");
+	fprintf(fp,"    <fpc> jump title 1; </fpc>\n");
+	fprintf(fp,"  </vmgm>\n");
+	fprintf(fp,"  <titleset>\n");
+	fprintf(fp,"    <titles>\n");
+	char std[BCSTRLEN], *cp = std;
+	for( const char *np=name; *np!=0; ++cp,++np) *cp = *np + 'a'-'A';
+	*cp = 0;
+	EDLSession *session = edl->session;
+	fprintf(fp,"    <video format=\"%s\" aspect=\"%d:%d\" resolution=\"%dx%d\"/>\n",
+		std, (int)session->aspect_w, (int)session->aspect_h,
+		session->output_w, session->output_h);
+	fprintf(fp,"    <audio format=\"ac3\" lang=\"en\"/>\n");
+	fprintf(fp,"    <pgc>\n");
+	int total_idxbls = !file_seq ? 1 : idxbls->size();
+	int secs = 0;
+	double vob_pos = 0;
+	double total_length = edl->tracks->total_length();
+	Label *label = edl->labels->first;
+	for( int i=0; i<total_idxbls; ++i ) {
+		Indexable *idxbl = idxbls->get(i);
+		double video_length = idxbl->have_video() && idxbl->get_frame_rate() > 0 ?
+			(double)idxbl->get_video_frames() / idxbl->get_frame_rate() : 0 ;
+		double audio_length = idxbl->have_audio() && idxbl->get_sample_rate() > 0 ?
+			(double)idxbl->get_audio_samples() / idxbl->get_sample_rate() : 0 ;
+		double length = idxbl->have_video() && idxbl->have_audio() ?
+				bmin(video_length, audio_length) :
+			idxbl->have_video() ? video_length :
+			idxbl->have_audio() ? audio_length : 0;
+		fprintf(fp,"      <vob file=\"%s", !file_seq ? "dvd.mpg" : idxbl->path);
+		chapter = 0;
+		double vob_end = i+1>=total_idxbls ? total_length : vob_pos + length;
+		if( labeled ) {
+			while( label && label->position < vob_end ) {
+				create_chapter(label->position - vob_pos);
+				label = label->next;
+			}
+		}
+		else {
+			while( secs < vob_end ) {
+				create_chapter(secs - vob_pos);
+				secs += 10*60;  // ch every 10 minutes
+			}
+		}
+		fprintf(fp,"\"/>\n");
+		vob_pos = vob_end;
+	}
+	fprintf(fp,"    </pgc>\n");
+	fprintf(fp,"    </titles>\n");
+	fprintf(fp,"  </titleset>\n");
+	fprintf(fp,"</dvdauthor>\n");
+	fprintf(fp,"eof\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"echo To burn dvd, load blank media and run:\n");
+	fprintf(fp,"echo growisofs -dvd-compat -Z /dev/dvd -dvd-video $dir/iso\n");
+	fprintf(fp,"kill $$\n");
+	fprintf(fp,"\n");
+	fclose(fp);
+	return cstrdup(script);
+}
+
+
 CreateDVD_Thread::CreateDVD_Thread(MWindow *mwindow)
  : BC_DialogThread()
 {
@@ -108,7 +266,8 @@ CreateDVD_Thread::CreateDVD_Thread(MWindow *mwindow)
 	this->use_wide_audio = 0;
 	this->use_ffmpeg = 0;
 	this->use_resize_tracks = 0;
-	this->use_label_chapters = 0;
+	this->use_labeled = 0;
+	this->use_farmed = 0;
 
 	this->dvd_size = DVD_SIZE;
 	this->dvd_width = DVD_WIDTH;
@@ -137,7 +296,6 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		return 1;
 	}
 	EDLSession *session = edl->session;
-
 	double total_length = edl->tracks->total_length();
 	if( total_length <= 0 ) {
 		char msg[BCTEXTLEN];
@@ -167,88 +325,6 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 	session->sample_rate = dvd_samplerate;
 	session->audio_channels = session->audio_tracks =
 		use_wide_audio ? DVD_WIDE_CHANNELS : DVD_CHANNELS;
-
-	char script_filename[BCTEXTLEN];
-	sprintf(script_filename, "%s/dvd.sh", asset_dir);
-	int fd = open(script_filename, O_WRONLY+O_CREAT+O_TRUNC, 0755);
-	FILE *fp = fdopen(fd, "w");
-	if( !fp ) {
-		char err[BCTEXTLEN], msg[BCTEXTLEN];
-		strerror_r(errno, err, sizeof(err));
-		sprintf(msg, _("Unable to save: %s\n-- %s"), script_filename, err);
-		MainError::show_error(msg);
-		return 1;
-	}
-	fprintf(fp,"#!/bin/bash\n");
-	fprintf(fp,"echo \"running %s\" $# $*\n", script_filename);
-	fprintf(fp,"\n");
-	const char *exec_path = File::get_cinlib_path();
-	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
- 	if( mwindow->preferences->use_renderfarm ||
-	    (use_label_chapters && edl->labels ) ) {
-		if( !use_ffmpeg ) {
-			fprintf(fp, "cat > $1/dvd.m2v $1/dvd.m2v0*\n");
-			fprintf(fp, "mplex -M -f 8 -o $1/dvd.mpg $1/dvd.m2v $1/dvd.ac3\n");
-		}
-		else
-			fprintf(fp, "ffmpeg -f concat -safe 0 -i <(for f in \"$1/dvd.mpg0\"*; do "
-					"echo \"file '$f'\"; done) -c copy -y $1/dvd.mpg\n");
-	}
-	else
-		fprintf(fp, "mplex -f 8 -o $1/dvd.mpg $1/dvd.m2v $1/dvd.ac3\n");
-	fprintf(fp,"rm -rf $1/iso\n");
-	fprintf(fp,"mkdir -p $1/iso\n");
-	fprintf(fp,"\n");
-// dvdauthor ver 0.7.0 requires this to work
-	int norm = dvd_formats[use_standard].norm;
-	const char *name = dvd_norms[norm].name;
-	fprintf(fp,"export VIDEO_FORMAT=%s\n", name);
-	fprintf(fp,"dvdauthor -x - <<eof\n");
-	fprintf(fp,"<dvdauthor dest=\"$1/iso\">\n");
-	fprintf(fp,"  <vmgm>\n");
-	fprintf(fp,"    <fpc> jump title 1; </fpc>\n");
-	fprintf(fp,"  </vmgm>\n");
-	fprintf(fp,"  <titleset>\n");
-	fprintf(fp,"    <titles>\n");
-	char std[BCSTRLEN], *cp = std;
-	for( const char *np=name; *np!=0; ++cp,++np) *cp = *np + 'a'-'A';
-	*cp = 0;
-	fprintf(fp,"    <video format=\"%s\" aspect=\"%d:%d\" resolution=\"%dx%d\"/>\n",
-		std, (int)session->aspect_w, (int)session->aspect_h,
-		session->output_w, session->output_h);
-	fprintf(fp,"    <audio format=\"ac3\" lang=\"en\"/>\n");
-	fprintf(fp,"    <pgc>\n");
-	fprintf(fp,"      <vob file=\"$1/dvd.mpg\" chapters=\"");
-	if( use_label_chapters && edl->labels ) {
-		Label *label = edl->labels->first;
-		while( label ) {
-			int secs = label->position;
-			int mins = secs / 60;
-			int frms = (label->position-secs) * session->frame_rate;
-			fprintf(fp,"%d:%02d:%02d.%d", mins/60, mins%60, secs%60, frms);
-			if( (label=label->next) != 0 ) fprintf(fp, ",");
-		}
-	}
-	else {
-		int mins = 0;
-		for( int secs=0 ; secs<total_length; secs+=10*60 ) {
-			mins = secs / 60;
-			fprintf(fp,"%d:%02d:00,", mins/60, mins%60);
-		}
-		fprintf(fp,"%d:%02d:00", mins/60, mins%60);
-	}
-	fprintf(fp,"\"/>\n");
-	fprintf(fp,"    </pgc>\n");
-	fprintf(fp,"    </titles>\n");
-	fprintf(fp,"  </titleset>\n");
-	fprintf(fp,"</dvdauthor>\n");
-	fprintf(fp,"eof\n");
-	fprintf(fp,"\n");
-	fprintf(fp,"echo To burn dvd, load blank media and run:\n");
-	fprintf(fp,"echo growisofs -dvd-compat -Z /dev/dvd -dvd-video $1/iso\n");
-	fprintf(fp,"kill $$\n");
-	fprintf(fp,"\n");
-	fclose(fp);
 
 	session->audio_channels = session->audio_tracks =
 		!use_wide_audio ? DVD_CHANNELS : DVD_WIDE_CHANNELS;
@@ -284,7 +360,8 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		return 1;
 	}
 
-	BatchRenderJob *job = new BatchRenderJob(mwindow->preferences, use_label_chapters);
+	BatchRenderJob *job = new DVD_BatchRenderJob(mwindow->preferences,
+		use_labeled, use_farmed, use_standard, use_ffmpeg);
 	jobs->append(job);
 	strcpy(&job->edl_path[0], xml_filename);
 	Asset *asset = job->asset;
@@ -302,6 +379,8 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		strcpy(asset->fformat, "dvd");
 
 		asset->audio_data = 1;
+		asset->channels = session->audio_channels;
+		asset->sample_rate = session->sample_rate;
 		strcpy(asset->acodec, "dvd.dvd");
 		FFMPEG::set_option_path(option_path, "audio/%s", asset->acodec);
 		FFMPEG::load_options(option_path, asset->ff_audio_options,
@@ -315,6 +394,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 			 sizeof(asset->ff_video_options));
 		asset->ff_video_bitrate = vid_bitrate;
 		asset->ff_video_quality = -1;
+		use_farmed = job->farmed;
 	}
 	else {
 		sprintf(&asset->path[0],"%s/dvd.m2v", asset_dir);
@@ -332,6 +412,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		asset->vmpeg_preset = 8;
 		asset->vmpeg_field_order = 0;
 		asset->vmpeg_pframe_distance = 0;
+		use_farmed = job->farmed;
 		job = new BatchRenderJob(mwindow->preferences, 0, 0);
 		jobs->append(job);
 		strcpy(&job->edl_path[0], xml_filename);
@@ -349,12 +430,6 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		asset->dither = 0;
 		asset->ac3_bitrate = dvd_kaudio_rate;
 	}
-
-	job = new BatchRenderJob(mwindow->preferences, 0, 0);
-	jobs->append(job);
-	job->edl_path[0] = '@';
-	strcpy(&job->edl_path[1], script_filename);
-	strcpy(&job->asset->path[0], asset_dir);
 
 	return 0;
 }
@@ -444,7 +519,7 @@ void CreateDVD_Thread::handle_close_event(int result)
 	mwindow->resync_guis();
 	if( ret ) return;
 	mwindow->batch_render->save_jobs();
-	mwindow->batch_render->start();
+	mwindow->batch_render->start(-use_farmed, -use_labeled);
 }
 
 BC_Window* CreateDVD_Thread::new_gui()
@@ -464,7 +539,8 @@ BC_Window* CreateDVD_Thread::new_gui()
 	use_wide_audio = 0;
 	use_ffmpeg = 0;
 	use_resize_tracks = 0;
-	use_label_chapters = 0;
+	use_labeled = 0;
+	use_farmed = 0;
 	use_standard = DVD_NTSC_4x3;
 
 	dvd_size = DVD_SIZE;
@@ -705,12 +781,22 @@ CreateDVD_Histogram::~CreateDVD_Histogram()
 }
 
 CreateDVD_LabelChapters::CreateDVD_LabelChapters(CreateDVD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_label_chapters, _("Chapters at Labels"))
+ : BC_CheckBox(x, y, &gui->thread->use_labeled, _("Chapters at Labels"))
 {
 	this->gui = gui;
 }
 
 CreateDVD_LabelChapters::~CreateDVD_LabelChapters()
+{
+}
+
+CreateDVD_UseRenderFarm::CreateDVD_UseRenderFarm(CreateDVD_GUI *gui, int x, int y)
+ : BC_CheckBox(x, y, &gui->thread->use_farmed, _("Use render farm"))
+{
+	this->gui = gui;
+}
+
+CreateDVD_UseRenderFarm::~CreateDVD_UseRenderFarm()
 {
 }
 
@@ -755,7 +841,8 @@ CreateDVD_GUI::CreateDVD_GUI(CreateDVD_Thread *thread, int x, int y, int w, int 
 	need_resize_tracks = 0;
 	need_histogram = 0;
 	need_wide_audio = 0;
-	need_label_chapters = 0;
+	need_labeled = 0;
+	need_farmed = 0;
 	ok = 0;
 	cancel = 0;
 }
@@ -813,24 +900,30 @@ void CreateDVD_GUI::create_objects()
 	add_subwindow(scale);
 	scale->create_objects();
 	y += standard->get_h() + pady/2;
-	need_deinterlace = new CreateDVD_Deinterlace(this, x, y);
+	x1 = x;  int y1 = y;
+	need_deinterlace = new CreateDVD_Deinterlace(this, x1, y);
 	add_subwindow(need_deinterlace);
-	x1 = x + 170;
-	int x2 = x1 + 170;
-	need_inverse_telecine = new CreateDVD_InverseTelecine(this, x1, y);
-	add_subwindow(need_inverse_telecine);
-	need_use_ffmpeg = new CreateDVD_UseFFMpeg(this, x2, y);
-	add_subwindow(need_use_ffmpeg);
 	y += need_deinterlace->get_h() + pady/2;
 	need_histogram = new CreateDVD_Histogram(this, x, y);
 	add_subwindow(need_histogram);
+	y = y1;  x1 += 170;
+	need_inverse_telecine = new CreateDVD_InverseTelecine(this, x1, y);
+	add_subwindow(need_inverse_telecine);
+	y += need_inverse_telecine->get_h() + pady/2;
 	need_wide_audio = new CreateDVD_WideAudio(this, x1, y);
 	add_subwindow(need_wide_audio);
-	need_resize_tracks = new CreateDVD_ResizeTracks(this, x2, y);
+	y += need_wide_audio->get_h() + pady/2;
+	need_use_ffmpeg = new CreateDVD_UseFFMpeg(this, x1, y);
+	add_subwindow(need_use_ffmpeg);
+	y += need_use_ffmpeg->get_h() + pady/2;
+	need_resize_tracks = new CreateDVD_ResizeTracks(this, x1, y);
 	add_subwindow(need_resize_tracks);
-	y += need_histogram->get_h() + pady/2;
-	need_label_chapters = new CreateDVD_LabelChapters(this, x1, y);
-	add_subwindow(need_label_chapters);
+	y = y1;  x1 += 170;
+	need_labeled = new CreateDVD_LabelChapters(this, x1, y);
+	add_subwindow(need_labeled);
+	y += need_labeled->get_h() + pady/2;
+	need_farmed = new CreateDVD_UseRenderFarm(this, x1, y);
+	add_subwindow(need_farmed);
 	ok_w = BC_OKButton::calculate_w();
 	ok_h = BC_OKButton::calculate_h();
 	ok_x = 10;
@@ -880,7 +973,8 @@ void CreateDVD_GUI::update()
 	need_resize_tracks->set_value(thread->use_resize_tracks);
 	need_histogram->set_value(thread->use_histogram);
 	need_wide_audio->set_value(thread->use_wide_audio);
-	need_label_chapters->set_value(thread->use_label_chapters);
+	need_labeled->set_value(thread->use_labeled);
+	need_farmed->set_value(thread->use_farmed);
 }
 
 int CreateDVD_Thread::
@@ -928,7 +1022,8 @@ option_presets()
 	use_scale = Rescale::none;
 	use_resize_tracks = 0;
 	use_wide_audio = 0;
-	use_label_chapters = 0;
+	use_labeled = 0;
+	use_farmed = 0;
 
 	if( !mwindow->edl ) return 1;
 
@@ -994,11 +1089,12 @@ option_presets()
 	}
 	if( !has_deinterlace && max_h > 2*dvd_height ) use_deinterlace = 1;
 	Labels *labels = mwindow->edl->labels;
-	use_label_chapters = labels && labels->first ? 1 : 0;
+	use_labeled = labels && labels->first ? 1 : 0;
 
 	if( tracks->recordable_audio_tracks() == DVD_WIDE_CHANNELS )
 		use_wide_audio = 1;
 
+	use_farmed = mwindow->preferences->use_renderfarm;
 	return 0;
 }
 

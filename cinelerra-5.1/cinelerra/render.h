@@ -98,6 +98,14 @@ public:
 
 class RenderWindow;
 
+class RenderAssets : public ArrayList<Indexable *>
+{
+public:
+	RenderAssets();
+	~RenderAssets();
+
+	void clear();
+};
 
 class Render : public BC_DialogThread
 {
@@ -153,6 +161,7 @@ public:
 	void start_progress();
 	void stop_progress();
 	void show_progress();
+	void update_assets();
 
 // Procedure the run function should use.
 	int mode;
@@ -177,6 +186,7 @@ public:
 	MainProgressBar *progress;
 	RenderProgress *render_progress;
 	RenderThread *thread;
+	RenderAssets assets;
 	MWindow *mwindow;
 	PlayableTracks *playable_tracks;
 	PackageDispatcher *packages;

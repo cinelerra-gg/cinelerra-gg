@@ -10,7 +10,6 @@
 #include "filexml.h"
 #include "interlacemodes.h"
 #include "keyframe.h"
-#include "labels.h"
 #include "mainerror.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -90,44 +89,18 @@ int CreateBD_MenuItem::handle_event()
 	return 1;
 }
 
-
-CreateBD_Thread::CreateBD_Thread(MWindow *mwindow)
- : BC_DialogThread()
+BD_BatchRenderJob::BD_BatchRenderJob(Preferences *preferences, int labeled, int farmed)
+ : BatchRenderJob("BD_JOB", preferences, labeled, farmed)
 {
-	this->mwindow = mwindow;
-	this->gui = 0;
-	this->use_deinterlace = 0;
-	this->use_scale = Rescale::none;
-	this->use_histogram = 0;
-	this->use_inverse_telecine = 0;
-	this->use_wide_audio = 0;
-	this->use_resize_tracks = 0;
-	this->use_label_chapters = 0;
-
-	this->bd_size = BD_SIZE;
-	this->bd_width = BD_WIDTH;
-	this->bd_height = BD_HEIGHT;
-	this->bd_aspect_width = BD_WIDE_ASPECT_WIDTH;
-	this->bd_aspect_height = BD_WIDE_ASPECT_HEIGHT;
-	this->bd_framerate = BD_FRAMERATE;
-	this->bd_samplerate = BD_SAMPLERATE;
-	this->bd_max_bitrate = BD_MAX_BITRATE;
-	this->bd_kaudio_rate = BD_KAUDIO_RATE;
-	this->max_w = this->max_h = 0;
 }
 
-CreateBD_Thread::~CreateBD_Thread()
-{
-	close_window();
-}
-
-int CreateBD_Thread::get_udfs_mount(char *udfs, char *mopts, char *mntpt)
+int BD_BatchRenderJob::get_udfs_mount(char *udfs, char *mopts, char *mntpt)
 {
 	int ret = 0;
-// default: mount -t udf -o loop $1/bd.udfs $1/udfs
-	strcpy(udfs,"$1/bd.udfs");
-	strcpy(mopts,"-t udf -o loop $1/bd.udfs ");
-	strcpy(mntpt,"$1/udfs");
+// default: mount -t udf -o loop $dir/bd.udfs $dir/udfs
+	strcpy(udfs,"$dir/bd.udfs");
+	strcpy(mopts,"-t udf -o loop $dir/bd.udfs ");
+	strcpy(mntpt,"$dir/udfs");
 	const char *home = getenv("HOME");
 	if( !home ) return ret;
 	FILE *fp = fopen("/etc/fstab","r");
@@ -165,6 +138,83 @@ int CreateBD_Thread::get_udfs_mount(char *udfs, char *mopts, char *mntpt)
 	}
 	fclose(fp);
 	return ret;
+}
+
+char *BD_BatchRenderJob::create_script(EDL *edl, ArrayList<Indexable *> *idxbls)
+{
+	char script[BCTEXTLEN];
+	strcpy(script, edl_path);
+	FILE *fp = 0;
+	char *bp = strrchr(script,'/');
+	int fd = -1;
+	if( bp ) {
+		strcpy(bp, "/bd.sh");
+		fd = open(script, O_WRONLY+O_CREAT+O_TRUNC, 0755);
+	}
+	if( fd >= 0 )
+		fp = fdopen(fd, "w");
+	if( !fp ) {
+		char err[BCTEXTLEN], msg[BCTEXTLEN];
+		strerror_r(errno, err, sizeof(err));
+		sprintf(msg, _("Unable to save: %s\n-- %s"), script, err);
+		MainError::show_error(msg);
+		return 0;
+	}
+	char udfs[BCTEXTLEN], mopts[BCTEXTLEN], mntpt[BCTEXTLEN];
+	int is_usr_mnt = get_udfs_mount(udfs, mopts, mntpt);
+	const char *exec_path = File::get_cinlib_path();
+	fprintf(fp,"#!/bin/bash -ex\n");
+	fprintf(fp,"dir=`dirname $0`\n");
+	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
+	fprintf(fp,"mkdir -p $dir/udfs\n");
+	fprintf(fp,"sz=`du -cb $dir/bd.m2ts* | tail -1 | sed -e 's/[ \t].*//'`\n");
+	fprintf(fp,"blks=$((sz/2048 + 4096))\n");
+	fprintf(fp,"rm -f %s\n", udfs);
+	fprintf(fp,"mkudffs -b 2048 %s $blks\n", udfs);
+	fprintf(fp,"mount %s%s\n", mopts, mntpt);
+	fprintf(fp,"bdwrite %s $dir/bd.m2ts*\n",mntpt);
+	fprintf(fp,"umount %s\n",mntpt);
+	if( is_usr_mnt )
+		fprintf(fp,"mv -f %s $dir/bd.udfs\n", udfs);
+	fprintf(fp,"echo To burn bluray, load writable media and run:\n");
+	fprintf(fp,"echo for WORM: growisofs -dvd-compat -Z /dev/bd=$dir/bd.udfs\n");
+	fprintf(fp,"echo for RW:   dd if=$dir/bd.udfs of=/dev/bd bs=2048000\n");
+	fprintf(fp,"kill $$\n");
+	fprintf(fp,"\n");
+	fclose(fp);
+	return cstrdup(script);
+}
+
+
+CreateBD_Thread::CreateBD_Thread(MWindow *mwindow)
+ : BC_DialogThread()
+{
+	this->mwindow = mwindow;
+	this->gui = 0;
+	this->use_deinterlace = 0;
+	this->use_scale = Rescale::none;
+	this->use_histogram = 0;
+	this->use_inverse_telecine = 0;
+	this->use_wide_audio = 0;
+	this->use_resize_tracks = 0;
+	this->use_labeled = 0;
+	this->use_farmed = 0;
+
+	this->bd_size = BD_SIZE;
+	this->bd_width = BD_WIDTH;
+	this->bd_height = BD_HEIGHT;
+	this->bd_aspect_width = BD_WIDE_ASPECT_WIDTH;
+	this->bd_aspect_height = BD_WIDE_ASPECT_HEIGHT;
+	this->bd_framerate = BD_FRAMERATE;
+	this->bd_samplerate = BD_SAMPLERATE;
+	this->bd_max_bitrate = BD_MAX_BITRATE;
+	this->bd_kaudio_rate = BD_KAUDIO_RATE;
+	this->max_w = this->max_h = 0;
+}
+
+CreateBD_Thread::~CreateBD_Thread()
+{
+	close_window();
 }
 
 int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char *asset_dir)
@@ -209,39 +259,6 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 		use_wide_audio ? BD_WIDE_CHANNELS : BD_CHANNELS;
 	session->interlace_mode = bd_interlace_mode;
 
-	char script_filename[BCTEXTLEN];
-	sprintf(script_filename, "%s/bd.sh", asset_dir);
-	int fd = open(script_filename, O_WRONLY+O_CREAT+O_TRUNC, 0755);
-	FILE *fp = fdopen(fd, "w");
-	if( !fp ) {
-		char err[BCTEXTLEN], msg[BCTEXTLEN];
-		strerror_r(errno, err, sizeof(err));
-		sprintf(msg, _("Unable to save: %s\n-- %s"), script_filename, err);
-		MainError::show_error(msg);
-		return 1;
-	}
-	char udfs[BCTEXTLEN], mopts[BCTEXTLEN], mntpt[BCTEXTLEN];
-	int is_usr_mnt = get_udfs_mount(udfs, mopts, mntpt);
-	const char *exec_path = File::get_cinlib_path();
-	fprintf(fp,"#!/bin/bash -ex\n");
-	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
-	fprintf(fp,"mkdir -p $1/udfs\n");
-	fprintf(fp,"sz=`du -cb $1/bd.m2ts* | tail -1 | sed -e 's/[ \t].*//'`\n");
-	fprintf(fp,"blks=$((sz/2048 + 4096))\n");
-	fprintf(fp,"rm -f %s\n", udfs);
-	fprintf(fp,"mkudffs -b 2048 %s $blks\n", udfs);
-	fprintf(fp,"mount %s%s\n", mopts, mntpt);
-	fprintf(fp,"bdwrite %s $1/bd.m2ts*\n",mntpt);
-	fprintf(fp,"umount %s\n",mntpt);
-	if( is_usr_mnt )
-		fprintf(fp,"mv -f %s $1/bd.udfs\n", udfs);
-	fprintf(fp,"echo To burn bluray, load writable media and run:\n");
-	fprintf(fp,"echo for WORM: growisofs -dvd-compat -Z /dev/bd=$1/bd.udfs\n");
-	fprintf(fp,"echo for RW:   dd if=$1/bd.udfs of=/dev/bd bs=2048000\n");
-	fprintf(fp,"kill $$\n");
-	fprintf(fp,"\n");
-	fclose(fp);
-
 	session->audio_channels = session->audio_tracks =
 		!use_wide_audio ? BD_CHANNELS : BD_WIDE_CHANNELS;
 	for( int i=0; i<MAX_CHANNELS; ++i )
@@ -275,7 +292,8 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 		return 1;
 	}
 
-	BatchRenderJob *job = new BatchRenderJob(mwindow->preferences, use_label_chapters);
+	BatchRenderJob *job = new BD_BatchRenderJob(mwindow->preferences,
+		use_labeled, use_farmed);
 	jobs->append(job);
 	strcpy(&job->edl_path[0], xml_filename);
 	Asset *asset = job->asset;
@@ -318,13 +336,6 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
 	}
 	asset->ff_video_bitrate = vid_bitrate;
 	asset->ff_video_quality = -1;
-
-	job = new BatchRenderJob(mwindow->preferences, 0, 0);
-	jobs->append(job);
-	job->edl_path[0] = '@';
-	strcpy(&job->edl_path[1], script_filename);
-	strcpy(&job->asset->path[0], asset_dir);
-
 	return 0;
 }
 
@@ -413,7 +424,7 @@ void CreateBD_Thread::handle_close_event(int result)
 	mwindow->resync_guis();
 	if( ret ) return;
 	mwindow->batch_render->save_jobs();
-	mwindow->batch_render->start();
+	mwindow->batch_render->start(-use_farmed, -use_labeled);
 }
 
 BC_Window* CreateBD_Thread::new_gui()
@@ -432,7 +443,8 @@ BC_Window* CreateBD_Thread::new_gui()
 	use_inverse_telecine = 0;
 	use_wide_audio = 0;
 	use_resize_tracks = 0;
-	use_label_chapters = 0;
+	use_labeled = 0;
+	use_farmed = 0;
 	use_standard = !strcmp(mwindow->default_std(),"NTSC") ?
 		 BD_1920x1080_2997i : BD_1920x1080_25i;
 	bd_size = BD_SIZE;
@@ -465,7 +477,7 @@ BC_Window* CreateBD_Thread::new_gui()
 	int scr_x = mwindow->gui->get_screen_x(0, -1);
 	int scr_w = mwindow->gui->get_screen_w(0, -1);
 	int scr_h = mwindow->gui->get_screen_h(0, -1);
-	int w = 500, h = 280;
+	int w = 500, h = 290;
 	int x = scr_x + scr_w/2 - w/2, y = scr_h/2 - h/2;
 
 	gui = new CreateBD_GUI(this, x, y, w, h);
@@ -664,7 +676,7 @@ CreateBD_Histogram::~CreateBD_Histogram()
 }
 
 CreateBD_LabelChapters::CreateBD_LabelChapters(CreateBD_GUI *gui, int x, int y)
- : BC_CheckBox(x, y, &gui->thread->use_label_chapters, _("Chapters at Labels"))
+ : BC_CheckBox(x, y, &gui->thread->use_labeled, _("Chapters at Labels"))
 {
 	this->gui = gui;
 }
@@ -672,6 +684,17 @@ CreateBD_LabelChapters::CreateBD_LabelChapters(CreateBD_GUI *gui, int x, int y)
 CreateBD_LabelChapters::~CreateBD_LabelChapters()
 {
 }
+
+CreateBD_UseRenderFarm::CreateBD_UseRenderFarm(CreateBD_GUI *gui, int x, int y)
+ : BC_CheckBox(x, y, &gui->thread->use_farmed, _("Use render farm"))
+{
+	this->gui = gui;
+}
+
+CreateBD_UseRenderFarm::~CreateBD_UseRenderFarm()
+{
+}
+
 
 CreateBD_WideAudio::CreateBD_WideAudio(CreateBD_GUI *gui, int x, int y)
  : BC_CheckBox(x, y, &gui->thread->use_wide_audio, _("Audio 5.1"))
@@ -703,7 +726,8 @@ CreateBD_GUI::CreateBD_GUI(CreateBD_Thread *thread, int x, int y, int w, int h)
 	need_histogram = 0;
 	non_standard = 0;
 	need_wide_audio = 0;
-	need_label_chapters = 0;
+	need_labeled = 0;
+	need_farmed = 0;
 	ok = 0;
 	cancel = 0;
 }
@@ -762,23 +786,30 @@ void CreateBD_GUI::create_objects()
 	add_subwindow(scale);
 	scale->create_objects();
 	y += standard->get_h() + pady/2;
-	need_deinterlace = new CreateBD_Deinterlace(this, x, y);
+	x1 = x;  int y1 = y;
+	need_deinterlace = new CreateBD_Deinterlace(this, x1, y);
 	add_subwindow(need_deinterlace);
-	x1 = x + 170; //, x2 = x1 + 150;
+	y += need_deinterlace->get_h() + pady/2;
+	need_histogram = new CreateBD_Histogram(this, x1, y);
+	add_subwindow(need_histogram);
+	y += need_histogram->get_h() + pady/2;
+	non_standard = new BC_Title(x1, y+5, "", MEDIUMFONT, RED);
+	add_subwindow(non_standard);
+	x1 += 160;  y = y1;
 	need_inverse_telecine = new CreateBD_InverseTelecine(this, x1, y);
 	add_subwindow(need_inverse_telecine);
-	y += need_deinterlace->get_h() + pady/2;
-	need_histogram = new CreateBD_Histogram(this, x, y);
-	add_subwindow(need_histogram);
+	y += need_inverse_telecine->get_h() + pady/2;
 	need_wide_audio = new CreateBD_WideAudio(this, x1, y);
 	add_subwindow(need_wide_audio);
-	y += need_histogram->get_h() + pady/2;
-	non_standard = new BC_Title(x, y+5, "", MEDIUMFONT, RED);
-	add_subwindow(non_standard);
+	y += need_wide_audio->get_h() + pady/2;
 	need_resize_tracks = new CreateBD_ResizeTracks(this, x1, y);
 	add_subwindow(need_resize_tracks);
-//	need_label_chapters = new CreateBD_LabelChapters(this, x2, y);
-//	add_subwindow(need_label_chapters);
+	x1 += 160;  y = y1;
+	need_labeled = new CreateBD_LabelChapters(this, x1, y);
+	add_subwindow(need_labeled);
+	y += need_labeled->get_h() + pady/2;
+	need_farmed = new CreateBD_UseRenderFarm(this, x1, y);
+	add_subwindow(need_farmed);
 	ok_w = BC_OKButton::calculate_w();
 	ok_h = BC_OKButton::calculate_h();
 	ok_x = 10;
@@ -827,7 +858,8 @@ void CreateBD_GUI::update()
 	need_resize_tracks->set_value(thread->use_resize_tracks);
 	need_histogram->set_value(thread->use_histogram);
 	need_wide_audio->set_value(thread->use_wide_audio);
-//	need_label_chapters->set_value(thread->use_label_chapters);
+	need_labeled->set_value(thread->use_labeled);
+	need_farmed->set_value(thread->use_farmed);
 }
 
 int CreateBD_Thread::
@@ -875,7 +907,8 @@ option_presets()
 	use_scale = Rescale::none;
 	use_resize_tracks = 0;
 	use_wide_audio = 0;
-	use_label_chapters = 0;
+	use_labeled = 0;
+	use_farmed = 0;
 
 	if( !mwindow->edl ) return 1;
 
@@ -943,8 +976,6 @@ option_presets()
 		}
 	}
 	if( !has_deinterlace && max_h > 2*bd_height ) use_deinterlace = 1;
-	// Labels *labels = mwindow->edl->labels;
-	// use_label_chapters = labels && labels->first ? 1 : 0;
 
 	if( tracks->recordable_audio_tracks() == BD_WIDE_CHANNELS )
 		use_wide_audio = 1;

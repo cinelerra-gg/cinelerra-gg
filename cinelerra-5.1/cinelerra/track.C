@@ -194,12 +194,9 @@ void Track::copy_from(Track *track)
 {
 	copy_settings(track);
 	edits->copy_from(track->edits);
-	for(int i = 0; i < this->plugin_set.total; i++)
-		delete this->plugin_set.values[i];
 	this->plugin_set.remove_all_objects();
 
-	for(int i = 0; i < track->plugin_set.total; i++)
-	{
+	for( int i=0; i<track->plugin_set.total; ++i ) {
 		PluginSet *new_plugin_set = plugin_set.append(new PluginSet(edl, this));
 		new_plugin_set->copy_from(track->plugin_set.values[i]);
 	}

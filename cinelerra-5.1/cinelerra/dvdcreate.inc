@@ -35,6 +35,7 @@ class CreateDVD_Scale;
 class CreateDVD_ResizeTracks;
 class CreateDVD_Histogram;
 class CreateDVD_LabelChapters;
+class CreateDVD_UseRenderFarm;
 class CreateDVD_WideAudio;
 class CreateDVD_WideAspect;
 class CreateDVD_UseFFMpeg;

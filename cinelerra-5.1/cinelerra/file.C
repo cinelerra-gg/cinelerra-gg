@@ -657,17 +657,10 @@ void File::delete_temp_frame_buffer()
 
 int File::close_file(int ignore_thread)
 {
-	const int debug = 0;
-
-	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
-
 	if( !ignore_thread ) {
 		stop_audio_thread();
 		stop_video_thread();
 	}
-
-
-	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
 	if( file ) {
 // The file's asset is a copy of the argument passed to open_file so the
 // user must copy lengths from the file's asset.
@@ -679,27 +672,17 @@ int File::close_file(int ignore_thread)
 		file->close_file();
 		delete file;
 	}
-	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
 
 	delete_temp_samples_buffer();
 	delete_temp_frame_buffer();
-	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
-
-	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
-
 	reset_parameters();
-	if( debug ) printf("File::close_file file=%p %d\n", file, __LINE__);
 	return 0;
 }
-
-
 
 int File::get_index(IndexFile *index_file, MainProgressBar *progress_bar)
 {
 	return !file ? -1 : file->get_index(index_file, progress_bar);
 }
-
-
 
 int File::start_audio_thread(int buffer_size, int ring_buffers)
 {
@@ -713,20 +696,16 @@ int File::start_audio_thread(int buffer_size, int ring_buffers)
 	return 0;
 }
 
-int File::start_video_thread(int buffer_size,
-	int color_model,
-	int ring_buffers,
-	int compressed)
+int File::start_video_thread(int buffer_size, int color_model,
+		int ring_buffers, int compressed)
 {
 	this->video_ring_buffers = ring_buffers;
 	this->video_buffer_size = buffer_size;
 
 	if( !video_thread ) {
 		video_thread = new FileThread(this, 0, 1);
-		video_thread->start_writing(buffer_size,
-			color_model,
-			ring_buffers,
-			compressed);
+		video_thread->start_writing(buffer_size, color_model,
+				ring_buffers, compressed);
 	}
 	return 0;
 }

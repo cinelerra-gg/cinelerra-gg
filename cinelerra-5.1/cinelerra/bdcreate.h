@@ -24,6 +24,14 @@ public:
 	MWindow *mwindow;
 };
 
+class BD_BatchRenderJob : public BatchRenderJob
+{
+public:
+	static int get_udfs_mount(char *udfs, char *mopts, char *mntpt);
+	BD_BatchRenderJob(Preferences *preferences, int labeled, int farmed);
+	char *create_script(EDL *edl, ArrayList<Indexable *> *idxbls);
+};
+
 
 class CreateBD_Thread : public BC_DialogThread
 {
@@ -34,13 +42,13 @@ class CreateBD_Thread : public BC_DialogThread
 	static const int BD_MAX_BITRATE, BD_CHANNELS, BD_WIDE_CHANNELS;
 	static const double BD_FRAMERATE, BD_SAMPLERATE, BD_KAUDIO_RATE;
 	static const int BD_INTERLACE_MODE;
-	static int get_udfs_mount(char *udfs, char *mopts, char *mntpt);
 public:
 	CreateBD_Thread(MWindow *mwindow);
 	~CreateBD_Thread();
 	void handle_close_event(int result);
 	BC_Window* new_gui();
 	int option_presets();
+	int create_bd_script(const char *path, EDL *edl);
 	int create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char *asset_dir);
 	int insert_video_plugin(const char *title, KeyFrame *default_keyframe);
 	int resize_tracks();
@@ -51,8 +59,8 @@ public:
 	char tmp_path[BCTEXTLEN];
 	int use_deinterlace, use_inverse_telecine;
 	int use_scale, use_resize_tracks;
-	int use_wide_audio;
-	int use_histogram, use_label_chapters;
+	int use_wide_audio, use_farmed;
+	int use_histogram, use_labeled;
 	int use_standard;
 
 	int64_t bd_size;
@@ -169,6 +177,16 @@ public:
 	CreateBD_GUI *gui;
 };
 
+class CreateBD_UseRenderFarm : public BC_CheckBox
+{
+public:
+	CreateBD_UseRenderFarm(CreateBD_GUI *gui, int x, int y);
+	~CreateBD_UseRenderFarm();
+
+	CreateBD_GUI *gui;
+};
+
+
 class CreateBD_WideAudio : public BC_CheckBox
 {
 public:
@@ -208,7 +226,8 @@ public:
 	CreateBD_Histogram *need_histogram;
 	BC_Title *non_standard;
 	CreateBD_WideAudio *need_wide_audio;
-	CreateBD_LabelChapters *need_label_chapters;
+	CreateBD_LabelChapters *need_labeled;
+	CreateBD_UseRenderFarm *need_farmed;
 	int ok_x, ok_y, ok_w, ok_h;
 	CreateBD_OK *ok;
 	int cancel_x, cancel_y, cancel_w, cancel_h;

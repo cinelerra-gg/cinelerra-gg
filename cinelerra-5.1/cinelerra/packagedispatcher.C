@@ -55,15 +55,11 @@ PackageDispatcher::~PackageDispatcher()
 	delete package_lock;
 }
 
-int PackageDispatcher::create_packages(MWindow *mwindow,
-	EDL *edl,
-	Preferences *preferences,
-	int strategy,
-	Asset *default_asset,
-	double total_start,
-	double total_end,
-	int test_overwrite)
+int PackageDispatcher::create_packages(MWindow *mwindow, EDL *edl,
+	Preferences *preferences, int strategy, Asset *default_asset,
+	double total_start, double total_end, int test_overwrite)
 {
+	Label *label;
 	int result = 0;
 
 	this->mwindow = mwindow;
@@ -87,10 +83,8 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 // total_end,
 // default_asset->frame_rate);
 
-
-
-	if(strategy == SINGLE_PASS)
-	{
+	switch( strategy ) {
+	case SINGLE_PASS:
 		total_len = this->total_end - this->total_start;
 		package_len = total_len;
 		min_package_len = total_len;
@@ -105,88 +99,63 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 		packages[0]->audio_do = default_asset->audio_data;
 		packages[0]->video_do = default_asset->video_data;
 		strcpy(packages[0]->path, default_asset->path);
-	}
-	else
-	if(strategy == SINGLE_PASS_FARM)
-	{
+		break;
+	case SINGLE_PASS_FARM:
 		packaging_engine = File::new_packaging_engine(default_asset);
-		packaging_engine->create_packages_single_farm(
-					edl,
-					preferences,
-					default_asset,
-					total_start,
-					total_end);
-	}
-	else
-	if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM)
-	{
-		Label *label = edl->labels->first;
+		packaging_engine->create_packages_single_farm(edl, preferences,
+				default_asset, total_start, total_end);
+		break;
+	case FILE_PER_LABEL:
+	case FILE_PER_LABEL_FARM:
+		label = edl->labels->first;
 		total_packages = 0;
 		packages = new RenderPackage*[edl->labels->total() + 2];
 
 		Render::get_starting_number(default_asset->path,
-			current_number,
-			number_start,
-			total_digits,
-			2);
+			current_number, number_start, total_digits, 3);
 
-		while(audio_position < audio_end)
-		{
-			RenderPackage *package =
-				packages[total_packages] =
-				new RenderPackage;
+		while( audio_position < audio_end ) {
+			RenderPackage *package = new RenderPackage;
+			packages[total_packages++] = package;
 			package->audio_start = audio_position;
 			package->video_start = video_position;
 			package->audio_do = default_asset->audio_data;
 			package->video_do = default_asset->video_data;
 
-
-			while(label &&
+			while( label &&
 				(label->position < (double)audio_position / default_asset->sample_rate ||
-				EQUIV(label->position, (double)audio_position / default_asset->sample_rate)))
-			{
+				EQUIV(label->position, (double)audio_position / default_asset->sample_rate)) ) {
 				label = label->next;
 			}
 
-			if(!label)
-			{
+			if( !label ) {
 				package->audio_end = Units::to_int64(total_end * default_asset->sample_rate);
 				package->video_end = Units::to_int64(total_end * default_asset->frame_rate);
 			}
-			else
-			{
+			else {
 				package->audio_end = Units::to_int64(label->position * default_asset->sample_rate);
 				package->video_end = Units::to_int64(label->position * default_asset->frame_rate);
 			}
 
-			if(package->audio_end > audio_end)
-			{
+			if( package->audio_end > audio_end ) {
 				package->audio_end = audio_end;
 			}
 
-			if(package->video_end > video_end)
-			{
+			if( package->video_end > video_end ) {
 				package->video_end = video_end;
 			}
 
 			audio_position = package->audio_end;
 			video_position = package->video_end;
-// Create file number differently if image file sequence
-			Render::create_filename(package->path,
-				default_asset->path,
-				current_number,
-				total_digits,
-				number_start);
-			current_number++;
 
-			total_packages++;
+// Create file number differently if image file sequence
+			Render::create_filename(package->path, default_asset->path,
+				current_number++, total_digits, number_start);
 		}
 
 		total_allocated = total_packages;
-	}
-	else
-	if(strategy == BRENDER_FARM)
-	{
+		break;
+	case BRENDER_FARM:
 		total_len = this->total_end - this->total_start;
 
 // Create packages as they're requested.
@@ -195,31 +164,24 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 		packages = 0;
 
 		Render::get_starting_number(default_asset->path,
-			current_number,
-			number_start,
-			total_digits,
-			6);
+			current_number, number_start, total_digits, 6);
 
 // Master node only
-		if(preferences->renderfarm_nodes.total == 1)
-		{
+		if( preferences->renderfarm_nodes.total == 1 ) {
 			package_len = total_len;
 			min_package_len = total_len;
 		}
-		else
-		{
+		else {
 			package_len = preferences->brender_fragment /
 				edl->session->frame_rate;
 			min_package_len = 1.0 / edl->session->frame_rate;
 		}
+		break;
 	}
 
 // Test existence of every output file.
 // Only if this isn't a background render or non interactive.
-	if(strategy != BRENDER_FARM &&
-		test_overwrite &&
-		mwindow)
-	{
+	if( strategy != BRENDER_FARM && test_overwrite && mwindow ) {
 		ArrayList<char*> paths;
 		get_package_paths(&paths);
 		result = ConfirmSave::test_files(mwindow, &paths);
@@ -233,9 +195,8 @@ void PackageDispatcher::get_package_paths(ArrayList<char*> *path_list)
 {
 		if (strategy == SINGLE_PASS_FARM)
 			packaging_engine->get_package_paths(path_list);
-		else
-		{
-			for(int i = 0; i < total_allocated; i++)
+		else {
+			for( int i=0; i<total_allocated; ++i )
 				path_list->append(strdup(packages[i]->path));
 			path_list->set_free();
 		}
@@ -243,72 +204,44 @@ void PackageDispatcher::get_package_paths(ArrayList<char*> *path_list)
 }
 
 RenderPackage* PackageDispatcher::get_package(double frames_per_second,
-	int client_number,
-	int use_local_rate)
+		int client_number, int use_local_rate)
 {
-	const int debug = 0;
 	package_lock->lock("PackageDispatcher::get_package");
 
-	if(debug) printf("PackageDispatcher::get_package %d %f %d %d\n",
-		__LINE__,
-		frames_per_second,
-		client_number,
-		use_local_rate);
-
 // Store new frames per second for the node
-	if(!EQUIV(frames_per_second, 0))
-	{
+	if( !EQUIV(frames_per_second, 0) ) {
 		preferences->set_rate(frames_per_second, client_number);
 		if(mwindow) mwindow->preferences->copy_rates_from(preferences);
 	}
-	else
+	else {
 // Use previous frames per second
-	{
 		frames_per_second = preferences->get_rate(client_number);
 	}
-
-	if(debug) printf("PackageDispatcher::get_package %d %f %d %d\n",
-		__LINE__,
-		frames_per_second,
-		client_number,
-		use_local_rate);
 
 	float avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
 
 	RenderPackage *result = 0;
+	switch( strategy ) {
 //printf("PackageDispatcher::get_package 1 %d\n", strategy);
-	if(strategy == SINGLE_PASS ||
-		strategy == FILE_PER_LABEL ||
-		strategy == FILE_PER_LABEL_FARM)
-	{
-		if(current_package < total_packages)
-		{
-			result = packages[current_package];
-			current_package++;
-		}
-	}
-	else
-	if(strategy == SINGLE_PASS_FARM)
-	{
+	case SINGLE_PASS:
+	case FILE_PER_LABEL:
+	case FILE_PER_LABEL_FARM:
+		if( current_package < total_packages )
+			result = packages[current_package++];
+		break;
+	case SINGLE_PASS_FARM:
 		result = packaging_engine->get_package_single_farm(frames_per_second,
-						client_number,
-						use_local_rate);
-	}
-	else
-	if(strategy == BRENDER_FARM)
-	{
+					client_number, use_local_rate);
+		break;
+	case BRENDER_FARM:
 //printf("Dispatcher::get_package 1 %d %d\n", video_position, video_end);
-		if(video_position < video_end)
-		{
+		if( video_position < video_end ) {
 // Allocate new packages
-			if(total_packages == 0)
-			{
+			if( total_packages == 0 ) {
 				total_allocated = 256;
 				packages = new RenderPackage*[total_allocated];
 			}
-			else
-			if(total_packages >= total_allocated)
-			{
+			else if( total_packages >= total_allocated ) {
 				RenderPackage **old_packages = packages;
 				total_allocated *= 2;
 				packages = new RenderPackage*[total_allocated];
@@ -323,17 +256,14 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 			double scaled_len;
 
 // No load balancing data exists
-			if(EQUIV(frames_per_second, 0) ||
-				EQUIV(avg_frames_per_second, 0))
-			{
+			if( EQUIV(frames_per_second, 0) ||
+			     EQUIV(avg_frames_per_second, 0)) {
 				scaled_len = package_len;
 			}
-			else
+			else {
 // Load balancing data exists
-			{
 				scaled_len = package_len *
-					frames_per_second /
-					avg_frames_per_second;
+					frames_per_second / avg_frames_per_second;
 			}
 
 			scaled_len = MAX(scaled_len, min_package_len);
@@ -353,58 +283,43 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 
 
 // The frame numbers are read from the vframe objects themselves.
-			Render::create_filename(result->path,
-				default_asset->path,
-				0,
-				total_digits,
-				number_start);
+			Render::create_filename(result->path, default_asset->path,
+					0, total_digits, number_start);
 //printf("PackageDispatcher::get_package 2 %s\n", result->path);
-
-			current_number++;
-			total_packages++;
-			current_package++;
+			++current_number;
+			++total_packages;
+			++current_package;
 		}
+		break;
 	}
 
 	package_lock->unlock();
-
-	if(debug && result) printf("PackageDispatcher::get_package %d %ld\n", __LINE__, (long)(result->video_end - result->video_start));
 	return result;
 }
 
 
-ArrayList<Indexable*>* PackageDispatcher::get_asset_list()
+int PackageDispatcher::get_asset_list(ArrayList<Indexable*> &idxbls)
 {
-	ArrayList<Indexable*> *assets = new ArrayList<Indexable*>;
-
-const int debug = 0;
-if(debug) printf("PackageDispatcher::get_asset_list %d\n", __LINE__);
-if(debug) default_asset->dump();
-	for(int i = 0; i < current_package; i++)
-	{
+	if( strategy == SINGLE_PASS_FARM )
+		return packaging_engine->get_asset_list(idxbls);
+	for( int i=0; i<current_package; ++i ) {
 		Asset *asset = new Asset;
 		asset->copy_from(default_asset, 1);
 		strcpy(asset->path, packages[i]->path);
 		asset->video_length = packages[i]->video_end - packages[i]->video_start;
 		asset->audio_length = packages[i]->audio_end - packages[i]->audio_start;
-		assets->append(asset);
-if(debug) printf("PackageDispatcher::get_asset_list %d\n", __LINE__);
-if(debug) asset->dump();
+		idxbls.append(asset);
 	}
-
-	return assets;
+	return current_package;
 }
 
 int64_t PackageDispatcher::get_progress_max()
 {
-	if (strategy == SINGLE_PASS_FARM)
-		return packaging_engine->get_progress_max();
-	else
-		return Units::to_int64(default_asset->sample_rate *
-				(total_end - total_start)) +
+	return strategy == SINGLE_PASS_FARM ?
+		packaging_engine->get_progress_max() :
+		Units::to_int64(default_asset->sample_rate * (total_end - total_start)) +
 			Units::to_int64(preferences->render_preroll *
-				total_allocated *
-				default_asset->sample_rate);
+				total_allocated * default_asset->sample_rate);
 }
 
 int PackageDispatcher::get_total_packages()
@@ -414,7 +329,6 @@ int PackageDispatcher::get_total_packages()
 
 int PackageDispatcher::packages_are_done()
 {
-	if (packaging_engine)
-		return packaging_engine->packages_are_done();
-	return 0;
+	return packaging_engine ? packaging_engine->packages_are_done() : 0;
 }
+

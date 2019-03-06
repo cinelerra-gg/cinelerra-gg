@@ -44,6 +44,7 @@ public:
 		int use_local_rate) = 0;
 	virtual int64_t get_progress_max() = 0;
 	virtual void get_package_paths(ArrayList<char*> *path_list) = 0;
+	virtual int get_asset_list(ArrayList<Indexable *> &idxbls) = 0;
 	virtual int packages_are_done() = 0;
 };
 
@@ -66,6 +67,7 @@ public:
 		int use_local_rate);
 	int64_t get_progress_max();
 	void get_package_paths(ArrayList<char*> *path_list);
+	int get_asset_list(ArrayList<Indexable *> &idxbls);
 	int packages_are_done();
 private:
 	RenderPackage **packages;
@@ -80,6 +82,7 @@ private:
 	int64_t video_position;
 	int64_t audio_end;
 	int64_t video_end;
+	double current_position;
 	int current_package;
 	Asset *default_asset;
 	Preferences *preferences;

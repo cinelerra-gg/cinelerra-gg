@@ -58,9 +58,11 @@ int RemoteControl::activate(RemoteHandler *handler)
 		if( !handler ) handler = !mwindow_gui->record->running() ?
 			(RemoteHandler *)mwindow_gui->cwindow_remote_handler :
 			(RemoteHandler *)mwindow_gui->record_remote_handler ;
+		gui->lock_window("RemoteControl::activate");
 		gui->set_active(handler);
 		gui->set_color(handler->color);
 		gui->fill_color(handler->color);
+		gui->unlock_window();
 		result = 1;
 	}
 	active_lock->unlock();

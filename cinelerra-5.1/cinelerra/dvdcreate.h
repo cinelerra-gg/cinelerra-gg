@@ -23,6 +23,24 @@ public:
 	MWindow *mwindow;
 };
 
+class DVD_BatchRenderJob : public BatchRenderJob
+{
+	int chapter;
+	FILE *fp;
+	EDL *edl;
+public:
+	DVD_BatchRenderJob(Preferences *preferences,
+		int labeled, int farmed, int standard, int muxed);
+	void copy_from(DVD_BatchRenderJob *src);
+	DVD_BatchRenderJob *copy();
+	void load(FileXML *file);
+	void save(FileXML *file);
+	char *create_script(EDL *edl, ArrayList<Indexable *> *idxbls);
+	void create_chapter(double pos);
+
+	int standard;
+	int muxed;
+};
 
 class CreateDVD_Thread : public BC_DialogThread
 {
@@ -38,6 +56,8 @@ public:
 	void handle_close_event(int result);
 	BC_Window* new_gui();
 	int option_presets();
+	void create_chapter(FILE *fp, double pos);
+	static int create_dvd_script(BatchRenderJob *job);
 	int create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const char *asset_path);
 	int insert_video_plugin(const char *title, KeyFrame *default_keyframe);
 	int resize_tracks();
@@ -48,8 +68,8 @@ public:
 	char tmp_path[BCTEXTLEN];
 	int use_deinterlace, use_inverse_telecine;
 	int use_scale, use_resize_tracks;
-	int use_wide_audio;
-	int use_histogram, use_label_chapters;
+	int use_wide_audio, use_farmed;
+	int use_histogram, use_labeled;
 	int use_ffmpeg, use_standard;
 
 	int64_t dvd_size;
@@ -165,6 +185,15 @@ public:
 	CreateDVD_GUI *gui;
 };
 
+class CreateDVD_UseRenderFarm : public BC_CheckBox
+{
+public:
+	CreateDVD_UseRenderFarm(CreateDVD_GUI *gui, int x, int y);
+	~CreateDVD_UseRenderFarm();
+
+	CreateDVD_GUI *gui;
+};
+
 class CreateDVD_WideAudio : public BC_CheckBox
 {
 public:
@@ -213,7 +242,8 @@ public:
 	CreateDVD_ResizeTracks *need_resize_tracks;
 	CreateDVD_Histogram *need_histogram;
 	CreateDVD_WideAudio *need_wide_audio;
-	CreateDVD_LabelChapters *need_label_chapters;
+	CreateDVD_LabelChapters *need_labeled;
+	CreateDVD_UseRenderFarm *need_farmed;
 	int ok_x, ok_y, ok_w, ok_h;
 	CreateDVD_OK *ok;
 	int cancel_x, cancel_y, cancel_w, cancel_h;
