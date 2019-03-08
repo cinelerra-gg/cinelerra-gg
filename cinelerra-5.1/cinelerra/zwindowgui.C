@@ -98,13 +98,13 @@ int ZWindowGUI::keypress_event()
 	int result = 1;
 	switch( key ) {
 	case 'f':
-		if( mwindow->session->zwindow_fullscreen )
+		if( canvas->get_fullscreen() )
 			canvas->stop_fullscreen();
 		else
 			canvas->start_fullscreen();
 		break;
 	case ESC:
-		if( mwindow->session->zwindow_fullscreen )
+		if( canvas->get_fullscreen() )
 			canvas->stop_fullscreen();
 		break;
 	default:
@@ -244,15 +244,5 @@ void ZWindowCanvas::draw_refresh(int flush)
 
 	if( dirty )
 		cvs->flash(flush);
-}
-
-int ZWindowCanvas::get_fullscreen()
-{
-	return mwindow->session->zwindow_fullscreen;
-}
-
-void ZWindowCanvas::set_fullscreen(int value)
-{
-	mwindow->session->zwindow_fullscreen = value;
 }
 

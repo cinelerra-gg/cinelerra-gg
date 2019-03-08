@@ -480,7 +480,7 @@ int CWindowGUI::keypress_event()
 		break;
 	case 'f':
 		unlock_window();
-		if(mwindow->session->cwindow_fullscreen)
+		if( canvas->get_fullscreen() )
 			canvas->stop_fullscreen();
 		else
 			canvas->start_fullscreen();
@@ -506,7 +506,7 @@ int CWindowGUI::keypress_event()
 		break;
 	case ESC:
 		unlock_window();
-		if(mwindow->session->cwindow_fullscreen)
+		if( canvas->get_fullscreen() )
 			canvas->stop_fullscreen();
 		lock_window("CWindowGUI::keypress_event 4");
 		result = 1;
@@ -1092,17 +1092,6 @@ void CWindowCanvas::status_event()
 {
 	gui->draw_status(1);
 }
-
-int CWindowCanvas::get_fullscreen()
-{
-	return mwindow->session->cwindow_fullscreen;
-}
-
-void CWindowCanvas::set_fullscreen(int value)
-{
-	mwindow->session->cwindow_fullscreen = value;
-}
-
 
 void CWindowCanvas::update_zoom(int x, int y, float zoom)
 {

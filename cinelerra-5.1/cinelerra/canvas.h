@@ -87,8 +87,8 @@ public:
 	virtual void draw_overlays() {}
 	virtual void toggle_controls() {}
 	virtual int get_cwindow_controls() { return 0; }
-	virtual int get_fullscreen() { return 0; }
-	virtual void set_fullscreen(int value) {}
+	virtual int get_fullscreen();
+	virtual void set_fullscreen(int value);
 
 	int cursor_leave_event_base(BC_WindowBase *caller);
 	int cursor_enter_event_base(BC_WindowBase *caller);
@@ -200,6 +200,7 @@ public:
 // For cases where video is not enabled on the canvas but processing is
 // occurring for a single frame, this causes the status to update.
 	int is_processing;
+	int is_fullscreen;
 // Cursor is inside video surface
 	int cursor_inside;
 	int view_x;

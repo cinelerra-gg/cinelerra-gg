@@ -134,28 +134,28 @@ int BC_PopupMenu::initialize()
 
 int BC_PopupMenu::set_images(VFrame **data)
 {
-	BC_Resources *resources = get_resources();
 	for( int i=0; i<3; ++i ) {
 		delete images[i];
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
 	}
 
-	if( w_argument >= 0 )
-		w = w_argument + margin +
-			resources->popupmenu_triangle_margin;
-	else
-		w = get_text_width(MEDIUMFONT, text) + margin +
-			resources->popupmenu_triangle_margin;
-
+	w = w_argument > 0 ? w_argument :
+		calculate_w(margin, get_text_width(MEDIUMFONT, text), use_title);
 	h = images[BUTTON_UP]->get_h();
 	return 0;
 }
 
-int BC_PopupMenu::calculate_w(int w_argument)
+int BC_PopupMenu::calculate_w(int margin, int text_width, int use_title)
 {
-	return w_argument +
-		BC_WindowBase::get_resources()->popupmenu_margin +
-		BC_WindowBase::get_resources()->popupmenu_triangle_margin;
+	BC_Resources *resources = get_resources();
+	int l = margin >= 0 ? margin : resources->popupmenu_margin;
+	int r = use_title < 0 ? l : resources->popupmenu_triangle_margin;
+	return l + text_width + r;
+}
+
+int BC_PopupMenu::calculate_w(int text_width)
+{
+	return calculate_w(-1, text_width, 0);
 }
 
 int BC_PopupMenu::calculate_h(VFrame **data)
@@ -203,7 +203,6 @@ int BC_PopupMenu::get_margin()
 int BC_PopupMenu::draw_face(int dx)
 {
 	if( !use_title ) return 0;
-	BC_Resources *resources = get_resources();
 
 // Background
 	draw_top_background(parent_window, 0, 0, w, h);
@@ -212,12 +211,12 @@ int BC_PopupMenu::draw_face(int dx)
 // Overlay text
 	set_color(get_resources()->popup_title_text);
 	int offset = status == BUTTON_DN ? 1 : 0;
-	int available_w = get_w() - margin*2 - resources->popupmenu_triangle_margin;
+	int available_w = get_w() - calculate_w(margin, 0, use_title);
+
 	if( !icon ) {
-		set_font(MEDIUMFONT);
 		char truncated[BCTEXTLEN];
 		truncate_text(truncated, text, available_w);
-
+		set_font(MEDIUMFONT);
 		BC_WindowBase::draw_center_text(
 			dx + available_w/2 + margin + offset,
 			(int)((float)get_h()/2 + get_text_ascent(MEDIUMFONT)/2 - 2) + offset,

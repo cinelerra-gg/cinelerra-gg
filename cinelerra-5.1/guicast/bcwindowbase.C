@@ -893,7 +893,7 @@ int BC_WindowBase::dispatch_event(XEvent *event)
 	int result;
 	XClientMessageEvent *ptr;
 	int cancel_resize, cancel_translation;
-	const int debug = 0;
+	volatile static int debug = 0;
 
 	key_pressed = 0;
 
@@ -930,23 +930,22 @@ locking_message = event->xclient.message_type;
 
 
 
-//static const char *event_names[] = {
-//  "Reply", "Error", "KeyPress", "KeyRelease", "ButtonPress", "ButtonRelease", "MotionNotify",
-//  "EnterNotify", "LeaveNotify", "FocusIn", "FocusOut", "KeymapNotify", "Expose", "GraphicsExpose",
-//  "NoExpose", "VisibilityNotify", "CreateNotify", "DestroyNotify", "UnmapNotify", "MapNotify",
-//  "MapRequest", "ReparentNotify", "ConfigureNotify", "ConfigureRequest", "GravityNotify",
-//  "ResizeRequest", "CirculateNotify", "CirculateRequest", "PropertyNotify", "SelectionClear",
-//  "SelectionRequest", "SelectionNotify", "ColormapNotify", "ClientMessage", "MappingNotify",
-//  "GenericEvent", "LASTEvent",
-//};
-//
-//if(debug)
-//if(event->type != ClientMessage) {
-// printf("BC_WindowBase::dispatch_event %d %s %p %d (%s)\n",
-//__LINE__, title, event, event->type,
-//  event->type>=0 && event->type<sizeof(event_names)/sizeof(event_names[0]) ?
-//   event_names[event->type] : "Unknown");
-//}
+if( debug && event->type != ClientMessage ) {
+ static const char *event_names[] = {
+  "Reply", "Error", "KeyPress", "KeyRelease", "ButtonPress", "ButtonRelease", "MotionNotify",
+  "EnterNotify", "LeaveNotify", "FocusIn", "FocusOut", "KeymapNotify", "Expose", "GraphicsExpose",
+  "NoExpose", "VisibilityNotify", "CreateNotify", "DestroyNotify", "UnmapNotify", "MapNotify",
+  "MapRequest", "ReparentNotify", "ConfigureNotify", "ConfigureRequest", "GravityNotify",
+  "ResizeRequest", "CirculateNotify", "CirculateRequest", "PropertyNotify", "SelectionClear",
+  "SelectionRequest", "SelectionNotify", "ColormapNotify", "ClientMessage", "MappingNotify",
+  "GenericEvent", "LASTEvent",
+ };
+ const int nevents = sizeof(event_names)/sizeof(event_names[0]);
+
+ printf("BC_WindowBase::dispatch_event %d %s %p %d (%s)\n", __LINE__,
+  title, event, event->type, event->type>=0 && event->type<nevents ?
+   event_names[event->type] : "Unknown");
+}
 
 	if( active_grab ) {
 		unlock_window();

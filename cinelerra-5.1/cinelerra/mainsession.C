@@ -66,10 +66,6 @@ MainSession::MainSession(MWindow *mwindow)
 	cwindow_controls = 1;
 	trim_edits = 0;
 	current_tip = -1;
-	cwindow_fullscreen = 0;
-	rwindow_fullscreen = 0;
-	vwindow_fullscreen = 0;
-	zwindow_fullscreen = 0;
 	selected_zwindow = -1;
 	actual_frame_rate = 0;
 	title_bar_alpha = 0;

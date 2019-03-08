@@ -122,8 +122,6 @@ public:
 	int need_overlays();
 	void draw_overlays();
 	void close_source();
-	int get_fullscreen();
-	void set_fullscreen(int value);
 
 	MWindow *mwindow;
 	VWindowGUI *gui;

@@ -168,7 +168,8 @@ char *DVD_BatchRenderJob::create_script(EDL *edl, ArrayList<Indexable *> *idxbls
 	}
 
 	fprintf(fp,"#!/bin/bash\n");
-	fprintf(fp,"dir=`dirname $0`\n");
+	fprintf(fp,"sdir=`dirname $0`\n");
+	fprintf(fp,"dir=`cd \"$sdir\"; pwd`\n");
 	fprintf(fp,"echo \"running %s\"\n", script);
 	fprintf(fp,"\n");
 	const char *exec_path = File::get_cinlib_path();
@@ -221,7 +222,7 @@ char *DVD_BatchRenderJob::create_script(EDL *edl, ArrayList<Indexable *> *idxbls
 				bmin(video_length, audio_length) :
 			idxbl->have_video() ? video_length :
 			idxbl->have_audio() ? audio_length : 0;
-		fprintf(fp,"      <vob file=\"%s", !file_seq ? "dvd.mpg" : idxbl->path);
+		fprintf(fp,"      <vob file=\"%s", !file_seq ? "$dir/dvd.mpg" : idxbl->path);
 		chapter = 0;
 		double vob_end = i+1>=total_idxbls ? total_length : vob_pos + length;
 		if( labeled ) {
@@ -361,7 +362,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 	}
 
 	BatchRenderJob *job = new DVD_BatchRenderJob(mwindow->preferences,
-		use_labeled, use_farmed, use_standard, use_ffmpeg);
+		use_labeled, use_farmed, use_standard, 0);// use_ffmpeg);
 	jobs->append(job);
 	strcpy(&job->edl_path[0], xml_filename);
 	Asset *asset = job->asset;
@@ -377,7 +378,12 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		sprintf(&asset->path[0],"%s/dvd.mpg", asset_dir);
 		asset->format = FILE_FFMPEG;
 		strcpy(asset->fformat, "dvd");
-
+// if there are many renderfarm jobs, then there are small audio fragments of
+// silence that are used at the end of a render to fill the last audio "block".
+// this extra data gradually skews the audio/video sync.  Therefore, the audio
+// is not rendered muxed for ffmpeg, and is remuxed as with mjpeg rendering.
+// since this audio is in one file, the only fragment is at the end and is ok.
+#if 0
 		asset->audio_data = 1;
 		asset->channels = session->audio_channels;
 		asset->sample_rate = session->sample_rate;
@@ -395,6 +401,28 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
 		asset->ff_video_bitrate = vid_bitrate;
 		asset->ff_video_quality = -1;
 		use_farmed = job->farmed;
+#else
+		asset->video_data = 1;
+		strcpy(asset->vcodec, "raw.dvd");
+		sprintf(&asset->path[0],"%s/dvd.m2v", asset_dir);
+		FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
+		FFMPEG::load_options(option_path, asset->ff_video_options,
+			 sizeof(asset->ff_video_options));
+		asset->ff_video_bitrate = vid_bitrate;
+		asset->ff_video_quality = -1;
+		use_farmed = job->farmed;
+
+		job = new BatchRenderJob(mwindow->preferences, 0, 0);
+		jobs->append(job);
+		strcpy(&job->edl_path[0], xml_filename);
+		asset = job->asset;
+		sprintf(&asset->path[0],"%s/dvd.ac3", asset_dir);
+		asset->format = FILE_AC3;
+		asset->audio_data = 1;
+		asset->channels = session->audio_channels;
+		asset->sample_rate = session->sample_rate;
+		asset->ac3_bitrate = dvd_kaudio_rate;
+#endif
 	}
 	else {
 		sprintf(&asset->path[0],"%s/dvd.m2v", asset_dir);

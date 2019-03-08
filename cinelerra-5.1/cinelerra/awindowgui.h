@@ -64,6 +64,12 @@
 #define ASSET_VIEW_MEDIA_MAP 3
 #define ASSET_VIEW_FULL 4
 
+#define AVICON_FULL_PLAY   0
+#define AVICON_MOUSE_OVER  1
+#define AVICON_SRC_TARGET  2
+#define AVICON_NO_PLAY     3
+#define AVICON_PLAY_MODES  4
+
 class AWindowFolderItem : public BC_ListBoxItem
 {
 public:
@@ -194,7 +200,8 @@ public:
 	AssetVIconThread(AWindowGUI *gui, Preferences *preferences);
 	~AssetVIconThread();
 
-	void set_view_popup(AssetVIcon *v, int draw_mode=-1);
+	void set_view_popup(AssetVIcon *v, int draw_mode);
+	void set_view_popup(AssetVIcon *v);
 	ViewPopup *new_view_window();
 	void drawing_started();
 	void drawing_stopped();
@@ -276,7 +283,7 @@ public:
 	int save_defaults(BC_Hash *defaults);
 	int load_defaults(BC_Hash *defaults);
 	void start_vicon_drawing();
-	void stop_vicon_drawing();
+	int stop_vicon_drawing();
 	void close_view_popup();
 	void update_picon(Indexable *indexable);
 	int cycle_assetlist_format();
@@ -570,16 +577,26 @@ public:
 	int idx;
 };
 
-class AVIconDrawing : public BC_Toggle
+class AVIconDrawingItem : public BC_MenuItem
 {
 public:
-	AWindowGUI *agui;
-
+	AVIconDrawingItem(AVIconDrawing *avicon, const char *text, int id);
 	int handle_event();
-	static void calculate_geometry(AWindowGUI *agui, VFrame **images, int *ww, int *hh);
 
-	AVIconDrawing(AWindowGUI *agui, int x, int y, VFrame **images);
+	AVIconDrawing *avicon;
+	int id;
+};
+
+class AVIconDrawing : public BC_PopupMenu
+{
+public:
+	AVIconDrawing(AWindowGUI *agui, int x, int y, int w, const char *text);
 	~AVIconDrawing();
+
+	void create_objects();
+	static const char *avicon_names[];
+
+	AWindowGUI *agui;
 };
 
 

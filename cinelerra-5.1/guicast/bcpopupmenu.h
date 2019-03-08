@@ -53,7 +53,8 @@ public:
 	virtual ~BC_PopupMenu();
 
 // Adds popupmenu_margin to width
-	static int calculate_w(int w_argument);
+	static int calculate_w(int margin, int text_width, int use_title);
+	static int calculate_w(int text_width);
 	static int calculate_h(VFrame **data = 0);
 	virtual int handle_event() { return 0; };
 	virtual int draw_face(int dx);

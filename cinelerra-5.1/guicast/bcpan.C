@@ -33,15 +33,9 @@
 #include <math.h>
 #include <string.h>
 
-BC_Pan::BC_Pan(int x,
-		int y,
-		int virtual_r,
-		float maxvalue,
-		int total_values,
-		int *value_positions,
-		int stick_x,
-		int stick_y,
-		float *values)
+BC_Pan::BC_Pan(int x, int y, int virtual_r,
+		float maxvalue, int total_values, int *value_positions,
+		int stick_x, int stick_y, float *values)
  : BC_SubWindow(x, y, -1, -1, -1)
 {
 	this->virtual_r = virtual_r;
@@ -69,29 +63,24 @@ BC_Pan::BC_Pan(int x,
 			this->stick_x,
 			this->stick_y);
 	highlighted = 0;
-	popup = 0;
 	active = 0;
+	temp_channel = 0;
+	rotater = 0;
+	popup = 0;
 	memset(images, 0, sizeof(BC_Pixmap*) * PAN_IMAGES);
 }
 
 BC_Pan::~BC_Pan()
 {
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete [] values;
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete [] value_positions;
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete [] value_x;
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete [] value_y;
-//printf("BC_Pan::~BC_Pan 1\n");
-	if(popup) delete popup;
-//printf("BC_Pan::~BC_Pan 1\n");
+	delete popup;
 	delete temp_channel;
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete rotater;
-	for(int i = 0; i < PAN_IMAGES; i++)
-		if(images[i]) delete images[i];
+	for( int i=0; i<PAN_IMAGES; ++i )
+		delete images[i];
 //printf("BC_Pan::~BC_Pan 2\n");
 }
 
@@ -111,9 +100,6 @@ int BC_Pan::initialize()
 		get_resources()->pan_data[PAN_CHANNEL]->get_h(),
 		get_resources()->pan_data[PAN_CHANNEL]->get_color_model(),
 		-1);
-	rotater = new RotateFrame(1,
-		get_resources()->pan_data[PAN_CHANNEL]->get_w(),
-		get_resources()->pan_data[PAN_CHANNEL]->get_h());
 	draw(1, 0);
 	return 0;
 }
@@ -227,8 +213,8 @@ int BC_Pan::cursor_leave_event()
 
 int BC_Pan::deactivate()
 {
-	if(popup) delete popup;
-	popup = 0;
+	delete popup;    popup = 0;
+	delete rotater;  rotater = 0;
 	active = 0;
 	return 0;
 }
@@ -262,6 +248,10 @@ int BC_Pan::activate(int popup_x, int popup_y)
 		y -= images[PAN_POPUP]->get_h() / 2;
 		if (x < 0) x = 0;
 	}
+
+	rotater = new RotateFrame(1,
+		get_resources()->pan_data[PAN_CHANNEL]->get_w(),
+		get_resources()->pan_data[PAN_CHANNEL]->get_h());
 
 	delete popup;
 	popup = new BC_Popup(this, x, y,

@@ -164,7 +164,8 @@ char *BD_BatchRenderJob::create_script(EDL *edl, ArrayList<Indexable *> *idxbls)
 	int is_usr_mnt = get_udfs_mount(udfs, mopts, mntpt);
 	const char *exec_path = File::get_cinlib_path();
 	fprintf(fp,"#!/bin/bash -ex\n");
-	fprintf(fp,"dir=`dirname $0`\n");
+	fprintf(fp,"sdir=`dirname $0`\n");
+	fprintf(fp,"dir=`cd \"$sdir\"; pwd`\n");
 	fprintf(fp,"PATH=$PATH:%s\n",exec_path);
 	fprintf(fp,"mkdir -p $dir/udfs\n");
 	fprintf(fp,"sz=`du -cb $dir/bd.m2ts* | tail -1 | sed -e 's/[ \t].*//'`\n");

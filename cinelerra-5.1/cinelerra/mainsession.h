@@ -184,10 +184,6 @@ public:
 	int menueffect_w, menueffect_h;
 	int transitiondialog_w, transitiondialog_h;
 
-	int cwindow_fullscreen;
-	int rwindow_fullscreen;
-	int vwindow_fullscreen;
-	int zwindow_fullscreen;
 	int selected_zwindow;
 
 	double actual_frame_rate;

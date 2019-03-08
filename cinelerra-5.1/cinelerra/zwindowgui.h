@@ -67,8 +67,6 @@ public:
 
 	void draw_refresh(int flush = 1);
 	void close_source();
-	int get_fullscreen();
-	void set_fullscreen(int value);
 
 	MWindow *mwindow;
 	ZWindowGUI *gui;

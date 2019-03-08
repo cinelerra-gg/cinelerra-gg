@@ -76,13 +76,16 @@ public:
 	Timer *timer;
 	Condition *draw_lock;
 	ViewPopup *view_win;
-	VIcon *viewing, *vicon;
+	VIcon *viewing, *vicon, *solo;
 	int vw, vh, view_w, view_h;
 	int draw_x0, draw_y0;
 	int draw_x1, draw_y1;
 	int img_dirty, win_dirty;
 	double refresh_rate;
+	int64_t now;
+	int64_t draw_flash;
 	int64_t stop_age;
+	int64_t seq_no;
 
 	ArrayList<VIcon *>t_heap;
 	VIcon *low_vicon();
@@ -91,7 +94,7 @@ public:
 	void run();
 	void flash();
 	int draw(VIcon *vicon);
-	int update_view();
+	int update_view(int do_audio=1);
 	void draw_images();
 	void start_drawing();
 	void stop_drawing();
@@ -105,6 +108,7 @@ public:
 	int zoom_scale(int dir);
 	void close_view_popup();
 	void hide_vicons(int v=1);
+	int show_vicon(VIcon *next);
 	virtual ViewPopup *new_view_window();
 
 	virtual bool visible(VIcon *vicon, int x, int y);

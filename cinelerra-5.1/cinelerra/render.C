@@ -736,7 +736,8 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 
 	render->total_rendered = 0;
 
-	if( !render->result ) {
+	if( !render->result &&
+	    ( strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM ) ) {
 // Start dispatching external jobs
 		if( mwindow ) {
 			mwindow->gui->lock_window("Render::render 1");
@@ -748,24 +749,22 @@ void RenderThread::render_single(int test_overwrite, Asset *asset, EDL *edl,
 			printf("Render::render: starting render farm\n");
 		}
 
-		if( strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM ) {
-			farm_server = new RenderFarmServer(mwindow, render->packages,
-				render->preferences, 1, &render->result,
-				&render->total_rendered, render->counter_lock,
-				render->default_asset, command->get_edl(), 0);
-			render->result = farm_server->start_clients();
+		farm_server = new RenderFarmServer(mwindow, render->packages,
+			render->preferences, 1, &render->result,
+			&render->total_rendered, render->counter_lock,
+			render->default_asset, command->get_edl(), 0);
+		render->result = farm_server->start_clients();
 
-			if( render->result ) {
-				if( mwindow ) {
-					mwindow->gui->lock_window("Render::render 2");
-					mwindow->gui->show_message(_("Failed to start render farm"),
-						mwindow->theme->message_error);
-					mwindow->gui->stop_hourglass();
-					mwindow->gui->unlock_window();
-				}
-				else {
-					printf("Render::render: Failed to start render farm\n");
-				}
+		if( render->result ) {
+			if( mwindow ) {
+				mwindow->gui->lock_window("Render::render 2");
+				mwindow->gui->show_message(_("Failed to start render farm"),
+					mwindow->theme->message_error);
+				mwindow->gui->stop_hourglass();
+				mwindow->gui->unlock_window();
+			}
+			else {
+				printf("Render::render: Failed to start render farm\n");
 			}
 		}
 	}

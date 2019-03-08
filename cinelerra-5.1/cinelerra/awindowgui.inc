@@ -46,6 +46,7 @@ class AWindowAppend;
 class AWindowView;
 class AddTools;
 class AddPluginItem;
+class AVIconDrawingItem;
 class AVIconDrawing;
 class AWindowListFormat;
 class AWindowListSort;

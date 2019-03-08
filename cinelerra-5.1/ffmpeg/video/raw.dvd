@@ -1,0 +1,9 @@
+rawvideo mpeg2video
+s 720x480
+r 30000/1001
+pix_fmt yuv420p
+g 18
+maxrate 9000000
+minrate 0
+bufsize 1835008
+packetsize 2048

@@ -230,9 +230,6 @@ public:
 	int keypress_event();
 	int get_output_w();
 	int get_output_h();
-	int get_fullscreen();
-	void set_fullscreen(int value);
-
 
 	RecordMonitorGUI *window;
 	MWindow *mwindow;

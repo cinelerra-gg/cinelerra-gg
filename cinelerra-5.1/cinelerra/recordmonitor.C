@@ -78,7 +78,6 @@ RecordMonitor::~RecordMonitor()
 void RecordMonitor::create_objects()
 {
 	int min_w = 150;
-	mwindow->session->rwindow_fullscreen = 0;
 
 	if( !record->default_asset->video_data )
 		min_w = MeterPanel::get_meters_width(mwindow->theme,
@@ -424,7 +423,7 @@ void RecordMonitorGUI::create_objects()
 
 int RecordMonitorGUI::button_press_event()
 {
-	if(mwindow->session->rwindow_fullscreen && canvas && canvas->get_canvas())
+	if( canvas && canvas->get_fullscreen() && canvas->get_canvas())
 		return canvas->button_press_event_base(canvas->get_canvas());
 
 	if( get_buttonpress() == 2 ) {
@@ -817,16 +816,6 @@ void RecordMonitorCanvas::zoom_resize_window(float percentage)
 	new_h = canvas_h + (window->get_h() - mwindow->theme->rmonitor_canvas_h);
 	window->resize_window(new_w, new_h);
 	window->resize_event(new_w, new_h);
-}
-
-int RecordMonitorCanvas::get_fullscreen()
-{
-	return mwindow->session->rwindow_fullscreen;
-}
-
-void RecordMonitorCanvas::set_fullscreen(int value)
-{
-	mwindow->session->rwindow_fullscreen = value;
 }
 
 

@@ -88,6 +88,7 @@ void Canvas::reset()
 	canvas_subwindow = 0;
 	canvas_fullscreen = 0;
 	is_processing = 0;
+	is_fullscreen = 0;
 	cursor_inside = 0;
 }
 
@@ -133,6 +134,16 @@ void Canvas::use_rwindow()
 void Canvas::use_vwindow()
 {
 	canvas_menu->use_vwindow();
+}
+
+int Canvas::get_fullscreen()
+{
+	return is_fullscreen;
+}
+
+void Canvas::set_fullscreen(int value)
+{
+	is_fullscreen = value;
 }
 
 // Get dimensions given a zoom

@@ -108,12 +108,16 @@ VIconThread(BC_WindowBase *wdw, int vw, int vh, int view_w, int view_h)
 	this->wdw = wdw;
 	this->vw = vw;         this->vh = vh;
 	this->view_w = view_w; this->view_h = view_h;
-	this->view_win = 0;    this->vicon = 0;    this->viewing = 0;
+	this->view_win = 0;    this->vicon = 0;
+	this->viewing = 0;     this->solo = 0;
 	this->draw_x0 = 0;     this->draw_x1 = wdw->get_w();
 	this->draw_y0 = 0;     this->draw_y1 = wdw->get_h();
 	draw_lock = new Condition(0, "VIconThread::draw_lock", 1);
 	timer = new Timer();
 	this->refresh_rate = VICON_RATE;
+	this->draw_flash = 0;
+	this->seq_no = 0;
+	this->now = 0;
 	done = 0;
 	interrupted = -1;
 	stop_age = 0;
@@ -255,7 +259,11 @@ void ViewPopup::draw_vframe(VFrame *frame)
 
 void VIconThread::set_view_popup(VIcon *vicon)
 {
+	if( viewing == vicon && !this->vicon ) return;
 	this->vicon = vicon;
+	if( interrupted )
+		update_view(0);
+
 }
 
 void VIconThread::close_view_popup()
@@ -264,7 +272,7 @@ void VIconThread::close_view_popup()
 }
 
 int VIconThread::
-update_view()
+update_view(int do_audio)
 {
 	if( viewing ) viewing->stop_audio();
 	delete view_win;  view_win = 0;
@@ -273,7 +281,7 @@ update_view()
 		view_win->draw_vframe(viewing->frame());
 		view_win->flash(0);
 		view_win->show_window();
-		vicon->start_audio();
+		if( do_audio ) vicon->start_audio();
 	}
 	wdw->set_active_subwindow(view_win);
 	return 1;
@@ -334,6 +342,26 @@ void VIconThread::hide_vicons(int v)
 	}
 }
 
+int VIconThread::show_vicon(VIcon *next)
+{
+	now = timer->get_difference();
+	if( now >= draw_flash ) return 1;
+	draw(next);
+	if( !next->seq_no ) {
+		next->cycle_start = now;
+		if( next->playing_audio > 0 )
+			next->start_audio();
+	}
+	int64_t ref_no = (now - next->cycle_start) / 1000. * refresh_rate;
+	int count = ref_no - next->seq_no;
+	if( count < 1 ) count = 1;
+	ref_no = next->seq_no + count;
+	next->age =  next->cycle_start + 1000. * ref_no / refresh_rate;
+	if( !next->set_seq_no(ref_no) )
+		next->age = now + 1000.;
+	return 0;
+}
+
 void VIconThread::
 run()
 {
@@ -343,35 +371,25 @@ run()
 		wdw->lock_window("BC_WindowBase::run 1");
 		drawing_started();
 		reset_images();
-		int64_t seq_no = 0, now = 0;
-		int64_t draw_flash = 1000 / refresh_rate;
+		draw_flash = 1000 / refresh_rate;
+		seq_no = 0;  now = 0;
 		while( !interrupted ) {
 			if( viewing != vicon )
 				update_view();
-			VIcon *next = low_vicon();
-			while( next && next->age < draw_flash ) {
-				now = timer->get_difference();
-				if( now >= draw_flash ) break;
-				draw(next);
-				if( !next->seq_no ) {
-					next->cycle_start = now;
-					if( next->playing_audio > 0 )
-						next->start_audio();
+			if( !solo ) {
+				VIcon *next = low_vicon();
+				while( next && next->age < draw_flash ) {
+					if( show_vicon(next) ) break;
+					add_vicon(next);
+					next = low_vicon();
 				}
-				int64_t ref_no = (now - next->cycle_start) / 1000. * refresh_rate;
-				int count = ref_no - next->seq_no;
-				if( count < 1 ) count = 1;
-				ref_no = next->seq_no + count;
-				next->age =  next->cycle_start + 1000. * ref_no / refresh_rate;
-				if( !next->set_seq_no(ref_no) )
-					next->age = now + 1000.;
+				if( !next ) break;
 				add_vicon(next);
-				next = low_vicon();
+				if( draw_flash < now+1 )
+					draw_flash = now+1;
 			}
-			if( !next ) break;
-			add_vicon(next);
-			if( draw_flash < now+1 )
-				draw_flash = now+1;
+			else
+				show_vicon(solo);
 			wdw->unlock_window();
 			while( !interrupted ) {
 				now = timer->get_difference();
