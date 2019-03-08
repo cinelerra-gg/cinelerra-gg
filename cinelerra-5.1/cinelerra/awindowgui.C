@@ -647,9 +647,13 @@ ViewPopup *AssetVIconThread::new_view_window()
 		vicon->playing_audio = -1;
 		break;
 	case ASSET_VIEW_MEDIA:
-		vicon->playing_audio = 1;
-		vicon->start_audio();
-		break;
+		switch( gui->vicon_drawing ) {
+		case AVICON_FULL_PLAY:
+		case AVICON_MOUSE_OVER:
+			vicon->playing_audio = 1;
+			vicon->start_audio();
+			break;
+		}
 	}
 	wdw->set_active_subwindow(popup);
 	return popup;

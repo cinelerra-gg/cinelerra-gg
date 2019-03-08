@@ -87,6 +87,7 @@ VIcon *VIconThread::low_vicon()
 
 void VIconThread::remove_vicon(int i)
 {
+	if( t_heap[i] == solo ) solo = 0;
 	int sz = t_heap.size();
 	for( int k; (k=2*(i+1)) < sz; i=k ) {
 		if( t_heap[k]->age > t_heap[k-1]->age ) --k;
