@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/Xinerama.h>
 
 class BC_DisplayInfo
 {
@@ -50,6 +51,8 @@ public:
 	static const char *host_display_name(const char *name);
 	void init_window(const char *display_name, int show_error=0);
 	int get_screen() { return screen; }
+	int get_xinerama_screens();
+	int xinerama_geometry(int screen, int &x, int &y, int &w, int &h);
 
 private:
 	static void init_borders();
@@ -65,6 +68,8 @@ private:
 	static int auto_reposition_y;
 	int default_depth;
 	char *display_name;
+	XineramaScreenInfo *xinerama_info;
+	int xinerama_screens;
 };
 
 #endif

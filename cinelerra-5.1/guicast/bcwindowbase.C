@@ -959,42 +959,25 @@ if( debug && event->type != ClientMessage ) {
 	switch(event->type) {
 	case ClientMessage:
 // Clear the resize buffer
-		if(resize_events) dispatch_resize_event(last_resize_w, last_resize_h);
+		if( resize_events )
+			dispatch_resize_event(last_resize_w, last_resize_h);
 // Clear the motion buffer since this can clear the window
-		if(motion_events)
-		{
+		if( motion_events )
 			dispatch_motion_event();
-		}
 
 		ptr = (XClientMessageEvent*)event;
-
-
-		if(ptr->message_type == ProtoXAtom &&
-			(Atom)ptr->data.l[0] == DelWinXAtom)
-		{
+		if( ptr->message_type == ProtoXAtom &&
+		    (Atom)ptr->data.l[0] == DelWinXAtom ) {
 			close_event();
 		}
-		else
-		if(ptr->message_type == RepeaterXAtom)
-		{
+		else if( ptr->message_type == RepeaterXAtom ) {
 			dispatch_repeat_event(ptr->data.l[0]);
-// Make sure the repeater still exists.
-// 				for(int i = 0; i < repeaters.total; i++)
-// 				{
-// 					if(repeaters.values[i]->repeat_id == ptr->data.l[0])
-// 					{
-// 						dispatch_repeat_event_master(ptr->data.l[0]);
-// 						break;
-// 					}
-// 				}
 		}
-		else
-		if(ptr->message_type == SetDoneXAtom)
-		{
+		else if( ptr->message_type == SetDoneXAtom ) {
 			done = 1;
-			} else
-			{ // We currently use X marshalling for xatom events, we can switch to something else later
-				receive_custom_xatoms((xatom_event *)ptr);
+		}
+		else {
+			receive_custom_xatoms((xatom_event *)ptr);
 		}
 		break;
 

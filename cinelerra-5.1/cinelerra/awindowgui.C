@@ -1609,8 +1609,10 @@ void AWindowGUI::start_vicon_drawing()
 	if( !vicon_thread->interrupted ) return;
 	switch( vicon_drawing ) {
 	case AVICON_FULL_PLAY:  // all vicons, viewing, target
-	case AVICON_MOUSE_OVER: // one vicon, viewing, target
 		break;
+	case AVICON_MOUSE_OVER: // one vicon, viewing, target
+		if( vicon_thread->solo ) break;
+	// fall thru
 	case AVICON_SRC_TARGET: // no vicons, no view, target
 	case AVICON_NO_PLAY:    // no vicons, no view, no target
 		return;
@@ -2775,7 +2777,8 @@ int AWindowAssets::selection_changed()
 
 		deactivate_selection();
 	}
-	else if( get_button_down() ) {
+	else if( get_button_down() &&
+                 mwindow->edl->session->assetlist_format != ASSETS_TEXT ) {
 		if( (item = (AssetPicon*)get_selection(0, 0)) != 0 ) {
 			switch( folder ) {
 			case AW_MEDIA_FOLDER:
@@ -2978,9 +2981,9 @@ int AWindowAssets::column_resize_event()
 	return 1;
 }
 
-int AWindowAssets::focus_in_event()
+int AWindowAssets::cursor_enter_event()
 {
-	int ret = BC_ListBox::focus_in_event();
+	int ret = BC_ListBox::cursor_enter_event();
 	switch( gui->vicon_drawing ) {
 	case AVICON_FULL_PLAY:
 		gui->start_vicon_drawing();
@@ -2992,6 +2995,13 @@ int AWindowAssets::focus_in_event()
 		break;
 	}
 	return ret;
+}
+
+int AWindowAssets::cursor_leave_event()
+{
+	if( !gui->vicon_thread->viewing )
+		gui->stop_vicon_drawing();
+	return BC_ListBox::cursor_leave_event();
 }
 
 int AWindowAssets::focus_out_event()
@@ -3027,10 +3037,13 @@ int AWindowAssets::mouse_over_event(int no)
 	case AVICON_MOUSE_OVER:
 		if( !vicon ) break;
 		gui->vicon_thread->solo = vicon;
+		gui->start_vicon_drawing();
+	// fall thru
+	case AVICON_SRC_TARGET:
+		if( !vicon ) break;
 		if( gui->vicon_thread->viewing )
 			gui->vicon_thread->set_view_popup(vicon);
 		break;
-	case AVICON_SRC_TARGET:
 	case AVICON_NO_PLAY:
 	default:
 		break;
@@ -3284,6 +3297,7 @@ int AVIconDrawingItem::handle_event()
 	AWindowGUI *agui = avicon->agui;
 	agui->stop_vicon_drawing();
 	agui->vicon_thread->set_view_popup(0);
+	agui->vicon_thread->solo = 0;
 	agui->vicon_drawing = id;
 	agui->start_vicon_drawing();
 	return 1;

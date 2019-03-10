@@ -201,9 +201,42 @@ void MainSession::default_window_positions(int window_config)
 	int border_bottom = display_info.get_bottom_border();
 
 	int dual_head = screens > 1 ? 1 : 0;
-	int right_w = root_w;
+	int left_w = 0, right_w = root_w;
+	int xin_screens = display_info.get_xinerama_screens();
+	if( xin_screens > 1 ) {
+		dual_head = 1;
+		int x, y, w, h;
+		for( int s=0; s<xin_screens; ++s ) {
+			if( display_info.xinerama_geometry(s, x, y, w, h) )
+				continue;
+			if( !y && !x ) {
+				left_w = w;
+				break;
+			}
+		}
+		if( left_w > 0 ) {
+			for( int s=0; s<xin_screens; ++s ) {
+				if( display_info.xinerama_geometry(s, x, y, w, h) )
+					continue;
+				if( !y && x == left_w ) {
+					right_w = w;
+					screens = 2;
+					break;
+				}
+			}
+			if( window_config == 1 ) {
+				root_x = left_w;
+				root_w = right_w;
+			}
+			else {
+			// use same aspect ratio to compute left height
+				root_w = left_w;
+				root_h = (root_w*root_h) / right_w;
+			}
+		}
+	}
 // Wider than 16:9, narrower than dual head
-	if( screens < 2 && (float)root_w / root_h > 1.8) {
+	if( screens < 2 && (float)root_w / root_h > 1.8 ) {
 		dual_head = 1;
 		switch( root_h ) {
 		case 600:  right_w = 800;   break;

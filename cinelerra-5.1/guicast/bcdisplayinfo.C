@@ -46,11 +46,14 @@ int BC_DisplayInfo::auto_reposition_y = -1;
 BC_DisplayInfo::BC_DisplayInfo(const char *display_name, int show_error)
 {
 	screen = -1;
+	xinerama_screens = -1;
+	xinerama_info = 0;
 	init_window(display_name, show_error);
 }
 
 BC_DisplayInfo::~BC_DisplayInfo()
 {
+	if( xinerama_info ) XFree(xinerama_info);
 #ifndef SINGLE_THREAD
 	XCloseDisplay(display);
 #endif
@@ -60,6 +63,47 @@ BC_DisplayInfo::~BC_DisplayInfo()
 void BC_DisplayInfo::parse_geometry(char *geom, int *x, int *y, int *width, int *height)
 {
 	XParseGeometry(geom, x, y, (unsigned int*)width, (unsigned int*)height);
+}
+
+
+int BC_DisplayInfo::get_xinerama_screens()
+{
+	if( xinerama_screens < 0 ) {
+		xinerama_screens = 0;
+		if( XineramaIsActive(display) )
+			xinerama_info = XineramaQueryScreens(display, &xinerama_screens);
+	}
+	return xinerama_screens;
+}
+
+int BC_DisplayInfo::xinerama_geometry(int screen, int &x, int &y, int &w, int &h)
+{
+	int screens = get_xinerama_screens();
+	if( !screens ) return 1;
+	if( screen >= 0 ) {
+		int k = screens;
+		while( --k >= 0 && xinerama_info[k].screen_number != screen );
+		if( k < 0 ) return 1;
+		x = xinerama_info[k].x_org;  w = xinerama_info[k].width;
+		y = xinerama_info[k].y_org;  h = xinerama_info[k].height;
+	}
+	else {
+		int sx0 = INT_MAX, sx1 = INT_MIN;
+		int sy0 = INT_MAX, sy1 = INT_MIN;
+		for( int i=0; i<screens; ++i ) {
+			int x0 = xinerama_info[i].x_org;
+			int x1 = x0 + xinerama_info[i].width;
+			if( sx0 > x0 ) sx0 = x0;
+			if( sx1 < x1 ) sx1 = x1;
+		 	int y0 = xinerama_info[i].y_org;
+			int y1 = y0 + xinerama_info[i].height;
+			if( sy0 > y0 ) sy0 = y0;
+			if( sy1 < y1 ) sy1 = y1;
+		}
+		x = sx0;  w = sx1 - sx0;
+		y = sy0;  h = sy1 - sy0;
+	}
+	return 0;
 }
 
 static void get_top_coords(Display *display, Window win, int &px,int &py, int &tx,int &ty)

@@ -402,7 +402,8 @@ public:
 	int drag_stop_event();
 	int button_press_event();
 	int column_resize_event();
-	int focus_in_event();
+	int cursor_enter_event();
+	int cursor_leave_event();
 	int focus_out_event();
 	void update_vicon_area();
 	int mouse_over_event(int no);

@@ -385,10 +385,20 @@ const char* BC_Signals::sig_to_str(int number)
 
 #if __i386__
 #define IP eip
+#define sigregs_t sigcontext
 #endif
+
 #if __x86_64__
 #define IP rip
+#define sigregs_t sigcontext
 #endif
+
+#if __powerpc__ || __powerpc64__ || __powerpc64le__
+#include <asm/ptrace.h>
+#define IP nip
+#define sigregs_t pt_regs
+#endif
+
 #ifndef IP
 #error gotta have IP
 #endif
@@ -406,7 +416,7 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 //	if( uid != 0 ) return;
 	ucontext_t *uc = (ucontext_t *)sc;
 	int pid = getpid(), tid = gettid();
-	struct sigcontext *c = (struct sigcontext *)&uc->uc_mcontext;
+	struct sigregs_t *c = (struct sigregs_t *)&uc->uc_mcontext;
 	uint8_t *ip = (uint8_t *)c->IP;
 	fprintf(stderr,"** %s at %p in pid %d, tid %d\n",
 		n==SIGSEGV? "segv" : n==SIGINT? "intr" : "trap",
