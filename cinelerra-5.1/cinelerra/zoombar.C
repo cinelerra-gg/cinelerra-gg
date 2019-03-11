@@ -440,7 +440,8 @@ int AutoZoom::handle_down_event()
 
 
 AutoTypeMenu::AutoTypeMenu(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int wid)
- : BC_PopupMenu(x, y, wid, to_text(mwindow->edl->local_session->zoombar_showautotype), 1)
+ : BC_PopupMenu(x, y, wid + 24,
+	to_text(mwindow->edl->local_session->zoombar_showautotype), 1, 0, 12)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -481,14 +482,14 @@ int AutoTypeMenu::from_text(char *text)
 	return AUTOGROUPTYPE_INT255;
 }
 
-int AutoTypeMenu::draw_face(int dx)
+int AutoTypeMenu::draw_face(int dx, int color)
 {
-	BC_PopupMenu::draw_face(dx, -1);
-	int color = mwindow->edl->local_session->zoombar_showautocolor;
+	BC_PopupMenu::draw_face(dx+8, color);
+	color = mwindow->edl->local_session->zoombar_showautocolor;
 	if( color >= 0 ) {
 		set_color(color);
 		int margin = get_margin();
-		int mx = margin+5, my = 3*margin/8;
+		int mx = margin+4, my = 3*margin/8;
 		int bh = get_h() - 2*my;
 		draw_box(mx,my, bh,bh);
 	}

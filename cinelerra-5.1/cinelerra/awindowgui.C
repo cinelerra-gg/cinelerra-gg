@@ -2801,7 +2801,7 @@ int AWindowAssets::selection_changed()
 
 		deactivate_selection();
 	}
-	else if( get_button_down() &&
+	else if( get_button_down() && !gui->play_off &&
 		 mwindow->edl->session->assetlist_format != ASSETS_TEXT ) {
 		item = (AssetPicon*)get_selection(0, 0);
 		if( item && !get_selection(0, 1) ) {
@@ -2854,6 +2854,7 @@ void AWindowAssets::draw_background()
 
 int AWindowAssets::drag_start_event()
 {
+	gui->vicon_thread->set_view_popup(0);
 	int collect_pluginservers = 0;
 	int collect_assets = 0, proxy = 0;
 

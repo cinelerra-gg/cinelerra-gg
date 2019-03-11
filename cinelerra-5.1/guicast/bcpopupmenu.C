@@ -149,7 +149,7 @@ int BC_PopupMenu::calculate_w(int margin, int text_width, int use_title)
 {
 	BC_Resources *resources = get_resources();
 	int l = margin >= 0 ? margin : resources->popupmenu_margin;
-	int r = use_title < 0 ? l : resources->popupmenu_triangle_margin;
+	int r = use_title < 0 ? l : l + resources->popupmenu_triangle_margin;
 	return l + text_width + r;
 }
 
@@ -231,9 +231,11 @@ int BC_PopupMenu::draw_face(int dx, int color)
 			get_h()/2 - icon->get_h()/2 + offset);
 	}
 
-	if( use_title >= 0 )
-		draw_triangle_down_flat(available_w + margin,
-			get_h()/2 - TRIANGLE_H/2, TRIANGLE_W, TRIANGLE_H);
+	if( use_title >= 0 ) {
+		int tx = get_w() - margin - get_resources()->popupmenu_triangle_margin;
+		int ty = get_h()/2 - TRIANGLE_H/2;
+		draw_triangle_down_flat(tx, ty, TRIANGLE_W, TRIANGLE_H);
+	}
 	return 1;
 }
 
@@ -295,6 +297,8 @@ int BC_PopupMenu::menu_activate()
 		popup_down = 1;
 		if( use_title ) draw_title(1);
 	}
+	else
+		deactivate_menu();
 	return 1;
 }
 
@@ -335,9 +339,7 @@ int BC_PopupMenu::repeat_event(int64_t duration)
 int BC_PopupMenu::button_press_event()
 {
 	int result = 0;
-	if( get_buttonpress() == 1 &&
-		is_event_win() &&
-		use_title ) {
+	if( get_buttonpress() == 1 && is_event_win() && use_title ) {
 		top_level->hide_tooltip();
 		if( status == BUTTON_HI || status == BUTTON_UP ) status = BUTTON_DN;
 		activate_menu();
