@@ -483,7 +483,7 @@ int AutoTypeMenu::from_text(char *text)
 
 int AutoTypeMenu::draw_face(int dx)
 {
-	BC_PopupMenu::draw_face(dx);
+	BC_PopupMenu::draw_face(dx, -1);
 	int color = mwindow->edl->local_session->zoombar_showautocolor;
 	if( color >= 0 ) {
 		set_color(color);

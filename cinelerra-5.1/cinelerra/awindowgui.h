@@ -182,6 +182,7 @@ public:
 			int x, int y, int w, int h);
 	~AssetViewPopup();
 
+	int reposition_window(int x, int y, int w, int h);
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
@@ -202,7 +203,7 @@ public:
 
 	void set_view_popup(AssetVIcon *v, int draw_mode);
 	void set_view_popup(AssetVIcon *v);
-	ViewPopup *new_view_window();
+	ViewPopup *new_view_window(ViewPopup *popup);
 	void drawing_started();
 	void drawing_stopped();
 	void close_view_popup();
@@ -282,7 +283,7 @@ public:
 	bool protected_pixmap(BC_Pixmap *pixmap);
 	int save_defaults(BC_Hash *defaults);
 	int load_defaults(BC_Hash *defaults);
-	void start_vicon_drawing();
+	int start_vicon_drawing();
 	int stop_vicon_drawing();
 	void close_view_popup();
 	void update_picon(Indexable *indexable);
@@ -368,7 +369,7 @@ public:
 
 	AVIconDrawing *avicon_drawing;
 	int avicon_w, avicon_h;
-	int vicon_drawing;
+	int vicon_drawing, play_off;
 	int allow_iconlisting;
 
 // Create custom atoms to be used for async messages between windows
@@ -594,8 +595,10 @@ public:
 	AVIconDrawing(AWindowGUI *agui, int x, int y, int w, const char *text);
 	~AVIconDrawing();
 
-	void create_objects();
 	static const char *avicon_names[];
+	void create_objects();
+	int button_press_event();
+	int draw_face(int dx, int color);
 
 	AWindowGUI *agui;
 };

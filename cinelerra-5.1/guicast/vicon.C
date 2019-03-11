@@ -209,7 +209,7 @@ ViewPopup::~ViewPopup()
 	vt->wdw->set_active_subwindow(0);
 }
 
-ViewPopup *VIconThread::new_view_window()
+ViewPopup *VIconThread::new_view_window(ViewPopup *vpopup)
 {
 	BC_WindowBase *parent = wdw->get_parent();
 	XineramaScreenInfo *info = parent->get_xinerama_info(-1);
@@ -220,9 +220,12 @@ ViewPopup *VIconThread::new_view_window()
 	wdw->get_root_coordinates(vx, vy, &rx, &ry);
 	rx += (rx >= cx ? -view_w+viewing->w/4 : viewing->w-viewing->w/4);
 	ry += (ry >= cy ? -view_h+viewing->h/4 : viewing->h-viewing->h/4);
-	ViewPopup *vwin = new ViewPopup(this, rx, ry, view_w, view_h);
-	wdw->set_active_subwindow(vwin);
-	return vwin;
+	if( vpopup )
+		vpopup->reposition_window(rx, ry, view_w, view_h);
+	else
+		vpopup = new ViewPopup(this, rx, ry, view_w, view_h);
+	wdw->set_active_subwindow(vpopup);
+	return vpopup;
 }
 
 
@@ -262,8 +265,7 @@ void VIconThread::set_view_popup(VIcon *vicon)
 {
 	if( viewing == vicon && !this->vicon ) return;
 	this->vicon = vicon;
-	if( interrupted )
-		update_view(0);
+	if( interrupted ) update_view(vicon ? 1 : 0);
 
 }
 
@@ -278,7 +280,7 @@ update_view(int do_audio)
 	if( viewing ) viewing->stop_audio();
 	delete view_win;  view_win = 0;
 	if( (viewing=vicon) != 0 ) {
-		view_win = new_view_window();
+		view_win = new_view_window(0);
 		view_win->draw_vframe(viewing->frame());
 		view_win->flash(0);
 		view_win->show_window();
@@ -290,12 +292,15 @@ update_view(int do_audio)
 
 int VIconThread::zoom_scale(int dir)
 {
+	if( !viewing || !view_win ) return 0;
 	int view_h = this->view_h;
 	view_h += dir*view_h/10 + dir;
 	bclamp(view_h, 16,512);
 	this->view_h = view_h;
 	this->view_w = view_h * vw/vh;
-	stop_viewing();
+	new_view_window(view_win);
+	view_win->draw_vframe(viewing->frame());
+	view_win->flash(1);
 	return 1;
 }
 
@@ -376,7 +381,7 @@ run()
 		seq_no = 0;  now = 0;
 		while( !interrupted ) {
 			if( viewing != vicon )
-				update_view();
+				update_view(1);
 			if( !solo ) {
 				VIcon *next = low_vicon();
 				while( next && next->age < draw_flash ) {
@@ -410,7 +415,7 @@ run()
 			draw_flash = seq_no * 1000. / refresh_rate;
 		}
 		if( viewing != vicon )
-			update_view();
+			update_view(1);
 		drawing_stopped();
 		interrupted = -1;
 		wdw->unlock_window();

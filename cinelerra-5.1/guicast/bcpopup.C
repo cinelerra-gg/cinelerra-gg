@@ -46,6 +46,12 @@ BC_FullScreen::~BC_FullScreen()
 {
 }
 
+int BC_FullScreen::expose_event()
+{
+	focus();
+	return 1;
+}
+
 
 BC_Popup::BC_Popup(BC_WindowBase *parent_window,
 		int x, int y, int w, int h, int bg_color, int hide, BC_Pixmap *bg_pixmap)
@@ -62,6 +68,11 @@ BC_Popup::~BC_Popup()
 {
 }
 
+int BC_Popup::expose_event()
+{
+	focus();
+	return 1;
+}
 
 void BC_Popup::grab_keyboard()
 {

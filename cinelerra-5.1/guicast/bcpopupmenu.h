@@ -35,19 +35,12 @@
 class BC_PopupMenu : public BC_SubWindow
 {
 public:
-	BC_PopupMenu(int x,
-		int y,
-		int w,
-		const char *text,
-		int use_title = 1,
+	BC_PopupMenu(int x, int y, int w, const char *text, int use_title = 1,
 // Data for alternative title images
 		VFrame **data = 0,
 // Alternative text margin
 		int margin = -1);
-	BC_PopupMenu(int x,
-		int y,
-		const char *text,
-		int use_title = 1,
+	BC_PopupMenu(int x, int y, const char *text, int use_title = 1,
 // Data for alternative title images
 		VFrame **data = 0);
 	virtual ~BC_PopupMenu();
@@ -57,7 +50,7 @@ public:
 	static int calculate_w(int text_width);
 	static int calculate_h(VFrame **data = 0);
 	virtual int handle_event() { return 0; };
-	virtual int draw_face(int dx);
+	virtual int draw_face(int dx, int color);
 	char* get_text();
 	int initialize();
 	int add_item(BC_MenuItem *item);
@@ -79,8 +72,8 @@ public:
 	int deactivate_menu();
 	int focus_out_event();
 	int repeat_event(int64_t duration);
-	int button_press_event();
-	int button_release_event();
+	virtual int button_press_event();
+	virtual int button_release_event();
 	int cursor_leave_event();
 	int cursor_enter_event();
 	int cursor_motion_event();

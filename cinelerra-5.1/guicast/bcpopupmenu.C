@@ -200,7 +200,7 @@ int BC_PopupMenu::get_margin()
 	return margin;
 }
 
-int BC_PopupMenu::draw_face(int dx)
+int BC_PopupMenu::draw_face(int dx, int color)
 {
 	if( !use_title ) return 0;
 
@@ -209,7 +209,9 @@ int BC_PopupMenu::draw_face(int dx)
 	draw_3segmenth(0, 0, w, images[status]);
 
 // Overlay text
-	set_color(get_resources()->popup_title_text);
+	if( color < 0 ) color = get_resources()->popup_title_text;
+	set_color(color);
+
 	int offset = status == BUTTON_DN ? 1 : 0;
 	int available_w = get_w() - calculate_w(margin, 0, use_title);
 
@@ -237,7 +239,7 @@ int BC_PopupMenu::draw_face(int dx)
 
 int BC_PopupMenu::draw_title(int flush)
 {
-	draw_face(0);
+	draw_face(0, -1);
 	flash(flush);
 	return 0;
 }

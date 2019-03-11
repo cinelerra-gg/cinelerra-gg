@@ -332,6 +332,12 @@ AssetViewPopup::~AssetViewPopup()
 {
 }
 
+int AssetViewPopup::reposition_window(int x, int y, int w, int h)
+{
+	this->bar_h = (VIEW_POPUP_BAR_H * h) / 200;
+	return ViewPopup::reposition_window(x, y, w, h);
+}
+
 int AssetViewPopup::button_press_event()
 {
 	if( !is_event_win() ) return 0;
@@ -342,6 +348,9 @@ int AssetViewPopup::button_press_event()
 	switch( get_buttonpress() ) {
 	case LEFT_BUTTON:
 		break;
+	case MIDDLE_BUTTON:
+		avt->set_view_popup(0);
+		return 1;
 	case WHEEL_DOWN:
 		dir = -1; // fall thru
 	case WHEEL_UP:
@@ -556,6 +565,7 @@ void AssetViewPopup::draw_vframe(VFrame *vframe)
 
 int AssetViewPopup::keypress_event()
 {
+	int result = 0;
 	AssetVIconThread *avt = (AssetVIconThread *)vt;
 	switch( avt->draw_mode ) {
 	case ASSET_VIEW_MEDIA_MAP:
@@ -563,15 +573,15 @@ int AssetViewPopup::keypress_event()
 		case 'f':
 		case 'F':
 			avt->draw_mode = ASSET_VIEW_FULL;
-			avt->viewing = 0;
-			return 1;
+			result = 1;
 		}
 		break;
 	case ASSET_VIEW_FULL:
 		avt->draw_mode = ASSET_VIEW_MEDIA_MAP;
-		avt->viewing = 0;
-		return 1;
+		result = 1;
 	}
+	if( result ) // zero change for refresh
+		avt->zoom_scale(0);
 	return ViewPopup::keypress_event();
 }
 
@@ -611,7 +621,7 @@ void AssetVIconThread::set_view_popup(AssetVIcon *v, int draw_mode)
 {
 	gui->stop_vicon_drawing();
 	this->draw_mode = draw_mode;
-	VIconThread::set_view_popup(v);
+	set_view_popup(v);
 	gui->start_vicon_drawing();
 }
 
@@ -621,7 +631,7 @@ void AssetVIconThread::set_view_popup(AssetVIcon *v)
 	VIconThread::set_view_popup(v);
 }
 
-ViewPopup *AssetVIconThread::new_view_window()
+ViewPopup *AssetVIconThread::new_view_window(ViewPopup *vpopup)
 {
 	BC_WindowBase *parent = wdw->get_parent();
 	int rx = 0, ry = 0, rw = 0, rh = 0;
@@ -637,26 +647,32 @@ ViewPopup *AssetVIconThread::new_view_window()
 	}
 	else
 		parent->get_fullscreen_geometry(rx, ry, rw, rh);
-	AssetViewPopup *popup = new AssetViewPopup(this, draw_mode, rx, ry, rw, rh);
-	switch( draw_mode ) {
-	case ASSET_VIEW_NONE:
-	case ASSET_VIEW_ICON:
-	case ASSET_VIEW_MEDIA_MAP:
-	case ASSET_VIEW_FULL:
-		vicon->stop_audio();
-		vicon->playing_audio = -1;
-		break;
-	case ASSET_VIEW_MEDIA:
-		switch( gui->vicon_drawing ) {
-		case AVICON_FULL_PLAY:
-		case AVICON_MOUSE_OVER:
-			vicon->playing_audio = 1;
-			vicon->start_audio();
+	AssetViewPopup *av_popup = (AssetViewPopup *)vpopup;
+	if( av_popup )
+		av_popup->reposition_window(rx, ry, rw, rh);
+	else
+		av_popup = new AssetViewPopup(this, draw_mode, rx, ry, rw, rh);
+	int playing_audio = gui->play_off ? -1 : 0;
+	if( !playing_audio ) {
+		switch( draw_mode ) {
+		case ASSET_VIEW_NONE:
+		case ASSET_VIEW_ICON:
+		case ASSET_VIEW_MEDIA_MAP:
+		case ASSET_VIEW_FULL:
+			playing_audio = -1;
 			break;
+		case ASSET_VIEW_MEDIA:
+			switch( gui->vicon_drawing ) {
+			case AVICON_SRC_TARGET:
+			case AVICON_NO_PLAY:
+				playing_audio = -1;
+				break;
+			}
 		}
 	}
-	wdw->set_active_subwindow(popup);
-	return popup;
+	vicon->playing_audio = playing_audio;
+	wdw->set_active_subwindow(av_popup);
+	return av_popup;
 }
 
 void AssetVIconThread::close_view_popup()
@@ -1270,6 +1286,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	vicon_thread = 0;
 	vicon_audio = 0;
 	vicon_drawing = AVICON_FULL_PLAY;
+	play_off = 0;
 	displayed_folder = AW_NO_FOLDER;
 	new_folder_thread = 0;
 	modify_folder_thread = 0;
@@ -1467,9 +1484,14 @@ void AWindowGUI::create_objects()
 
 	int fx = mwindow->theme->afolders_x, fy = mwindow->theme->afolders_y;
 	int fw = mwindow->theme->afolders_w, fh = mwindow->theme->afolders_h;
-	const char *text = _("Preview");
- 	int tw = get_text_width(MEDIUMFONT, text);
-	int pw = BC_PopupMenu::calculate_w(4, tw, -1);
+	int n = sizeof(AVIconDrawing::avicon_names)/sizeof(AVIconDrawing::avicon_names[0]);
+	int tw = 0;  const char **av_names = AVIconDrawing::avicon_names;
+	for( int i=0; i<n; ++i ) {
+		int nw = get_text_width(MEDIUMFONT, _(av_names[i]));
+		if( tw < nw )  tw = nw;
+	}
+	int pw = BC_PopupMenu::calculate_w(4, tw, -1) + 16;
+	const char *text = _(AVIconDrawing::avicon_names[vicon_drawing]);
 	add_subwindow(avicon_drawing = new AVIconDrawing(this, fw, fy, pw, text));
 	avicon_drawing->create_objects();
 	add_subwindow(add_tools = new AddTools(mwindow, this, fx, fy, _("Visibility")));
@@ -1604,9 +1626,10 @@ int AWindowGUI::close_event()
 	return 1;
 }
 
-void AWindowGUI::start_vicon_drawing()
+int AWindowGUI::start_vicon_drawing()
 {
-	if( !vicon_thread->interrupted ) return;
+	if( play_off ) return stop_vicon_drawing();
+	if( !vicon_thread->interrupted ) return 1;
 	switch( vicon_drawing ) {
 	case AVICON_FULL_PLAY:  // all vicons, viewing, target
 		break;
@@ -1615,7 +1638,7 @@ void AWindowGUI::start_vicon_drawing()
 	// fall thru
 	case AVICON_SRC_TARGET: // no vicons, no view, target
 	case AVICON_NO_PLAY:    // no vicons, no view, no target
-		return;
+		return 0;
 	}
 	if( mwindow->edl->session->awindow_folder == AW_MEDIA_FOLDER ||
 	    mwindow->edl->session->awindow_folder == AW_PROXY_FOLDER ||
@@ -1632,13 +1655,14 @@ void AWindowGUI::start_vicon_drawing()
 			break;
 		}
 	}
+	return 1;
 }
 
 int AWindowGUI::stop_vicon_drawing()
 {
-	if( vicon_thread->interrupted ) return 0;
-	vicon_thread->stop_drawing();
-	return 1;
+	if( !vicon_thread->interrupted )
+		vicon_thread->stop_drawing();
+	return 0;
 }
 
 void AWindowGUI::close_view_popup()
@@ -2778,8 +2802,9 @@ int AWindowAssets::selection_changed()
 		deactivate_selection();
 	}
 	else if( get_button_down() &&
-                 mwindow->edl->session->assetlist_format != ASSETS_TEXT ) {
-		if( (item = (AssetPicon*)get_selection(0, 0)) != 0 ) {
+		 mwindow->edl->session->assetlist_format != ASSETS_TEXT ) {
+		item = (AssetPicon*)get_selection(0, 0);
+		if( item && !get_selection(0, 1) ) {
 			switch( folder ) {
 			case AW_MEDIA_FOLDER:
 			case AW_PROXY_FOLDER:
@@ -2999,6 +3024,7 @@ int AWindowAssets::cursor_enter_event()
 
 int AWindowAssets::cursor_leave_event()
 {
+	if( !is_event_win() ) return 0;
 	if( !gui->vicon_thread->viewing )
 		gui->stop_vicon_drawing();
 	return BC_ListBox::cursor_leave_event();
@@ -3210,7 +3236,7 @@ int AWindowView::handle_event()
 }
 
 AddTools::AddTools(MWindow *mwindow, AWindowGUI *gui, int x, int y, const char *title)
- : BC_PopupMenu(x, y, gui->get_text_width(MEDIUMFONT, title)+8, title, -1, 0, 4)
+ : BC_PopupMenu(x, y, title, -1, 0)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -3295,12 +3321,24 @@ int AVIconDrawingItem::handle_event()
 		item->set_checked(id == i);
 	}
 	AWindowGUI *agui = avicon->agui;
+	agui->play_off = 0;
+	avicon->set_text(get_text());
 	agui->stop_vicon_drawing();
 	agui->vicon_thread->set_view_popup(0);
 	agui->vicon_thread->solo = 0;
 	agui->vicon_drawing = id;
 	agui->start_vicon_drawing();
 	return 1;
+}
+
+int AVIconDrawing::draw_face(int dx, int color)
+{
+	int ret = BC_PopupMenu::draw_face(dx, color);
+	if( agui->play_off ) {
+		int lx = get_margin(), ly = get_h()/2;
+		draw_line(lx,ly, get_w()-2*lx,ly);
+	}
+	return ret;
 }
 
 AVIconDrawing::AVIconDrawing(AWindowGUI *agui, int x, int y, int w, const char *text)
@@ -3320,6 +3358,19 @@ void AVIconDrawing::create_objects()
 		add_item(item = new AVIconDrawingItem(this, avicon_names[i], i));
 		item->set_checked(agui->vicon_drawing == i);
 	}
+}
+
+int AVIconDrawing::button_press_event()
+{
+	if( !is_event_win() ) return 0;
+	if( get_buttonpress() == MIDDLE_BUTTON ) {
+		agui->play_off = !agui->play_off ? 1 : 0;
+		draw_face(0, -1);
+		flash(1);
+		agui->start_vicon_drawing();
+		return 1;
+	}
+	return BC_PopupMenu::button_press_event();
 }
 
 AWindowListFormat::AWindowListFormat(MWindow *mwindow, AWindowGUI *gui)

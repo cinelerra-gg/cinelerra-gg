@@ -94,7 +94,7 @@ public:
 	void run();
 	void flash();
 	int draw(VIcon *vicon);
-	int update_view(int do_audio=1);
+	int update_view(int do_audio);
 	void draw_images();
 	void start_drawing();
 	void stop_drawing();
@@ -109,7 +109,7 @@ public:
 	void close_view_popup();
 	void hide_vicons(int v=1);
 	int show_vicon(VIcon *next);
-	virtual ViewPopup *new_view_window();
+	virtual ViewPopup *new_view_window(ViewPopup *vpopup);
 
 	virtual bool visible(VIcon *vicon, int x, int y);
 	virtual void drawing_started() {}

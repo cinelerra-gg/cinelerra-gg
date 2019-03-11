@@ -566,9 +566,8 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window, const char *title
 		mask = CWEventMask | CWBackPixel | CWColormap |
 			CWOverrideRedirect | CWSaveUnder | CWCursor;
 
-		attr.event_mask = DEFAULT_EVENT_MASKS |
-			KeyPressMask |
-			KeyReleaseMask;
+		attr.event_mask = DEFAULT_EVENT_MASKS | ExposureMask |
+			KeyPressMask | KeyReleaseMask;
 
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
@@ -1066,7 +1065,13 @@ if( debug && event->type != ClientMessage ) {
 
 	case Expose:
 		event_win = event->xany.window;
-		dispatch_expose_event();
+		result = 0;
+		for( int i=0; !result && i<popups.size(); ++i ) {  // popups take focus
+			if( popups[i]->win == event_win )
+				result = popups[i]->dispatch_expose_event();
+		}
+		if( !result )
+			result = dispatch_expose_event();
 		break;
 
 	case MotionNotify:
