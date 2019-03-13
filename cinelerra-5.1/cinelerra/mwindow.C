@@ -1875,10 +1875,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 		sprintf(string, _("Loading %s"), new_asset->path);
 		gui->show_message(string);
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 		ftype = new_file->open_file(preferences, new_asset, 1, 0);
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 		result = 1;
 		switch( ftype ) {
@@ -1888,7 +1886,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 			if( new_asset->video_data &&
 			    ((new_asset->width % 2) || (new_asset->height % 2)) ) {
 				char string[BCTEXTLEN];
-				sprintf(string, _("%s's resolution is %dx%d.\nImages with odd dimensions may not decode properly."),
+				sprintf(string, _("%s's resolution is %dx%d.\n"
+					"Images with odd dimensions may not decode properly."),
 					new_asset->path, new_asset->width, new_asset->height);
 				MainError::show_error(string);
 			}
@@ -2016,9 +2015,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 		case FILE_IS_XML: {
 			FileXML xml_file;
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 			xml_file.read_from_file(filenames->get(i));
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 			const char *cin_version = 0;
 			while( !xml_file.read_tag() ) {
 				if( xml_file.tag.title_is("EDL") ) {
@@ -2051,7 +2048,6 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				nested_edl->load_xml(&xml_file, LOAD_ALL);
 				int groups = nested_edl->regroup(session->group_number);
 				session->group_number += groups;
-//printf("MWindow::load_filenames %p %s\n", nested_edl, nested_edl->project_path);
 				new_edl->create_nested(nested_edl);
 				new_edl->set_path(filenames->get(i));
 				nested_edl->Garbage::remove_user();
@@ -2061,9 +2057,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				new_edl->load_xml(&xml_file, LOAD_ALL);
 				int groups = new_edl->regroup(session->group_number);
 				session->group_number += groups;
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				test_plugins(new_edl, filenames->get(i));
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 				if( load_mode == LOADMODE_REPLACE ||
 				    load_mode == LOADMODE_REPLACE_CONCATENATE ) {
@@ -2109,33 +2103,27 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Paste them.
 // Don't back up here.
-	if(new_edls.size())
-	{
+	if( new_edls.size() ) {
 // For pasting, clear the active region
-		if(load_mode == LOADMODE_PASTE ||
-			load_mode == LOADMODE_NESTED)
-		{
+		if( load_mode == LOADMODE_PASTE ||
+		    load_mode == LOADMODE_NESTED ) {
 			double start = edl->local_session->get_selectionstart();
 			double end = edl->local_session->get_selectionend();
 			if(!EQUIV(start, end))
-				edl->clear(start,
-					end,
+				edl->clear(start, end,
 					edl->session->labels_follow_edits,
 					edl->session->plugins_follow_edits,
 					edl->session->autos_follow_edits);
+
+			paste_edls(&new_edls, load_mode, 0, -1,
+				edl->session->labels_follow_edits,
+				edl->session->plugins_follow_edits,
+				edl->session->autos_follow_edits,
+				0); // overwrite
 		}
-
-		paste_edls(&new_edls, load_mode, 0, -1,
-			edl->session->labels_follow_edits,
-			edl->session->plugins_follow_edits,
-			edl->session->autos_follow_edits,
-			0); // overwrite
+		else
+			paste_edls(&new_edls, load_mode, 0, -1, 1, 1, 1, 0);
 	}
-
-
-
-
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Add new assets to EDL and schedule assets for index building.
 	int got_indexes = 0;
@@ -2149,7 +2137,6 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 	}
 
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	for( int i=0; i<new_assets.size(); ++i ) {
 		Asset *new_asset = new_assets[i];
 
@@ -2167,29 +2154,22 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 		edl->assets->update(new_asset);
 		got_indexes = 1;
 	}
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Start examining next batch of index files
 	if(got_indexes) mainindexes->start_build();
-if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Open plugin GUIs
 	Track *track = edl->tracks->first;
-	while(track)
-	{
-		for(int j = 0; j < track->plugin_set.size(); j++)
-		{
+	while( track ) {
+		for( int j = 0; j < track->plugin_set.size(); j++ ) {
 			PluginSet *plugins = track->plugin_set[j];
 			Plugin *plugin = plugins->get_first_plugin();
 
-			while(plugin)
-			{
-				if(load_mode == LOADMODE_REPLACE ||
-					load_mode == LOADMODE_REPLACE_CONCATENATE)
-				{
-					if(plugin->plugin_type == PLUGIN_STANDALONE &&
-						plugin->show)
-					{
+			while(plugin) {
+				if( load_mode == LOADMODE_REPLACE ||
+				    load_mode == LOADMODE_REPLACE_CONCATENATE ) {
+					if( plugin->plugin_type == PLUGIN_STANDALONE &&
+					    plugin->show ) {
 						show_plugin(plugin);
 					}
 				}

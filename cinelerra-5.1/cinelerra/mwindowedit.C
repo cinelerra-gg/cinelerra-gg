@@ -1872,22 +1872,19 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 			edl->add_clip(new_edl);
 			break;
 		}
-//PRINT_TRACE
 // Insert edl
 		if( load_mode != LOADMODE_RESOURCESONLY &&
 		    load_mode != LOADMODE_ASSETSONLY ) {
 // Insert labels
-			if( edl->session->labels_follow_edits ) {
-//printf("MWindow::paste_edls %f %f\n", current_position, edl_length);
+			if( edit_labels ) {
 				if( load_mode == LOADMODE_PASTE || load_mode == LOADMODE_NESTED )
 					edl->labels->insert_labels(new_edl->labels,
 						destination_tracks.total ? paste_position[0] : 0.0,
-						edl_length, edit_labels);
+						edl_length, 1);
 				else
 					edl->labels->insert_labels(new_edl->labels, current_position,
-						edl_length, edit_labels);
+						edl_length, 1);
 			}
-//PRINT_TRACE
 			double total_length = new_edl->tracks->total_length();
 			for( Track *new_track=new_edl->tracks->first;
 			     new_track; new_track=new_track->next ) {
