@@ -612,7 +612,7 @@ void Tracks::move_edits(ArrayList<Edit*> *in_edits, Track *track, double positio
 		}
 
 		FileXML track_xml;
-		source_track->copy(source_start, source_end, &track_xml, "");
+		source_track->copy(COPY_TRACKS, source_start, source_end, &track_xml, "");
 		if( !track_xml.read_tag() )
 			clip_track->load(&track_xml, 0, LOAD_ALL);
 
@@ -800,27 +800,16 @@ void Tracks::change_plugins(SharedLocation &old_location, SharedLocation &new_lo
 // =========================================== EDL editing
 
 
-int Tracks::copy(double start,
-	double end,
-	int all,
-	FileXML *file,
-	const char *output_path)
+int Tracks::copy(int copy_flags, double start, double end,
+		FileXML *file, const char *output_path)
 {
-// nothing selected
-	if(start == end && !all) return 1;
-
-	Track* current;
-
-	for(current = first;
-		current;
-		current = NEXT)
-	{
-		if(current->record || all)
-		{
-			current->copy(start, end, file,output_path);
-		}
+	int all = (copy_flags & COPY_ALL) ? 1 : 0;
+// if nothing selected
+	if( start == end && !all ) return 1;
+	for( Track *track=first; track; track=track->next ) {
+		if( track->record || all )
+			track->copy(copy_flags, start, end, file, output_path);
 	}
-
 	return 0;
 }
 

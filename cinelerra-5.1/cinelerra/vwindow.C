@@ -380,7 +380,7 @@ void VWindow::copy(int all)
 		copy_edl->create_objects();
 		copy_edl->copy_all(edl);
 		FileXML file;
-		copy_edl->copy(start, end, 0, &file, "", 1);
+		copy_edl->copy(COPY_CLIPBOARD, start, end, &file, "", 1);
 		copy_edl->remove_user();
 		const char *file_string = file.string();
 		long file_length = strlen(file_string);

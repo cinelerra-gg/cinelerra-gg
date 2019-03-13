@@ -1059,10 +1059,8 @@ void Track::set_automation_mode(double selectionstart,
 
 
 
-int Track::copy(double start,
-	double end,
-	FileXML *file,
-	const char *output_path)
+int Track::copy(int copy_flags, double start, double end,
+		FileXML *file, const char *output_path)
 {
 // Use a copy of the selection in converted units
 // So copy_automation doesn't reconvert.
@@ -1102,16 +1100,18 @@ int Track::copy(double start,
 // 	file->append_tag();
 // 	file->append_newline();
 
-	edits->copy(start_unit, end_unit, file, output_path);
+	if( (copy_flags & COPY_EDITS) )
+		edits->copy(start_unit, end_unit, file, output_path);
 
-	AutoConf auto_conf;
-	auto_conf.set_all(1);
-	automation->copy(start_unit, end_unit, file, 0, 0);
+	if( (copy_flags & COPY_AUTOS) ) {
+		AutoConf auto_conf;
+		auto_conf.set_all(1);
+		automation->copy(start_unit, end_unit, file, 0, 0);
+	}
 
-
-	for(int i = 0; i < plugin_set.total; i++)
-	{
-		plugin_set.values[i]->copy(start_unit, end_unit, file);
+	if( (copy_flags & COPY_PLUGINS) ) {
+		for( int i=0; i<plugin_set.total; ++i )
+			plugin_set.values[i]->copy(start_unit, end_unit, file);
 	}
 
 	copy_derived(start_unit, end_unit, file);

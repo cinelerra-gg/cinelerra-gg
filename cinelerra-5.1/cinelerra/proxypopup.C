@@ -222,7 +222,7 @@ int ProxyPopupCopy::handle_event()
 		copy_edl->copy_all(edl);
 		FileXML file;
 		double start = 0, end = edl->tracks->total_length();
-		copy_edl->copy(start, end, 1, &file, "", 1);
+		copy_edl->copy(COPY_EDL, start, end, &file, "", 1);
 		copy_edl->remove_user();
 		const char *file_string = file.string();
 		long file_length = strlen(file_string);

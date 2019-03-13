@@ -617,7 +617,7 @@ $(OBJDIR)/pluginlv2ui.o $(OBJDIR)/lv2ui.o:
 
 $(OBJDIR)/shuttle.o:	shuttle.C shuttle_keys.h
 shuttle_keys.h: /usr/include/X11/keysymdef.h
-	sed < /usr/include/X11/keysymdef.h > shuttle_keys.h -f shuttle.sed
+	sed -n < /usr/include/X11/keysymdef.h > shuttle_keys.h -f shuttle.sed
 
 $(OBJDIR)/lv2ui: $(LV2OBJS)
 	@echo $(CXX) \`cat $(OBJDIR)/c_flags\` $^ -o $@

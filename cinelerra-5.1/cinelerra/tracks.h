@@ -160,18 +160,10 @@ public:
 	void copy_from(Tracks *tracks);
 
 // ================================== EDL editing
-	int copy(double start,
-		double end,
-		int all,
-		FileXML *file,
-		const char *output_path = "");
+	int copy(int copy_flags, double start, double end,
+		FileXML *file, const char *output_path = "");
 
-
-
-	int copy_assets(FileXML *xml,
-		double start,
-		double end,
-		int all);
+	int copy_assets(int copy_flags, FileXML *xml, double start, double end);
 	int blade(double position);
 	int clear(double start, double end, int clear_plugins, int edit_autos);
 	void clear_automation(double selectionstart,

@@ -193,11 +193,9 @@ public:
 	virtual int dump(FILE *fp);
 
 // ===================================== editing
-	int copy(double start, double end,
+	int copy(int copy_flags, double start, double end,
 		FileXML *file, const char *output_path = "");
-	int copy_assets(double start,
-		double end,
-		ArrayList<Asset*> *asset_list);
+	int copy_assets(double start, double end, ArrayList<Asset*> *asset_list);
 	virtual int copy_derived(int64_t start, int64_t end, FileXML *file) { return 0; };
 	virtual int paste_derived(int64_t start, int64_t end,
 		int64_t total_length, FileXML *file, int &current_channel) { return 0; };

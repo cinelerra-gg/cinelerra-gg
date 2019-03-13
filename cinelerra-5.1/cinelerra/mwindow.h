@@ -351,6 +351,7 @@ public:
 	void clear_labels();
 	int clear_labels(double start, double end);
 	void concatenate_tracks();
+	int copy_flags(int copy_flags=COPY_CLIPBOARD);
 	void copy();
 	int copy(double start, double end);
 	void cut();

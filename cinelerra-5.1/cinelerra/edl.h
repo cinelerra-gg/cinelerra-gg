@@ -107,21 +107,29 @@ public:
 	void rechannel();
 	void resample(double old_rate, double new_rate, int data_type);
 
-	int copy(double start, double end, int all,
+	int copy(int copy_flags, double start, double end,
 		FileXML *file, const char *output_path, int rewind_it);
-	int copy(int all, FileXML *file, const char *output_path, int rewind_it);
+	int copy(int copy_flags, FileXML *file, const char *output_path,
+		int rewind_it);
 
-	int copy_clip(double start, double end, int all,
+	int copy_clip(int copy_flags, double start, double end,
 		FileXML *file, const char *output_path, int rewind_it);
-	int copy_clip(int all, FileXML *file, const char *output_path, int rewind_it);
+	int copy_clip(int copy_flags, FileXML *file, const char *output_path,
+		int rewind_it);
 
-	int copy_nested_edl(double start, double end, int all,
+	int copy_nested(int copy_flags, double start, double end,
 		FileXML *file, const char *output_path, int rewind_it);
-	int copy_nested_edl(int all, FileXML *file, const char *output_path, int rewind_it);
+	int copy_nested(int copy_flags, FileXML *file, const char *output_path,
+		int rewind_it);
 
-	int copy_vwindow_edl(double start, double end, int all,
+	int copy_vwindow(int copy_flags, double start, double end,
 		FileXML *file, const char *output_path, int rewind_it);
-	int copy_vwindow_edl(int all, FileXML *file, const char *output_path, int rewind_it);
+	int copy_vwindow(int copy_flags, FileXML *file, const char *output_path,
+		int rewind_it);
+
+	int copy_xml(int copy_flags, double start, double end,
+		FileXML *file, const char *closer, const char *output_path,
+		int rewind_it);
 
 	void copy_tracks(EDL *edl);
 // Copies project path, folders, EDLSession, and LocalSession from edl argument.
@@ -184,11 +192,8 @@ public:
 		int edit_labels, int edit_plugins, int edit_autos);
 
 // Editing functions
-	int copy_assets(double start, double end,
-		FileXML *file, int all, const char *output_path);
-	int copy(double start, double end, int all,
-		const char *closer, FileXML *file,
-		const char *output_path, int rewind_it);
+	int copy_assets(int copy_flags, double start, double end,
+		FileXML *file, const char *output_path);
 	void copy_indexables(EDL *edl);
 	EDL *new_nested(EDL *edl, const char *path);
 	EDL *create_nested_clip(EDL *nested);

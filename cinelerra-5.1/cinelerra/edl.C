@@ -336,7 +336,7 @@ int EDL::read_xml(FileXML *file, uint32_t load_flags)
 // The string is not terminated in this call.
 int EDL::save_xml(FileXML *file, const char *output_path)
 {
-	copy(1, file, output_path, 0);
+	copy(COPY_EDL, file, output_path, 0);
 	return 0;
 }
 
@@ -416,11 +416,8 @@ void EDL::copy_session(EDL *edl, int session_only)
 	}
 }
 
-int EDL::copy_assets(double start,
-	double end,
-	FileXML *file,
-	int all,
-	const char *output_path)
+int EDL::copy_assets(int copy_flags, double start, double end,
+		FileXML *file, const char *output_path)
 {
 	ArrayList<Asset*> asset_list;
 	Track* current;
@@ -430,12 +427,12 @@ int EDL::copy_assets(double start,
 	file->append_newline();
 
 // Copy everything for a save
-	if( all ) {
+	if( (copy_flags & COPY_ALL_ASSETS) ) {
 		for( Asset *asset=assets->first; asset; asset=asset->next ) {
 			asset_list.append(asset);
 		}
 	}
-	else {
+	if( (copy_flags & COPY_USED_ASSETS) ) {
 // Copy just the ones being used.
 		for( current = tracks->first; current; current = NEXT ) {
 			if( !current->record ) continue;
@@ -456,67 +453,66 @@ int EDL::copy_assets(double start,
 }
 
 
-int EDL::copy(double start, double end, int all,
+int EDL::copy(int copy_flags, double start, double end,
 	FileXML *file, const char *output_path, int rewind_it)
 {
 	file->tag.set_title("EDL");
 	file->tag.set_property("VERSION", CINELERRA_VERSION);
 // Save path for restoration of the project title from a backup.
 	if( this->path[0] ) file->tag.set_property("PATH", path);
-	return copy(start, end, all,
-		"/EDL", file, output_path, rewind_it);
+	return copy_xml(copy_flags, start, end, file, "/EDL", output_path, rewind_it);
 }
-int EDL::copy(int all, FileXML *file, const char *output_path, int rewind_it)
+int EDL::copy(int copy_flags, FileXML *file, const char *output_path, int rewind_it)
 {
-	return copy(0, tracks->total_length(), all, file, output_path, rewind_it);
+	return copy(copy_flags, 0., tracks->total_length(),
+		file, output_path, rewind_it);
 }
 
-int EDL::copy_clip(double start, double end, int all,
+int EDL::copy_clip(int copy_flags, double start, double end,
 	FileXML *file, const char *output_path, int rewind_it)
 {
 	file->tag.set_title("CLIP_EDL");
-	return copy(start, end, all,
-		"/CLIP_EDL", file, output_path, rewind_it);
+	return copy_xml(copy_flags, start, end, file, "/CLIP_EDL", output_path, rewind_it);
 }
-int EDL::copy_clip(int all, FileXML *file, const char *output_path, int rewind_it)
+int EDL::copy_clip(int copy_flags, FileXML *file, const char *output_path, int rewind_it)
 {
-	return copy_clip(0, tracks->total_length(), all, file, output_path, rewind_it);
+	return copy_clip(copy_flags, 0., tracks->total_length(),
+		file, output_path, rewind_it);
 }
 
-int EDL::copy_nested_edl(double start, double end, int all,
+int EDL::copy_nested(int copy_flags, double start, double end,
 	FileXML *file, const char *output_path, int rewind_it)
 {
 	file->tag.set_title("NESTED_EDL");
 	if( this->path[0] ) file->tag.set_property("PATH", path);
-	return copy(start, end, all,
-		"/NESTED_EDL", file, output_path, rewind_it);
+	return copy_xml(copy_flags, start, end, file, "/NESTED_EDL", output_path, rewind_it);
 }
-int EDL::copy_nested_edl(int all, FileXML *file, const char *output_path, int rewind_it)
+int EDL::copy_nested(int copy_flags, FileXML *file, const char *output_path, int rewind_it)
 {
-	return copy_nested_edl(0, tracks->total_length(), all, file, output_path, rewind_it);
+	return copy_nested(copy_flags, 0., tracks->total_length(),
+		file, output_path, rewind_it);
 }
 
-int EDL::copy_vwindow_edl(double start, double end, int all,
+int EDL::copy_vwindow(int copy_flags, double start, double end,
 	FileXML *file, const char *output_path, int rewind_it)
 {
 	file->tag.set_title("VWINDOW_EDL");
-	return copy(start, end, all,
-		"/VWINDOW_EDL", file, output_path, rewind_it);
+	return copy_xml(copy_flags, start, end, file, "/VWINDOW_EDL", output_path, rewind_it);
 }
-int EDL::copy_vwindow_edl(int all, FileXML *file, const char *output_path, int rewind_it)
+int EDL::copy_vwindow(int copy_flags, FileXML *file, const char *output_path, int rewind_it)
 {
-	return copy_vwindow_edl(0, tracks->total_length(), all, file, output_path, rewind_it);
+	return copy_vwindow(copy_flags, 0., tracks->total_length(),
+		file, output_path, rewind_it);
 }
 
-
-int EDL::copy(double start, double end, int all,
-	const char *closer, FileXML *file,
-	const char *output_path, int rewind_it)
+int EDL::copy_xml(int copy_flags, double start, double end,
+	 FileXML *file, const char *closer, const char *output_path,
+	int rewind_it)
 {
 	file->append_tag();
 	file->append_newline();
 // Set clipboard samples only if copying to clipboard
-	if( !all ) {
+	if( (copy_flags & COPY_LENGTH) ) {
 		file->tag.set_title("CLIPBOARD");
 		file->tag.set_property("LENGTH", end - start);
 		file->append_tag();
@@ -528,45 +524,54 @@ int EDL::copy(double start, double end, int all,
 //printf("EDL::copy 1\n");
 
 // Sessions
-	local_session->save_xml(file, start);
-
-//printf("EDL::copy 1\n");
+	if( (copy_flags & COPY_LOCAL_SESSION) )
+		local_session->save_xml(file, start);
 
 // Top level stuff.
-//	if(!parent_edl)
-	{
 // Need to copy all this from child EDL if pasting is desired.
-// Session
+
+	if( (copy_flags & COPY_SESSION) )
 		session->save_xml(file);
+
+	if( (copy_flags & COPY_VIDEO_CONFIG) )
 		session->save_video_config(file);
+
+	if( (copy_flags & COPY_AUDIO_CONFIG) )
 		session->save_audio_config(file);
+
+	if( (copy_flags & COPY_FOLDERS) )
 		folders.save_xml(file);
 
-		if( !parent_edl )
-			copy_assets(start, end, file, all, output_path);
+	if( (copy_flags & (COPY_ALL_ASSETS | COPY_USED_ASSETS)) )
+		copy_assets(copy_flags, start, end, file, output_path);
 
+	if( (copy_flags & COPY_NESTED_EDL) ) {
 		for( int i=0; i<nested_edls.size(); ++i )
-			nested_edls[i]->copy_nested_edl(0, tracks->total_length(), 1,
+			nested_edls[i]->copy_nested(copy_flags,
 				file, output_path, 0);
-
+	}
 // Clips
-// Don't want this if using clipboard
-		if( all ) {
-			for( int i=0; i<total_vwindow_edls(); ++i )
-				get_vwindow_edl(i)->copy_vwindow_edl(1, file, output_path, 0);
-
-			for( int i=0; i<clips.size(); ++i )
-				clips[i]->copy_clip(1, file, output_path, 0);
-
-			mixers.save(file);
-		}
-
-		file->append_newline();
-		file->append_newline();
+	if( (copy_flags & COPY_CLIPS) ) {
+		for( int i=0; i<clips.size(); ++i )
+			clips[i]->copy_clip(copy_flags, file, output_path, 0);
 	}
 
-	labels->copy(start, end, file);
-	tracks->copy(start, end, all, file, output_path);
+	if( (copy_flags & COPY_VWINDOWS) ) {
+		for( int i=0; i<total_vwindow_edls(); ++i )
+			get_vwindow_edl(i)->copy_vwindow(copy_flags,
+				file, output_path, 0);
+	}
+
+	if( (copy_flags & COPY_MIXERS) )
+		mixers.save(file);
+
+	file->append_newline();
+	file->append_newline();
+
+	if( (copy_flags & COPY_LABELS) )
+		labels->copy(start, end, file);
+
+	tracks->copy(copy_flags, start, end, file, output_path);
 
 // terminate file
 	file->tag.set_title(closer);

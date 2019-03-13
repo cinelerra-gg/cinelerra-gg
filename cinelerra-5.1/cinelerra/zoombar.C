@@ -361,7 +361,7 @@ int ZoomBar::set_selection(int which_one)
 
 SampleZoomPanel::SampleZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_sample,
-		x, y, 110, MIN_ZOOM_TIME, MAX_ZOOM_TIME, ZOOM_TIME)
+		x, y, 130, MIN_ZOOM_TIME, MAX_ZOOM_TIME, ZOOM_TIME)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -375,7 +375,7 @@ int SampleZoomPanel::handle_event()
 
 AmpZoomPanel::AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_y,
-		x, y, 80, MIN_AMP_ZOOM, MAX_AMP_ZOOM, ZOOM_LONG)
+		x, y, 100, MIN_AMP_ZOOM, MAX_AMP_ZOOM, ZOOM_LONG)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -388,7 +388,7 @@ int AmpZoomPanel::handle_event()
 
 TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : ZoomPanel(mwindow, zoombar, mwindow->edl->local_session->zoom_track,
-		x, y, 70, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM, ZOOM_LONG)
+		x, y, 90, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM, ZOOM_LONG)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;

@@ -421,6 +421,17 @@ void MWindow::concatenate_tracks()
 }
 
 
+int MWindow::copy_flags(int copy_flags)
+{
+	if( !edl->session->labels_follow_edits )
+		copy_flags &= ~COPY_LABELS;
+	if( !edl->session->autos_follow_edits )
+		copy_flags &= ~COPY_AUTOS;
+	if( !edl->session->plugins_follow_edits )
+		copy_flags &= ~COPY_PLUGINS;
+	return copy_flags;
+}
+
 void MWindow::copy()
 {
 	copy(edl->local_session->get_selectionstart(),
@@ -432,7 +443,7 @@ int MWindow::copy(double start, double end)
 	if( start == end ) return 1;
 
 	FileXML file;
-	edl->copy(start, end, 0, &file, "", 1);
+	edl->copy(copy_flags(), start, end, &file, "", 1);
 	const char *file_string = file.string();
 	long file_length = strlen(file_string);
 	gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
@@ -1078,9 +1089,8 @@ void MWindow::selected_edits_to_clipboard(int packed)
 		edl->session->autos_follow_edits,
 		edl->session->plugins_follow_edits);
 	if( !new_edl ) return;
-	double length = new_edl->tracks->total_length();
 	FileXML file;
-	new_edl->copy(0, length, 1, &file, "", 1);
+	new_edl->copy(COPY_EDL, &file, "", 1);
 	const char *file_string = file.string();
 	long file_length = strlen(file_string);
 	gui->to_clipboard(file_string, file_length, BC_PRIMARY_SELECTION);
@@ -1490,7 +1500,7 @@ void MWindow::overwrite(EDL *source, int all)
 		overwrite_len = dst_len;
 	}
 
-	source->copy(src_start, src_start + overwrite_len, 0, &file, "", 1);
+	source->copy(copy_flags(), src_start, src_start + overwrite_len, &file, "", 1);
 
 // HACK around paste_edl get_start/endselection on its own
 // so we need to clear only when not using both io points
@@ -1789,16 +1799,6 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 	if( load_mode == LOADMODE_CONCATENATE ||
 	    load_mode == LOADMODE_PASTE ||
 	    load_mode == LOADMODE_NESTED ) {
-//PRINT_TRACE
-
-// The point of this is to shift forward labels after the selection so they can
-// then be shifted back to their original locations without recursively
-// shifting back every paste.
-		if( (load_mode == LOADMODE_PASTE || load_mode == LOADMODE_NESTED) &&
-		    edl->session->labels_follow_edits )
-			edl->labels->clear(edl->local_session->get_selectionstart(),
-					   edl->local_session->get_selectionend(), 1);
-
 		Track *current = first_track ? first_track : edl->tracks->first;
 		for( ; current; current=NEXT ) {
 			if( current->record ) {
@@ -1806,7 +1806,6 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls, int load_mode,
 			}
 		}
 //PRINT_TRACE
-
 	}
 //PRINT_TRACE
 	int destination_track = 0;
@@ -2374,7 +2373,7 @@ void MWindow::splice(EDL *source, int all)
 		src->outpoint_valid() ? src->get_outpoint() :
 		src->inpoint_valid() ? source->tracks->total_length() :
 			src->get_selectionend();
-	source->copy(source_start, source_end, 1, &file, "", 1);
+	source->copy(COPY_EDL, source_start, source_end, &file, "", 1);
 //file.dump();
 	double start = edl->local_session->get_selectionstart();
 	//double end = edl->local_session->get_selectionend();
@@ -2478,7 +2477,7 @@ void MWindow::to_clip(EDL *edl, const char *txt, int all)
 	}
 
 // Don't copy all since we don't want the clips twice.
-	edl->copy(start, end, 0, &file, "", 1);
+	edl->copy(copy_flags(), start, end, &file, "", 1);
 
 	EDL *new_edl = new EDL(edl);
 	new_edl->create_objects();
