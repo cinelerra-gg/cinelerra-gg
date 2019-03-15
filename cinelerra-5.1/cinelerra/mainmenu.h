@@ -721,7 +721,9 @@ public:
 	LoadLayoutItem(LoadLayout *load_layout, const char *text, int no, int hotkey);
 	int handle_event();
 
-	int no;
+	int idx;
+	char layout_text[BCSTRLEN];
+	char layout_file[BCSTRLEN];
 	LoadLayout *load_layout;
 };
 
@@ -729,10 +731,53 @@ class LoadLayout : public BC_MenuItem
 {
 public:
 	LoadLayout(MWindow *mwindow, const char *text, int action);
+	~LoadLayout();
 	void create_objects();
+	void update();
+	int activate_submenu();
 
 	MWindow *mwindow; 
+	LoadLayoutDialog *layout_dialog;
 	int action;
+};
+
+class LoadLayoutDialog : public BC_DialogThread
+{
+public:
+	LoadLayoutDialog(LoadLayout *load_layout);
+	~LoadLayoutDialog();
+
+	void start_confirm_dialog(int wx, int wy, int idx);
+	void handle_done_event(int result);
+	void handle_close_event(int result);
+	BC_Window* new_gui();
+
+	LoadLayout *load_layout;
+	LoadLayoutConfirm *lgui;
+	int wx, wy, idx;
+};
+
+class LoadLayoutNameText : public BC_TextBox
+{
+public:
+	LoadLayoutNameText(LoadLayoutConfirm *confirm,
+		int x, int y, int w, const char *text);
+	~LoadLayoutNameText();
+
+	int handle_event();
+
+	LoadLayoutConfirm *confirm;
+};
+
+class LoadLayoutConfirm : public BC_Window
+{
+public:
+	LoadLayoutConfirm(LoadLayoutDialog *load_dialog, int x, int y);
+	~LoadLayoutConfirm();
+	void create_objects();
+
+	LoadLayoutDialog *layout_dialog;
+	LoadLayoutNameText *name_text;
 };
 
 #endif

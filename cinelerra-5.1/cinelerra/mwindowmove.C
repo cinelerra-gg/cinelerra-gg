@@ -500,21 +500,10 @@ int MWindow::goto_start()
 
 int MWindow::goto_position(double position)
 {
-	TimelinePane *pane = gui->get_focused_pane();
-	int64_t old_view_start = edl->local_session->view_start[pane->number];
-	edl->local_session->set_selectionstart(position);
-	edl->local_session->set_selectionend(position);
-	find_cursor();
-	int64_t new_view_start = edl->local_session->view_start[pane->number];
-	if(new_view_start != old_view_start)
-		samplemovement(new_view_start, pane->number);
-	update_plugin_guis();
-	gui->update_patchbay();
-	gui->update_cursor();
+	position = edl->align_to_frame(position, 0);
+	if( position < 0 ) position = 0;
+	select_point(position);
 	gui->activate_timeline();
-	gui->zoombar->update();
-	gui->update_timebar(1);
-	cwindow->update(1, 0, 0, 0, 1);
 	return 0;
 }
 

@@ -467,12 +467,12 @@ void RenderEngine::run()
 
 	close_output();
 
-	if( playback_engine && playback_engine->is_playing_back ) {
-		double position = interrupted ?
-			playback_engine->get_tracking_position() :
-			command->get_direction() == PLAY_FORWARD ?
-				command->end_position :
-				command->start_position;
+	if( playback_engine ) {
+		double position = command->single_frame() ? command->playbackstart :
+			playback_engine->is_playing_back && !interrupted ?
+				( command->get_direction() == PLAY_FORWARD ?
+					command->end_position : command->start_position ) :
+				playback_engine->get_tracking_position() ;
 		if( command->displacement ) {
 			position -= 1./command->get_edl()->session->frame_rate;
 			if( position < 0 ) position = 0;

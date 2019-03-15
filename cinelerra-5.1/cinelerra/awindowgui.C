@@ -1490,7 +1490,7 @@ void AWindowGUI::create_objects()
 		int nw = get_text_width(MEDIUMFONT, _(av_names[i]));
 		if( tw < nw )  tw = nw;
 	}
-	int pw = BC_PopupMenu::calculate_w(4, tw, -1) + 16;
+	int pw = BC_PopupMenu::calculate_w(4, tw, 1) + 16;
 	const char *text = _(AVIconDrawing::avicon_names[vicon_drawing]);
 	add_subwindow(avicon_drawing = new AVIconDrawing(this, fw, fy, pw, text));
 	avicon_drawing->create_objects();
@@ -3335,7 +3335,7 @@ int AVIconDrawingItem::handle_event()
 int AVIconDrawing::draw_face(int dx, int color)
 {
 	int ret = BC_PopupMenu::draw_face(dx, color);
-	if( agui->play_off ) {
+	if( agui->play_off && agui->vicon_drawing != AVICON_NO_PLAY ) {
 		int lx = get_margin(), ly = get_h()/2;
 		draw_line(lx,ly, get_w()-2*lx,ly);
 	}
@@ -3343,7 +3343,7 @@ int AVIconDrawing::draw_face(int dx, int color)
 }
 
 AVIconDrawing::AVIconDrawing(AWindowGUI *agui, int x, int y, int w, const char *text)
- : BC_PopupMenu(x-w, y, w, text, -1, 0, 4)
+ : BC_PopupMenu(x-w, y, w, text, 1, 0, 4)
 {
 	this->agui = agui;
 }

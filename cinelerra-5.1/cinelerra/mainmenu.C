@@ -1617,10 +1617,10 @@ int TileMixers::handle_event()
 }
 
 
-LoadLayoutItem::LoadLayoutItem(LoadLayout *load_layout, const char *text, int no, int hotkey)
+LoadLayoutItem::LoadLayoutItem(LoadLayout *load_layout, const char *text, int idx, int hotkey)
  : BC_MenuItem(text, "", hotkey)
 {
-	this->no = no;
+	this->idx = idx;
 	this->load_layout = load_layout;
 	if( hotkey ) {
 		char hot_txt[BCSTRLEN];
@@ -1630,16 +1630,19 @@ LoadLayoutItem::LoadLayoutItem(LoadLayout *load_layout, const char *text, int no
 	}
 }
 
+
 int LoadLayoutItem::handle_event()
 {
 	MWindow *mwindow = load_layout->mwindow;
 	switch( load_layout->action ) {
 	case LAYOUT_LOAD:
-		mwindow->load_layout(no);
+		mwindow->load_layout(layout_file);
 		break;
-	case LAYOUT_SAVE:
-		mwindow->save_layout(no);
-		break;
+	case LAYOUT_SAVE: {
+		int wx = 0, wy = 0;
+		mwindow->gui->get_abs_cursor(wx, wy);
+		load_layout->layout_dialog->start_confirm_dialog(wx, wy, idx);
+		break; }
 	}
 	return 1;
 }
@@ -1649,19 +1652,185 @@ LoadLayout::LoadLayout(MWindow *mwindow, const char *text, int action)
 {
 	this->mwindow = mwindow;
 	this->action = action;
+	this->layout_dialog = new LoadLayoutDialog(this);
+}
+
+LoadLayout::~LoadLayout()
+{
+	delete layout_dialog;
 }
 
 void LoadLayout::create_objects()
 {
 	BC_SubMenu *layout_submenu = new BC_SubMenu();
 	add_submenu(layout_submenu);
-	for( int i=1; i<=4; ++i ) {
+
+	for( int i=0; i<LAYOUTS_MAX; ++i ) {
 		char text[BCSTRLEN];
-		sprintf(text, _("Layout %d"), i);
-		LoadLayoutItem *load_layout_item =
-			new LoadLayoutItem(this, text, i,
-				action==LAYOUT_LOAD ? KEY_F1-1+i : 0);
-		layout_submenu->add_submenuitem(load_layout_item);
+		sprintf(text, _("Layout %d"), i+1);
+		LoadLayoutItem *item = new LoadLayoutItem(this, text, i,
+				action==LAYOUT_LOAD ? KEY_F1+i : 0);
+		layout_submenu->add_submenuitem(item);
 	}
+}
+
+int LoadLayout::activate_submenu()
+{
+	update();
+	return BC_MenuItem::activate_submenu();
+}
+
+void LoadLayout::update()
+{
+	FileSystem fs;
+	fs.set_filter("layout*_rc");
+	int ret = fs.update(File::get_config_path());
+	int sz = !ret ? fs.dir_list.size() : 0;
+	BC_SubMenu *layout_submenu = get_submenu();
+
+	for( int i=0; i<LAYOUTS_MAX; ++i ) {
+		LoadLayoutItem* item = (LoadLayoutItem *)
+			layout_submenu->get_item(i);
+		char layout_text[BCSTRLEN];  layout_text[0] = 0;
+		int n = sz, id = i+1;
+		while( --n >= 0 ) {
+			char *np = fs.dir_list[n]->name;
+			char *cp = strrchr(np, '_'), *bp = 0;
+			int no = strtol(np+6, &bp, 10);
+			if( no != id || !bp ) continue;
+			if( bp == cp ) {  n = -1;  break; }
+			if( *bp++ == '_' && bp < cp && !strcmp(cp, "_rc") ) {
+				int k = cp - bp;  char *tp = layout_text;
+				if( k > LAYOUT_NAME_LEN ) k = LAYOUT_NAME_LEN;
+				while( --k >= 0 ) *tp++ = *bp++;
+				*tp = 0;
+				break;
+			}
+		}
+		strcpy(item->layout_text, layout_text);
+		char *lp = item->layout_file;
+		int k = sprintf(lp, LAYOUT_FILE, id);
+		if( n >= 0 && layout_text[0] )
+			sprintf(lp + k-2, "%s_rc", layout_text);
+		else
+			sprintf(layout_text, _("Layout %d"), id);
+		item->set_text(layout_text);
+	}
+}
+
+LoadLayoutDialog::LoadLayoutDialog(LoadLayout *load_layout)
+{
+	this->load_layout = load_layout;
+	wx = 0;  wy = 0;
+	idx = -1;
+	lgui = 0;
+}
+
+LoadLayoutDialog::~LoadLayoutDialog()
+{
+	close_window();
+}
+
+void LoadLayoutDialog::handle_done_event(int result)
+{
+	if( result ) return;
+	char layout_file[BCSTRLEN];
+	BC_SubMenu *layout_submenu = load_layout->get_submenu();
+	LoadLayoutItem* item =
+		(LoadLayoutItem *) layout_submenu->get_item(idx);
+	snprintf(layout_file, sizeof(layout_file), "%s", item->layout_file);
+	load_layout->mwindow->delete_layout(layout_file);
+	int k = sprintf(layout_file, LAYOUT_FILE, idx+1);
+	const char *text = lgui->name_text->get_text();
+	if( text[0] )
+		snprintf(layout_file + k-2, sizeof(layout_file)-k+2, "%s_rc", text);
+	load_layout->mwindow->save_layout(layout_file);
+}
+
+void LoadLayoutDialog::handle_close_event(int result)
+{
+	lgui = 0;
+}
+
+BC_Window *LoadLayoutDialog::new_gui()
+{
+	lgui = new LoadLayoutConfirm(this, wx, wy);
+	lgui->create_objects();
+	return lgui;
+}
+
+void LoadLayoutDialog::start_confirm_dialog(int wx, int wy, int idx)
+{
+	close_window();
+	this->wx = wx;  this->wy = wy;
+	this->idx = idx;
+	start();
+}
+
+LoadLayoutNameText::LoadLayoutNameText(LoadLayoutConfirm *confirm,
+		int x, int y, int w, const char *text)
+ : BC_TextBox(x, y, w, 1, text)
+{
+	this->confirm = confirm;
+}
+
+LoadLayoutNameText::~LoadLayoutNameText()
+{
+}
+
+int LoadLayoutNameText::handle_event()
+{
+	const char *text = get_text();
+	int len = strlen(text), k = 0;
+	char new_text[BCTEXTLEN];
+	for( int i=0; i<len; ++i ) {
+		int ch = text[i];
+		if( (ch>='A' && ch<='Z') || (ch>='a' && ch<='z') ||
+		    (ch>='0' && ch<='9') || ch=='_' )
+			new_text[k++] = ch;
+	}
+	new_text[k] = 0;  len = k;
+	int i = len - LAYOUT_NAME_LEN;
+	if( i >= 0 ) {
+		k = 0;
+		while( i < len ) new_text[k++] = new_text[i++];
+		new_text[k] = 0;
+	}
+	update(new_text);
+	return 1;
+}
+
+LoadLayoutConfirm::LoadLayoutConfirm(LoadLayoutDialog *layout_dialog, int x, int y)
+ : BC_Window(_(PROGRAM_NAME ": Layout"), x, y, 300,140, 300,140, 0)
+{
+	this->layout_dialog = layout_dialog;
+}
+
+LoadLayoutConfirm::~LoadLayoutConfirm()
+{
+}
+
+void LoadLayoutConfirm::create_objects()
+{
+	lock_window("LoadLayoutConfirm::create_objects");
+	int x = 10, y = 10, pad = 10;
+	BC_SubMenu *layout_submenu = layout_dialog->load_layout->get_submenu();
+	LoadLayoutItem *item = (LoadLayoutItem *)
+		layout_submenu->get_item(layout_dialog->idx);
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, _("Layout Name:")));
+	int x1 = x + title->get_w() + 10;
+	add_subwindow(title = new BC_Title(x1, y, item->get_text()));
+	y += title->get_h() + pad;
+	add_subwindow(name_text = new LoadLayoutNameText(this,
+		x, y, get_w()-x-20, item->layout_text));
+	y += name_text->get_h();
+	x1 = x + 80;
+	char legend[BCTEXTLEN];
+	sprintf(legend, _("a-z,A-Z,0-9_ only, %dch max"), LAYOUT_NAME_LEN);
+	add_subwindow(title = new BC_Title(x1, y, legend));
+	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
+	unlock_window();
 }
 

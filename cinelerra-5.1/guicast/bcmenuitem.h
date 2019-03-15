@@ -52,8 +52,8 @@ public:
 	int set_alt(int value = 1);
 	void set_ctrl(int value = 1);
 
-	int deactivate_submenus(BC_MenuPopup *exclude);
-	int activate_submenu();
+	virtual int deactivate_submenus(BC_MenuPopup *exclude);
+	virtual int activate_submenu();
 	virtual int handle_event() { return 0; };
 	int dispatch_button_press();
 	int dispatch_button_release(int &redraw);

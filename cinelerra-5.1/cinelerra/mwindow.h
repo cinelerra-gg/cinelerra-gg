@@ -140,8 +140,9 @@ public:
 	void show_gwindow();
 	void hide_gwindow();
 	void restore_windows();
-	void save_layout(int no);
-	void load_layout(int no);
+	void load_layout(const char *layout);
+	void save_layout(const char *layout);
+	void delete_layout(const char *layout);
 	int tile_windows(int window_config);
 	char *get_cwindow_display();
 	void set_screens(int value);

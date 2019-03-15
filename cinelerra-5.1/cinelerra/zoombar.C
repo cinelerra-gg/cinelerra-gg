@@ -489,7 +489,7 @@ int AutoTypeMenu::draw_face(int dx, int color)
 	if( color >= 0 ) {
 		set_color(color);
 		int margin = get_margin();
-		int mx = margin+4, my = 3*margin/8;
+		int mx = margin+8, my = 3*margin/8;
 		int bh = get_h() - 2*my;
 		draw_box(mx,my, bh,bh);
 	}

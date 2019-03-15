@@ -767,8 +767,7 @@ void Canvas::create_canvas()
 		int x, y, w, h;
 		wdw->get_fullscreen_geometry(x, y, w, h);
 
-		if( canvas_fullscreen )
-		{
+		if( canvas_fullscreen ) {
 			if( x != canvas_fullscreen->get_x() ||
 			    y != canvas_fullscreen->get_y() ||
 			    w != canvas_fullscreen->get_w() ||
@@ -777,26 +776,21 @@ void Canvas::create_canvas()
 				canvas_fullscreen = 0;
 			}
 		}
-		if(!canvas_fullscreen)
-		{
+		if( !canvas_fullscreen )
 			canvas_fullscreen = new CanvasFullScreen(this, w, h);
-		}
-		else
-		{
-			canvas_fullscreen->reposition_window(x, y);
-			canvas_fullscreen->show_window();
-		}
+		canvas_fullscreen->show_window();
+		canvas_fullscreen->sync_display();
+		canvas_fullscreen->reposition_window(x, y);
 	}
 
-
-	if(!video_on)
-	{
+	if( !video_on ) {
 		get_canvas()->lock_window("Canvas::create_canvas 1");
 		draw_refresh();
 		get_canvas()->unlock_window();
 	}
 
-	if(video_on) get_canvas()->start_video();
+	if( video_on )
+		get_canvas()->start_video();
 
 	get_canvas()->lock_window("Canvas::create_canvas 2");
 	get_canvas()->focus();

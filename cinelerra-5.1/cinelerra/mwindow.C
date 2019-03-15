@@ -2920,23 +2920,28 @@ void MWindow::restore_windows()
 	gui->focus();
 }
 
-void MWindow::save_layout(int no)
+void MWindow::load_layout(const char *layout)
 {
-	char layout_path[BCTEXTLEN];
-	snprintf(layout_path, sizeof(layout_path), "%s/" LAYOUT_FILE,
-		File::get_config_path(), no);
-	session->save_file(layout_path);
-}
-
-void MWindow::load_layout(int no)
-{
-	char layout_path[BCTEXTLEN];
-	snprintf(layout_path, sizeof(layout_path), "%s/" LAYOUT_FILE,
-		File::get_config_path(), no);
-	session->load_file(layout_path);
+	char path[BCTEXTLEN];
+	snprintf(path, sizeof(path), "%s/%s", File::get_config_path(), layout);
+	session->load_file(path);
 	restore_windows();
 	gui->default_positions();
 	save_defaults();
+}
+
+void MWindow::save_layout(const char *layout)
+{
+	char path[BCTEXTLEN];
+	snprintf(path, sizeof(path), "%s/%s", File::get_config_path(), layout);
+	session->save_file(path);
+}
+
+void MWindow::delete_layout(const char *layout)
+{
+	char path[BCTEXTLEN];
+	snprintf(path, sizeof(path), "%s/%s", File::get_config_path(), layout);
+	unlink(path);
 }
 
 int MWindow::tile_windows(int window_config)

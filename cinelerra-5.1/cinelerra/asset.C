@@ -949,7 +949,7 @@ int Asset::dump(FILE *fp)
 		video_data, layers, program, frame_rate, width, height,
 		vcodec, aspect_ratio,string);
 	fprintf(fp,"   video_length %jd repeat %d\n", video_length, single_frame);
-	printf("   mov_sphere=%d jpeg_sphere=%d\n", mov_sphere, jpeg_sphere);
+	fprintf(fp,"   mov_sphere=%d jpeg_sphere=%d\n", mov_sphere, jpeg_sphere);
 	return 0;
 }
 

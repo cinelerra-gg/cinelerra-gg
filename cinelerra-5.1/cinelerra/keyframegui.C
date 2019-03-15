@@ -74,6 +74,7 @@ KeyFrameThread::~KeyFrameThread()
 
 
 #ifdef EDIT_KEYFRAME
+
 void KeyFrameThread::update_values()
 {
 // Get the current selection before deleting the tables
@@ -139,8 +140,8 @@ void KeyFrameThread::update_values()
 	}
 	mwindow->gui->unlock_window();
 }
-#endif
 
+#endif
 
 void KeyFrameThread::start_window(Plugin *plugin, KeyFrame *keyframe)
 {
@@ -378,6 +379,7 @@ void KeyFrameThread::apply_preset(const char *title, int is_factory)
 }
 
 #ifdef EDIT_KEYFRAME
+
 void KeyFrameThread::apply_value()
 {
 	const char *text = 0, *data = 0;
@@ -446,25 +448,16 @@ printf("KeyFrameThread::apply_value %d: plugin doesn't exist\n", __LINE__);
 	get_gui()->lock_window("KeyFrameThread::apply_value");
 	delete hash;
 }
+
 #endif
 
 
-
-KeyFrameWindow::KeyFrameWindow(MWindow *mwindow,
-	KeyFrameThread *thread,
-	int x,
-	int y,
-	char *title_string)
- : BC_Window(title_string, 
- 	x,
-	y,
-	mwindow->session->keyframedialog_w, 
-	mwindow->session->keyframedialog_h, 
-	320, 
-	240,
-	1,
-	0,
-	1)
+KeyFrameWindow::KeyFrameWindow(MWindow *mwindow, KeyFrameThread *thread,
+		int x, int y, char *title_string)
+ : BC_Window(title_string, x, y,
+		mwindow->session->keyframedialog_w, 
+		mwindow->session->keyframedialog_h, 
+		320, 240, 1, 0, 1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -481,42 +474,40 @@ void KeyFrameWindow::create_objects()
 
 #ifdef EDIT_KEYFRAME
 
-
-	add_subwindow(title1 = new BC_Title(theme->keyframe_list_x,
-		theme->keyframe_list_y - BC_Title::calculate_h(this, (char*)"Py", LARGEFONT) - 
-			theme->widget_border, _("Keyframe parameters:"), LARGEFONT));
-	add_subwindow(keyframe_list = new KeyFrameList(thread,
-		this,
-		theme->keyframe_list_x,
-		theme->keyframe_list_y,
-		theme->keyframe_list_w, 
-		theme->keyframe_list_h));
+	int ky = theme->keyframe_list_y - theme->widget_border -
+			BC_Title::calculate_h(this, (char*)"Py", LARGEFONT);
+	add_subwindow(title1 = new BC_Title(theme->keyframe_list_x, ky,
+			_("Keyframe parameters:"), LARGEFONT));
+	add_subwindow(keyframe_list = new KeyFrameList(thread, this,
+		theme->keyframe_list_x, theme->keyframe_list_y,
+		theme->keyframe_list_w, theme->keyframe_list_h));
 // 	add_subwindow(title2 = new BC_Title(theme->keyframe_text_x,
-// 		theme->keyframe_text_y - BC_Title::calculate_h(this, "P") - theme->widget_border,
-// 		_("Global Text:")));
-// 	add_subwindow(keyframe_text = new KeyFrameText(thread,
-// 		this,
-// 		theme->keyframe_text_x,
-// 		theme->keyframe_text_y,
+// 		theme->keyframe_text_y - theme->widget_border -
+// 			BC_Title::calculate_h(this, "P"), _("Global Text:")));
+// 	add_subwindow(keyframe_text = new KeyFrameText(thread, this,
+// 		theme->keyframe_text_x, theme->keyframe_text_y,
 // 		theme->keyframe_text_w));
-	add_subwindow(title3 = new BC_Title(theme->keyframe_value_x,
-		theme->keyframe_value_y - BC_Title::calculate_h(this, (char*)"P") -
-			theme->widget_border, _("Edit value:")));
+	int ey = theme->keyframe_value_y - theme->widget_border -
+			BC_Title::calculate_h(this, "P");
+	add_subwindow(title3 = new BC_Title(theme->keyframe_value_x, ey,
+			_("Edit value:")));
 	add_subwindow(value_text = new KeyFrameValue(thread, this,
 		theme->keyframe_value_x, theme->keyframe_value_y, theme->keyframe_value_w));
 	add_subwindow(all_toggle = new KeyFrameAll(thread, this, 
 		theme->keyframe_all_x, theme->keyframe_all_y));
 
 #endif
-	add_subwindow(title4 = new BC_Title(theme->presets_list_x, theme->presets_list_y - 
-			BC_Title::calculate_h(this, (char*)"Py", LARGEFONT) - 
-			theme->widget_border, _("Presets:"), LARGEFONT));
+	int ty = theme->presets_list_y - theme->widget_border -
+			BC_Title::calculate_h(this, (char*)"Py", LARGEFONT);
+	add_subwindow(title4 = new BC_Title(theme->presets_list_x, ty,
+			_("Presets:"), LARGEFONT));
 	add_subwindow(preset_list = new KeyFramePresetsList(thread, this,
 		theme->presets_list_x, theme->presets_list_y,
 		theme->presets_list_w, theme->presets_list_h));
-	add_subwindow(title5 = new BC_Title(theme->presets_text_x,
-		theme->presets_text_y - BC_Title::calculate_h(this, (char*)"P") - theme->widget_border,
-		_("Preset title:")));
+	int py = theme->presets_text_y - theme->widget_border -
+			BC_Title::calculate_h(this, "Py");
+	add_subwindow(title5 = new BC_Title(theme->presets_text_x, py,
+			_("Preset title:")));
 	add_subwindow(preset_text = new KeyFramePresetsText(thread, this,
 		theme->presets_text_x, theme->presets_text_y, theme->presets_text_w));
 	add_subwindow(delete_preset = new KeyFramePresetsDelete(thread, this,
@@ -546,8 +537,6 @@ void KeyFrameWindow::update_editing()
 	}
 }
 
-
-
 int KeyFrameWindow::resize_event(int w, int h)
 {
 	Theme *theme = mwindow->theme;
@@ -556,35 +545,33 @@ int KeyFrameWindow::resize_event(int w, int h)
 	theme->get_keyframedialog_sizes(this);
 
 #ifdef EDIT_KEYFRAME
-
-	title1->reposition_window(theme->keyframe_list_x,
-		theme->keyframe_list_y - BC_Title::calculate_h(this, (char*)"P") - theme->widget_border);
+	int ky = theme->keyframe_list_y - theme->widget_border -
+			BC_Title::calculate_h(this, (char*)"Py", LARGEFONT);
+	title1->reposition_window(theme->keyframe_list_x, ky);
 //	title2->reposition_window(theme->keyframe_text_x,
-//		theme->keyframe_text_y - BC_Title::calculate_h(this, (char*)"P") - theme->widget_border);
-	title3->reposition_window(theme->keyframe_value_x,
-		theme->keyframe_value_y - BC_Title::calculate_h(this, (char*)"P") - theme->widget_border);
-	keyframe_list->reposition_window(theme->keyframe_list_x,
-		theme->keyframe_list_y,
-		theme->keyframe_list_w, 
-		theme->keyframe_list_h);
-// 	text->reposition_window(theme->keyframe_text_x,
-// 		theme->keyframe_text_y,
-// 		theme->keyframe_text_w);
+//		theme->keyframe_text_y - theme->widget_border -;
+//			BC_Title::calculate_h(this, (char*)"P"));
+	int ey = theme->keyframe_value_y - theme->widget_border -
+			BC_Title::calculate_h(this, "P");
+	title3->reposition_window(theme->keyframe_value_x, ey);
+	keyframe_list->reposition_window(theme->keyframe_list_x, theme->keyframe_list_y,
+			theme->keyframe_list_w, theme->keyframe_list_h);
+// 	text->reposition_window(theme->keyframe_text_x,	theme->keyframe_text_y,
+// 			theme->keyframe_text_w);
 	value_text->reposition_window(theme->keyframe_value_x,
 		theme->keyframe_value_y,
 		theme->keyframe_value_w);
 	all_toggle->reposition_window(theme->keyframe_all_x,
 		theme->keyframe_all_y);
 
-#endif // EDIT_KEYFRAME
+	int ty = theme->presets_list_y - theme->widget_border -
+			BC_Title::calculate_h(this, (char*)"Py", LARGEFONT);
+	title4->reposition_window(theme->presets_list_x, ty);
+	int py = theme->presets_text_y - theme->widget_border -
+			BC_Title::calculate_h(this, "Py");
+	title5->reposition_window(theme->presets_text_x, py);
+#endif
 
-
-
-
-	title4->reposition_window(theme->presets_list_x,
-		theme->presets_list_y - BC_Title::calculate_h(this, (char*)"P") - theme->widget_border);
-	title5->reposition_window(theme->presets_text_x,
-		theme->presets_text_y - BC_Title::calculate_h(this, (char*)"P") - theme->widget_border);
 	preset_list->reposition_window(theme->presets_list_x,
 		theme->presets_list_y,
 		theme->presets_list_w, 
@@ -606,7 +593,6 @@ int KeyFrameWindow::resize_event(int w, int h)
 
 
 #ifdef EDIT_KEYFRAME
-
 
 KeyFrameList::KeyFrameList(KeyFrameThread *thread,
 	KeyFrameWindow *window, int x, int y, int w, int h)
@@ -639,8 +625,6 @@ int KeyFrameList::column_resize_event()
 }
 
 
-
-
 // KeyFrameText::KeyFrameText(KeyFrameThread *thread,
 // 	KeyFrameWindow *window,
 // 	int x,
@@ -660,8 +644,6 @@ int KeyFrameList::column_resize_event()
 // {
 // 	return 0;
 // }
-
-
 
 KeyFrameValue::KeyFrameValue(KeyFrameThread *thread,
 	KeyFrameWindow *window,
@@ -684,16 +666,9 @@ int KeyFrameValue::handle_event()
 	return 0;
 }
 
-
-
-
-
 KeyFrameAll::KeyFrameAll(KeyFrameThread *thread,
-	KeyFrameWindow *window,
-	int x,
-	int y)
- : BC_CheckBox(x, 
- 	y, 
+		KeyFrameWindow *window, int x, int y)
+ : BC_CheckBox(x, y, 
 	thread->mwindow->session->keyframedialog_all, 
 	_("Apply to all selected keyframes"))
 {
@@ -710,26 +685,9 @@ int KeyFrameAll::handle_event()
 #endif // EDIT_KEYFRAME
 
 
-
-
-
-
-
-
-
-
 KeyFramePresetsList::KeyFramePresetsList(KeyFrameThread *thread,
-	KeyFrameWindow *window,
-	int x,
-	int y,
-	int w, 
-	int h)
- : BC_ListBox(x, 
-		y, 
-		w, 
-		h,
-		LISTBOX_TEXT,
-		thread->presets_data)
+	KeyFrameWindow *window, int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h, LISTBOX_TEXT, thread->presets_data)
 {
 	this->thread = thread;
 	this->window = window;
@@ -813,12 +771,6 @@ int KeyFramePresetsSave::handle_event()
 	}
 	return 1;
 }
-
-
-
-
-
-
 
 
 KeyFramePresetsApply::KeyFramePresetsApply(KeyFrameThread *thread,

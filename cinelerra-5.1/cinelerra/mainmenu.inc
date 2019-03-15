@@ -22,32 +22,8 @@
 #ifndef MAINMENU_INC
 #define MAINMENU_INC
 
-class MainMenu;
 #define MENUBARPIXELS 25
 
-class AEffectMenu;
-class LabelsFollowEdits;
-class PluginsFollowEdits;
-class KeyframesFollowEdits;
-class CursorOnFrames;
-class TypelessKeyframes;
-class SetBRenderActive;
-class LoopPlayback;
-class Redo;
-class ShowVWindow;
-class ShowAWindow;
-class ShowGWindow;
-class ShowCWindow;
-class ShowLWindow;
-class Undo;
-class KeyframeCurveType;
-class KeyframeCurveTypeMenu;
-class KeyframeCurveTypeItem;
-class SplitX;
-class SplitY;
-class MixerViewer;
-class LoadLayoutItem;
-class LoadLayout;
 class MainMenu;
 class Undo;
 class MainDumpsSubMenu;
@@ -119,5 +95,8 @@ class SplitY;
 class MixerViewer;
 class LoadLayoutItem;
 class LoadLayout;
+class LoadLayoutDialog;
+class LoadLayoutNameText;
+class LoadLayoutConfirm;
 
 #endif

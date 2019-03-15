@@ -258,7 +258,7 @@ int VKeyFadeSlider::handle_event()
 
 VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
  : BC_PopupMenu(x, y, patch->patchbay->mode_icons[0]->get_w() + 20,
-	"", 1, mwindow->theme->get_image_set("mode_popup", 0), 10)
+	"", 1, mwindow->theme->get_image_set("mode_popup", 0), 0)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;

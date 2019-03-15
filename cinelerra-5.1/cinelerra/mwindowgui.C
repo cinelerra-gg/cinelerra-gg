@@ -270,7 +270,7 @@ void MWindowGUI::create_objects()
 
 	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 
-	int x = get_w() - MainShBtns::calculate_w(0);
+	int x = get_w() - MainShBtns::calculate_w(-1, 0, -1);
 	add_subwindow(mainmenu = new MainMenu(mwindow, this, x));
 	mainmenu->create_objects();
 	add_subwindow(mainshbtns = new MainShBtns(mwindow, x, -1));
@@ -411,7 +411,7 @@ int MWindowGUI::resize_event(int w, int h)
 //printf("MWindowGUI::resize_event %d\n", __LINE__);
 	mwindow->session->mwindow_w = w;
 	mwindow->session->mwindow_h = h;
-	int x = w - MainShBtns::calculate_w(0);
+	int x = w - MainShBtns::calculate_w(-1, 0, -1);
 	mainmenu->resize_event(x, mainmenu->get_h());
 	mainshbtns->reposition_window(x, -1);
 	mwindow->theme->get_mwindow_sizes(this, w, h);
