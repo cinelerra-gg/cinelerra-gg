@@ -468,7 +468,7 @@ void RenderEngine::run()
 	close_output();
 
 	if( playback_engine ) {
-		double position = command->single_frame() ? command->playbackstart :
+		double position = command->command == CURRENT_FRAME ? command->playbackstart :
 			playback_engine->is_playing_back && !interrupted ?
 				( command->get_direction() == PLAY_FORWARD ?
 					command->end_position : command->start_position ) :

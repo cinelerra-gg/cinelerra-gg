@@ -326,6 +326,7 @@ AssetViewPopup::AssetViewPopup(VIconThread *vt, int draw_mode,
 {
 	this->draw_mode = draw_mode;
 	this->bar_h = (VIEW_POPUP_BAR_H * h) / 200;
+	dragging = 0;
 }
 
 AssetViewPopup::~AssetViewPopup()
