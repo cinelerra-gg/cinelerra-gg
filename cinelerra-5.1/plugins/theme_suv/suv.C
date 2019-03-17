@@ -132,7 +132,7 @@ void SUV::initialize()
 	resources->menu_up = 0x4b4b4b;
 	resources->menu_shadow = 0x202020;
 	resources->popupmenu_margin = 15;
-	resources->popupmenu_triangle_margin = 15;
+	resources->popupmenu_triangle_margin = 20;
 
 	resources->listbox_title_color = 0xbfbfbf;
 

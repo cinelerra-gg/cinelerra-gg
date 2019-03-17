@@ -893,7 +893,7 @@ void Shuttle::run()
 			if( first_time ) break;
 			continue;
 		}
-		if( !ioctl(fd, EVIOCGRAB, 1) ) { // exclusive access
+		if( 1 || !ioctl(fd, EVIOCGRAB, 1) ) { // exclusive access
 			first_time = 0;
 			while( !done ) {
 				int ret = read(fd, &ev, sizeof(ev));

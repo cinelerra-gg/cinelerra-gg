@@ -1016,7 +1016,7 @@ const char *FFOptionsKind::kinds[] = {
 
 FFOptionsKind::
 FFOptionsKind(FFOptionsWindow *fwin, int x, int y, int w)
- : BC_PopupMenu(x, y, w-calculate_w(0), "")
+ : BC_PopupMenu(x, y, w, "")
 {
 	this->fwin = fwin;
 }

@@ -1491,7 +1491,7 @@ void AWindowGUI::create_objects()
 		int nw = get_text_width(MEDIUMFONT, _(av_names[i]));
 		if( tw < nw )  tw = nw;
 	}
-	int pw = BC_PopupMenu::calculate_w(4, tw, 1) + 16;
+	int pw = BC_PopupMenu::calculate_w(16, tw, 1);
 	const char *text = _(AVIconDrawing::avicon_names[vicon_drawing]);
 	add_subwindow(avicon_drawing = new AVIconDrawing(this, fw, fy, pw, text));
 	avicon_drawing->create_objects();

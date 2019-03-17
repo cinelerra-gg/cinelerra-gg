@@ -1633,6 +1633,8 @@ LoadLayoutItem::LoadLayoutItem(LoadLayout *load_layout, const char *text, int id
 
 int LoadLayoutItem::handle_event()
 {
+// key_press hotkey skips over activate_submenu
+	load_layout->update();
 	MWindow *mwindow = load_layout->mwindow;
 	switch( load_layout->action ) {
 	case LAYOUT_LOAD:
