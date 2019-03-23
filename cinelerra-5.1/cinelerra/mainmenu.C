@@ -55,6 +55,7 @@
 #include "menueditlength.h"
 #include "menutransitionlength.h"
 #include "menuveffects.h"
+#include "mixersalign.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
 #include "new.h"
@@ -271,8 +272,8 @@ void MainMenu::create_objects()
 	windowmenu->add_item(new BC_MenuItem("-"));
 	windowmenu->add_item(split_x = new SplitX(mwindow));
 	windowmenu->add_item(split_y = new SplitY(mwindow));
-	windowmenu->add_item(mixer_viewer = new MixerViewer(mwindow));
-	windowmenu->add_item(new TileMixers(mwindow));
+	windowmenu->add_item(mixer_items = new MixerItems(mwindow));
+	mixer_items->create_objects();
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile left"),0));
 	windowmenu->add_item(new TileWindows(mwindow,_("Tile right"),1));
 	windowmenu->add_item(new BC_MenuItem("-"));
@@ -1590,6 +1591,21 @@ int SplitY::handle_event()
 }
 
 
+MixerItems::MixerItems(MWindow *mwindow)
+ : BC_MenuItem(_("Mixers..."))
+{
+	this->mwindow = mwindow;
+}
+
+void MixerItems::create_objects()
+{
+	BC_SubMenu *mixer_submenu = new BC_SubMenu();
+	add_submenu(mixer_submenu);
+	mixer_submenu->add_submenuitem(new MixerViewer(mwindow));
+	mixer_submenu->add_submenuitem(new TileMixers(mwindow));
+	mixer_submenu->add_submenuitem(new AlignMixers(mwindow));
+}
+
 MixerViewer::MixerViewer(MWindow *mwindow)
  : BC_MenuItem(_("Mixer Viewer"), _("Shift-M"), 'M')
 {
@@ -1613,6 +1629,20 @@ TileMixers::TileMixers(MWindow *mwindow)
 int TileMixers::handle_event()
 {
 	mwindow->tile_mixers();
+	return 1;
+}
+
+AlignMixers::AlignMixers(MWindow *mwindow)
+ : BC_MenuItem(_("Align mixers"))
+{
+	this->mwindow = mwindow;
+}
+
+int AlignMixers::handle_event()
+{
+	int wx, wy;
+	mwindow->gui->get_abs_cursor(wx, wy);
+	mwindow->mixers_align->start_dialog(wx, wy);
 	return 1;
 }
 

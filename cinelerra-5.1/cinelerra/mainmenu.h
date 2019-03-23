@@ -128,7 +128,7 @@ public:
 	ShowLWindow *show_lwindow;
 	SplitX *split_x;
 	SplitY *split_y;
-	MixerViewer *mixer_viewer;
+	MixerItems *mixer_items;
 	LoadLayout *load_layout;
 	LoadLayout *save_layout;
 };
@@ -417,10 +417,34 @@ public:
 	MWindow *mwindow;
 };
 
+class MixerItems : public BC_MenuItem
+{
+public:
+	MixerItems(MWindow *mwindow);
+	void create_objects();
+	MWindow *mwindow;
+};
+
+class MixerViewer : public BC_MenuItem
+{
+public:
+	MixerViewer(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 class TileMixers : public BC_MenuItem
 {
 public:
 	TileMixers(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class AlignMixers : public BC_MenuItem
+{
+public:
+	AlignMixers(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };
@@ -702,14 +726,6 @@ class SplitY : public BC_MenuItem
 {
 public:
 	SplitY(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class MixerViewer : public BC_MenuItem
-{
-public:
-	MixerViewer(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

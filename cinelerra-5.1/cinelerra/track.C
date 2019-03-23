@@ -850,45 +850,21 @@ void Track::synchronize_params(Track *track)
 }
 
 
-
-
-
 int Track::dump(FILE *fp)
 {
-	fprintf(fp,"   Data type %d\n", data_type);
+	fprintf(fp,"   Data type %d, draw %d, gang %d, play %d, record %d, nudge %jd\n",
+		data_type, draw, gang, play, record, nudge);
 	fprintf(fp,"   Title %s\n", title);
 	fprintf(fp,"   Edits:\n");
 	for(Edit* current = edits->first; current; current = NEXT)
-	{
 		current->dump(fp);
-	}
 	automation->dump(fp);
 	fprintf(fp,"   Plugin Sets: %d\n", plugin_set.total);
 
-	for(int i = 0; i < plugin_set.total; i++)
-		plugin_set.values[i]->dump(fp);
-//printf("Track::dump 2\n");
+	for( int i=0; i<plugin_set.total; ++i )
+		plugin_set[i]->dump(fp);
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 Track::Track() : ListItem<Track>()

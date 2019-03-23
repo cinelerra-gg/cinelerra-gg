@@ -80,6 +80,7 @@
 #include "mainsession.h"
 #include "mainundo.h"
 #include "mbuttons.h"
+#include "mixersalign.h"
 #include "mutex.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
@@ -240,6 +241,7 @@ MWindow::MWindow()
 	speed_edl = 0;
 	proxy_beep = 0;
 	shuttle = 0;
+	mixers_align = 0;
 }
 
 
@@ -264,6 +266,7 @@ MWindow::~MWindow()
 	delete shuttle;         shuttle = 0;
 	delete batch_render;    batch_render = 0;
 	delete render;          render = 0;
+	delete mixers_align;    mixers_align = 0;
 	commit_commercial();
 	if( commercials && !commercials->remove_user() ) commercials = 0;
 	close_mixers();
@@ -1549,6 +1552,8 @@ void MWindow::init_menus()
 	ILACEFIXMETHODLISTADD(ILACE_FIXMETHOD_NONE);
 	ILACEFIXMETHODLISTADD(ILACE_FIXMETHOD_UPONE);
 	ILACEFIXMETHODLISTADD(ILACE_FIXMETHOD_DOWNONE);
+
+	mixers_align = new MixersAlign(this);
 }
 
 void MWindow::init_indexes()

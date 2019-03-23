@@ -62,6 +62,7 @@
 #include "mainsession.inc"
 #include "mainundo.inc"
 #include "maxchannels.h"
+#include "mixersalign.inc"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
@@ -227,7 +228,6 @@ public:
 	void start_mixer();
 	int select_zwindow(ZWindow *zwindow);
 	void tile_mixers();
-
 	int load_filenames(ArrayList<char*> *filenames,
 		int load_mode = LOADMODE_REPLACE,
 // Cause the project filename on the top of the window to be updated.
@@ -635,6 +635,8 @@ public:
 // Mixer
 	Mutex *zwindows_lock;
 	ArrayList<ZWindow*> zwindows;
+	MixersAlign *mixers_align;
+
 // Asset manager
 	AWindow *awindow;
 // Automation window

@@ -212,6 +212,7 @@ OBJS := $(OVERLAYS) \
 	$(OBJDIR)/menuveffects.o \
 	$(OBJDIR)/meterhistory.o \
 	$(OBJDIR)/meterpanel.o \
+	$(OBJDIR)/mixersalign.o \
 	$(OBJDIR)/module.o \
 	$(OBJDIR)/mtimebar.o \
 	$(OBJDIR)/mwindowedit.o \

@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef __CRIKEYWINDOW_H__
-#define __CRIKEYWINDOW_H__
+#ifndef __SKETCHERWINDOW_H__
+#define __SKETCHERWINDOW_H__
 
 #include "sketcher.h"
 #include "guicast.h"
