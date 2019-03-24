@@ -19,6 +19,8 @@
  */
 
 #include "mixersalign.h"
+#include "auto.h"
+#include "autos.h"
 #include "arender.h"
 #include "clip.h"
 #include "edit.h"
@@ -29,6 +31,8 @@
 #include "mainprogress.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "panauto.h"
+#include "panautos.h"
 #include "preferences.h"
 #include "track.h"
 #include "tracks.h"
@@ -688,13 +692,17 @@ EDL *MixersAlign::mixer_audio_clip(Mixer *mixer)
 	EDL *edl = new EDL(mwindow->edl);
 	edl->create_objects();
 	Track *track = mwindow->edl->tracks->first;
-	for( ; track; track=track->next ) {
+	for( int ch=0; track && ch<MAX_CHANNELS; track=track->next ) {
 		int id = track->mixer_id;
 		if( track->data_type != TRACK_AUDIO ) continue;
 		if( mixer->mixer_ids.number_of(id) < 0 ) continue;
 		Track *mixer_audio = edl->tracks->add_audio_track(0, 0);
-		mixer_audio->copy_from(track);
+		mixer_audio->copy_settings(track);
 		mixer_audio->play = 1;
+		mixer_audio->edits->copy_from(track->edits);
+		PanAuto* pan_auto = (PanAuto*)mixer_audio->automation->
+				autos[AUTOMATION_PAN]->default_auto;
+		pan_auto->values[ch++] = 1.0;
 	}
 	return edl;
 }
@@ -704,8 +712,12 @@ EDL *MixersAlign::mixer_master_clip(Track *track)
 	EDL *edl = new EDL(mwindow->edl);
 	edl->create_objects();
 	Track *master_audio = edl->tracks->add_audio_track(0, 0);
-	master_audio->copy_from(track);
+	master_audio->copy_settings(track);
 	master_audio->play = 1;
+	master_audio->edits->copy_from(track->edits);
+	PanAuto* pan_auto = (PanAuto*)master_audio->automation->
+			autos[AUTOMATION_PAN]->default_auto;
+	pan_auto->values[0] = 1.0;
 	return edl;
 }
 
