@@ -26,6 +26,7 @@
 #include "edit.h"
 #include "edits.h"
 #include "edl.h"
+#include "edlsession.h"
 #include "localsession.h"
 #include "mainerror.h"
 #include "mainprogress.h"
@@ -580,6 +581,7 @@ void MixersAlign::apply()
 {
 	int idx = ma_gui->mtrack_list->get_selection_number(0, 0);
 	int midx = -1, mid = mixer_of(mtracks[idx]->track, midx);
+	EDL *edl = mwindow->edl;
 	
 	for( int m, i=0; (m=ma_gui->mixer_list->get_selection_number(0,i))>=0; ++i ) {
 		if( m == mid ) continue;  // master does not move
@@ -587,15 +589,27 @@ void MixersAlign::apply()
 		Mixer *mixer = mix->mixer;
 		for( int i=0; i<mixer->mixer_ids.size(); ++i ) {
 			int id = mixer->mixer_ids[i];
-			Track *track = mwindow->edl->tracks->first;
+			Track *track = edl->tracks->first;
 			while( track && track->mixer_id != id ) track = track->next;
 			if( !track ) continue;
-			int64_t dt = track->to_units(mix->nudge, 0);
-			for( Edit *edit=track->edits->first; edit; edit=edit->next )
-				edit->startproject += dt;
-			track->optimize();
+			double nudge = mix->nudge;
+			int record = track->record;  track->record = 1;
+			if( nudge < 0 ) {
+				edl->clear(0, -nudge,
+					edl->session->labels_follow_edits,
+					edl->session->plugins_follow_edits,
+					edl->session->autos_follow_edits);
+			}
+			else if( nudge > 0 ) {
+				edl->paste_silence(0, nudge,
+					edl->session->labels_follow_edits,
+					edl->session->plugins_follow_edits,
+					edl->session->autos_follow_edits);
+			}
+			track->record = record;
 		}
 	}
+	edl->optimize();
 
 	mwindow->gui->lock_window("MixersAlign::handle_done_event");
 	mwindow->update_gui(1);
@@ -628,16 +642,17 @@ void MixersAlignThread::run()
 
 void MixersAlign::handle_done_event(int result)
 {
+	if( thread->running() ) {
+		failed = -1;
+		thread->join();
+		return;
+	}
 	if( !result ) {
 		EDL *edl = mwindow->edl;
 		mwindow->edl = undo_edl;
 		mwindow->undo_before();
 		mwindow->edl = edl;
 		mwindow->undo_after(_("align mixers"), LOAD_ALL);
-	}
-	else if( thread->running() ) {
-		failed = -1;
-		thread->join();
 	}
 }
 

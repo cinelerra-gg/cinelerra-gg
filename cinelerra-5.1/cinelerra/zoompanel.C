@@ -106,7 +106,7 @@ void ZoomPanel::calculate_menu()
 
 int ZoomPanel::calculate_w(int menu_w)
 {
-	return BC_PopupMenu::calculate_w(menu_w) + BC_Tumbler::calculate_w();
+	return BC_PopupMenu::calculate_w(-1, menu_w, 1) + BC_Tumbler::calculate_w();
 }
 
 void ZoomPanel::update_menu()

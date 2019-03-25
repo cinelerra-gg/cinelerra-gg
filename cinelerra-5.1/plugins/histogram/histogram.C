@@ -280,7 +280,8 @@ float HistogramMain::calculate_level(float input,
 // Scale to input range
 	if(!EQUIV(config.high_input[mode], config.low_input[mode]))
 	{
-		output = (input - config.low_input[mode]) /
+		output = input < config.low_input[mode] ? 0 :
+		    (input - config.low_input[mode]) /
 			(config.high_input[mode] - config.low_input[mode]);
 	}
 	else

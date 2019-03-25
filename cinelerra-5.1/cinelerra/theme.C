@@ -94,7 +94,7 @@ Theme::Theme()
 	preferences_category_overlap = 0;
 
 	loadmode_w = 350;
-	czoom_w = 80;
+	czoom_w = 110;
 
 #include "data/about_bg_png.h"
 	about_bg = new VFramePng(about_bg_png);

@@ -152,9 +152,9 @@ class HistogramText : public BC_TumbleTextBox
 {
 public:
 	HistogramText(HistogramMain *plugin,
-		HistogramWindow *gui,
-		int x,
-		int y);
+		HistogramWindow *gui, int x, int y,
+		float hist_min = HIST_MIN_INPUT,
+		float hist_max = HIST_MAX_INPUT);
 
 	int handle_event();
 	void update();

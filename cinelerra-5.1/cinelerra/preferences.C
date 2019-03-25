@@ -315,6 +315,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	defaults->get("INDEX_DIRECTORY", index_directory);
 	index_size = defaults->get("INDEX_SIZE", index_size);
 	index_count = defaults->get("INDEX_COUNT", index_count);
+	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
 	keyframe_reticle = defaults->get("KEYFRAME_RETICLE", keyframe_reticle);
 	perpetual_session = defaults->get("PERPETUAL_SESSION", perpetual_session);
 	strcpy(lv2_path, DEFAULT_LV2_PATH);
