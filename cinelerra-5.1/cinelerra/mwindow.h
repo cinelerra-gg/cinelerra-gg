@@ -183,10 +183,6 @@ public:
 	void update_vwindow();
 // Fit selected time to horizontal display range
 	void fit_selection();
-	EDL *selected_edits_to_clip(int packed,
-		double *start_position, Track **start_track,
-		int edit_labels, int edit_autos, int edit_plugins);
-	void selected_edits_to_clipboard(int packed);
 // Fit selected autos to the vertical display range
 	void fit_autos(int all);
 	void change_currentautorange(int autogrouptype, int increment, int changemax);
@@ -215,8 +211,8 @@ public:
 
 	void handle_mixers(EDL *edl, int command, int wait_tracking,
 		int use_inout, int toggle_audio, int loop_play, float speed);
-	ZWindow *create_mixer(Indexable *indexable);
-	void create_mixers();
+	ZWindow *create_mixer(Indexable *indexable, double position);
+	void create_mixers(double position = 0);
 	void refresh_mixers(int dir=1);
 	void stop_mixers();
 	void close_mixers(int destroy=1);
@@ -409,8 +405,7 @@ public:
 // Move edit to new position
 	void move_edits(ArrayList<Edit*> *edits, Track *track, double position,
 		int mode); // mode: 0 - mute and overwrite,  1 - cut and paste
-	void paste_edits(EDL *clip, Track *first_track, double position, int overwrite,
-		int edit_edits, int edit_labels, int edit_autos, int edit_plugins);
+	void selected_edits_to_clipboard(int packed);
 	void paste_clipboard(Track *first_track, double position, int overwrite,
 		int edit_edits, int edit_labels, int edit_autos, int edit_plugins);
 	void move_group(EDL *group, Track *first_track, double position, int overwrite);

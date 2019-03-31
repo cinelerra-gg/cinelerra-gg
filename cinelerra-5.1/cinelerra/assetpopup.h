@@ -54,7 +54,8 @@ public:
 	AssetPopupBuildIndex *index;
 	AssetPopupView *view;
 	AssetPopupViewWindow *view_window;
-	AssetPopupMixer *mixer;
+	AssetPopupOpenMixer *open_mixer;
+	AssetPopupInsertMixer *insert_mixer;
 	AWindowListFormat *format;
 };
 
@@ -121,11 +122,23 @@ public:
 	AssetPopup *popup;
 };
 
-class AssetPopupMixer : public BC_MenuItem
+class AssetPopupOpenMixer : public BC_MenuItem
 {
 public:
-	AssetPopupMixer(MWindow *mwindow, AssetPopup *popup);
-	~AssetPopupMixer();
+	AssetPopupOpenMixer(MWindow *mwindow, AssetPopup *popup);
+	~AssetPopupOpenMixer();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AssetPopup *popup;
+};
+
+class AssetPopupInsertMixer : public BC_MenuItem
+{
+public:
+	AssetPopupInsertMixer(MWindow *mwindow, AssetPopup *popup);
+	~AssetPopupInsertMixer();
 
 	int handle_event();
 

@@ -120,7 +120,7 @@ int TransitionUnitsItem::handle_event()
 }
 
 TransitionUnitsPopup::TransitionUnitsPopup(TransitionLengthDialog *gui, int x, int y)
- : BC_PopupMenu(x, y, 100, "", 1)
+ : BC_PopupMenu(x, y, 120, "", 1)
 {
 	this->gui = gui;
 	units = TIME_SECONDS;

@@ -80,7 +80,8 @@ void AssetPopup::create_objects()
 	add_item(index = new AssetPopupBuildIndex(mwindow, this));
 	add_item(view = new AssetPopupView(mwindow, this));
 	add_item(view_window = new AssetPopupViewWindow(mwindow, this));
-	add_item(mixer = new AssetPopupMixer(mwindow, this));
+	add_item(open_mixer = new AssetPopupOpenMixer(mwindow, this));
+	add_item(insert_mixer = new AssetPopupInsertMixer(mwindow, this));
 	add_item(new AssetPopupPaste(mwindow, this));
 	add_item(menu_item = new BC_MenuItem(_("Match...")));
 	menu_item->add_submenu(submenu = new BC_SubMenu());
@@ -269,21 +270,40 @@ int AssetPopupViewWindow::handle_event()
 	return 1;
 }
 
-AssetPopupMixer::AssetPopupMixer(MWindow *mwindow, AssetPopup *popup)
+AssetPopupOpenMixer::AssetPopupOpenMixer(MWindow *mwindow, AssetPopup *popup)
  : BC_MenuItem(_("Open Mixers"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
-AssetPopupMixer::~AssetPopupMixer()
+AssetPopupOpenMixer::~AssetPopupOpenMixer()
 {
 }
 
-int AssetPopupMixer::handle_event()
+int AssetPopupOpenMixer::handle_event()
 {
-	mwindow->gui->lock_window("AssetPopupMixer::handle_event");
+	mwindow->gui->lock_window("AssetPopupOpenMixer::handle_event");
 	mwindow->create_mixers();
+	mwindow->gui->unlock_window();
+	return 1;
+}
+
+AssetPopupInsertMixer::AssetPopupInsertMixer(MWindow *mwindow, AssetPopup *popup)
+ : BC_MenuItem(_("Insert Mixers"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+
+AssetPopupInsertMixer::~AssetPopupInsertMixer()
+{
+}
+
+int AssetPopupInsertMixer::handle_event()
+{
+	mwindow->gui->lock_window("AssetPopupInsertMixer::handle_event");
+	mwindow->create_mixers(-1);
 	mwindow->gui->unlock_window();
 	return 1;
 }

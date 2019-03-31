@@ -5025,11 +5025,8 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press, int drag
 							mwindow->session->drag_group->remove_user();
 						double start_position = 0;
 						mwindow->session->drag_group =
-							mwindow->selected_edits_to_clip(0, &start_position,
-								&mwindow->session->drag_group_first_track,
-								mwindow->edl->session->labels_follow_edits,
-								mwindow->edl->session->autos_follow_edits,
-								mwindow->edl->session->plugins_follow_edits);
+							mwindow->edl->selected_edits_to_clip(0, &start_position,
+								&mwindow->session->drag_group_first_track);
 						if( mwindow->session->drag_group ) {
 							mwindow->session->current_operation = DRAG_GROUP;
 							mwindow->session->drag_group_position = start_position;

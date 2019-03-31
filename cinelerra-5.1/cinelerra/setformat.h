@@ -222,6 +222,7 @@ public:
 
 	MWindow *mwindow;
 	SetFormatThread *thread;
+	SetChannelsReset *channels_reset;
 	SetChannelsCanvas *canvas;
 // Screen size width, height
 	ScaleSizeText* dimension[2];

@@ -330,7 +330,7 @@ void SetFormatWindow::create_objects()
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, y,
 		_("Channel positions:")));
 	y += mwindow->theme->setformat_margin;
-	add_subwindow(new SetChannelsReset(thread,
+	add_subwindow(channels_reset = new SetChannelsReset(thread,
 		mwindow->theme->setformat_x1, y,
 		_("Reset")));
 	add_subwindow(canvas = new SetChannelsCanvas(mwindow,
@@ -508,7 +508,7 @@ SetFormatPresets::~SetFormatPresets()
 int SetFormatPresets::handle_event()
 {
 	format_gui->thread->update();
-	return 1;
+	return format_gui->channels_reset->handle_event();
 }
 
 EDL* SetFormatPresets::get_edl()

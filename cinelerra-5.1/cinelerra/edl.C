@@ -38,6 +38,8 @@
 #include "floatauto.h"
 #include "floatautos.h"
 #include "guicast.h"
+#include "keyframe.h"
+#include "keyframes.h"
 #include "indexstate.h"
 #include "interlacemodes.h"
 #include "labels.h"
@@ -1582,6 +1584,21 @@ double EDL::prev_edit(double position)
 	return new_position;
 }
 
+double EDL::skip_silence(double position)
+{
+	double result = position, nearest = DBL_MAX;
+	for( Track *track=tracks->first; track; track=track->next ) {
+		if( !track->play ) continue;
+		Edit *edit = track->edits->editof(position, PLAY_FORWARD, 0);
+		while( edit && edit->silence() ) edit = edit->next;
+		if( !edit ) continue;
+		double pos = track->from_units(edit->startproject);
+		if( pos > position && pos < nearest )
+			nearest = result = pos;
+        }
+	return result;
+}
+
 void EDL::rescale_proxy(int orig_scale, int new_scale)
 {
 	if( orig_scale == new_scale ) return;
@@ -1798,5 +1815,316 @@ int EDL::regroup(int next_id)
 		}
 	}
 	return new_groups.size();
+}
+
+EDL *EDL::selected_edits_to_clip(int packed,
+		double *start_position, Track **start_track,
+		int edit_labels, int edit_autos, int edit_plugins)
+{
+	double start = DBL_MAX, end = DBL_MIN;
+	Track *first_track=0, *last_track = 0;
+	for( Track *track=tracks->first; track; track=track->next ) {
+		if( !track->record ) continue;
+		int empty = 1;
+		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+			if( !edit->is_selected || edit->silence() ) continue;
+			double edit_pos = track->from_units(edit->startproject);
+			if( start > edit_pos ) start = edit_pos;
+			if( end < (edit_pos+=edit->length) ) end = edit_pos;
+			empty = 0;
+		}
+		if( empty ) continue;
+		if( !first_track ) first_track = track;
+		last_track = track;
+	}
+	if( start_position ) *start_position = start;
+	if( start_track ) *start_track = first_track;
+	if( !first_track ) return 0;
+	EDL *new_edl = new EDL();
+	new_edl->create_objects();
+	new_edl->copy_session(this);
+	const char *text = _("new_edl edit");
+	new_edl->set_path(text);
+	strcpy(new_edl->local_session->clip_title, text);
+	strcpy(new_edl->local_session->clip_notes, text);
+	new_edl->session->video_tracks = 0;
+	new_edl->session->audio_tracks = 0;
+	for( Track *track=tracks->first; track; track=track->next ) {
+		if( !track->record ) continue;
+		if( first_track ) {
+			if( first_track != track ) continue;
+			first_track = 0;
+		}
+		Track *new_track = 0;
+		if( !packed )
+			new_track = new_edl->add_new_track(track->data_type);
+		int64_t start_pos = track->to_units(start, 0);
+		int64_t end_pos = track->to_units(end, 0);
+		int64_t startproject = 0;
+		Edit *edit = track->edits->first;
+		for( ; edit; edit=edit->next ) {
+			if( !edit->is_selected || edit->silence() ) continue;
+			if( edit->startproject < start_pos ) continue;
+			if( edit->startproject >= end_pos ) break;
+			int64_t edit_start_pos = edit->startproject;
+			int64_t edit_end_pos = edit->startproject + edit->length;
+			if( !new_track )
+				new_track = new_edl->add_new_track(track->data_type);
+			int64_t edit_pos = edit_start_pos - start_pos;
+			if( !packed && edit_pos > startproject ) {
+				Edit *silence = new Edit(new_edl, new_track);
+				silence->startproject = startproject;
+				silence->length = edit_pos - startproject;
+				new_track->edits->append(silence);
+				startproject = edit_pos;
+			}
+			int64_t clip_start_pos = startproject;
+			Edit *clip_edit = new Edit(new_edl, new_track);
+			clip_edit->copy_from(edit);
+			clip_edit->startproject = startproject;
+			startproject += clip_edit->length;
+			new_track->edits->append(clip_edit);
+			if( edit_labels ) {
+				double edit_start = track->from_units(edit_start_pos);
+				double edit_end = track->from_units(edit_end_pos);
+				double clip_start = new_track->from_units(clip_start_pos);
+				Label *label = labels->first;
+				for( ; label; label=label->next ) {
+					if( label->position < edit_start ) continue;
+					if( label->position >= edit_end ) break;
+					double clip_position = label->position - edit_start + clip_start;
+					Label *clip_label = new_edl->labels->first;
+					while( clip_label && clip_label->position<clip_position )
+						clip_label = clip_label->next;
+					if( clip_label && clip_label->position == clip_position ) continue;
+					Label *new_label = new Label(new_edl,
+						new_edl->labels, clip_position, label->textstr);
+					new_edl->labels->insert_before(clip_label, new_label);
+				}
+			}
+			if( edit_autos ) {
+				Automation *automation = track->automation;
+				Automation *new_automation = new_track->automation;
+				for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
+					Autos *autos = automation->autos[i];
+					if( !autos ) continue;
+					Autos *new_autos = new_automation->autos[i];
+					new_autos->default_auto->copy_from(autos->default_auto);
+					Auto *aut0 = autos->first;
+					for( ; aut0; aut0=aut0->next ) {
+						if( aut0->position < edit_start_pos ) continue;
+						if( aut0->position >= edit_end_pos ) break;
+						Auto *new_auto = new_autos->new_auto();
+						new_auto->copy_from(aut0);
+						int64_t clip_position = aut0->position - edit_start_pos + clip_start_pos;
+						new_auto->position = clip_position;
+						new_autos->append(new_auto);
+					}
+				}
+			}
+			if( edit_plugins ) {
+				while( new_track->plugin_set.size() < track->plugin_set.size() )
+					new_track->plugin_set.append(0);
+				for( int i=0; i<track->plugin_set.total; ++i ) {
+					PluginSet *plugin_set = track->plugin_set[i];
+					if( !plugin_set ) continue;
+					PluginSet *new_plugin_set = new_track->plugin_set[i];
+					if( !new_plugin_set ) {
+						new_plugin_set = new PluginSet(new_edl, new_track);
+						new_track->plugin_set[i] = new_plugin_set;
+					}
+					Plugin *plugin = (Plugin*)plugin_set->first;
+					int64_t startplugin = new_plugin_set->length();
+					for( ; plugin ; plugin=(Plugin*)plugin->next ) {
+						if( plugin->silence() ) continue;
+						int64_t plugin_start_pos = plugin->startproject;
+						int64_t plugin_end_pos = plugin_start_pos + plugin->length;
+						if( plugin_end_pos < start_pos ) continue;
+						if( plugin_start_pos > end_pos ) break;
+						if( plugin_start_pos < edit_start_pos )
+							plugin_start_pos = edit_start_pos;
+						if( plugin_end_pos > edit_end_pos )
+							plugin_end_pos = edit_end_pos;
+						if( plugin_start_pos >= plugin_end_pos ) continue;
+						int64_t plugin_pos = plugin_start_pos - start_pos;
+						if( !packed && plugin_pos > startplugin ) {
+							Plugin *silence = new Plugin(new_edl, new_track, "");
+							silence->startproject = startplugin;
+							silence->length = plugin_pos - startplugin;
+							new_plugin_set->append(silence);
+							startplugin = plugin_pos;
+						}
+						Plugin *new_plugin = new Plugin(new_edl, new_track, plugin->title);
+						new_plugin->copy_base(plugin);
+						new_plugin->startproject = startplugin;
+						new_plugin->length = plugin_end_pos - plugin_start_pos;
+						startplugin += new_plugin->length;
+						new_plugin_set->append(new_plugin);
+						KeyFrames *keyframes = plugin->keyframes;
+						KeyFrames *new_keyframes = new_plugin->keyframes;
+						new_keyframes->default_auto->copy_from(keyframes->default_auto);
+						new_keyframes->default_auto->position = new_plugin->startproject;
+						KeyFrame *keyframe = (KeyFrame*)keyframes->first;
+						for( ; keyframe; keyframe=(KeyFrame*)keyframe->next ) {
+							if( keyframe->position < edit_start_pos ) continue;
+							if( keyframe->position >= edit_end_pos ) break;
+							KeyFrame *clip_keyframe = new KeyFrame(new_edl, new_keyframes);
+							clip_keyframe->copy_from(keyframe);
+							int64_t key_position = keyframe->position - start_pos;
+							if( packed )
+								key_position += new_plugin->startproject - plugin_pos;
+							clip_keyframe->position = key_position;
+							new_keyframes->append(clip_keyframe);
+						}
+					}
+				}
+			}
+		}
+		if( last_track == track ) break;
+	}
+	return new_edl;
+}
+
+EDL *EDL::selected_edits_to_clip(int packed, double *start_position, Track **start_track)
+{
+	return selected_edits_to_clip(packed, start_position, start_track,
+		session->labels_follow_edits,
+		session->autos_follow_edits,
+		session->plugins_follow_edits);
+}
+
+void EDL::paste_edits(EDL *clip, Track *first_track, double position, int overwrite,
+		int edit_edits, int edit_labels, int edit_autos, int edit_plugins)
+{
+	if( !first_track )
+		first_track = tracks->first;
+	Track *src = clip->tracks->first;
+	for( Track *track=first_track; track && src; track=track->next ) {
+		if( !track->record ) continue;
+		int64_t pos = track->to_units(position, 0);
+		if( edit_edits ) {
+			for( Edit *edit=src->edits->first; edit; edit=edit->next ) {
+				if( edit->silence() ) continue;
+				int64_t start = pos + edit->startproject;
+				int64_t len = edit->length, end = start + len;
+				if( overwrite )
+					track->edits->clear(start, end);
+				Edit *dst = track->edits->insert_new_edit(start);
+				dst->copy_from(edit);
+				dst->startproject = start;
+				dst->is_selected = 1;
+				while( (dst=dst->next) != 0 )
+					dst->startproject += edit->length;
+				if( overwrite ) continue;
+				if( edit_labels && track == first_track ) {
+					double dst_pos = track->from_units(start);
+					double dst_len = track->from_units(len);
+					for( Label *label=labels->first; label; label=label->next ) {
+						if( label->position >= dst_pos )
+							label->position += dst_len;
+					}
+				}
+				if( edit_autos ) {
+					for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
+						Autos *autos = track->automation->autos[i];
+						if( !autos ) continue;
+						for( Auto *aut0=autos->first; aut0; aut0=aut0->next ) {
+							if( aut0->position >= start )
+								aut0->position += edit->length;
+						}
+					}
+				}
+				if( edit_plugins ) {
+					for( int i=0; i<track->plugin_set.size(); ++i ) {
+						PluginSet *plugin_set = track->plugin_set[i];
+						Plugin *plugin = (Plugin *)plugin_set->first;
+						for( ; plugin; plugin=(Plugin *)plugin->next ) {
+							if( plugin->startproject >= start )
+								plugin->startproject += edit->length;
+							else if( plugin->startproject+plugin->length > end )
+								plugin->length += edit->length;
+							Auto *default_keyframe = plugin->keyframes->default_auto;
+							if( default_keyframe->position >= start )
+								default_keyframe->position += edit->length;
+							KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+							for( ; keyframe; keyframe=(KeyFrame*)keyframe->next ) {
+								if( keyframe->position >= start )
+									keyframe->position += edit->length;
+							}
+						}
+						plugin_set->optimize();
+					}
+				}
+			}
+		}
+		if( edit_autos ) {
+			for( int i=0; i<AUTOMATION_TOTAL; ++i ) {
+				Autos *src_autos = src->automation->autos[i];
+				if( !src_autos ) continue;
+				Autos *autos = track->automation->autos[i];
+				for( Auto *aut0=src_autos->first; aut0; aut0=aut0->next ) {
+					int64_t auto_pos = pos + aut0->position;
+					autos->insert_auto(auto_pos, aut0);
+				}
+			}
+		}
+		if( edit_plugins ) {
+			for( int i=0; i<src->plugin_set.size(); ++i ) {
+				PluginSet *plugin_set = src->plugin_set[i];
+				if( !plugin_set ) continue;
+				while( i >= track->plugin_set.size() )
+					track->plugin_set.append(0);
+				PluginSet *dst_plugin_set = track->plugin_set[i];
+				if( !dst_plugin_set ) {
+					dst_plugin_set = new PluginSet(this, track);
+					track->plugin_set[i] = dst_plugin_set;
+				}
+				Plugin *plugin = (Plugin *)plugin_set->first;
+				if( plugin ) track->expand_view = 1;
+				for( ; plugin; plugin=(Plugin *)plugin->next ) {
+					int64_t start = pos + plugin->startproject;
+					int64_t end = start + plugin->length;
+					if( overwrite || edit_edits )
+						dst_plugin_set->clear(start, end, 1);
+					Plugin *new_plugin = dst_plugin_set->insert_plugin(plugin->title,
+						start, end-start, plugin->plugin_type, &plugin->shared_location,
+						(KeyFrame*)plugin->keyframes->default_auto, 0);
+					KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+					for( ; keyframe; keyframe=(KeyFrame*)keyframe->next ) {
+						int64_t keyframe_pos = pos + keyframe->position;
+						new_plugin->keyframes->insert_auto(keyframe_pos, keyframe);
+					}
+					while( (new_plugin=(Plugin *)new_plugin->next) ) {
+						KeyFrame *keyframe = (KeyFrame*)new_plugin->keyframes->first;
+						for( ; keyframe; keyframe=(KeyFrame*)keyframe->next )
+							keyframe->position += plugin->length;
+					}
+				}
+			}
+		}
+		src = src->next;
+	}
+	if( edit_labels ) {
+		Label *edl_label = labels->first;
+		for( Label *label=clip->labels->first; label; label=label->next ) {
+			double label_pos = position + label->position;
+			int exists = 0;
+			while( edl_label &&
+				!(exists=equivalent(edl_label->position, label_pos)) &&
+				edl_label->position < position ) edl_label = edl_label->next;
+			if( exists ) continue;
+			labels->insert_before(edl_label,
+				new Label(this, labels, label_pos, label->textstr));
+		}
+	}
+	optimize();
+}
+
+void EDL::paste_edits(EDL *clip, Track *first_track, double position, int overwrite)
+{
+	paste_edits(clip, first_track, position, overwrite, 1,
+		session->labels_follow_edits,
+		session->autos_follow_edits,
+		session->plugins_follow_edits);
 }
 

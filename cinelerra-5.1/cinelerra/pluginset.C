@@ -442,6 +442,13 @@ int PluginSet::optimize()
 	int result = 1;
 	Plugin *current_edit;
 
+// trim plugins before position 0
+	while( first && first->startproject+first->length < 0 )
+		delete first;
+	if( first && first->startproject < 0 ) {
+		first->length += first->startproject;
+		first->startproject = 0;
+	}
 
 // Delete keyframes out of range
 	for(current_edit = (Plugin*)first;

@@ -21,7 +21,8 @@
 #ifndef __MIXERSALIGN_H__
 #define __MIXERSALIGN_H__
 
-#include "edl.inc"
+#include "edl.h"
+#include "edit.inc"
 #include "fourier.h"
 #include "guicast.h"
 #include "language.h"
@@ -38,10 +39,12 @@ class MixersAlignMixer
 {
 public:
 	MixersAlignMixer(Mixer *mix);
+	~MixersAlignMixer();
 	Mixer *mixer;
 	double nudge;
 	double mx;
 	int64_t mi;
+	double *br, *bi;
 	int aidx;
 };
 
@@ -132,9 +135,12 @@ class MixersAlignATrack
 {
 public:
 	MixersAlignATrack(Track *trk, int no);
+	~MixersAlignATrack();
+
 	Track *track;
 	int no;
 	double nudge;
+	double ss;
 	double mx;
 	int64_t mi;
 };
@@ -190,9 +196,11 @@ class MixersAlignThread : public Thread
 public:
 	MixersAlignThread(MixersAlign *dialog);
 	~MixersAlignThread();
+	void start(int fwd);
 	void run();
 
 	MixersAlign *dialog;
+	int fwd;
 };
 
 class MixersAlignMatch : public BC_GenericButton
@@ -205,10 +213,20 @@ public:
 	MixersAlignWindow *gui;
 };
 
-class MixersAlignApply : public BC_GenericButton
+class MixersAlignMatchAll : public BC_GenericButton
 {
 public:
-	MixersAlignApply(MixersAlignWindow *gui, MixersAlign *dialog, int x, int y);
+	MixersAlignMatchAll(MixersAlignWindow *gui, MixersAlign *dialog, int x, int y);
+	int handle_event();
+
+	MixersAlign *dialog;
+	MixersAlignWindow *gui;
+};
+
+class MixersAlignNudgeTracks : public BC_GenericButton
+{
+public:
+	MixersAlignNudgeTracks(MixersAlignWindow *gui, MixersAlign *dialog, int x, int y);
 	int handle_event();
 	static int calculate_width(BC_WindowBase *gui);
 
@@ -216,11 +234,53 @@ public:
 	MixersAlignWindow *gui;
 };
 
-class MixersAlignUndo : public BC_GenericButton
+class MixersAlignNudgeSelected : public BC_GenericButton
+{
+public:
+	MixersAlignNudgeSelected(MixersAlignWindow *gui, MixersAlign *dialog, int x, int y);
+	int handle_event();
+	static int calculate_width(BC_WindowBase *gui);
+
+	MixersAlign *dialog;
+	MixersAlignWindow *gui;
+};
+
+class MixersAlignCheckPoint : public BC_GenericButton
+{
+public:
+	MixersAlignCheckPoint(MixersAlignWindow *gui, MixersAlign *dialog, int x, int y);
+	int handle_event();
+
+	MixersAlign *dialog;
+	MixersAlignWindow *gui;
+};
+
+class MixersAlignUndoEDLs : public ArrayList<EDL *>
+{
+public:
+	MixersAlignUndoEDLs() {}
+	~MixersAlignUndoEDLs() {
+		for( int i=size(); --i>=0; ) get(i)->remove_user();
+	}
+};
+
+class MixersAlignUndoItem : public BC_MenuItem
+{
+public:
+	MixersAlignUndoItem(const char *text, int no);
+	~MixersAlignUndoItem();
+	int handle_event();
+
+	int no;
+};
+
+class MixersAlignUndo : public BC_PopupMenu
 {
 public:
 	MixersAlignUndo(MixersAlignWindow *gui, MixersAlign *dialog, int x, int y);
-	int handle_event();
+	~MixersAlignUndo();
+	void create_objects();
+	void add_undo_item(int no);
 
 	MixersAlign *dialog;
 	MixersAlignWindow *gui;
@@ -246,8 +306,11 @@ public:
 	MixersAlignMTrackList *mtrack_list;
 	MixersAlignATrackList *atrack_list;
 	MixersAlignMatch *match;
+	MixersAlignMatchAll *match_all;
 	MixersAlignReset *reset;
-	MixersAlignApply *apply;
+	MixersAlignNudgeTracks *nudge_tracks;
+	MixersAlignNudgeSelected *nudge_selected;
+	MixersAlignCheckPoint *check_point;
 	MixersAlignUndo *undo;
 };
 
@@ -261,35 +324,150 @@ public:
 	int render(Samples **samples, int64_t len, int64_t pos);
 };
 
-class MixersAlignPackage : public LoadPackage
+
+class MixersAlignScanPackage : public LoadPackage
 {
 public:
-	MixersAlignPackage();
-	~MixersAlignPackage();
+	MixersAlignScanPackage(MixersAlignScanFarm *farm);
+	~MixersAlignScanPackage();
 
 	MixersAlignMixer *mixer;
 };
 
-class MixersAlignClient : public LoadClient
+class MixersAlignScanClient : public LoadClient
 {
 public:
-	MixersAlignClient(MixersAlignFarm *farm);
-	~MixersAlignClient();
+	MixersAlignScanClient(MixersAlignScanFarm *farm);
+	~MixersAlignScanClient();
+        void process_package(LoadPackage *package);
 
-        void process_package(LoadPackage *pkg);
+	MixersAlignScanFarm *farm;
+	MixersAlignScanPackage *pkg;
+	int64_t pos;
+	int len1;
 };
 
-class MixersAlignFarm : public LoadServer
+class MixersAlignScanFarm : public LoadServer
 {
 public:
-	MixersAlignFarm(MixersAlign *dialog, int n);
-	~MixersAlignFarm();
+	MixersAlignScanFarm(MixersAlign *dialog, int cpus, int n);
+	~MixersAlignScanFarm();
+	void init_packages();
+	LoadClient *new_client();
+	LoadPackage *new_package();
+
+	MixersAlign *dialog;
+	Samples *samples;
+	int len;
+};
+
+
+class MixersAlignMatchFwdPackage : public LoadPackage
+{
+public:
+	MixersAlignMatchFwdPackage();
+	~MixersAlignMatchFwdPackage();
+
+	MixersAlignMixer *mixer;
+};
+
+class MixersAlignMatchFwdClient : public LoadClient
+{
+public:
+	MixersAlignMatchFwdClient(MixersAlignMatchFwdFarm *farm);
+	~MixersAlignMatchFwdClient();
+
+        void process_package(LoadPackage *package);
+	MixersAlignMatchFwdPackage *pkg;
+};
+
+class MixersAlignMatchFwdFarm : public LoadServer
+{
+public:
+	MixersAlignMatchFwdFarm(MixersAlign *dialog, int n);
+	~MixersAlignMatchFwdFarm();
 	void init_packages();
 	LoadClient *new_client();
 	LoadPackage *new_package();
 
 	MixersAlign *dialog;
 };
+
+
+class MixersAlignMatchRevPackage : public LoadPackage
+{
+public:
+	MixersAlignMatchRevPackage();
+	~MixersAlignMatchRevPackage();
+
+	MixersAlignMixer *mix;
+};
+
+class MixersAlignMatchRevClient : public LoadClient
+{
+public:
+	MixersAlignMatchRevClient(MixersAlignMatchRevFarm *farm);
+	~MixersAlignMatchRevClient();
+
+        void process_package(LoadPackage *package);
+	MixersAlignMatchRevPackage *pkg;
+	double *re, *im;
+};
+
+class MixersAlignMatchRevFarm : public LoadServer
+{
+public:
+	MixersAlignMatchRevFarm(int n, int cpus,
+		MixersAlign *dialog, double *ar, double *ai, int len);
+	~MixersAlignMatchRevFarm();
+	void init_packages();
+	LoadClient *new_client();
+	LoadPackage *new_package();
+
+	MixersAlign *dialog;
+	Mutex *mixer_lock;
+	double *ar, *ai;
+	int len;
+	int64_t pos;
+};
+
+
+class MixersAlignTargetPackage : public LoadPackage
+{
+public:
+	MixersAlignTargetPackage(MixersAlignTarget *pfft);
+	~MixersAlignTargetPackage();
+
+	double ss, sd2;
+	int64_t pos;
+	double *best;
+};
+
+class MixersAlignTargetClient : public LoadClient
+{
+public:
+	MixersAlignTargetClient();
+	~MixersAlignTargetClient();
+
+	void process_package(LoadPackage *package);
+	MixersAlignTargetPackage *pkg;
+};
+
+class MixersAlignTarget : public LoadServer
+{
+public:
+	MixersAlignTarget(int n, int cpus,
+		MixersAlignScanClient *scan, Samples **samples, int len);
+	~MixersAlignTarget();
+	void init_packages();
+	LoadClient *new_client();
+	LoadPackage *new_package();
+
+	MixersAlignScanClient *scan;
+	Samples **samples;
+	int len;
+};
+
 
 class MixersAlign : public BC_DialogThread, public FFT
 {
@@ -305,6 +483,7 @@ public:
 	void handle_done_event(int result);
 	void handle_close_event(int result);
 
+	int atrack_of(MixersAlignMixer *mix, int ch);
 	int mixer_of(Track *track, int &midx);
 	int mixer_of(Track *track) { int midx = -1; return mixer_of(track, midx); }
 	int mmixer_of(int mi) {
@@ -316,14 +495,25 @@ public:
 
 	EDL *mixer_audio_clip(Mixer *mixer);
 	EDL *mixer_master_clip(Track *track);
-	int64_t mixer_tracks_total();
+	int64_t mixer_tracks_total(int midx);
 	void load_master_audio(Track *track);
 	void scan_mixer_audio();
+	void start_progress(int64_t total_len);
+	void stop_progress(const char *msg);
 	void update_progress(int64_t len);
-	void update_match();
+	void match_fwd();
+	void match_rev();
+	void update_fwd();
+	void update_rev();
 	void update();
-	void process_package(MixersAlignFarm *farm, MixersAlignPackage *package);
-	void apply();
+	void apply_undo(int no);
+	void nudge_tracks();
+	void nudge_selected();
+	void clear_mixer_nudge();
+	void check_point();
+	void reset_targets();
+	void scan_targets();
+	void scan_master(Track *track);
 
 	MixersAlignWindow *ma_gui;
 	int wx, wy;
@@ -332,14 +522,14 @@ public:
 	MixersAlignATracks atracks;
 	MWindow *mwindow;
 
-	EDL *undo_edl;
+	MixersAlignUndoEDLs undo_edls;
 	Mutex *farming;
 	MainProgressBar *progress;
 	MixersAlignThread *thread;
 	Mutex *total_lock;
 	int64_t total_rendered;
 	int failed;
-	int64_t master_len;
+	int64_t master_len, sample_len;
 	double *master_r, *master_i;
 	double master_start, master_end, master_ss;
 	double audio_start, audio_end;

@@ -1334,12 +1334,12 @@ void MWindow::close_mixers(int destroy)
 	}
 }
 
-ZWindow *MWindow::create_mixer(Indexable *indexable)
+ZWindow *MWindow::create_mixer(Indexable *indexable, double position)
 {
 	ArrayList<Indexable*> new_assets;
 	new_assets.append(indexable);
 	Track *track = edl->tracks->last;
-	load_assets(&new_assets, 0, LOADMODE_NEW_TRACKS, 0, 0, 0, 0, 0, 0);
+	load_assets(&new_assets, position, LOADMODE_NEW_TRACKS, 0, 0, 0, 0, 0, 0);
 	track = !track ? edl->tracks->first : track->next;
 	Mixer *mixer = 0;
 	ZWindow *zwindow = get_mixer(mixer);
@@ -1364,7 +1364,7 @@ ZWindow *MWindow::create_mixer(Indexable *indexable)
 	return zwindow;
 }
 
-void MWindow::create_mixers()
+void MWindow::create_mixers(double position)
 {
 	if( !session->drag_assets->size() &&
 	    !session->drag_clips->size() ) return;
@@ -1376,13 +1376,13 @@ void MWindow::create_mixers()
 	for( int i=0; i<session->drag_assets->size(); ++i ) {
 		Indexable *indexable = session->drag_assets->get(i);
 		if( !indexable->have_video() ) continue;
-		ZWindow *zwindow = create_mixer(indexable);
+		ZWindow *zwindow = create_mixer(indexable, position);
 		new_mixers.append(zwindow);
 	}
 	for( int i=0; i<session->drag_clips->size(); ++i ) {
 		Indexable *indexable = (Indexable*)session->drag_clips->get(i);
 		if( !indexable->have_video() ) continue;
-		ZWindow *zwindow = create_mixer(indexable);
+		ZWindow *zwindow = create_mixer(indexable, position);
 		new_mixers.append(zwindow);
 	}
 

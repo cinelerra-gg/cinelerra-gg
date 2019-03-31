@@ -264,7 +264,7 @@ int XMLTag::write_tag(FileXML *xml)
 		const char *prop = properties[i]->prop;
 		const char *value = properties[i]->value;
 		int plen = strlen(prop), vlen = strlen(value);
-		bool need_quotes = !vlen || strchr(value,' ');
+		bool need_quotes = !vlen || strchr(value,' ') || strchr(value,'\n');
 		buf->next(' ');
 		xml->append_text(prop, plen);
 		buf->next('=');

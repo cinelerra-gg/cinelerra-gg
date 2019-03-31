@@ -167,6 +167,7 @@ public:
 // return next/prev edit starting from position
 	double next_edit(double position);
 	double prev_edit(double position);
+	double skip_silence(double position);
 // Debug
 	int dump(FILE *fp=stdout);
 	static int next_id();
@@ -221,6 +222,14 @@ public:
 	int insert_clips(ArrayList<EDL*> *new_edls, int load_mode, Track *first_track = 0);
 // Add a copy of EDL* to the clip array.  Returns the copy.
 	EDL* add_clip(EDL *edl);
+	EDL *selected_edits_to_clip(int packed,
+		double *start_position, Track **start_track,
+		int edit_labels, int edit_autos, int edit_plugins);
+	EDL *selected_edits_to_clip(int packed, double *start_position, Track **start_track);
+	void selected_edits_to_clipboard(int packed);
+	void paste_edits(EDL *clip, Track *first_track, double position, int overwrite,
+		int edit_edits, int edit_labels, int edit_autos, int edit_plugins);
+	void paste_edits(EDL *clip, Track *first_track, double position, int overwrite);
 // resequence group ids starting at next_id
 	int regroup(int next_id);
 

@@ -122,8 +122,10 @@ int Save::handle_event()
 
 int Save::save_before_quit()
 {
+	mwindow->gui->lock_window("Save::save_before_quit");
 	saveas->quit_now = 1;
 	handle_event();
+	mwindow->gui->unlock_window();
 	return 0;
 }
 

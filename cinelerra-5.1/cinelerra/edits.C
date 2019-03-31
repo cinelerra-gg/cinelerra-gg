@@ -326,6 +326,14 @@ int Edits::optimize()
 		}
 	}
 
+// trim edits before position 0
+	while( first && first->startproject+first->length < 0 )
+		delete first;
+	if( first && first->startproject < 0 ) {
+		first->length += first->startproject;
+		first->startproject = 0;
+	}
+
 // Insert silence between edits which aren't consecutive
 	for(current = last; current; current = current->previous)
 	{
