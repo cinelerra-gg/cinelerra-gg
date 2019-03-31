@@ -1,4 +1,4 @@
-%define ver 20190228
+%define ver 20190331
 %define cin cinelerra
 Summary: Multimedia Editing and construction
 
@@ -26,6 +26,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 %if 0%{?centos}
 %define rhat 1
 %define distro centos
+%define centos_cfg --disable-libaom --disable-libwebp
 %endif
 
 BuildRequires: autoconf
@@ -76,7 +77,7 @@ Multimedia editing and construction
 %setup -q -n %{cin}-%{version}
 %build
 ./autogen.sh
-%configure %{?xcfg}
+%configure %{?xcfg} %{?centos_cfg}
 %{__make}
 
 %install

@@ -4,7 +4,7 @@ Cinelerra-GG Infinity continuously merged/enriched from the
   provided over prior years from the Community Version.
 Email cin@lists.cinelerra-gg.org 4 help.
 For usage help, refer to the following:
-  https://cinelerra-cv.org/docs/cinelerra_cv_manual_en.html
+  https://cinelerra-gg.org/downloads/CinelerraGG_manual.pdf
   https://cinelerra-gg.org/downloads/Features.pdf
   http://g-raffa.eu/Cinelerra/HOWTO/basics.html
 Cinfinity icons selected in Preferences Sam (CC BY 3.0,
@@ -12,6 +12,12 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Neophyte theme selected in Preferences by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+March 2019 New Features of note:
+  Mixers, multiple cameras, now has Audio Alignment.
+  Additional options for Preview mode in Resources window.
+  Named layouts for easier identification purposes.
+  ShuttlePro/Xpress will work on multiple instances.
+  Insert Mixers for multiple cameras at Insertion point.
 February 2019 New Features of note:
   AV1 and WebP format usage is now included.
   ShuttlePro/Xpress stabilization/setup/definition is complete.

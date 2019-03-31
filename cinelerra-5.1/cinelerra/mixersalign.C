@@ -685,6 +685,7 @@ BC_Window *MixersAlign::new_gui()
 // shift armed mixer tracks by nudge
 void MixersAlign::nudge_tracks()
 {
+	mwindow->gui->lock_window("MixersAlign::apply_tracks");
 	int idx = ma_gui->mtrack_list->get_selection_number(0, 0);
 	int midx = mmixer_of(idx);
 	EDL *edl = mwindow->edl;
@@ -716,7 +717,6 @@ void MixersAlign::nudge_tracks()
 	}
 	edl->optimize();
 
-	mwindow->gui->lock_window("MixersAlign::apply_tracks");
 	mwindow->update_gui(1);
 	mwindow->gui->unlock_window();
 	clear_mixer_nudge();
@@ -725,6 +725,7 @@ void MixersAlign::nudge_tracks()
 // move selected mixer edits by nudge
 void MixersAlign::nudge_selected()
 {
+	mwindow->gui->lock_window("MixersAlign::apply_selected");
 	int idx = ma_gui->mtrack_list->get_selection_number(0, 0);
 	int midx = mmixer_of(idx);
 	EDL *edl = mwindow->edl;
@@ -778,7 +779,6 @@ void MixersAlign::nudge_selected()
 		track->record = track_arms[i++];
 	edl->optimize();
 
-	mwindow->gui->lock_window("MixersAlign::apply_selected");
 	mwindow->update_gui(1);
 	mwindow->gui->unlock_window();
 	clear_mixer_nudge();
@@ -798,11 +798,13 @@ void MixersAlign::clear_mixer_nudge()
 
 void MixersAlign::check_point()
 {
+	mwindow->gui->lock_window("MixersAlign::check_point");
 	ma_gui->undo->add_undo_item(undo_edls.size());
 	EDL *undo_edl = new EDL();
 	undo_edl->create_objects();
 	undo_edl->copy_all(mwindow->edl);
 	undo_edls.append(undo_edl);
+	mwindow->gui->unlock_window();
 }
 
 
@@ -856,22 +858,28 @@ void MixersAlign::handle_done_event(int result)
 		thread->join();
 	}
 	if( !result ) {
+		mwindow->gui->lock_window("MixersAlign::handle_done_event");
 		EDL *edl = mwindow->edl;
 		mwindow->edl = undo_edls[0];
 		mwindow->undo_before();
 		mwindow->edl = edl;
 		mwindow->undo_after(_("align mixers"), LOAD_ALL);
+		mwindow->gui->unlock_window();
 	}
 }
 
 void MixersAlign::handle_close_event(int result)
 {
 	ma_gui = 0;
+	mixers.clear();
+	mtracks.clear();
+	atracks.clear();
+	undo_edls.clear();
 }
 
 void MixersAlign::load_mixers()
 {
-	mixers.remove_all_objects();
+	mixers.clear();
 	Mixers &edl_mixers = mwindow->edl->mixers;
 	for( int i=0; i<edl_mixers.size(); ++i )
 		mixers.append(new MixersAlignMixer(edl_mixers[i]));
@@ -879,7 +887,7 @@ void MixersAlign::load_mixers()
 
 void MixersAlign::load_mtracks()
 {
-	mtracks.remove_all_objects();
+	mtracks.clear();
 	Track *track=mwindow->edl->tracks->first;
 	for( int no=0; track; ++no, track=track->next ) {
 		if( track->data_type != TRACK_AUDIO ) continue;
@@ -889,7 +897,7 @@ void MixersAlign::load_mtracks()
 
 void MixersAlign::load_atracks()
 {
-	atracks.remove_all_objects();
+	atracks.clear();
 	Track *track=mwindow->edl->tracks->first;
 	for( int no=0; track; ++no, track=track->next ) {
 		if( track->data_type != TRACK_AUDIO ) continue;
@@ -986,9 +994,9 @@ void MixersAlign::apply_undo(int no)
 		failed = -1;
 		thread->join();
 	}
+	mwindow->gui->lock_window("MixersAlignUndo::handle_event");
 	EDL *undo_edl = undo_edls[no];
 	mwindow->edl->copy_all(undo_edl);
-	mwindow->gui->lock_window("MixersAlignUndo::handle_event");
 	mwindow->update_gui(1);
 	mwindow->gui->unlock_window();
 	ma_gui->reset->handle_event();
@@ -1224,8 +1232,8 @@ void MixersAlignTargetClient::process_package(LoadPackage *package)
 		pkg->sd2 = sd2;
 		pkg->ss = ss;
 		pkg->pos = scan->pos;
-printf("targ %s:%d at %jd,ss=%f sd2=%f\n",
-  scan->pkg->mixer->mixer->title, ch, scan->pos, ss, sd2);
+//printf("targ %s:%d at %jd,ss=%f sd2=%f\n",
+//  scan->pkg->mixer->mixer->title, ch, scan->pos, ss, sd2);
 		double *best = pkg->best;
 		int i = 0, len = targ->len;
 		while( i < len1 ) best[i++] = *data++;
@@ -1514,7 +1522,7 @@ void MixersAlignMatchRevClient::process_package(LoadPackage *package)
 	if( mix->mx < mx ) {
 		mix->mx = mx;
 		mix->mi = mi;
-printf("best %d: %f at %jd\n", get_package_number(), mx, mi);
+//printf("best %d: %f at %jd\n", get_package_number(), mx, mi);
 	}
 	farm->mixer_lock->unlock();
 }

@@ -52,7 +52,8 @@ class MixersAlignMixers : public ArrayList<MixersAlignMixer*>
 {
 public:
 	MixersAlignMixers() {}
-	~MixersAlignMixers() { remove_all_objects(); }
+	~MixersAlignMixers() { clear(); }
+	void clear() { remove_all_objects(); }
 };
 
 class MixersAlignMixerList : public BC_ListBox
@@ -99,7 +100,8 @@ class MixersAlignMTracks : public ArrayList<MixersAlignMTrack*>
 {
 public:
 	MixersAlignMTracks() {}
-	~MixersAlignMTracks() { remove_all_objects(); }
+	~MixersAlignMTracks() { clear(); }
+	void clear() { remove_all_objects(); }
 };
 
 
@@ -149,7 +151,8 @@ class MixersAlignATracks : public ArrayList<MixersAlignATrack*>
 {
 public:
 	MixersAlignATracks() {}
-	~MixersAlignATracks() { remove_all_objects(); }
+	~MixersAlignATracks() { clear(); }
+	void clear() { remove_all_objects(); }
 };
 
 class MixersAlignATrackList : public BC_ListBox
@@ -259,8 +262,10 @@ class MixersAlignUndoEDLs : public ArrayList<EDL *>
 {
 public:
 	MixersAlignUndoEDLs() {}
-	~MixersAlignUndoEDLs() {
+	~MixersAlignUndoEDLs() { clear(); }
+	void clear() {
 		for( int i=size(); --i>=0; ) get(i)->remove_user();
+		remove_all();
 	}
 };
 
