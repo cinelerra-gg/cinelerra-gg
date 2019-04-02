@@ -64,11 +64,10 @@ public:
 	int load_lv2(const char *path,char *title=0);
 	int init_lv2(PluginLV2ClientConfig &conf, int sample_rate, int bfrsz);
 	virtual int is_forked() { return 0; }
-
-	static LV2_URID uri_table_map(LV2_URID_Map_Handle handle, const char *uri);
-	static const char *uri_table_unmap(LV2_URID_Map_Handle handle, LV2_URID urid);
-	static uint32_t uri_to_id(LV2_URI_Map_Callback_Data callback_data,
-			const char *map, const char *uri);
+	static uint32_t map_uri(LV2_URID_Map_Handle handle, const char *uri);
+	static const char *unmap_uri(LV2_URID_Unmap_Handle handle, LV2_URID urid);
+	LV2_URID_Map uri_map;
+	LV2_URID_Unmap uri_unmap;
 	void connect_ports(PluginLV2ClientConfig &conf, int ports);
 	void del_buffer();
 	void new_buffer(int64_t sz);
@@ -80,7 +79,6 @@ public:
 	const LilvPlugin  *lilv;
 	LilvUIs           *lilv_uis;
 
-	LV2_URI_Map_Feature uri_map;
 	PluginLV2UriTable  uri_table;
 	LV2_URID_Map       map;
 	LV2_Feature        map_feature;

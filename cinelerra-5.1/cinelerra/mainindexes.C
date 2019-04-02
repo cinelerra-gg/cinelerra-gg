@@ -109,6 +109,7 @@ void MainIndexes::stop_loop()
 
 void MainIndexes::start_build()
 {
+	if( !current_indexables.size() ) return;
 //printf("MainIndexes::start_build 1\n");
 	interrupt_flag = 0;
 // Locked up when indexes were already being built and an indexable was

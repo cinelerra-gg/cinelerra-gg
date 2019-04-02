@@ -167,16 +167,12 @@ int PluginLV2::init_lv2(PluginLV2ClientConfig &conf, int sample_rate, int bfrsz)
 		}
 	}
 
-
-	uri_map.callback_data = (LV2_URI_Map_Callback_Data)this;
-	uri_map.uri_to_id = uri_to_id;
-	features.append(new Lv2Feature(NS_EXT "uri-map", &uri_map));
-	map.handle = (void*)&uri_table;
-	map.map = uri_table_map;
-	features.append(new Lv2Feature(LV2_URID_MAP_URI, &map));
-	unmap.handle = (void*)&uri_table;
-	unmap.unmap  = uri_table_unmap;
-	features.append(new Lv2Feature(LV2_URID_UNMAP_URI, &unmap));
+	uri_map.handle = (LV2_URID_Map_Handle)this;
+	uri_map.map = map_uri;
+	features.append(new Lv2Feature(LV2_URID__map, &uri_map));
+	uri_unmap.handle = (LV2_URID_Unmap_Handle)this;
+	uri_unmap.unmap = unmap_uri;
+	features.append(new Lv2Feature(LV2_URID__unmap, &uri_unmap));
 	features.append(new Lv2Feature(LV2_BUF_SIZE__powerOf2BlockLength, 0));
 	features.append(new Lv2Feature(LV2_BUF_SIZE__fixedBlockLength,    0));
 	features.append(new Lv2Feature(LV2_BUF_SIZE__boundedBlockLength,  0));
@@ -225,21 +221,16 @@ int PluginLV2::init_lv2(PluginLV2ClientConfig &conf, int sample_rate, int bfrsz)
 	return 0;
 }
 
-LV2_URID PluginLV2::uri_table_map(LV2_URID_Map_Handle handle, const char *uri)
+uint32_t PluginLV2::map_uri(LV2_URID_Map_Handle handle, const char *uri)
 {
-	return ((PluginLV2UriTable *)handle)->map(uri);
+	PluginLV2 *the = (PluginLV2 *)handle;
+	return the->uri_table.map(uri);
 }
 
-const char *PluginLV2::uri_table_unmap(LV2_URID_Map_Handle handle, LV2_URID urid)
+const char *PluginLV2::unmap_uri(LV2_URID_Unmap_Handle handle, LV2_URID urid)
 {
-	return ((PluginLV2UriTable *)handle)->unmap(urid);
-}
-
-uint32_t PluginLV2::uri_to_id(LV2_URI_Map_Callback_Data callback_data,
-	const char *map, const char *uri)
-{
-	PluginLV2 *the = (PluginLV2 *)callback_data;
-	return the->map.map(the->uri_table, uri);
+	PluginLV2 *the = (PluginLV2 *)handle;
+	return the->uri_table.unmap(urid);
 }
 
 void PluginLV2::connect_ports(PluginLV2ClientConfig &conf, int ports)
@@ -576,6 +567,7 @@ PluginLV2UI::PluginLV2UI()
 	title[0] = 0;
 
 	memset(&uri_map, 0, sizeof(uri_map));
+	memset(&uri_unmap, 0, sizeof(uri_unmap));
 	memset(&extui_host, 0, sizeof(extui_host));
 	wgt_type = LV2_EXTERNAL_UI_URI__KX__Widget;
 	gtk_type = LV2_UI__GtkUI;

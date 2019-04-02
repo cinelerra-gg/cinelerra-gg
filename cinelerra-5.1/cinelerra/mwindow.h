@@ -365,7 +365,6 @@ public:
 // Calculate defaults path
 	static void create_defaults_path(char *string, const char *config_file);
 
-	void delete_track();
 	void delete_track(Track *track);
 	void delete_tracks();
 	int feather_edits(int64_t feather_samples, int audio, int video);

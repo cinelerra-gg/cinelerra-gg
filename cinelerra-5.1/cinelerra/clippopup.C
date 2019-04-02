@@ -434,8 +434,10 @@ int ClipPopupNest::handle_event()
 	gui->lock_window("ClipPopupNest::handle_event 1");
 	if( mwindow->edl->session->proxy_scale != 1 ) {
 		eprintf("Nesting not allowed when proxy scale != 1");
+		return 1;
 	}
-	else if( mwindow->session->drag_clips->total > 0 ) {
+	int clips_total = mwindow->session->drag_clips->total;
+	for( int i=0; i<clips_total; ++i ) {
 		EDL *edl = mwindow->edl;
 		time_t dt;      time(&dt);
 		struct tm dtm;  localtime_r(&dt, &dtm);
@@ -443,19 +445,19 @@ int ClipPopupNest::handle_event()
 		sprintf(path, _("Nested_%02d%02d%02d-%02d%02d%02d"),
 			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
 			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
-		EDL *clip = mwindow->session->drag_clips->values[0];
+		EDL *clip = mwindow->session->drag_clips->values[i];
 		EDL *nested = edl->new_nested(clip, path);
 		EDL *new_clip = edl->create_nested_clip(nested);
 		new_clip->folder_no = AW_CLIP_FOLDER;
-                sprintf(new_clip->local_session->clip_icon,
-                        "clip_%02d%02d%02d-%02d%02d%02d.png",
-                        dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
-                        dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
+		sprintf(new_clip->local_session->clip_icon,
+			"clip_%02d%02d%02d-%02d%02d%02d.png",
+			dtm.tm_year+1900, dtm.tm_mon+1, dtm.tm_mday,
+			dtm.tm_hour, dtm.tm_min, dtm.tm_sec);
 		snprintf(new_clip->local_session->clip_title,
 			sizeof(new_clip->local_session->clip_title),
 			_("Nested: %s"), clip->local_session->clip_title);
 		strcpy(new_clip->local_session->clip_notes,
-			clip->local_session->clip_notes);
+		clip->local_session->clip_notes);
 		int idx = edl->clips.number_of(clip);
 		if( idx >= 0 ) {
 			edl->clips[idx] = new_clip;
@@ -464,9 +466,9 @@ int ClipPopupNest::handle_event()
 		else
 			edl->clips.append(new_clip);
 		mwindow->mainindexes->add_next_asset(0, nested);
-		mwindow->mainindexes->start_build();
-		popup->gui->async_update_assets();
 	}
+	mwindow->mainindexes->start_build();
+	popup->gui->async_update_assets();
 	gui->unlock_window();
 	return 1;
 }
@@ -487,8 +489,9 @@ int ClipPopupUnNest::handle_event()
 	EDL *nested_edl = 0;
 	MWindowGUI *gui = mwindow->gui;
 	gui->lock_window("ClipPopupUnNest::handle_event 1");
-	if( mwindow->session->drag_clips->total > 0 ) {
-		EDL *clip = mwindow->session->drag_clips->values[0];
+	int clips_total = mwindow->session->drag_clips->total;
+	for( int i=0; i<clips_total; ++i ) {
+		EDL *clip = mwindow->session->drag_clips->values[i];
 		Track *track = clip->tracks->first;
 		Edit *edit = track ? track->edits->first : 0;
 		nested_edl = edit && !edit->next && !edit->asset ? edit->nested_edl : 0;

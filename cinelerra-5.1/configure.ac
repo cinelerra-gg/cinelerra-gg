@@ -366,37 +366,37 @@ PKG_3RD([x265],[auto],
   [ . source ])
 
 PKG_3RD([libvpx],[auto],
-  [libvpx-1.7.0],
+  [libvpx-1.8.0],
   [ libvpx.a ],
   [ . ])
 
 PKG_3RD([lv2],[auto],
-  [lv2-1.14.0],
+  [lv2-1.16.0],
   [ ],
   [ usr/local/include usr/local/lib64/lv2 usr/local/lib/lv2 ])
 
 PKG_3RD([sratom],[auto],
-  [sratom-0.6.0],
+  [sratom-0.6.2],
   [ usr/local/lib/libsratom-0.a ],
   [ usr/local/include ])
 
 PKG_3RD([serd],[auto],
-  [serd-0.28.0],
+  [serd-0.30.0],
   [ usr/local/lib/libserd-0.a ],
   [ usr/local/include ])
 
 PKG_3RD([sord],[auto],
-  [sord-0.16.0],
+  [sord-0.16.2],
   [ usr/local/lib/libsord-0.a ],
   [ usr/local/include ])
 
 PKG_3RD([lilv],[auto],
-  [lilv-0.24.2],
+  [lilv-0.24.4],
   [ usr/local/lib/liblilv-0.a ],
   [ usr/local/include ])
 
 PKG_3RD([suil],[auto],
-  [suil-0.8.4],
+  [suil-0.10.2],
   [ usr/local/lib/libsuil-0.a ],
   [ usr/local/include ])
 

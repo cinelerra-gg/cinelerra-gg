@@ -203,7 +203,8 @@ void MainMenu::create_objects()
 	trackmenu->add_item(new MoveTracksUp(mwindow));
 	trackmenu->add_item(new MoveTracksDown(mwindow));
 	trackmenu->add_item(new DeleteTracks(mwindow));
-	trackmenu->add_item(new DeleteTrack(mwindow));
+	trackmenu->add_item(new DeleteFirstTrack(mwindow));
+	trackmenu->add_item(new DeleteLastTrack(mwindow));
 	trackmenu->add_item(new ConcatenateTracks(mwindow));
 	AppendTracks *append_tracks;
 	trackmenu->add_item(append_tracks = new AppendTracks(mwindow));
@@ -1221,23 +1222,42 @@ int DeleteTracks::handle_event()
 	return 1;
 }
 
-DeleteTrack::DeleteTrack(MWindow *mwindow)
+DeleteFirstTrack::DeleteFirstTrack(MWindow *mwindow)
+ : BC_MenuItem(_("Delete first track"), "Shift-D", 'D')
+{
+	set_shift(1);
+	this->mwindow = mwindow;
+}
+
+int DeleteFirstTrack::handle_event()
+{
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+		Track *track = mwindow->edl->tracks->first;
+		if( track ) mwindow->delete_track(track);
+	}
+	return 1;
+}
+
+DeleteLastTrack::DeleteLastTrack(MWindow *mwindow)
  : BC_MenuItem(_("Delete last track"), "d", 'd')
 {
 	this->mwindow = mwindow;
 }
 
-int DeleteTrack::handle_event()
+int DeleteLastTrack::handle_event()
 {
-	if( mwindow->session->current_operation == NO_OPERATION )
-		mwindow->delete_track();
+	if( mwindow->session->current_operation == NO_OPERATION ) {
+		Track *track = mwindow->edl->tracks->last;
+		if( track ) mwindow->delete_track(track);
+	}
 	return 1;
 }
 
 MoveTracksUp::MoveTracksUp(MWindow *mwindow)
  : BC_MenuItem(_("Move tracks up"), _("Shift-Up"), UP)
 {
-	set_shift(); this->mwindow = mwindow;
+	this->mwindow = mwindow;
+	set_shift();
 }
 
 int MoveTracksUp::handle_event()

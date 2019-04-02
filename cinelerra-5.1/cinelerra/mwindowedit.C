@@ -646,12 +646,6 @@ int MWindow::cut_default_keyframe()
 }
 
 
-void MWindow::delete_track()
-{
-	if( edl->tracks->last )
-		delete_track(edl->tracks->last);
-}
-
 void MWindow::delete_tracks()
 {
 	undo_before();

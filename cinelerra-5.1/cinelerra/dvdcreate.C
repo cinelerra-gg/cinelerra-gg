@@ -83,9 +83,9 @@ const double CreateDVD_Thread::DVD_KAUDIO_RATE = 224;
 
 
 CreateDVD_MenuItem::CreateDVD_MenuItem(MWindow *mwindow)
- : BC_MenuItem(_("DVD Render..."), _("Shift-D"), 'D')
+ : BC_MenuItem(_("DVD Render..."), _("Alt-d"), 'd')
 {
-	set_shift(1);
+	set_alt(1);
 	this->mwindow = mwindow;
 }
 

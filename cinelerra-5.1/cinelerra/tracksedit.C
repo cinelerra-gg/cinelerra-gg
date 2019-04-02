@@ -851,24 +851,15 @@ int Tracks::move_track_down(Track *track)
 
 int Tracks::move_tracks_up()
 {
-	Track *track, *next_track;
 	int result = 0;
-
-	for(track = first;
-		track;
-		track = next_track)
-	{
-		next_track = track->next;
-
-		if(track->record)
-		{
-			if(track->previous)
-			{
-				change_modules(number_of(track->previous), number_of(track), 1);
-
-				swap(track->previous, track);
-				result = 1;
-			}
+	Track *next = first;
+	while( next ) {
+		Track *track = next;  next = track->next;
+		if( !track->record ) continue;
+		if( track->previous ) {
+			change_modules(number_of(track->previous), number_of(track), 1);
+			swap(track->previous, track);
+			result = 1;
 		}
 	}
 
@@ -877,30 +868,20 @@ int Tracks::move_tracks_up()
 
 int Tracks::move_tracks_down()
 {
-	Track *track, *previous_track;
 	int result = 0;
-
-	for(track = last;
-		track;
-		track = previous_track)
-	{
-		previous_track = track->previous;
-
-		if(track->record)
-		{
-			if(track->next)
-			{
-				change_modules(number_of(track), number_of(track->next), 1);
-
-				swap(track, track->next);
-				result = 1;
-			}
+	Track *prev = last;
+	while( prev ) {
+		Track *track = prev;  prev = track->previous;
+		if( !track->record ) continue;
+		if( track->next ) {
+			change_modules(number_of(track), number_of(track->next), 1);
+			swap(track, track->next);
+			result = 1;
 		}
 	}
 
 	return result;
 }
-
 
 
 void Tracks::paste_audio_transition(PluginServer *server)

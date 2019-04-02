@@ -582,10 +582,18 @@ public:
 	MWindow *mwindow;
 };
 
-class DeleteTrack : public BC_MenuItem
+class DeleteFirstTrack : public BC_MenuItem
 {
 public:
-	DeleteTrack(MWindow *mwindow);
+	DeleteFirstTrack(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class DeleteLastTrack : public BC_MenuItem
+{
+public:
+	DeleteLastTrack(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };
