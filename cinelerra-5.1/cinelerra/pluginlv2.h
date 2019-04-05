@@ -90,7 +90,8 @@ public:
 	LV2_Atom_Sequence  seq_in[2];
 	LV2_Atom_Sequence  *seq_out;
 	float samplerate, refreshrate;
-	int block_length, midi_buf_size;
+	int min_block_length, block_length;
+	int midi_buf_size;
 
 	LilvInstance *inst;
 	SuilInstance *sinst;
@@ -146,6 +147,7 @@ typedef struct { int sample_rate, bfrsz;  char path[1]; } open_bfr_t;
 enum { NO_COMMAND,
 	LV2_OPEN,
 	LV2_LOAD,
+	LV2_CONFIG,
 	LV2_UPDATE,
 	LV2_SHOW,
 	LV2_HIDE,

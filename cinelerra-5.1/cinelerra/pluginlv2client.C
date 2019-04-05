@@ -182,6 +182,7 @@ int PluginLV2Client::load_configuration()
 {
 	int64_t src_position =  get_source_position();
 	KeyFrame *prev_keyframe = get_prev_keyframe(src_position);
+	if( prev_keyframe->is_default ) return 0;
 	PluginLV2ClientConfig curr_config;
 	curr_config.copy_from(config);
 	read_data(prev_keyframe);
@@ -198,16 +199,16 @@ void PluginLV2Client::update_gui()
 	load_configuration();
 	if( config.update() > 0 ) {
 		gui->update_selected();
-		update_lv2();
+		update_lv2(LV2_UPDATE);
 	}
 	gui->unlock_window();
 }
 
-void PluginLV2Client::update_lv2()
+void PluginLV2Client::update_lv2(int token)
 {
 	PluginLV2ParentUI *ui = find_ui();
 	if( !ui ) return;
-	ui->send_child(LV2_UPDATE, config.ctls, sizeof(float)*config.nb_ports);
+	ui->send_child(token, config.ctls, sizeof(float)*config.nb_ports);
 }
 
 
@@ -295,27 +296,54 @@ void PluginLV2Client::process_buffer(int size)
 }
 
 int PluginLV2Client::process_realtime(int64_t size,
-	Samples *input_ptr, Samples *output_ptr)
+	Samples **input_ptr, Samples **output_ptr, int chs)
 {
-	if( load_configuration() )
-		update_lv2();
-	init_buffer(size);
-	load_buffer(size, &input_ptr, 1);
-	process_buffer(size);
-	return unload_buffer(size, &output_ptr, 1);
+	int64_t pos = get_source_position();
+	int64_t end = pos + size;
+	int64_t samples = 0;
+	while( pos < end ) {
+		KeyFrame *prev_keyframe = get_prev_keyframe(pos);
+		if( !prev_keyframe->is_default ) {
+			read_data(prev_keyframe);
+			update_lv2(LV2_CONFIG);
+		}
+		KeyFrame *next_keyframe = get_next_keyframe(pos);
+		int64_t next_pos = next_keyframe->position;
+		if( pos >= next_pos || next_pos > end )
+			next_pos = end;
+		int64_t len = next_pos - pos;
+		if( len > block_length )
+			len = block_length;
+		if( pos + len > end )
+			len = end - pos;
+		init_buffer(len);
+		for( int i=chs; --i>=0; ) {
+			input_ptr[i]->set_offset(samples);
+			output_ptr[i]->set_offset(samples);
+		}
+		load_buffer(len, input_ptr, chs);
+		process_buffer(len);
+		unload_buffer(len, output_ptr, chs);
+		samples += len;
+		pos += len;
+	}
+	for( int i=chs; --i>=0; )
+		output_ptr[i]->set_offset(0);
+	return samples;
 }
 
 int PluginLV2Client::process_realtime(int64_t size,
 	Samples **input_ptr, Samples **output_ptr)
 {
-	if( load_configuration() )
-		update_lv2();
-	init_buffer(size);
-	load_buffer(size, input_ptr, PluginClient::total_in_buffers);
-	process_buffer(size);
-	return unload_buffer(size, output_ptr, PluginClient::total_out_buffers);
+	return process_realtime(size, input_ptr, output_ptr,
+		PluginClient::total_out_buffers);
 }
 
+int PluginLV2Client::process_realtime(int64_t size,
+	Samples *input_ptr, Samples *output_ptr)
+{
+	return process_realtime(size, &input_ptr, &output_ptr, 1);
+}
 
 PluginLV2BlackList::PluginLV2BlackList(const char *path)
 {

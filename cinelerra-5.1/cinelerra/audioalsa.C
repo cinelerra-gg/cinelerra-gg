@@ -234,18 +234,10 @@ snd_pcm_format_t AudioALSA::translate_format(int format)
 {
 	switch(format)
 	{
-	case 8:
-		return SND_PCM_FORMAT_S8;
-		break;
-	case 16:
-		return SND_PCM_FORMAT_S16_LE;
-		break;
-	case 24:
-		return SND_PCM_FORMAT_S24_LE;
-		break;
-	case 32:
-		return SND_PCM_FORMAT_S32_LE;
-		break;
+	case  8: return SND_PCM_FORMAT_S8;
+	case 16: return SND_PCM_FORMAT_S16_LE;
+	case 24: return SND_PCM_FORMAT_S24_LE;
+	case 32: return SND_PCM_FORMAT_S32_LE;
 	}
 	return SND_PCM_FORMAT_UNKNOWN;
 }

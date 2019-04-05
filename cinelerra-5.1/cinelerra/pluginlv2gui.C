@@ -72,7 +72,7 @@ int PluginLV2ClientReset::handle_event()
 	PluginLV2Client *client = gui->client;
 	client->config.init_lv2(client->lilv, client);
 	client->config.update();
-	client->update_lv2();
+	client->update_lv2(LV2_LOAD);
 	gui->update(0);
 	client->send_configure_change();
 	return 1;

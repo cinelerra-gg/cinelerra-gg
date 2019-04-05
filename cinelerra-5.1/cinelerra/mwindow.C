@@ -939,14 +939,7 @@ void MWindow::init_preferences()
 {
 	preferences = new Preferences;
 	preferences->load_defaults(defaults);
-	const char *lv2_path = getenv("LV2_PATH");
-	if( lv2_path && strcmp(lv2_path, preferences->lv2_path) ) {
-		strncpy(preferences->lv2_path, lv2_path, sizeof(preferences->lv2_path));
-		remove_plugin_index();
-	}
-	else if( !lv2_path && preferences->lv2_path[0] ) {
-		File::setenv_path("LV2_PATH",preferences->lv2_path, 0);
-	}
+	File::setenv_path("LV2_PATH",preferences->lv2_path, 0);
 	session = new MainSession(this);
 	session->load_defaults(defaults);
 	// set x11_host, screens, window_config

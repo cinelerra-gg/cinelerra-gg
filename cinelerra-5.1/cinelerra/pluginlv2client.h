@@ -69,11 +69,11 @@ public:
 	~PluginLV2Client();
 
 	int process_realtime(int64_t size,
-		Samples *input_ptr,
-		Samples *output_ptr);
+		Samples **input_ptr, Samples **output_ptr, int chs);
 	int process_realtime(int64_t size,
-		Samples **input_ptr,
-		Samples **output_ptr);
+		Samples *input_ptr, Samples *output_ptr);
+	int process_realtime(int64_t size,
+		Samples **input_ptr, Samples **output_ptr);
 // Update output pointers as well
 	int is_realtime();
 	int is_multichannel();
@@ -86,7 +86,7 @@ public:
 	int unload_buffer(int samples, Samples **output, int och);
 	void process_buffer(int size);
 	void update_gui();
-	void update_lv2();
+	void update_lv2(int token);
 	int init_lv2();
 	PluginLV2ParentUI *find_ui();
 	PluginLV2ParentUI *get_ui();

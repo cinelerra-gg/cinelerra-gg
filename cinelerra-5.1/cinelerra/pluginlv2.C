@@ -22,6 +22,7 @@ PluginLV2::PluginLV2()
 
 	samplerate = 44100;
 	refreshrate = 30.;
+	min_block_length = 1;
 	block_length = 4096;
 	midi_buf_size = 8192;
 
@@ -189,9 +190,10 @@ int PluginLV2::init_lv2(PluginLV2ClientConfig &conf, int sample_rate, int bfrsz)
 	ui_updateRate = uri_table.map(LV2_UI__updateRate);
 
 	samplerate = sample_rate;
-	block_length = bfrsz;
 	options.add(param_sampleRate, sizeof(float), atom_float, &samplerate);
-	options.add(bufsz_minBlockLength, sizeof(int), atom_int, &block_length);
+	if( min_block_length > bfrsz ) min_block_length = bfrsz;
+	options.add(bufsz_minBlockLength, sizeof(int), atom_int, &min_block_length);
+	block_length = bfrsz;
 	options.add(bufsz_maxBlockLength, sizeof(int), atom_int, &block_length);
 	options.add(bufsz_sequenceSize, sizeof(int), atom_int, &midi_buf_size);
 	options.add(ui_updateRate, sizeof(float),  atom_float, &refreshrate);
@@ -218,6 +220,7 @@ int PluginLV2::init_lv2(PluginLV2ClientConfig &conf, int sample_rate, int bfrsz)
 		(lilv_plugin_has_feature(lilv, powerOf2BlockLength) ||
 		 lilv_plugin_has_feature(lilv, fixedBlockLength) ||
 		 lilv_plugin_has_feature(lilv, boundedBlockLength)) ? 4096 : 0;
+	init_buffer(bfrsz);
 	return 0;
 }
 

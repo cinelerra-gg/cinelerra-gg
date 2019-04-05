@@ -114,6 +114,7 @@ bool PluginLV2UI::lv2ui_resizable()
 	return !fs_matches && !nrs_matches;
 }
 
+//force= 1:ctls(all),gui(all)  0:changed(ctls)  -1:gui(all)
 int PluginLV2UI::update_lv2_input(float *vals, int force)
 {
 	int ret = 0;
@@ -122,9 +123,12 @@ int PluginLV2UI::update_lv2_input(float *vals, int force)
 		int idx = config[i]->idx;
 		float val = vals[idx];
 		if( !force && ctls[idx] == val ) continue;
-		ctls[idx] = val;
-		update_control(idx, sizeof(ctls[idx]), 0, &ctls[idx]);
-		++ret;
+		if( force >= 0 ) {
+			ctls[idx] = val;
+			++ret;
+		}
+		if( force )
+			update_control(idx, sizeof(val), 0, &val);
 	}
 	return ret;
 }
@@ -328,9 +332,13 @@ int PluginLV2ChildUI::child_iteration(int64_t usec)
 			float *vals = (float *)child_data;
 			update_lv2_input(vals, 1);
 			break; }
-		case LV2_UPDATE: {
+		case LV2_CONFIG: {
 			float *vals = (float *)child_data;
 			update_lv2_input(vals, 0);
+			break; }
+		case LV2_UPDATE: {
+			float *vals = (float *)child_data;
+			update_lv2_input(vals, -1);
 			break; }
 		case LV2_SHOW: {
 			start_gui();
