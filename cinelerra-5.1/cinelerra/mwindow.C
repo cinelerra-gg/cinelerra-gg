@@ -939,7 +939,7 @@ void MWindow::init_preferences()
 {
 	preferences = new Preferences;
 	preferences->load_defaults(defaults);
-	File::setenv_path("LV2_PATH",preferences->lv2_path, 0);
+	File::setenv_path("LV2_PATH",preferences->lv2_path, 1);
 	session = new MainSession(this);
 	session->load_defaults(defaults);
 	// set x11_host, screens, window_config
