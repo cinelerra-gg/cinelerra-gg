@@ -205,6 +205,7 @@ public:
 	{
 // 5
 		WRITE_BUFFER = LAST_COMMAND,
+		FINISH_OUTPUT,
 		CLEAR_OUTPUT,
 		OVERLAY,
 		DO_FADE,
@@ -278,6 +279,9 @@ public:
 // output - passed when rendering refresh frame.  If 0, the canvas is cleared.
 	void clear_output(Canvas *canvas, VFrame *output);
 
+// Finish all active opengl requests
+	void finish_output();
+
 	void do_fade(Canvas *canvas, VFrame *frame, float fade);
 	void convert_cmodel(Canvas *canvas, VFrame *output, int dst_cmodel);
 
@@ -328,6 +332,7 @@ private:
 	void init_frame(Playback3DCommand *command, int is_yuv=0);
 	void write_buffer_sync(Playback3DCommand *command);
 	void draw_output(Playback3DCommand *command, int flip_y);
+	void finish_output_sync(Playback3DCommand *command);
 	void clear_output_sync(Playback3DCommand *command);
 	void clear_input_sync(Playback3DCommand *command);
 	void overlay_sync(Playback3DCommand *command);

@@ -340,8 +340,8 @@ F_oscilloscope:	2D video oscilloscope.  Useful to measure spatial impulse,
 F_owndenoise:	Denoises using wavelets.
 F_pad:		Add paddings to the input image, and place the original
 		input at the provided x, y coordinates.
-F_pal100bars:	Generate PAL 100% color bars.
-F_pal75bars:	Generate PAL 75% color bars.
+F_pal100bars:	Generate PAL 100% color bars. This only works with RGB 8-bit.
+F_pal75bars:	Generate PAL 75% color bars. This only works with RGB 8-bit.
 F_perms:	Set permissions for the output video frame.
 F_perspective:	Corrects the perspective of video.
 F_phase:	Phases shift fields.

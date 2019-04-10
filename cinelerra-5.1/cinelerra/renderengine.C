@@ -477,7 +477,6 @@ void RenderEngine::run()
 			position -= 1./command->get_edl()->session->frame_rate;
 			if( position < 0 ) position = 0;
 		}
-		playback_engine->command->command = STOP;
 		playback_engine->is_playing_back = 0;
 		playback_engine->tracking_position = position;
 		playback_engine->stop_tracking();
@@ -493,5 +492,4 @@ void RenderEngine::wait_done()
 	render_active->lock("RenderEngine::wait_done");
 	render_active->unlock();
 }
-
 

@@ -2730,6 +2730,12 @@ void MWindow::create_objects(int want_gui,
 	BC_WindowBase::get_resources()->vframe_shm = 1;
 }
 
+int MWindow::uses_opengl()
+{
+	if( !playback_3d || !playback_3d->running() ) return 0;
+	PlaybackConfig *playback_config = edl->session->playback_config;
+	return playback_config->vconfig->driver == PLAYBACK_X11_GL ? 1 : 0;
+}
 
 void MWindow::show_splash()
 {

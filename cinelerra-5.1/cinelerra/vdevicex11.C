@@ -549,8 +549,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 				0);
 //printf("VDeviceX11::write_buffer %d bitmap=%p\n", __LINE__, bitmap);
 		}
-		if( !output->get_canvas()->get_video_on() )
-			output->get_canvas()->flash(0);
 	}
 
 	output->get_canvas()->unlock_window();

@@ -900,18 +900,14 @@ void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 		refresh_frame->transfer_from(output_frame, -1);
 }
 
-
-void Canvas::clear(int flush)
+void Canvas::clear(int flash)
 {
-	if( refresh_frame )
-		refresh_frame->clear_frame();
-	BC_WindowBase *wdw = get_canvas();
-	if( !wdw ) return;
-	wdw->set_bg_color(BLACK);
-	wdw->clear_box(0,0, wdw->get_w(), wdw->get_h());
-	wdw->flash(flush);
+	BC_WindowBase *cwdw = get_canvas();
+	if( !cwdw )  return;
+	cwdw->set_bg_color(BLACK);
+	cwdw->clear_box(0,0, cwdw->get_w(), cwdw->get_h());
+	if( flash ) cwdw->flash();
 }
-
 
 
 CanvasOutput::CanvasOutput(Canvas *canvas,

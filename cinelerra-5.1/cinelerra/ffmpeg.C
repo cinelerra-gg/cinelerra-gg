@@ -1948,8 +1948,10 @@ int FFMPEG::init_decoder(const char *filename)
 	ff_lock("FFMPEG::init_decoder");
 	av_register_all();
 	char file_opts[BCTEXTLEN];
-	char *bp = strrchr(strcpy(file_opts, filename), '/');
-	char *sp = strrchr(!bp ? file_opts : bp, '.');
+	strcpy(file_opts, filename);
+	char *bp = strrchr(file_opts, '/');
+	if( !bp ) bp = file_opts;
+	char *sp = strrchr(bp, '.');
 	if( !sp ) sp = bp + strlen(bp);
 	FILE *fp = 0;
 	AVInputFormat *ifmt = 0;

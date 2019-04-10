@@ -402,6 +402,10 @@ void Playback3D::handle_command(BC_SynchronousCommand *command)
 			write_buffer_sync((Playback3DCommand*)command);
 			break;
 
+		case Playback3DCommand::FINISH_OUTPUT:
+			finish_output_sync((Playback3DCommand*)command);
+			break;
+
 		case Playback3DCommand::CLEAR_OUTPUT:
 			clear_output_sync((Playback3DCommand*)command);
 			break;
@@ -762,6 +766,19 @@ void Playback3D::init_frame(Playback3DCommand *command, int is_yuv)
 	glClearColor(0.0, gbuv, gbuv, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
+}
+
+
+void Playback3D::finish_output()
+{
+	Playback3DCommand command;
+	command.command = Playback3DCommand::FINISH_OUTPUT;
+	send_command(&command);
+}
+
+void Playback3D::finish_output_sync(Playback3DCommand *command)
+{
+	glFinish();
 }
 
 

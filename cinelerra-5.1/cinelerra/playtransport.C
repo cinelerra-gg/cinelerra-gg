@@ -210,7 +210,7 @@ int PlayTransport::do_keypress(int key)
 	int loop_play = shft_key & ctrl_key;
 	float speed = 0;
 	int command = -1;
-	int curr_command = engine->command->command;
+	int curr_command = engine->is_playing_back ? engine->command->command : STOP;
 	subwindow->unlock_window();
 
 	result = 0;

@@ -115,6 +115,7 @@ public:
 	void create_objects(int want_gui,
 		int want_new,
 		char *config_path);
+	int uses_opengl();
 	void show_splash();
 	void hide_splash();
 	void start();

@@ -55,6 +55,7 @@ public:
 	void create_cache();
 	void perform_change();
 	void sync_parameters(EDL *edl);
+	void clear_output();
 // Set wait_tracking for events that change the cursor location but
 // be sure to unlock the windows
 	void interrupt_playback(int wait_tracking = 0);

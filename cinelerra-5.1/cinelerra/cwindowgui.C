@@ -681,7 +681,7 @@ void CWindowGUI::sync_parameters(int change_type, int redraw, int overlay)
 		mwindow->sync_parameters(change_type);
 	}
 	if( overlay ) {
-		mwindow->gui->lock_window("CWindow::camera_keyframe");
+		mwindow->gui->lock_window("CWindowGUI::sync_parameters");
 		mwindow->gui->draw_overlays(1);
 		mwindow->gui->unlock_window();
 	}
@@ -1125,43 +1125,29 @@ float CWindowCanvas::get_zoom()
 
 void CWindowCanvas::draw_refresh(int flush)
 {
-	if(get_canvas() && !get_canvas()->get_video_on())
-	{
-
-		if(refresh_frame && refresh_frame->get_w()>0 && refresh_frame->get_h()>0)
-		{
+	if( get_canvas() && !get_canvas()->get_video_on() ) {
+		clear(0);
+		if( mwindow->uses_opengl() ) {
+			get_canvas()->unlock_window();
+			mwindow->playback_3d->finish_output();
+			get_canvas()->lock_window("CWindowCanvas::draw_refresh");
+			get_canvas()->flush();
+			get_canvas()->sync_display();
+		}
+		if( refresh_frame && refresh_frame->get_w()>0 && refresh_frame->get_h()>0 ) {
 			float in_x1, in_y1, in_x2, in_y2;
 			float out_x1, out_y1, out_x2, out_y2;
 			get_transfers(mwindow->edl,
-				in_x1,
-				in_y1,
-				in_x2,
-				in_y2,
-				out_x1,
-				out_y1,
-				out_x2,
-				out_y2);
+				in_x1, in_y1, in_x2, in_y2,
+				out_x1, out_y1, out_x2, out_y2);
 
-			if(!EQUIV(out_x1, 0) ||
-				!EQUIV(out_y1, 0) ||
-				!EQUIV(out_x2, get_canvas()->get_w()) ||
-				!EQUIV(out_y2, get_canvas()->get_h()))
-			{
-				get_canvas()->clear_box(0,
-					0,
-					get_canvas()->get_w(),
-					get_canvas()->get_h());
-			}
 
 //printf("CWindowCanvas::draw_refresh %.2f %.2f %.2f %.2f -> %.2f %.2f %.2f %.2f\n",
 //in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
 
 
-			if(out_x2 > out_x1 &&
-				out_y2 > out_y1 &&
-				in_x2 > in_x1 &&
-				in_y2 > in_y1)
-			{
+			if( out_x2 > out_x1 && out_y2 > out_y1 &&
+			    in_x2 > in_x1 && in_y2 > in_y1 ) {
 // input scaled from session to refresh frame coordinates
 				int ow = get_output_w(mwindow->edl);
 				int oh = get_output_h(mwindow->edl);
@@ -1174,29 +1160,17 @@ void CWindowCanvas::draw_refresh(int flush)
 // Can't use OpenGL here because it is called asynchronously of the
 // playback operation.
 				get_canvas()->draw_vframe(refresh_frame,
-						(int)out_x1,
-						(int)out_y1,
+						(int)out_x1, (int)out_y1,
 						(int)(out_x2 - out_x1),
 						(int)(out_y2 - out_y1),
-						(int)in_x1,
-						(int)in_y1,
+						(int)in_x1, (int)in_y1,
 						(int)(in_x2 - in_x1),
 						(int)(in_y2 - in_y1),
 						0);
 			}
 		}
-		else
-		{
-			get_canvas()->clear_box(0,
-				0,
-				get_canvas()->get_w(),
-				get_canvas()->get_h());
-		}
-
+//usleep(10000);
 		draw_overlays();
-// allow last opengl write to complete before redraw
-// tried sync_display, glFlush, glxMake*Current(0..)
-usleep(20000);
 		get_canvas()->flash(flush);
 	}
 //printf("CWindowCanvas::draw_refresh 10\n");
@@ -2891,13 +2865,13 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	int64_t position = track->to_units(
 		mwindow->edl->local_session->get_selectionstart(1),
 		0);
-	if( do_camera ) {
-		track->automation->get_camera(&center_x,
-			&center_y, &center_z, position, PLAY_FORWARD);
+//	if( do_camera ) {
+//		track->automation->get_camera(&center_x,
+//			&center_y, &center_z, position, PLAY_FORWARD);
 // follow image, not camera
-		center_x = -center_x * center_z;  center_y = -center_y * center_z;
-	}
-	else
+//		center_x = -center_x * center_z;  center_y = -center_y * center_z;
+//	}
+//	else
 		track->automation->get_projector(&center_x,
 			&center_y, &center_z, position, PLAY_FORWARD);
 

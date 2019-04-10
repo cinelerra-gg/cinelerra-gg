@@ -22,6 +22,7 @@
 #include "bchash.h"
 #include "bcsignals.h"
 #include "cache.h"
+#include "canvas.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -406,7 +407,7 @@ void PlaybackEngine::run()
 // Start tracking after arming so the tracking position doesn't change.
 // The tracking for a single frame command occurs during PAUSE
 			init_tracking();
-
+			clear_output();
 // Dispatch the command
 			start_render_engine();
 			break;
@@ -415,6 +416,14 @@ void PlaybackEngine::run()
 	}
 }
 
+void PlaybackEngine::clear_output()
+{
+	BC_WindowBase *cwdw = output->get_canvas();
+	if( !cwdw ) return;
+	cwdw->lock_window("PlaybackEngine::clear_output");
+	output->clear();
+	cwdw->unlock_window();
+}
 
 void PlaybackEngine::stop_playback(int wait_tracking)
 {
@@ -433,7 +442,7 @@ void PlaybackEngine::send_command(int command, EDL *edl, int wait_tracking, int 
 //printf("PlaybackEngine::send_command 1 %d\n", command);
 // Stop requires transferring the output buffer to a refresh buffer.
 	int do_stop = 0;
-	int curr_command = this->command->command;
+	int curr_command = is_playing_back ? this->command->command : STOP;
 	int curr_single_frame = TransportCommand::single_frame(curr_command);
 	int curr_audio = this->command->toggle_audio ?
 		!curr_single_frame : curr_single_frame;
@@ -525,15 +534,10 @@ int PlaybackEngine::transport_command(int command, int change_type, EDL *new_edl
 // Just change the EDL if the change requires it because renderengine
 // structures won't point to the new EDL otherwise and because copying the
 // EDL for every cursor movement is slow.
-		switch( change_type ) {
-		case CHANGE_EDL:
-		case CHANGE_ALL:
+		if( change_type & CHANGE_EDL )
 			next_command->get_edl()->copy_all(new_edl);
-			break;
-		case CHANGE_PARAMS:
+		else if( change_type & CHANGE_PARAMS )
 			next_command->get_edl()->synchronize_params(new_edl);
-			break;
-		}
 		next_command->set_playback_range(new_edl, use_inout,
 				preferences->forward_render_displacement);
 	}

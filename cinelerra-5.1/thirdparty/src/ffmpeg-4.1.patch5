@@ -1,0 +1,29 @@
+diff -u a/libavfilter/formats.c b/libavfilter/formats.c
+--- a/libavfilter/formats.c	2018-11-02 18:17:29.000000000 -0600
++++ b/libavfilter/formats.c	2019-04-09 14:12:01.659501027 -0600
+@@ -107,11 +107,13 @@
+        possibly causing a lossy conversion elsewhere in the graph.
+        To avoid that, pretend that there are no common formats to force the
+        insertion of a conversion filter. */
+-    if (type == AVMEDIA_TYPE_VIDEO)
+-        for (i = 0; i < a->nb_formats; i++)
++    if (type == AVMEDIA_TYPE_VIDEO) {
++        for (i = 0; i < a->nb_formats; i++) {
++            const AVPixFmtDescriptor *adesc = av_pix_fmt_desc_get(a->formats[i]);
++            if( !adesc ) continue;
+             for (j = 0; j < b->nb_formats; j++) {
+-                const AVPixFmtDescriptor *adesc = av_pix_fmt_desc_get(a->formats[i]);
+                 const AVPixFmtDescriptor *bdesc = av_pix_fmt_desc_get(b->formats[j]);
++                if( !bdesc ) continue;
+                 alpha2 |= adesc->flags & bdesc->flags & AV_PIX_FMT_FLAG_ALPHA;
+                 chroma2|= adesc->nb_components > 1 && bdesc->nb_components > 1;
+                 if (a->formats[i] == b->formats[j]) {
+@@ -119,6 +121,8 @@
+                     chroma1|= adesc->nb_components > 1;
+                 }
+             }
++        }
++    }
+ 
+     // If chroma or alpha can be lost through merging then do not merge
+     if (alpha2 > alpha1 || chroma2 > chroma1)

@@ -84,8 +84,6 @@ public:
 	int64_t sync_position();
 // Called by VRender to reset the timers once the first frame is done.
 	void reset_sync_position();
-// return samples since start of playback
-	int64_t session_position();
 
 // Update preferences window
 	void update_framerate(float framerate);
