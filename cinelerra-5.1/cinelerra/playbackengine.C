@@ -407,7 +407,8 @@ void PlaybackEngine::run()
 // Start tracking after arming so the tracking position doesn't change.
 // The tracking for a single frame command occurs during PAUSE
 			init_tracking();
-			clear_output();
+			if( !command->single_frame() )
+				clear_output();
 // Dispatch the command
 			start_render_engine();
 			break;

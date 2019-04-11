@@ -603,6 +603,8 @@ void Shuttle::jogshuttle(unsigned short code, unsigned int value)
 	case EVENT_CODE_SHUTTLE:
 		shuttle(value);
 		break;
+	case EVENT_CODE_HI_JOG:  // redundant report of JOG value*120
+		break;
 	default:
 		fprintf(stderr, "jogshuttle(%d, %d) invalid code\n", code, value);
 		break;

@@ -46,6 +46,7 @@ enum { JL=0,JR };
 // ev.code when ev.type == JOGSHUTTLE
 #define EVENT_CODE_JOG 7
 #define EVENT_CODE_SHUTTLE 8
+#define EVENT_CODE_HI_JOG 11
 
 // ev.value when ev.code == JOG
 // 8 bit value changing by one for each jog step
