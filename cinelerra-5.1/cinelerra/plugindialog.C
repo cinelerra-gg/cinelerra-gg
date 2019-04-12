@@ -107,84 +107,16 @@ BC_Window* PluginDialogThread::new_gui()
 
 void PluginDialogThread::handle_done_event(int result)
 {
-	PluginDialog *window = (PluginDialog*)BC_DialogThread::get_gui();
-	if(window->selected_available >= 0)
-	{
-		window->attach_new(window->selected_available);
+	if( !result ) {
+		PluginDialog *dialog = (PluginDialog *)get_gui();
+		dialog->apply();
 	}
-	else
-	if(window->selected_shared >= 0)
-	{
-		window->attach_shared(window->selected_shared);
-	}
-	else
-	if(window->selected_modules >= 0)
-	{
-		window->attach_module(window->selected_modules);
-	}
-	if( mwindow->edl )
-		mwindow->edl->session->single_standalone = single_standalone;
 }
+
 
 void PluginDialogThread::handle_close_event(int result)
 {
-	if(!result)
-	{
-		if(plugin_type)
-		{
-			mwindow->gui->lock_window("PluginDialogThread::run 3");
-
-
-			mwindow->undo->update_undo_before();
-			if(is_mainmenu)
-			{
-				mwindow->insert_effect(plugin_title,
-					&shared_location,
-					data_type,
-					plugin_type,
-					single_standalone);
-			}
-			else
-			{
-				if(plugin)
-				{
-					if(mwindow->edl->tracks->plugin_exists(plugin))
-					{
-						plugin->change_plugin(plugin_title,
-							&shared_location,
-							plugin_type);
-					}
-				}
-				else
-				{
-					if(mwindow->edl->tracks->track_exists(track))
-					{
-						mwindow->insert_effect(plugin_title,
-										&shared_location,
-										track,
-										0,
-										0,
-										0,
-										plugin_type);
-					}
-				}
-			}
-
-			mwindow->save_backup();
-			mwindow->undo->update_undo_after(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
-			mwindow->restart_brender();
-			mwindow->update_plugin_states();
-			mwindow->sync_parameters(CHANGE_EDL);
-			mwindow->gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
-			mwindow->gui->unlock_window();
-		}
-	}
-	plugin = 0;
 }
-
-
-
-
 
 
 
@@ -360,9 +292,12 @@ void PluginDialog::create_objects()
 
 
 
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
-
+	add_subwindow(ok_btn = new BC_OKButton(this));
+	add_subwindow(can_btn = new BC_CancelButton(this));
+	int aw = PluginDialogApply::calculate_w(this, _("Apply"));
+	int ax = (ok_btn->get_x()+can_btn->get_x()-aw) / 2;
+	int ay = ok_btn->get_y() + ok_btn->get_h() - PluginDialogApply::calculate_h();
+	add_subwindow(apy_btn = new PluginDialogApply(this, ax, ay));
 	selected_available = -1;
 	selected_shared = -1;
 	selected_modules = -1;
@@ -432,6 +367,11 @@ int PluginDialog::resize_event(int w, int h)
 			mwindow->theme->plugindialog_new_y + mwindow->theme->plugindialog_new_h +
 				get_text_height(MEDIUMFONT));
 
+	int aw = PluginDialogApply::calculate_w(this, _("Apply"));
+	int ax = (ok_btn->get_x()+can_btn->get_x()-aw) / 2;
+	int ay = ok_btn->get_y() + ok_btn->get_h() - PluginDialogApply::calculate_h();
+	apy_btn->reposition_window(ax, ay);
+
 	flush();
 	return 0;
 }
@@ -471,6 +411,70 @@ void PluginDialog::save_settings()
 {
 }
 
+
+void PluginDialog::apply()
+{
+	if( selected_available >= 0 ) {
+		attach_new(selected_available);
+	}
+	else if( selected_shared >= 0 ) {
+		attach_shared(selected_shared);
+	}
+	else if( selected_modules >= 0 ) {
+		attach_module(selected_modules);
+	}
+
+	thread->apply();
+}
+
+void PluginDialogThread::apply()
+{
+	if( mwindow->edl )
+		mwindow->edl->session->single_standalone = single_standalone;
+	if(plugin_type) {
+		mwindow->gui->lock_window("PluginDialogThread::run 3");
+		mwindow->undo->update_undo_before();
+		if( is_mainmenu ) {
+			mwindow->insert_effect(plugin_title, &shared_location,
+				data_type, plugin_type, single_standalone);
+		}
+		else {
+			if( plugin ) {
+				if( mwindow->edl->tracks->plugin_exists(plugin) ) {
+					plugin->change_plugin(plugin_title,
+						&shared_location, plugin_type);
+				}
+			}
+			else {
+				if( mwindow->edl->tracks->track_exists(track) ) {
+					mwindow->insert_effect(plugin_title, &shared_location,
+						track, 0, 0, 0, plugin_type);
+				}
+			}
+		}
+
+		mwindow->save_backup();
+		mwindow->undo->update_undo_after(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
+		mwindow->restart_brender();
+		mwindow->update_plugin_states();
+		mwindow->sync_parameters(CHANGE_EDL);
+		mwindow->gui->update(1, NORMAL_DRAW, 0, 0, 1, 0, 0);
+		mwindow->gui->unlock_window();
+	}
+	plugin = 0;
+}
+
+PluginDialogApply::PluginDialogApply(PluginDialog *dialog, int x, int y)
+ : BC_GenericButton(x, y, _("Apply"))
+{
+	this->dialog = dialog;
+}
+
+int PluginDialogApply::handle_event()
+{
+	dialog->apply();
+	return 1;
+}
 
 
 
@@ -780,7 +784,6 @@ int PluginDialogSingle::handle_event()
 //    return 1;
 // }
 //
-
 
 
 

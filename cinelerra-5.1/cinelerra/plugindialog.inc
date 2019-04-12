@@ -23,5 +23,13 @@
 #define PLUGINDIALOG_INC
 
 class PluginDialogThread;
+class PluginDialogListItem;
+class PluginDialog;
+class PluginDialogNew;
+class PluginDialogShared;
+class PluginDialogModules;
+class PluginDialogSingle;
+class PluginDialogSearchText;
+class PluginDialogApply;
 
 #endif

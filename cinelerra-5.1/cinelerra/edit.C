@@ -443,7 +443,11 @@ int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
 	int edit_labels, int edit_autos, int edit_plugins, Edits *trim_edits)
 {
 	int64_t cut_length = newposition - oldposition;
-	if( !cut_length ) return 0;
+	if( cut_length > length )
+		cut_length = length;
+	else if( cut_length < -length )
+		cut_length = -length;
+
 	int64_t start = startproject, end = start + length;
 	Edit *prev = this->previous, *next = this->next;
 	int edits_moved = 0, rest_moved = 0;
@@ -458,6 +462,8 @@ int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
 			edit->startproject += cut_length;
 		break;
 	case MOVE_ROLL:
+		if( prev && prev->length + cut_length < 0 )
+			cut_length = -prev->length;
 		if( prev ) prev->trim(cut_length);
 		startproject += cut_length;
 		startsource += cut_length;
@@ -469,6 +475,10 @@ int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
 		break;
 	case MOVE_SLIDE:
 		edits_moved = 1;
+		if( prev && prev->length + cut_length < 0 )
+			cut_length = -prev->length;
+		if( next && next->length - cut_length < 0 )
+			cut_length = next->length;
 		if( prev ) prev->trim(cut_length);
 		startproject += cut_length;
 		if( next ) {
@@ -486,7 +496,6 @@ int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
 		break;
 	}
 	trim(0);
-
 	return follow_edits(start, end, cut_length, edits_moved, rest_moved,
 		edit_labels, edit_autos, edit_plugins, trim_edits);
 }
@@ -495,7 +504,10 @@ int Edit::shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
 	int edit_labels, int edit_autos, int edit_plugins, Edits *trim_edits)
 {
 	int64_t cut_length = newposition - oldposition;
-	if( !cut_length ) return 0;
+	if( cut_length > length )
+		cut_length = length;
+	else if( cut_length < -length )
+		cut_length = -length;
 	int64_t start = startproject, end = start + length;
 	Edit *prev = this->previous, *next = this->next;
 	int edits_moved = 0, rest_moved = 0;
@@ -509,6 +521,8 @@ int Edit::shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
 			edit->startproject += cut_length;
 		break;
 	case MOVE_ROLL:
+		if( next && next->length - cut_length < 0 )
+			cut_length = next->length;
 		length += cut_length;
 		if( next ) {
 			next->startproject += cut_length;
@@ -522,6 +536,10 @@ int Edit::shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
 		break;
 	case MOVE_SLIDE:
 		edits_moved = 1;
+		if( prev && prev->length + cut_length < 0 )
+			cut_length = -prev->length;
+		if( next && next->length - cut_length < 0 )
+			cut_length = next->length;
 		if( prev ) prev->trim(cut_length);
 		startproject += cut_length;
 		if( next ) {
@@ -532,7 +550,6 @@ int Edit::shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
 		break;
 	}
 	trim(0);
-
 	return follow_edits(start, end, cut_length, edits_moved, rest_moved,
 		edit_labels, edit_autos, edit_plugins, trim_edits);
 }

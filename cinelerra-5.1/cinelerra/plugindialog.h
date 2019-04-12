@@ -22,26 +22,13 @@
 #ifndef PLUGINDIALOG_H
 #define PLUGINDIALOG_H
 
-class PluginDialogTextBox;
-class PluginDialogDetach;
-class PluginDialogNew;
-class PluginDialogShared;
-class PluginDialogSearchText;
-class PluginDialogModules;
-class PluginDialogAttachNew;
-class PluginDialogChangeNew;
-class PluginDialogIn;
-class PluginDialogOut;
-class PluginDialogThru;
-class PluginDialogSingle;
-class PluginDialog;
-
 #include "bcdialog.h"
 #include "condition.inc"
 #include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "plugin.inc"
+#include "plugindialog.inc"
 #include "pluginserver.inc"
 #include "sharedlocation.h"
 #include "thread.h"
@@ -63,6 +50,7 @@ public:
 	BC_Window* new_gui();
 	void handle_done_event(int result);
 	void handle_close_event(int result);
+	void apply();
 
 	MWindow *mwindow;
 	Track *track;
@@ -114,6 +102,7 @@ public:
 	void save_settings();
 	int resize_event(int w, int h);
 	void load_plugin_list(int redraw);
+	void apply();
 
 	BC_Title *standalone_title;
 	PluginDialogNew *standalone_list;
@@ -123,9 +112,9 @@ public:
 	PluginDialogModules *module_list;
 	PluginDialogSingle *single_standalone;
 	PluginDialogSearchText *search_text;
-
-	PluginDialogThru *thru;
-
+	BC_OKButton *ok_btn;
+	BC_CancelButton *can_btn;
+	PluginDialogApply *apy_btn;
 	PluginDialogThread *thread;
 
 	ArrayList<BC_ListBoxItem*> standalone_data;
@@ -255,6 +244,14 @@ public:
 	PluginDialog *dialog;
 };
 
+class PluginDialogApply : public BC_GenericButton
+{
+public:
+	PluginDialogApply(PluginDialog *dialog, int x, int y);
+	int handle_event();
+
+	PluginDialog *dialog;
+};
 /*
  * class PluginDialogAttachShared : public BC_GenericButton
  * {
