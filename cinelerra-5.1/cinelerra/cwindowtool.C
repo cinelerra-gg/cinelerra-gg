@@ -2193,10 +2193,12 @@ void CWindowMaskGUI::handle_event()
 
 void CWindowMaskGUI::update_preview()
 {
+	unlock_window();
 	CWindowGUI *cgui = mwindow->cwindow->gui;
 	cgui->lock_window("CWindowMaskGUI::update_preview");
 	cgui->sync_parameters(CHANGE_PARAMS, 0, 1);
 	cgui->unlock_window();
+	lock_window("CWindowMaskGUI::update_preview");
 }
 
 

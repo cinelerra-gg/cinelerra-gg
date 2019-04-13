@@ -1339,7 +1339,8 @@ int TitleParser::wget(wchar_t &wch)
 	int ich;
 	while( (ich=wnext()) >= 0 ) {
 		if( ich == '\\' ) {
-			if( (ich=wnext()) == '\n' ) continue;
+			if( (ich=wnext()) < 0 ) break;
+			if( !ich || ich == '\n' ) continue;
 			wch = ich;
 			return 0;
 		}

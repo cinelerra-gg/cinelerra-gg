@@ -131,6 +131,9 @@ public:
 	int in_use;
 	int persistent;
 	time_t comments_time;
+	int comments_ffmt;
+	double comments_rate;
+	const char *comments_type;
 	double sort_key;
 	PluginServer *plugin;
 	Label *label;

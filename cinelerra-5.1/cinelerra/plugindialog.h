@@ -102,6 +102,7 @@ public:
 	void save_settings();
 	int resize_event(int w, int h);
 	void load_plugin_list(int redraw);
+	void clear_selection();
 	void apply();
 
 	BC_Title *standalone_title;

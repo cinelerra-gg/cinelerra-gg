@@ -96,7 +96,12 @@ int VPatchGUI::update(int x, int y)
 			delete fade;  fade = 0;
 		}
 		else {
-			fade->update(fade->get_w(), mwindow->get_float_auto(this, AUTOMATION_FADE)->get_value(),
+			FloatAuto *previous = 0, *next = 0;
+			double unit_position = mwindow->edl->local_session->get_selectionstart(1);
+			int64_t unit_pos = vtrack->to_units(unit_position, 0);
+			FloatAutos *ptr = (FloatAutos*)track->automation->autos[AUTOMATION_FADE];
+			float value = ptr->get_value(unit_pos, PLAY_FORWARD, previous, next);
+			fade->update(fade->get_w(), value,
 				     mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
 				     mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
 		}

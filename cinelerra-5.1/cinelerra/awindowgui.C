@@ -870,6 +870,9 @@ void AssetPicon::reset()
 	vicon_frame = 0;
 	in_use = 1;
 	comments_time = 0;
+	comments_rate = -1;
+	comments_ffmt = ' ';
+	comments_type = "";
 	id = 0;
 	persistent = 0;
 }
@@ -1060,6 +1063,10 @@ void AssetPicon::create_objects()
 		}
 		struct stat st;
 		comments_time = !stat(asset->path, &st) ? st.st_mtime : 0;
+		comments_rate = asset->get_frame_rate();
+		comments_ffmt = asset->format == FILE_FFMPEG ? '=' : '-';
+		comments_type = asset->format == FILE_FFMPEG ?
+				asset->vcodec : File::formattostr(asset->format);
 	}
 	else
 	if( indexable && !indexable->is_asset ) {
@@ -2083,9 +2090,13 @@ void AWindowGUI::update_asset_list()
 			continue;
 		}
 		if( picon->indexable && picon->indexable->is_asset ) {
+			Asset *asset = (Asset *)picon->indexable;
 			struct stat st;
-			picon->comments_time = !stat(picon->indexable->path, &st) ?
-				st.st_mtime : 0;
+			picon->comments_time = !stat(asset->path, &st) ? st.st_mtime : 0;
+			picon->comments_rate = asset->get_frame_rate();
+			picon->comments_ffmt = asset->format == FILE_FFMPEG ? '=' : '-';
+			picon->comments_type = asset->format == FILE_FFMPEG ?
+				asset->vcodec : File::formattostr(asset->format);
 		}
 	}
 }
@@ -2271,9 +2282,11 @@ void AWindowGUI::copy_picons(AssetPicon *picon, ArrayList<BC_ListBoxItem*> *src)
 			else if( picon->comments_time ) {
 				char date_time[BCSTRLEN];
 				struct tm stm;  localtime_r(&picon->comments_time, &stm);
-				sprintf(date_time,"%04d.%02d.%02d %02d:%02d:%02d",
+				sprintf(date_time,"%04d.%02d.%02d %02d:%02d:%02d @%0.2f %c%s",
 					 stm.tm_year+1900, stm.tm_mon+1, stm.tm_mday,
-					 stm.tm_hour, stm.tm_min, stm.tm_sec);
+					 stm.tm_hour, stm.tm_min, stm.tm_sec,
+					picon->comments_rate, picon->comments_ffmt,
+					picon->comments_type);
 				dst[1].append(item2 = new BC_ListBoxItem(date_time));
 			}
 			else

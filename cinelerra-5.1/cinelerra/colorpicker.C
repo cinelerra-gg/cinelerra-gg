@@ -96,7 +96,7 @@ void ColorPicker::update_gui(int output, int alpha)
 {
 	ColorWindow *gui = (ColorWindow *)get_gui();
 	if( !gui ) return;
-	gui->lock_window();
+	gui->lock_window("ColorPicker::update_gui");
 	this->output = output;
 	this->alpha = alpha;
 	gui->change_values();

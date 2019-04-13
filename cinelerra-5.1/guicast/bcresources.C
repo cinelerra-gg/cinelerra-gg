@@ -1774,33 +1774,7 @@ int utf8conv::
 wnext()
 {
   int v = 0, n = 0, ch = next();
-  if( ch == '\\' ) {
-    switch( (ch=next()) ) {
-    case 'n': return '\n';
-    case 't': return '\t';
-    case 'r': return '\r';
-    case 'b': return '\b';
-    case 'f': return '\f';
-    case 'v': return '\v';
-    case 'a': return '\a';
-    case '0': case '1': case '2': case '3':
-    case '4': case '5': case '6': case '7':
-      v = ch - '0';
-      for( int i=3; --i>0; v=v*8+ch, next() )
-        if( (ch=cur()-'0') < 0 || ch >= 8 ) break;
-      return v;
-    case 'x':  n = 2;  break;
-    case 'u':  n = 4;  break;
-    case 'U':  n = 8;  break;
-    default: return ch;
-    }
-    for( int i=n; --i>=0; v=v*16+ch, next() ) {
-      if( (ch=cur()-'0')>=0 && ch<10 ) continue;
-      if( (ch-='A'-'0'-10)>=10 && ch<16 ) continue;
-      if( (ch-='a'-'A')<10 || ch>=16 ) break;
-    }
-  }
-  else if( ch >= 0x80 ) {
+  if( ch >= 0x80 ) {
     static const unsigned char byts[] = {
       1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 5,
     };

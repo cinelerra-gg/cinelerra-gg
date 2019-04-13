@@ -780,7 +780,9 @@ void TitleColorButton::handle_done_event(int result)
 {
 	if( result ) {
 		handle_new_color(orig_color, orig_alpha);
+		window->lock_window("TitleColorButton::handle_done_event");
 		update_gui(orig_color);
+		window->unlock_window();
 	}
 }
 

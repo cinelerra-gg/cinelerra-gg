@@ -104,9 +104,9 @@ int APatchGUI::update(int x, int y)
 			FloatAuto *previous = 0, *next = 0;
 			double unit_position = mwindow->edl->local_session->get_selectionstart(1);
 			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-			unit_position = atrack->to_units(unit_position, 0);
+			int64_t unit_pos = atrack->to_units(unit_position, 0);
 			FloatAutos *ptr = (FloatAutos*)atrack->automation->autos[AUTOMATION_FADE];
-			float value = ptr->get_value((long)unit_position, PLAY_FORWARD, previous, next);
+			float value = ptr->get_value(unit_pos, PLAY_FORWARD, previous, next);
 			fade->update(fade->get_w(), value,
 				     mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
 				     mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);

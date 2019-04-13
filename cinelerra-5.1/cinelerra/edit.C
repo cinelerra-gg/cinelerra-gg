@@ -443,6 +443,7 @@ int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
 	int edit_labels, int edit_autos, int edit_plugins, Edits *trim_edits)
 {
 	int64_t cut_length = newposition - oldposition;
+	int rest_moved = edit_mode == MOVE_RIPPLE || edit_mode == MOVE_EDGE ? 1 : 0;
 	if( cut_length > length )
 		cut_length = length;
 	else if( cut_length < -length )
@@ -450,11 +451,11 @@ int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
 
 	int64_t start = startproject, end = start + length;
 	Edit *prev = this->previous, *next = this->next;
-	int edits_moved = 0, rest_moved = 0;
+	int edits_moved = 0;
 
 	switch( edit_mode ) {
 	case MOVE_RIPPLE:
-		edits_moved = rest_moved = 1;
+		edits_moved = 1;
 		startsource += cut_length;
 		cut_length = -cut_length;
 		length += cut_length;
@@ -488,7 +489,7 @@ int Edit::shift_start(int edit_mode, int64_t newposition, int64_t oldposition,
 		}
 		break;
 	case MOVE_EDGE:
-		edits_moved = rest_moved = 1;
+		edits_moved = 1;
 		startsource -= cut_length;
 		length += cut_length;
 		for( Edit *edit=next; edit; edit=edit->next )
@@ -504,18 +505,19 @@ int Edit::shift_end(int edit_mode, int64_t newposition, int64_t oldposition,
 	int edit_labels, int edit_autos, int edit_plugins, Edits *trim_edits)
 {
 	int64_t cut_length = newposition - oldposition;
-	if( cut_length > length )
-		cut_length = length;
+	int rest_moved = edit_mode == MOVE_RIPPLE || edit_mode == MOVE_EDGE ? 1 : 0;
+	if( cut_length > length ) {
+		 if( !rest_moved ) cut_length = length;
+	}
 	else if( cut_length < -length )
 		cut_length = -length;
 	int64_t start = startproject, end = start + length;
 	Edit *prev = this->previous, *next = this->next;
-	int edits_moved = 0, rest_moved = 0;
+	int edits_moved = 0;
 
 	switch( edit_mode ) {
 	case MOVE_RIPPLE:
 	case MOVE_EDGE:
-		rest_moved = 1;
 		length += cut_length;
 		for( Edit *edit=next; edit; edit=edit->next )
 			edit->startproject += cut_length;

@@ -44,7 +44,8 @@ PluginDialogThread::PluginDialogThread(MWindow *mwindow)
  : BC_DialogThread()
 {
 	this->mwindow = mwindow;
-	plugin = 0;
+	this->plugin = 0;
+	this->plugin_type = PLUGIN_NONE;
 }
 
 PluginDialogThread::~PluginDialogThread()
@@ -94,7 +95,7 @@ BC_Window* PluginDialogThread::new_gui()
 		mwindow->session->plugindialog_w / 2;
 	int y = mwindow->gui->get_abs_cursor_y(0) -
 		mwindow->session->plugindialog_h / 2;
-	plugin_type = 0;
+	plugin_type = PLUGIN_NONE;
 	PluginDialog *window = new PluginDialog(mwindow,
 		this,
 		window_title,
@@ -412,6 +413,21 @@ void PluginDialog::save_settings()
 }
 
 
+void PluginDialog::clear_selection()
+{
+	standalone_list->set_all_selected(&standalone_data, 0);
+	standalone_list->draw_items(1);
+	shared_list->set_all_selected(&shared_data, 0);
+	shared_list->draw_items(1);
+	module_list->set_all_selected(&module_data, 0);
+	module_list->draw_items(1);
+	selected_available = -1;
+	selected_shared = -1;
+	selected_modules = -1;
+	thread->plugin = 0;
+	thread->plugin_type = PLUGIN_NONE;
+}
+
 void PluginDialog::apply()
 {
 	if( selected_available >= 0 ) {
@@ -473,6 +489,7 @@ PluginDialogApply::PluginDialogApply(PluginDialog *dialog, int x, int y)
 int PluginDialogApply::handle_event()
 {
 	dialog->apply();
+	dialog->clear_selection();
 	return 1;
 }
 

@@ -458,8 +458,8 @@ int HistogramMain::process_buffer(VFrame *frame,
 		if( cpus > smps ) cpus = smps;
 		engine = new HistogramEngine(this, cpus, cpus);
 	}
-// Always plot to set the curves if automatic
-	if(config.plot || config.automatic) send_render_gui(frame);
+// if to plot histogram
+	if(config.plot) send_render_gui(frame);
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
