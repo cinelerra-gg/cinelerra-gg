@@ -311,8 +311,8 @@ public:
 	void draw_crophandle(int x, int y);
 	void zoom_auto();
 
-// Draw the projector overlay in different colors.
-	void draw_bezier(int do_camera);
+// Draw the camera/projector overlay in different colors.
+	void draw_outlines(int do_camera);
 	void draw_crop();
 	void calculate_origin();
 	void toggle_controls();

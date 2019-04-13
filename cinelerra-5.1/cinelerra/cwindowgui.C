@@ -2432,11 +2432,11 @@ void CWindowCanvas::draw_overlays()
 	switch(mwindow->edl->session->cwindow_operation)
 	{
 		case CWINDOW_CAMERA:
-			draw_bezier(1);
+			draw_outlines(1);
 			break;
 
 		case CWINDOW_PROJECTOR:
-			draw_bezier(0);
+			draw_outlines(0);
 			break;
 
 		case CWINDOW_CROP:
@@ -2847,74 +2847,58 @@ void CWindowCanvas::draw_crop()
 }
 
 
-
-
-
-
-
-
-void CWindowCanvas::draw_bezier(int do_camera)
+void CWindowCanvas::draw_outlines(int do_camera)
 {
 	Track *track = gui->cwindow->calculate_affected_track();
 
 	if(!track) return;
 
-	float center_x;
-	float center_y;
-	float center_z;
+	float proj_x, proj_y, proj_z;
 	int64_t position = track->to_units(
 		mwindow->edl->local_session->get_selectionstart(1),
 		0);
-//	if( do_camera ) {
-//		track->automation->get_camera(&center_x,
-//			&center_y, &center_z, position, PLAY_FORWARD);
-// follow image, not camera
-//		center_x = -center_x * center_z;  center_y = -center_y * center_z;
-//	}
-//	else
-		track->automation->get_projector(&center_x,
-			&center_y, &center_z, position, PLAY_FORWARD);
+	track->automation->get_projector(&proj_x, &proj_y, &proj_z,
+				position, PLAY_FORWARD);
 
-//	center_x += track->track_w / 2;
-//	center_y += track->track_h / 2;
-	center_x += mwindow->edl->session->output_w / 2;
-	center_y += mwindow->edl->session->output_h / 2;
-	float track_x1 = center_x - track->track_w / 2 * center_z;
-	float track_y1 = center_y - track->track_h / 2 * center_z;
-	float track_x2 = track_x1 + track->track_w * center_z;
-	float track_y2 = track_y1 + track->track_h * center_z;
-
-	output_to_canvas(mwindow->edl, 0, track_x1, track_y1);
-	output_to_canvas(mwindow->edl, 0, track_x2, track_y2);
+	proj_x += mwindow->edl->session->output_w/2.;
+	proj_y += mwindow->edl->session->output_h/2.;
+	float proj_x1 = proj_x - track->track_w/2. * proj_z;
+	float proj_y1 = proj_y - track->track_h/2. * proj_z;
+	float proj_x2 = proj_x + track->track_w/2. * proj_z;
+	float proj_y2 = proj_y + track->track_h/2. * proj_z;
+	float x1 = proj_x1, x2 = proj_x2;
+	float y1 = proj_y1, y2 = proj_y2;
+	output_to_canvas(mwindow->edl, 0, x1, y1);
+	output_to_canvas(mwindow->edl, 0, x2, y2);
 
 #define DRAW_PROJECTION(offset) \
-	get_canvas()->draw_rectangle((int)track_x1 + offset, \
-		(int)track_y1 + offset, \
-		(int)(track_x2 - track_x1), \
-		(int)(track_y2 - track_y1)); \
-	get_canvas()->draw_line((int)track_x1 + offset,  \
-		(int)track_y1 + offset, \
-		(int)track_x2 + offset, \
-		(int)track_y2 + offset); \
-	get_canvas()->draw_line((int)track_x2 + offset,  \
-		(int)track_y1 + offset, \
-		(int)track_x1 + offset, \
-		(int)track_y2 + offset); \
-
+	get_canvas()->draw_rectangle(x1+offset, y1+offset, (x2-x1), (y2-y1)); \
+	get_canvas()->draw_line(x1+offset, y1+offset, x2+offset, y2+offset); \
+	get_canvas()->draw_line(x2+offset, y1+offset, x1+offset, y2+offset); \
 
 // Drop shadow
 	get_canvas()->set_color(BLACK);
 	DRAW_PROJECTION(1);
-
-//	canvas->set_inverse();
-	if(do_camera)
-		get_canvas()->set_color(GREEN);
-	else
-		get_canvas()->set_color(RED);
-
+	get_canvas()->set_color(do_camera ? GREEN : RED);
 	DRAW_PROJECTION(0);
-//	canvas->set_opaque();
 
+	if( do_camera ) {
+		float cam_x, cam_y, cam_z;
+		track->automation->get_camera(&cam_x, &cam_y, &cam_z,
+					position, PLAY_FORWARD);
+		cam_x += track->track_w / 2.;
+		cam_y += track->track_h / 2.;
+// follow image, not camera
+		cam_x = -cam_x;  cam_y = -cam_y;  cam_z *= proj_z;
+		float cam_x1 = cam_x * cam_z + proj_x;
+		float cam_y1 = cam_y * cam_z + proj_y;
+		float cam_x2 = (cam_x + track->track_w) * cam_z + proj_x;
+		float cam_y2 = (cam_y + track->track_h) * cam_z + proj_y;
+		output_to_canvas(mwindow->edl, 0, cam_x1, cam_y1);
+		output_to_canvas(mwindow->edl, 0, cam_x2, cam_y2);
+		get_canvas()->set_color(YELLOW);
+		get_canvas()->draw_rectangle(cam_x1, cam_y1, cam_x2-cam_x1, cam_y2-cam_y1);
+	}
 }
 
 int CWindowCanvas::test_bezier(int button_press,
