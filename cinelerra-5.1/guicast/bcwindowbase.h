@@ -586,7 +586,7 @@ private:
 	XFontSet get_fontset(int font);
 	XFontSet get_curr_fontset(void);
 	void set_fontset(int font);
-	int dispatch_event(XEvent *event);
+	int dispatch_event();
 
 	int get_key_masks(unsigned int key_state);
 

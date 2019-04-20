@@ -46,7 +46,24 @@
 #include <sys/resource.h>
 
 #ifdef LEAKER
-#define STRC(v) printf("==new %p from %p sz %jd\n", v, __builtin_return_address(0), n)
+#if 0  // track allocators
+#include <execinfo.h>
+#define BT_BUF_SIZE 100
+static void leaker()
+{
+	void *buffer[BT_BUF_SIZE];
+	int nptrs = backtrace(buffer, BT_BUF_SIZE);
+	char **trace = backtrace_symbols(buffer, nptrs);
+	if( !trace ) return;
+	for( int i=0; i<nptrs; ) printf("%s ", trace[i++]);
+	printf("\n");
+        free(trace);
+}
+#define STRB ;leaker()
+#else
+#define STRB
+#endif
+#define STRC(v) printf("==new %p from %p sz %jd\n", v, __builtin_return_address(0), n)STRB
 #define STRD(v) printf("==del %p from %p\n", v, __builtin_return_address(0))
 void *operator new(size_t n) { void *vp = malloc(n); STRC(vp); bzero(vp,n); return vp; }
 void operator delete(void *t) { STRD(t); free(t); }

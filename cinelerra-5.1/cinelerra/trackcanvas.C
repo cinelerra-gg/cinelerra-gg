@@ -2170,6 +2170,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		pankeyframe_pixmap,
 		modekeyframe_pixmap,
 		maskkeyframe_pixmap,
+		0,
 	};
 
 
@@ -2468,12 +2469,23 @@ void TrackCanvas::draw_floatauto(FloatAuto *current,
 	CLAMP(y1, ymin, ymax);
 	CLAMP(y2, ymin, ymax);
 
-	if(y2 - 1 > y1)
-	{
-		set_color(BLACK);
-		draw_box(x1 + 1, y1 + 1, x2 - x1, y2 - y1);
-		set_color(color);
-		draw_box(x1, y1, x2 - x1, y2 - y1);
+	if( y2-1 > y1 ) {
+		if( current->curve_mode == FloatAuto::LINEAR ) {
+			draw_box(x1, y1, x2 - x1, y2 - y1);
+		}
+		else {
+			ArrayList<int> polygon_x;
+			ArrayList<int> polygon_y;
+			polygon_x.append((x1 + x2) / 2 + 1);
+			polygon_y.append(y1 + 1);
+			polygon_x.append(x2 + 1);
+			polygon_y.append((y1 + y2) / 2 + 1);
+			polygon_x.append((x1 + x2) / 2 + 1);
+			polygon_y.append(y2 + 1);
+			polygon_x.append(x1 + 1);
+			polygon_y.append((y1 + y2) / 2 + 1);
+			fill_polygon(&polygon_x, &polygon_y);
+		}
 	}
 
 // show bezier control points (only) if this

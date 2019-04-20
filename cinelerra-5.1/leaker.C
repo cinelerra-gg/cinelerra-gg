@@ -32,7 +32,7 @@ int main(int ac, char **av)
 {
 	int64_t adr, from, sz;
 	recd_map recds;
-	char line[256];
+	char line[65536];
 	FILE *fp = stdin;
 
 	while( fgets(line,sizeof(line),fp) ) {

@@ -43,6 +43,7 @@ AgingMain::AgingMain(PluginServer *server)
 	aging_server = 0;
 	pits_count = 0;
 	dust_count = 0;
+	memset(scratches, 0, sizeof(scratches));
 }
 
 AgingMain::~AgingMain()
@@ -287,7 +288,7 @@ void AgingClient::coloraging(unsigned char **output_rows, unsigned char **input_
 	for( i = 0; i < plugin->config.scratch_lines; i++ ) { \
 		if( plugin->scratches[i].life )  { \
 			plugin->scratches[i].x = plugin->scratches[i].x + plugin->scratches[i].dx; \
-			if( plugin->scratches[i].x < 0 || plugin->scratches[i].x > w_256 ) { \
+			if( plugin->scratches[i].x < 0 || plugin->scratches[i].x >= w_256 ) { \
 				plugin->scratches[i].life = 0; \
 				break; \
 			} \

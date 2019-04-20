@@ -600,7 +600,7 @@ void Canvas::update_geometry(EDL *edl, int x, int y, int w, int h)
 		    vw != view_w || vh != view_h ) redraw = 1;
 	}
 	if( !redraw ) return;
-	reposition_window(edl, x, y, w, y);
+	reposition_window(edl, x, y, w, h);
 }
 
 void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)

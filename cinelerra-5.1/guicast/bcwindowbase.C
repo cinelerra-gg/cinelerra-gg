@@ -728,9 +728,8 @@ int BC_WindowBase::run_window()
 	init_lock->unlock();
 
 // Handle common events
-	while(!done)
-	{
-		dispatch_event(0);
+	while( !done ) {
+		dispatch_event();
 	}
 
 	unset_all_repeaters();
@@ -886,13 +885,14 @@ pthread_t locking_task = (pthread_t)-1L;
 int locking_event = -1;
 int locking_message = -1;
 
-int BC_WindowBase::dispatch_event(XEvent *event)
+int BC_WindowBase::dispatch_event()
 {
 	Window tempwin;
 	int result;
 	XClientMessageEvent *ptr;
 	int cancel_resize, cancel_translation;
 	volatile static int debug = 0;
+	XEvent *event;
 
 	key_pressed = 0;
 

@@ -955,6 +955,8 @@ BC_Resources::~BC_Resources()
 	del_vframes(default_pot_images, 3);
 	del_vframes(default_progress_images, 2);
 	del_vframes(default_medium_7segment, 20);
+	del_vframes(default_vscroll_data, 10);
+	del_vframes(default_hscroll_data, 10);
 	if( fontlist ) {
 		fontlist->remove_all_objects();
 		delete fontlist;

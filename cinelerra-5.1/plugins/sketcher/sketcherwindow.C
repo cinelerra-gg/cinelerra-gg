@@ -460,6 +460,7 @@ void SketcherWindow::create_objects()
 
 void SketcherWindow::done_event(int result)
 {
+	ungrab(plugin->server->mwindow->cwindow->gui);
 }
 
 void SketcherWindow::send_configure_change()
@@ -507,14 +508,15 @@ int SketcherWindow::do_grab_event(XEvent *event)
 	CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
 	CWindowCanvas *canvas = cwindow_gui->canvas;
 	int cx, cy;  cwindow_gui->get_relative_cursor(cx, cy);
-	cx -= mwindow->theme->ccanvas_x;
-	cy -= mwindow->theme->ccanvas_y;
+	cx -= canvas->view_x;
+	cy -= canvas->view_y;
 
 	if( !dragging ) {
-		if( cx < 0 || cx >= mwindow->theme->ccanvas_w ||
-		    cy < 0 || cy >= mwindow->theme->ccanvas_h )
+		if( cx < 0 || cx >= canvas->view_w ||
+		    cy < 0 || cy >= canvas->view_h )
 			return 0;
 	}
+
 
 	switch( event->type ) {
 	case ButtonPress:
