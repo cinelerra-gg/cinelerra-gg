@@ -109,8 +109,8 @@ esound.mak_vars+= CFLAGS=""
 esound.ldflags=" -lm -lstdc++"
 fftw.cfg_params= --disable-fortran --enable-shared=no
 ffmpeg.cfg_params= \
-	--enable-pthreads --enable-gpl \
-	--disable-ffplay --disable-vaapi \
+	--enable-pthreads --enable-gpl --disable-ffplay \
+	$(if $(WANT_VAAPI),--enable-vaapi,--disable-vaapi) \
 	$(call if_pkg,twolame,--enable-libtwolame) \
 	$(call if_pkg,openjpeg,--enable-libopenjpeg) \
 	$(call if_pkg,lame,--enable-libmp3lame) \

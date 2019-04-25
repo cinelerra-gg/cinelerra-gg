@@ -412,7 +412,7 @@ void FindObjMain::detect(Mat &mat, KeyPointV &keypts,Mat &descrs)
 	descrs.release();
 	try {
 		detector->detectAndCompute(mat, noArray(), keypts, descrs);
-	} catch(std::exception e) { printf(_("detector exception: %s\n"), e.what()); }
+	} catch(std::exception &e) { printf(_("detector exception: %s\n"), e.what()); }
 }
 
 void FindObjMain::match()
@@ -420,7 +420,7 @@ void FindObjMain::match()
 	pairs.clear();
 	try {
 		matcher->knnMatch(obj_descrs, scn_descrs, pairs, 2);
-	} catch(std::exception e) { printf(_("match execption: %s\n"), e.what()); }
+	} catch(std::exception &e) { printf(_("match execption: %s\n"), e.what()); }
 }
 
 Ptr<DescriptorMatcher> FindObjMain::flann_kdtree_matcher()
@@ -493,7 +493,6 @@ void FindObjMain::set_brisk()
 		flann_lshidx_matcher() : bf_matcher_norm_hamming();
 }
 #endif
-
 
 void FindObjMain::process_match()
 {

@@ -574,6 +574,13 @@ CHECK_LIB([giflib], [gif], [DGifOpen])
 CHECK_HEADERS([giflib], [gif lib headers], [gif_lib.h])
 CHECK_LIB([jbig], [jbig], [jbg_dec_init])
 CHECK_LIB([vdpau], [vdpau], [vdp_device_create_x11])
+CHECK_LIB([vaapi], [va], [vaInitialize])
+if test "x$HAVE_vaapi" = "xyes"; then
+  CHECK_HEADERS([vaapi_x11], [va x11 headers], [va/va_x11.h])
+  CHECK_LIB([vaapi_x11], [va-x11], [vaGetDisplay])
+  CHECK_HEADERS([vaapi_drm], [va drm headers], [va/va_drm.h])
+  CHECK_LIB([vaapi_drm], [va-drm], [vaGetDisplayDRM])
+fi
 
 #if test "x$HAVE_mjpegtools" = "xyes"; then
 #CFG_CFLAGS+=" -I/usr/include/mjpegtools -I/usr/local/include/mjpegtools"
@@ -878,10 +885,30 @@ fi
 if test "x$HAVE_NUMA" = "xyes"; then
   EXTRA_LIBS+=' -lnuma'
 fi
+
+FFMPEG_EXTRA_LDFLAGS=""
+if test "x$HAVE_vaapi" = "xyes"; then
+  FFMPEG_EXTRA_LDFLAGS+=' -lva'
+  EXTRA_LIBS+=' -lva'
+  WANT_VAAPI='yes'
+  CFG_WANTS+=" VAAPI"
+  if test "x$HAVE_vaapi_x11" = "xyes"; then
+    FFMPEG_EXTRA_LDFLAGS+=' -lva-x11'
+    EXTRA_LIBS+=' -lva-x11'
+  fi
+  if test "x$HAVE_vaapi_drm" = "xyes"; then
+    FFMPEG_EXTRA_LDFLAGS+=' -lva-drm'
+    EXTRA_LIBS+=' -lva-drm'
+  fi
+fi
 if test "x$HAVE_DL" = "xyes"; then
   EXTRA_LIBS+=' -ldl'
-  FFMPEG_EXTRA_CFG+=' --extra-ldflags="-ldl"'
+  FFMPEG_EXTRA_LDFLAGS+=' -ldl'
 fi
+if test "x$FFMPEG_EXTRA_LDFLAGS" != "x"; then
+  FFMPEG_EXTRA_CFG+=' --extra-ldflags="'$FFMPEG_EXTRA_LDFLAGS'"'
+fi
+
 if test "x$WANT_BOOBY" != "xno"; then
   CFG_CFLAGS+=" -DBOOBY"
 fi

@@ -81,6 +81,8 @@ public:
 
 	virtual int encode_activate();
 	virtual int decode_activate();
+	virtual AVHWDeviceType decode_hw_activate();
+	virtual void decode_hw_format(AVCodec *decoder, AVHWDeviceType type);
 	virtual int write_packet(FFPacket &pkt);
 	int read_packet();
 	int seek(int64_t no, double rate);
@@ -129,6 +131,10 @@ public:
 	int fidx;
 	int reading, writing;
 	int seeked, eof;
+
+	const char *hw_dev;
+	int hw_pixfmt;
+	AVBufferRef *hw_device_ctx;
 
 	FILE *stats_fp;
 	char *stats_filename;
@@ -199,9 +205,13 @@ public:
 class FFVideoConvert {
 public:
 	struct SwsContext *convert_ctx;
+	AVFrame *sw_frame;
 
-	FFVideoConvert() { convert_ctx = 0; }
-	~FFVideoConvert() { if( convert_ctx ) sws_freeContext(convert_ctx); }
+	FFVideoConvert() { convert_ctx = 0; sw_frame = 0; }
+	~FFVideoConvert() {
+		if( convert_ctx ) sws_freeContext(convert_ctx);
+		if( sw_frame ) av_frame_free(&sw_frame);
+	}
 
 	static AVPixelFormat color_model_to_pix_fmt(int color_model);
 	static int pix_fmt_to_color_model(AVPixelFormat pix_fmt);
@@ -224,6 +234,8 @@ public:
 	int is_audio() { return 0; }
 	int is_video() { return 1; }
 	int decode_frame(AVFrame *frame);
+	AVHWDeviceType decode_hw_activate();
+	void decode_hw_format(AVCodec *decoder, AVHWDeviceType type);
 	int encode_frame(AVFrame *frame);
 	int create_filter(const char *filter_spec, AVCodecParameters *avpar);
 	void load_markers();

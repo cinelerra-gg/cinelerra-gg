@@ -134,6 +134,7 @@ DIRS = $(OPENCV_OBJS) \
 	timestretch \
 	timestretchrt \
 	titler \
+	tracer \
 	translate \
 	unsharp \
 	videoscope \

@@ -106,6 +106,7 @@ video := \
 	timeavg \
 	timefront \
 	titler \
+	tracer \
 	translate \
 	unsharp \
 	videoscope \

@@ -47,8 +47,8 @@ cpus:=$(shell grep -c "^proc" /proc/cpuinfo)
 jobs:=-j$(shell echo $$(($(cpus) + $(cpus)/2 +2)))
 
 #opencv4 breaks SIFT/SURF findobj
-#CFLAGS += -I$(opencv_prefix)/include/opencv4
-CFLAGS += -I$(opencv_prefix)/include
+CFLAGS += -I$(opencv_prefix)/include/opencv4
+#CFLAGS += -I$(opencv_prefix)/include
 
 ifeq ($(src),git)
 $(opencv).src:
@@ -86,8 +86,8 @@ $(opencv)/build: $(opencv).src
 LFLAGS += -Wl,--start-group
 LFLAGS += $(shell find $(opencv_prefix)/lib* -name "libopencv_*.a" 2> /dev/null)
 #opencv4 breaks SIFT/SURF findobj
-#LFLAGS += $(shell find $(opencv_prefix)/lib64/opencv4/3rdparty/lib* -name "lib*.a" 2> /dev/null)
-LFLAGS += $(shell find $(opencv_prefix)/share/OpenCV/3rdparty/lib* -name "lib*.a" 2> /dev/null)
+LFLAGS += $(shell find $(opencv_prefix)/lib64/opencv4/3rdparty/lib* -name "lib*.a" 2> /dev/null)
+#LFLAGS += $(shell find $(opencv_prefix)/share/OpenCV/3rdparty/lib* -name "lib*.a" 2> /dev/null)
 LFLAGS += -Wl,--end-group
 else ifeq ($(bld),dyn)
 $(opencv)/build: $(opencv).src

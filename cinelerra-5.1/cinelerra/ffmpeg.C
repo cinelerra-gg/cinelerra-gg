@@ -263,6 +263,9 @@ FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int fidx)
 	seek_pos = curr_pos = 0;
 	seeked = 1;  eof = 0;
 	reading = writing = 0;
+	hw_dev = 0;
+	hw_pixfmt = AV_PIX_FMT_NONE;
+	hw_device_ctx = 0;
 	flushed = 0;
 	need_packet = 1;
 	frame = fframe = 0;
@@ -278,6 +281,7 @@ FFStream::~FFStream()
 	if( reading > 0 || writing > 0 ) avcodec_close(avctx);
 	if( avctx ) avcodec_free_context(&avctx);
 	if( fmt_ctx ) avformat_close_input(&fmt_ctx);
+	if( hw_device_ctx ) av_buffer_unref(&hw_device_ctx);
 	if( bsfc ) av_bsf_free(&bsfc);
 	while( frms.first ) frms.remove(frms.first);
 	if( filter_graph ) avfilter_graph_free(&filter_graph);
@@ -323,6 +327,26 @@ int FFStream::encode_activate()
 	return writing;
 }
 
+static AVPixelFormat hw_pix_fmt = AV_PIX_FMT_NONE; // protected by ff_lock
+static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
+			const enum AVPixelFormat *pix_fmts)
+{
+	for( const enum AVPixelFormat *p=pix_fmts; *p!=AV_PIX_FMT_NONE; ++p )
+		if( *p == hw_pix_fmt ) return *p;
+	fprintf(stderr, "Failed to get HW surface format.\n");
+	return hw_pix_fmt = AV_PIX_FMT_NONE;
+}
+
+
+AVHWDeviceType FFStream::decode_hw_activate()
+{
+	return AV_HWDEVICE_TYPE_NONE;
+}
+
+void FFStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
+{
+}
+
 int FFStream::decode_activate()
 {
 	if( reading < 0 && (reading=ffmpeg->decode_activate()) > 0 ) {
@@ -331,6 +355,8 @@ int FFStream::decode_activate()
 		AVDictionary *copts = 0;
 		av_dict_copy(&copts, ffmpeg->opts, 0);
 		int ret = 0;
+		AVHWDeviceType hw_type = decode_hw_activate();
+
 		// this should be avformat_copy_context(), but no copy avail
 		ret = avformat_open_input(&fmt_ctx,
 			ffmpeg->fmt_ctx->url, ffmpeg->fmt_ctx->iformat, &copts);
@@ -339,7 +365,7 @@ int FFStream::decode_activate()
 			st = fmt_ctx->streams[fidx];
 			load_markers();
 		}
-		if( ret >= 0 && st != 0 ) {
+		while( ret >= 0 && st != 0 && !reading ) {
 			AVCodecID codec_id = st->codecpar->codec_id;
 			AVCodec *decoder = avcodec_find_decoder(codec_id);
 			avctx = avcodec_alloc_context3(decoder);
@@ -347,11 +373,36 @@ int FFStream::decode_activate()
 				eprintf(_("cant allocate codec context\n"));
 				ret = AVERROR(ENOMEM);
 			}
+			if( ret >= 0 && hw_type != AV_HWDEVICE_TYPE_NONE )
+				decode_hw_format(decoder, hw_type);
+
 			if( ret >= 0 ) {
 				avcodec_parameters_to_context(avctx, st->codecpar);
 				if( !av_dict_get(copts, "threads", NULL, 0) )
 					avctx->thread_count = ffmpeg->ff_cpus();
 				ret = avcodec_open2(avctx, decoder, &copts);
+			}
+			if( ret >= 0 && hw_type != AV_HWDEVICE_TYPE_NONE ) {
+				ret = read_packet();
+				if( ret >= 0 ) {
+					AVPacket *pkt = (AVPacket*)ipkt;
+					need_packet = 0;
+					ret = avcodec_send_packet(avctx, pkt);
+					if( ret < 0 || hw_pix_fmt == AV_PIX_FMT_NONE ) {
+						ff_err(ret, "HW device init failed, using SW decode.\nfile:%s\n",
+							ffmpeg->fmt_ctx->url);
+						avcodec_close(avctx);
+						avcodec_free_context(&avctx);
+						av_buffer_unref(&hw_device_ctx);
+						hw_device_ctx = 0;
+						hw_type = AV_HWDEVICE_TYPE_NONE;
+						flushed = 0;
+						st_eof(0);
+						need_packet = 1;
+						ret = 0;
+						continue;
+					}
+				}
 			}
 			if( ret >= 0 ) {
 				reading = 1;
@@ -359,8 +410,8 @@ int FFStream::decode_activate()
 			else
 				eprintf(_("open decoder failed\n"));
 		}
-		else
-			eprintf(_("can't clone input file\n"));
+		if( ret < 0 )
+			eprintf(_("can't open input file: %s\n"), ffmpeg->fmt_ctx->url);
 		av_dict_free(&copts);
 		ff_unlock();
 	}
@@ -395,7 +446,8 @@ int FFStream::decode(AVFrame *frame)
 				if( !pkt->data | !pkt->size ) continue;
 			}
 			if( (ret=avcodec_send_packet(avctx, pkt)) < 0 ) {
-				ff_err(ret, "FFStream::decode: avcodec_send_packet failed\n");
+				ff_err(ret, "FFStream::decode: avcodec_send_packet failed.\nfile:%s\n",
+						ffmpeg->fmt_ctx->url);
 				break;
 			}
 			need_packet = 0;
@@ -477,7 +529,8 @@ int FFStream::write_packet(FFPacket &pkt)
 		}
 	}
 	if( ret < 0 )
-		ff_err(ret, "FFStream::write_packet: write packet failed\n");
+		ff_err(ret, "FFStream::write_packet: write packet failed.\nfile:%s\n",
+				ffmpeg->fmt_ctx->url);
 	return ret;
 }
 
@@ -501,7 +554,8 @@ int FFStream::encode_frame(AVFrame *frame)
 			if( ret < 0 ) break;
 		}
 	}
-	ff_err(ret, "FFStream::encode_frame: encode failed\n");
+	ff_err(ret, "FFStream::encode_frame: encode failed.\nfile: %s\n",
+				ffmpeg->fmt_ctx->url);
 	return -1;
 }
 
@@ -515,7 +569,8 @@ int FFStream::flush()
 		close_stats_file();
 	}
 	if( ret < 0 )
-		ff_err(ret, "FFStream::flush");
+		ff_err(ret, "FFStream::flush failed\n:file:%s\n",
+				ffmpeg->fmt_ctx->url);
 	return ret >= 0 ? 0 : 1;
 }
 
@@ -564,7 +619,8 @@ int FFStream::write_stats_file()
 	if( avctx->stats_out && (ret=strlen(avctx->stats_out)) > 0 ) {
 		int len = fwrite(avctx->stats_out, 1, ret, stats_fp);
 		if( ret != len )
-			ff_err(ret = AVERROR(errno), "FFStream::write_stats_file");
+			ff_err(ret = AVERROR(errno), "FFStream::write_stats_file.\n%file:%s\n",
+				ffmpeg->fmt_ctx->url);
 	}
 	return ret;
 }
@@ -656,7 +712,8 @@ int FFStream::seek(int64_t no, double rate)
 //some codecs need more than one pkt to resync
 		if( ret == AVERROR_INVALIDDATA ) ret = 0;
 		if( ret < 0 ) {
-			ff_err(ret, "FFStream::avcodec_send_packet failed\n");
+			ff_err(ret, "FFStream::avcodec_send_packet failed.\nseek:%s\n",
+				ffmpeg->fmt_ctx->url);
 			break;
 		}
 	}
@@ -768,7 +825,8 @@ int FFAudioStream::decode_frame(AVFrame *frame)
 	if( ret < 0 ) {
 		if( first_frame || ret == AVERROR(EAGAIN) ) return 0;
 		if( ret == AVERROR_EOF ) { st_eof(1); return 0; }
-		ff_err(ret, "FFAudioStream::decode_frame: Could not read audio frame\n");
+		ff_err(ret, "FFAudioStream::decode_frame: Could not read audio frame.\nfile:%s\n",
+				ffmpeg->fmt_ctx->url);
 		return -1;
 	}
 	int64_t pkt_ts = frame->best_effort_timestamp;
@@ -940,6 +998,51 @@ FFVideoStream::~FFVideoStream()
 {
 }
 
+AVHWDeviceType FFVideoStream::decode_hw_activate()
+{
+	AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
+	const char *hw_dev = getenv("CIN_HW_DEV");
+	if( hw_dev ) {
+		type = av_hwdevice_find_type_by_name(hw_dev);
+		if( type == AV_HWDEVICE_TYPE_NONE ) {
+			fprintf(stderr, "Device type %s is not supported.\n", hw_dev);
+			fprintf(stderr, "Available device types:");
+			while( (type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE )
+				fprintf(stderr, " %s", av_hwdevice_get_type_name(type));
+			fprintf(stderr, "\n");
+		}
+	}
+	return type;
+}
+
+void FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
+{
+	hw_pix_fmt = AV_PIX_FMT_NONE;
+	for( int i=0; ; ++i ) {
+		const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
+		if( !config ) {
+			fprintf(stderr, "Decoder %s does not support device type %s.\n",
+				decoder->name, av_hwdevice_get_type_name(type));
+			break;
+		}
+		if( (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) != 0 &&
+		    config->device_type == type ) {
+			hw_pix_fmt = config->pix_fmt;
+			break;
+		}
+	}
+	if( hw_pix_fmt >= 0 ) {
+		hw_pixfmt = hw_pix_fmt;
+		avctx->get_format  = get_hw_format;
+		int ret = av_hwdevice_ctx_create(&hw_device_ctx, type, 0, 0, 0);
+		if( ret >= 0 )
+			avctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+		else
+			ff_err(ret, "Failed HW device create.\ndev:%s\n",
+				av_hwdevice_get_type_name(type));
+	}
+}
+
 int FFVideoStream::decode_frame(AVFrame *frame)
 {
 	int first_frame = seeked;  seeked = 0;
@@ -948,7 +1051,8 @@ int FFVideoStream::decode_frame(AVFrame *frame)
 		if( first_frame || ret == AVERROR(EAGAIN) ) return 0;
 		if( ret == AVERROR(EAGAIN) ) return 0;
 		if( ret == AVERROR_EOF ) { st_eof(1); return 0; }
-		ff_err(ret, "FFVideoStream::decode_frame: Could not read video frame\n");
+		ff_err(ret, "FFVideoStream::decode_frame: Could not read video frame.\nfile:%s\n,",
+				ffmpeg->fmt_ctx->url);
 		return -1;
 	}
 	int64_t pkt_ts = frame->best_effort_timestamp;
@@ -1139,6 +1243,20 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
 	}
 
 	AVPixelFormat pix_fmt = (AVPixelFormat)ip->format;
+	if( pix_fmt == ((FFVideoStream *)this)->hw_pixfmt ) {
+		int ret = 0;
+		if( !sw_frame && !(sw_frame=av_frame_alloc()) )
+			ret = AVERROR(ENOMEM);
+		if( !ret ) {
+			ret = av_hwframe_transfer_data(sw_frame, ip, 0);
+			ip = sw_frame;
+			pix_fmt = (AVPixelFormat)ip->format;
+		}
+		if( ret < 0 ) {
+			ff_err(ret, "Error retrieving data from GPU to CPU\n");
+			return -1;
+		}
+	}
 	convert_ctx = sws_getCachedContext(convert_ctx, ip->width, ip->height, pix_fmt,
 		frame->get_w(), frame->get_h(), ofmt, SWS_POINT, NULL, NULL, NULL);
 	if( !convert_ctx ) {
@@ -1572,20 +1690,20 @@ int FFMPEG::can_render(const char *fformat, const char *type)
 
 int FFMPEG::get_ff_option(const char *nm, const char *options, char *value)
 {
-        for( const char *cp=options; *cp!=0; ) {
-                char line[BCTEXTLEN], *bp = line, *ep = bp+sizeof(line)-1;
-                while( bp < ep && *cp && *cp!='\n' ) *bp++ = *cp++;
-                if( *cp ) ++cp;
-                *bp = 0;
-                if( !line[0] || line[0] == '#' || line[0] == ';' ) continue;
-                char key[BCSTRLEN], val[BCTEXTLEN];
-                if( FFMPEG::scan_option_line(line, key, val) ) continue;
-                if( !strcmp(key, nm) ) {
-                        strncpy(value, val, BCSTRLEN);
-                        return 0;
-                }
-        }
-        return 1;
+	for( const char *cp=options; *cp!=0; ) {
+		char line[BCTEXTLEN], *bp = line, *ep = bp+sizeof(line)-1;
+		while( bp < ep && *cp && *cp!='\n' ) *bp++ = *cp++;
+		if( *cp ) ++cp;
+		*bp = 0;
+		if( !line[0] || line[0] == '#' || line[0] == ';' ) continue;
+		char key[BCSTRLEN], val[BCTEXTLEN];
+		if( FFMPEG::scan_option_line(line, key, val) ) continue;
+		if( !strcmp(key, nm) ) {
+			strncpy(value, val, BCSTRLEN);
+			return 0;
+		}
+	}
+	return 1;
 }
 
 void FFMPEG::scan_audio_options(Asset *asset, EDL *edl)
@@ -1618,7 +1736,7 @@ void FFMPEG::load_audio_options(Asset *asset, EDL *edl)
 {
 	char options_path[BCTEXTLEN];
 	set_option_path(options_path, "audio/%s", asset->acodec);
-        if( !load_options(options_path,
+	if( !load_options(options_path,
 			asset->ff_audio_options,
 			sizeof(asset->ff_audio_options)) )
 		scan_audio_options(asset, edl);
@@ -1665,7 +1783,7 @@ void FFMPEG::load_video_options(Asset *asset, EDL *edl)
 {
 	char options_path[BCTEXTLEN];
 	set_option_path(options_path, "video/%s", asset->vcodec);
-        if( !load_options(options_path,
+	if( !load_options(options_path,
 			asset->ff_video_options,
 			sizeof(asset->ff_video_options)) )
 		scan_video_options(asset, edl);
