@@ -1,0 +1,11 @@
+diff -u a/libavcodec/vdpau_mpeg12.c b/libavcodec/vdpau_mpeg12.c
+--- a/libavcodec/vdpau_mpeg12.c	2018-11-02 18:17:29.000000000 -0600
++++ b/libavcodec/vdpau_mpeg12.c	2019-04-22 10:28:41.762275864 -0600
+@@ -114,6 +114,7 @@
+     .frame_priv_data_size = sizeof(struct vdpau_picture_context),
+     .init           = vdpau_mpeg1_init,
+     .uninit         = ff_vdpau_common_uninit,
++    .frame_params   = ff_vdpau_common_frame_params,
+     .priv_data_size = sizeof(VDPAUContext),
+     .caps_internal  = HWACCEL_CAP_ASYNC_SAFE,
+ };
