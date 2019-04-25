@@ -1129,10 +1129,10 @@ void CWindowCanvas::draw_refresh(int flush)
 		clear(0);
 		if( mwindow->uses_opengl() ) {
 			get_canvas()->unlock_window();
-			mwindow->playback_3d->finish_output();
-			get_canvas()->lock_window("CWindowCanvas::draw_refresh");
 			get_canvas()->flush();
 			get_canvas()->sync_display();
+			mwindow->playback_3d->finish_output();
+			get_canvas()->lock_window("CWindowCanvas::draw_refresh");
 		}
 		if( refresh_frame && refresh_frame->get_w()>0 && refresh_frame->get_h()>0 ) {
 			float in_x1, in_y1, in_x2, in_y2;
