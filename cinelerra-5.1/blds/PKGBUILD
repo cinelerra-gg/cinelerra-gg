@@ -11,7 +11,7 @@ DEPENDS=( 'alsa-lib' 'atk' 'bzip2' 'cairo' 'expat' 'fftw' 'flac'
  'glib2' 'glibc' 'glu' 'graphite' 'gtk2' 'harfbuzz' 'libavc1394'
  'libdatrie' 'libdv' 'libffi' 'libglvnd' 'libiec61883' 'libjpeg-turbo'
  'libogg' 'libpng' 'libraw1394' 'libsndfile' 'libthai' 'libusb'
- 'libtheora' 'libtiff' 'libutil-linux' 'libvdpau' 'libvorbis'
+ 'libtheora' 'libtiff' 'libutil-linux' 'libvdpau' 'libva' 'libvorbis'
  'libvpx' 'libx11' 'libxau' 'libxcb' 'libxcomposite' 'libxcursor'
  'libxdamage' 'libxdmcp' 'libxext' 'libxfixes' 'libxft' 'libxi'
  'libxinerama' 'libxrandr' 'libxrender' 'libxv' 'numactl' 'opus'
@@ -34,7 +34,6 @@ prepare() {
 build() {
   cd "$srcdir/cinelerra-$pkgver"
   ./autogen.sh
-  export FFMPEG_EXTRA_CFG=" --disable-vdpau"
   ./configure --prefix=/usr --with-exec-name=$pkgname
 CFG_VARS="\
 CFLAGS+=' -Wno-narrowing -O2 -g -fno-omit-frame-pointer' \

@@ -50,6 +50,8 @@ BuildRequires: ncurses-devel
 BuildRequires: texinfo
 BuildRequires: udftools
 BuildRequires: gtk2-devel
+BuildRequires: va-devel
+BuildRequires: vdpau-devel
 %{?rhat:BuildRequires: alsa-lib-devel}
 %{?rhat:BuildRequires: bzip2-devel}
 %{?rhat:BuildRequires: xorg-x11-fonts-cyrillic}

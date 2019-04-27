@@ -69,9 +69,6 @@ git clone --depth 1 $GITURL $PRGNAM-$VERSION
 cd $PRGNAM-$VERSION/cinelerra-5.1
 chown -R root:root .
 
-# disable vdpau or ffmpeg won't build on Slackware 14.2
-export FFMPEG_EXTRA_CFG=" --disable-vdpau"
-
 # configure the build
 ./autogen.sh
 

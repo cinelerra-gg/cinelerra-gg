@@ -10,7 +10,7 @@ Build-Depends: nasm, yasm, g++, gdb, build-essential, e2fsprogs,
  freeglut3-dev, libxv-dev, libasound2-dev,
  libncurses5-dev, libxinerama-dev, libfreetype6-dev, libxft-dev,
  ttf-bitstream-vera, xfonts-75dpi, xfonts-100dpi, fonts-dejavu,
- libflac-dev, inkscape, texinfo, libpng-dev,
+ libflac-dev, inkscape, texinfo, libpng-dev, libvdpau-dev, libva-dev,
  cmake, udftools, libxml2-utils, git, gettext, libtool,
  autoconf, automake
 

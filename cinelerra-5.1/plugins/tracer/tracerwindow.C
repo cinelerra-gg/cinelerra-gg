@@ -85,7 +85,7 @@ int TracerPointY::handle_event()
 }
 
 TracerWindow::TracerWindow(Tracer *plugin)
- : PluginClientWindow(plugin, 400, 300, 400, 300, 0)
+ : PluginClientWindow(plugin, 400, 420, 400, 420, 0)
 {
 	this->plugin = plugin;
 	this->title_x = 0;    this->point_x = 0;
@@ -93,9 +93,9 @@ TracerWindow::TracerWindow(Tracer *plugin)
 	this->new_point = 0;  this->del_point = 0;
 	this->point_up = 0;   this->point_dn = 0;
 	this->drag = 0;       this->draw = 0;
-	this->dragging = 0;
+	this->button_no = 0;  this->invert = 0;
 	this->title_r = 0;    this->title_s = 0;
-	this->radius = 0;     this->scale = 0;
+	this->feather = 0;    this->radius = 0;
 	this->last_x = 0;     this->last_y = 0;
 	this->point_list = 0; this->pending_config = 0;
 }
@@ -110,10 +110,11 @@ void TracerWindow::create_objects()
 {
 	int x = 10, y = 10;
 	int margin = plugin->get_theme()->widget_border;
-	TracerPoint *pt = plugin->config.points[plugin->config.selected];
+	int hot_point = plugin->config.selected;
 	add_subwindow(title_x = new BC_Title(x, y, _("X:")));
 	int x1 = x + title_x->get_w() + margin;
-	point_x = new TracerPointX(this, x1, y, pt->x);
+	TracerPoint *pt = hot_point >= 0 ? plugin->config.points[hot_point] : 0;
+	point_x = new TracerPointX(this, x1, y, !pt ? 0 : pt->x);
 	point_x->create_objects();
 	x1 += point_x->get_w() + margin;
 	add_subwindow(new_point = new TracerNewPoint(this, plugin, x1, y));
@@ -122,7 +123,7 @@ void TracerWindow::create_objects()
 	y += point_x->get_h() + margin;
 	add_subwindow(title_y = new BC_Title(x, y, _("Y:")));
 	x1 = x + title_y->get_w() + margin;
-	point_y = new TracerPointY(this, x1, y, pt->y);
+	point_y = new TracerPointY(this, x1, y, !pt ? 0 : pt->y);
 	point_y->create_objects();
 	x1 += point_y->get_w() + margin;
 	add_subwindow(del_point = new TracerDelPoint(this, plugin, x1, y));
@@ -140,22 +141,31 @@ void TracerWindow::create_objects()
 	x1 += draw->get_w() + margin + 20;
 	add_subwindow(fill = new TracerFill(this, x1, y));
 	x1 += drag->get_w() + margin + 20;
-	add_subwindow(reset = new TracerReset(this, plugin, x1, y+3));
-	y += drag->get_h() + margin;
+	int y1 = y + 3;
+	add_subwindow(reset = new TracerReset(this, plugin, x1, y1));
+	y1 += reset->get_h() + margin;
+	add_subwindow(invert = new TracerInvert(this, plugin, x1, y1));
+	y += drag->get_h() + margin + 15;
 
-	add_subwindow(title_r = new BC_Title(x1=x, y, _("Radius:")));
-	x1 += title_r->get_w() + margin;
-	add_subwindow(radius = new TracerRadius(this, x1, y, 100));
-	x1 += radius->get_w() + margin + 20;
-	add_subwindow(title_s = new BC_Title(x1, y, _("Scale:")));
-	x1 += title_s->get_w() + margin;
-	add_subwindow(scale = new TracerScale(this, x1, y, 100));
-	y += radius->get_h() + margin + 20;
+	x1 = x + 80;
+	add_subwindow(title_r = new BC_Title(x, y, _("Feather:")));
+	add_subwindow(feather = new TracerFeather(this, x1, y, 150));
+	y += feather->get_h() + margin;
+	add_subwindow(title_s = new BC_Title(x, y, _("Radius:")));
+	add_subwindow(radius = new TracerRadius(this, x1, y, 150));
+	y += radius->get_h() + margin + 5;
 
 	add_subwindow(point_list = new TracerPointList(this, plugin, x, y));
 	point_list->update(plugin->config.selected);
-//	y += point_list->get_h() + 10;
+	y += point_list->get_h() + 10;
 
+	add_subwindow(new BC_Title(x, y, _(
+		"Btn1: select/drag point\n"
+		"Btn2: drag all points\n"
+		"Btn3: add point on nearest line\n"
+		"Btn3: shift: append point to end\n"
+		"Wheel: rotate, centered on cursor\n"
+		"Wheel: shift: scale, centered on cursor\n")));
 	show_window(1);
 }
 
@@ -190,7 +200,7 @@ int TracerWindow::do_grab_event(XEvent *event)
 	cx -= canvas->view_x;
 	cy -= canvas->view_y;
 
-	if( !dragging ) {
+	if( !button_no ) {
 		if( cx < 0 || cx >= canvas->view_w ||
 		    cy < 0 || cy >= canvas->view_h )
 			return 0;
@@ -198,15 +208,15 @@ int TracerWindow::do_grab_event(XEvent *event)
 
 	switch( event->type ) {
 	case ButtonPress:
-		if( dragging ) return 0;
-		dragging = event->xbutton.state & ShiftMask ? -1 : 1;
+		if( button_no ) return 0;
+		button_no = event->xbutton.button;
 		break;
 	case ButtonRelease:
-		if( !dragging ) return 0;
-		dragging = 0;
+		if( !button_no ) return 0;
+		button_no = 0;
 		return 1;
 	case MotionNotify:
-		if( !dragging ) return 0;
+		if( !button_no ) return 0;
 		break;
 	default:
 		return 0;
@@ -229,20 +239,62 @@ int TracerWindow::do_grab_event(XEvent *event)
 	point_y->update((int64_t)(output_y));
 	TracerPoints &points = plugin->config.points;
 
-	if( dragging > 0 ) {
-		switch( event->type ) {
-		case ButtonPress: {
-			int button_no = event->xbutton.button;
-			int hot_point = -1;
-			if( button_no == RIGHT_BUTTON ) {
-				hot_point = plugin->new_point();
-				TracerPoint *pt = points[hot_point];
-				pt->x = output_x;  pt->y = output_y;
-				point_list->update(hot_point);
-				break;
-			}
+	switch( event->type ) {
+	case ButtonPress: {
+		float s = 1.02;
+		float th = M_PI/360.f; // .5 deg per wheel_btn
+		int shift_down = event->xbutton.state & ShiftMask;
+		switch( button_no ) {
+		case WHEEL_DOWN:
+			s = 0.98;
+			th = -th;  // fall thru
+		case WHEEL_UP: {
+			// shift_down scale, !shift_down rotate
+			float st = sin(th), ct = cos(th);
 			int sz = points.size();
-			if( hot_point < 0 && sz > 0 ) {
+			for( int i=0; i<sz; ++i ) {
+				TracerPoint *pt = points[i];
+				float px = pt->x - output_x, py = pt->y - output_y;
+				float nx = shift_down ? px*s : px*ct + py*st;
+				float ny = shift_down ? py*s : py*ct - px*st;
+				point_list->set_point(i, PT_X, pt->x = nx + output_x);
+				point_list->set_point(i, PT_Y, pt->y = ny + output_y);
+			}
+			point_list->update(-1);
+			button_no = 0;
+			break; }
+		case RIGHT_BUTTON: {
+			// shift_down adds to end
+			int sz = !shift_down ? points.size() : 0;
+			int k = !shift_down ? -1 : points.size()-1;
+			float mx = FLT_MAX;
+			for( int i=0; i<sz; ++i ) {
+				// pt on line pt[i+0]..pt[i+1] nearest cx,cy
+				TracerPoint *pt0 = points[i+0];
+				TracerPoint *pt1 = i+1<sz ? points[i+1] : points[0];
+				float x0 = pt0->x, y0 = pt0->y;
+				float x1 = pt1->x, y1 = pt1->y;
+				float dx = x1-x0, dy = y1-y0;
+				float rr = dx*dx + dy*dy;
+				if( !rr ) continue;
+				float u = ((x1-output_x)*dx + (y1-output_y)*dy) / rr;
+				if( u < 0 || u > 1 ) continue;  // past endpts
+				float x = x0*u + x1*(1-u);
+				float y = y0*u + y1*(1-u);
+				dx = output_x-x;  dy = output_y-y;
+				float dd = dx*dx + dy*dy;	// d**2 closest approach
+				if( mx > dd ) { mx = dd;  k = i; }
+			}
+			TracerPoint *pt = points[sz=plugin->new_point()];
+			int hot_point = k+1;
+			for( int i=sz; i>hot_point; --i ) points[i] = points[i-1];
+			points[hot_point] = pt;
+			pt->x = output_x;  pt->y = output_y;
+			point_list->update(hot_point);
+			break; }
+		case LEFT_BUTTON: {
+			int hot_point = -1, sz = points.size();
+			if( sz > 0 ) {
 				TracerPoint *pt = points[hot_point=0];
 				double dist = DISTANCE(output_x,output_y, pt->x,pt->y);
 				for( int i=1; i<sz; ++i ) {
@@ -264,7 +316,11 @@ int TracerWindow::do_grab_event(XEvent *event)
 				point_list->update_list(hot_point);
 			}
 			break; }
-		case MotionNotify: {
+		}
+		break; }
+	case MotionNotify: {
+		switch( button_no ) {
+		case LEFT_BUTTON: {
 			int hot_point = point_list->get_selection_number(0, 0);
 			if( hot_point >= 0 && hot_point < points.size() ) {
 				TracerPoint *pt = points[hot_point];
@@ -276,11 +332,7 @@ int TracerWindow::do_grab_event(XEvent *event)
 				point_list->update_list(hot_point);
 			}
 			break; }
-		}
-	}
-	else {
-		switch( event->type ) {
-		case MotionNotify: {
+		case MIDDLE_BUTTON: {
 			float dx = output_x - last_x, dy = output_y - last_y;
 			int sz = points.size();
 			for( int i=0; i<sz; ++i ) {
@@ -297,6 +349,7 @@ int TracerWindow::do_grab_event(XEvent *event)
 			}
 			break; }
 		}
+		break; }
 	}
 
 	last_x = output_x;  last_y = output_y;
@@ -391,9 +444,11 @@ int TracerPointList::set_selected(int k)
 }
 void TracerPointList::update_list(int k)
 {
-	int xpos = get_xposition(), ypos = get_yposition();
-	if( k < 0 ) k = get_selection_number(0, 0);
+	int sz = plugin->config.points.size();
+	if( k < 0 || k >= sz ) k = -1;
+	plugin->config.selected = k;
 	update_selection(&cols[0], k);
+	int xpos = get_xposition(), ypos = get_yposition();
 	BC_ListBox::update(&cols[0], &titles[0],&widths[0],PT_SZ, xpos,ypos,k);
 	center_selection();
 }
@@ -411,9 +466,7 @@ void TracerPointList::update(int k)
 	if( k >= 0 && k < sz ) {
 		gui->point_x->update(gui->point_list->cols[PT_X].get(k)->get_text());
 		gui->point_y->update(gui->point_list->cols[PT_Y].get(k)->get_text());
-		plugin->config.selected = k;
 	}
-
 	update_list(k);
 }
 
@@ -423,9 +476,9 @@ void TracerWindow::update_gui()
 	drag->update(config.drag);
 	draw->update(config.draw);
 	fill->update(config.fill);
+	feather->update(config.feather);
 	radius->update(config.radius);
-	scale->update(config.scale);
-	drag->update(config.drag);
+	invert->update(config.invert);
 	point_list->update(-1);
 }
 
@@ -525,26 +578,26 @@ int TracerFill::handle_event()
 	return 1;
 }
 
+TracerFeather::TracerFeather(TracerWindow *gui, int x, int y, int w)
+ : BC_ISlider(x,y,0,w,w, -50,50, gui->plugin->config.feather)
+{
+	this->gui = gui;
+}
+int TracerFeather::handle_event()
+{
+	gui->plugin->config.feather = get_value();
+	gui->send_configure_change();
+	return 1;
+}
+
 TracerRadius::TracerRadius(TracerWindow *gui, int x, int y, int w)
- : BC_ISlider(x,y,0,w,w, -50,50, gui->plugin->config.radius)
+ : BC_FSlider(x,y, 0,w,w, -5.f,5.f, gui->plugin->config.radius)
 {
 	this->gui = gui;
 }
 int TracerRadius::handle_event()
 {
 	gui->plugin->config.radius = get_value();
-	gui->send_configure_change();
-	return 1;
-}
-
-TracerScale::TracerScale(TracerWindow *gui, int x, int y, int w)
- : BC_FSlider(x,y, 0,w,w, 1.f,10.f, gui->plugin->config.scale)
-{
-	this->gui = gui;
-}
-int TracerScale::handle_event()
-{
-	gui->plugin->config.scale = get_value();
 	gui->send_configure_change();
 	return 1;
 }
@@ -581,10 +634,7 @@ int TracerDelPoint::handle_event()
 	TracerPoints &points = plugin->config.points;
 	if( hot_point >= 0 && hot_point < points.size() ) {
 		plugin->config.del_point(hot_point);
-		if( !points.size() ) plugin->new_point();
-		int sz = points.size();
-		if( hot_point >= sz && hot_point > 0 ) --hot_point;
-		gui->point_list->update(hot_point);
+		gui->point_list->update(--hot_point);
 		gui->send_configure_change();
 	}
 	return 1;
@@ -602,17 +652,40 @@ TracerReset::~TracerReset()
 int TracerReset::handle_event()
 {
 	TracerConfig &config = plugin->config;
-	config.drag = 0;
-	config.draw = 0;
+	if( !config.drag ) {
+		MWindow *mwindow = plugin->server->mwindow;
+		CWindowGUI *cwindow_gui = mwindow->cwindow->gui;
+		if( gui->grab(cwindow_gui) )
+			config.drag = 1;
+		else
+			gui->drag->flicker(10,50);
+	}
+	config.draw = 1;
 	config.fill = 0;
-	config.radius = 0;
-	config.scale = 1;
-	config.selected = 0;
+	config.invert = 0;
+	config.feather = 0;
+	config.radius = 1;
+	config.selected = -1;
 	TracerPoints &points = plugin->config.points;
 	points.remove_all_objects();
-	plugin->new_point();
-	gui->point_list->update(0);
+	gui->point_list->update(-1);
 	gui->update_gui();
+	gui->send_configure_change();
+	return 1;
+}
+
+TracerInvert::TracerInvert(TracerWindow *gui, Tracer *plugin, int x, int y)
+ : BC_CheckBox(x, y, gui->plugin->config.invert, _("Invert"))
+{
+	this->gui = gui;
+	this->plugin = plugin;
+}
+TracerInvert::~TracerInvert()
+{
+}
+int TracerInvert::handle_event()
+{
+	plugin->config.invert = get_value();
 	gui->send_configure_change();
 	return 1;
 }

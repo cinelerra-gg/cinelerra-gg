@@ -63,8 +63,8 @@ public:
 	void del_point(int i);
 
 	int drag, draw, fill;
-	int radius;
-	double scale; 
+	int invert, feather;
+	float radius; 
 	int selected;
 };
 

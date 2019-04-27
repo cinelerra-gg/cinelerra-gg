@@ -31,14 +31,15 @@ class TracerPointY;
 class TracerDrag;
 class TracerDraw;
 class TracerFill;
+class TracerFeather;
 class TracerRadius;
-class TracerScale;
 class TracerPointList;
 class TracerNewPoint;
 class TracerDelPoint;
 class TracerPointUp;
 class TracerPointDn;
 class TracerReset;
+class TracerInvert;
 
 
 class TracerNum : public BC_TumbleTextBox
@@ -104,19 +105,19 @@ public:
 	TracerWindow *gui;
 };
 
-class TracerRadius : public BC_ISlider
+class TracerFeather : public BC_ISlider
 {
 public:
-	TracerRadius(TracerWindow *gui, int x, int y, int w);
+	TracerFeather(TracerWindow *gui, int x, int y, int w);
 
 	int handle_event();
 	TracerWindow *gui;
 };
 
-class TracerScale : public BC_FSlider
+class TracerRadius : public BC_FSlider
 {
 public:
-	TracerScale(TracerWindow *gui, int x, int y, int w);
+	TracerRadius(TracerWindow *gui, int x, int y, int w);
 
 	int handle_event();
 	TracerWindow *gui;
@@ -206,6 +207,18 @@ public:
 	TracerWindow *gui;
 };
 
+class TracerInvert : public BC_CheckBox
+{
+public:
+	TracerInvert(TracerWindow *gui, Tracer *plugin, int x, int y);
+	~TracerInvert();
+
+	int handle_event();
+
+	Tracer *plugin;
+	TracerWindow *gui;
+};
+
 
 class TracerWindow : public PluginClientWindow
 {
@@ -229,16 +242,17 @@ public:
 	TracerDelPoint *del_point;
 	TracerPointUp *point_up;
 	TracerPointDn *point_dn;
-	int dragging, pending_config;
+	int button_no, pending_config;
 	float last_x, last_y;
 	TracerDrag *drag;
 	TracerDraw *draw;
 	TracerFill *fill;
 	BC_Title *title_r, *title_s;
+	TracerFeather *feather;
 	TracerRadius *radius;
-	TracerScale *scale;
 	TracerPointList *point_list;
 	TracerReset *reset;
+	TracerInvert *invert;
 };
 
 #endif

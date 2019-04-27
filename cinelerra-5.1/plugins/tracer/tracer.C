@@ -56,9 +56,9 @@ TracerPoint::~TracerPoint()
 
 TracerConfig::TracerConfig()
 {
-	drag = draw = fill = 0;
-	radius = 0;  scale = 1;
-	selected = 0;
+	drag = draw = 1;  fill = 0;
+	feather = 0;  radius = 1;
+	invert = 0;  selected = -1;
 }
 TracerConfig::~TracerConfig()
 {
@@ -69,8 +69,9 @@ int TracerConfig::equivalent(TracerConfig &that)
 	if( this->drag != that.drag ) return 0;
 	if( this->draw != that.draw ) return 0;
 	if( this->fill != that.fill ) return 0;
+	if( this->feather != that.feather ) return 0;
+	if( this->invert != that.invert ) return 0;
 	if( this->radius != that.radius ) return 0;
-	if( this->scale != that.scale ) return 0;
 	if( this->points.size() != that.points.size() ) return 0;
 	for( int i=0, n=points.size(); i<n; ++i ) {
 		TracerPoint *ap = this->points[i], *bp = that.points[i];
@@ -86,8 +87,9 @@ void TracerConfig::copy_from(TracerConfig &that)
 	this->draw = that.draw;
 	this->fill = that.fill;
 	this->selected = that.selected;
+	this->feather = that.feather;
+	this->invert = that.invert;
 	this->radius = that.radius;
-	this->scale = that.scale;
 	points.remove_all_objects();
 	for( int i=0,n=that.points.size(); i<n; ++i ) {
 		TracerPoint *pt = that.points[i];
@@ -175,8 +177,9 @@ void Tracer::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DRAG", config.drag);
 	output.tag.set_property("DRAW", config.draw);
 	output.tag.set_property("FILL", config.fill);
+	output.tag.set_property("FEATHER", config.feather);
 	output.tag.set_property("RADIUS", config.radius);
-	output.tag.set_property("SCALE", config.scale);
+	output.tag.set_property("INVERT", config.invert);
 	output.tag.set_property("SELECTED", config.selected);
 	output.append_tag();
 	output.append_newline();
@@ -210,8 +213,9 @@ void Tracer::read_data(KeyFrame *keyframe)
 			config.drag = input.tag.get_property("DRAG", config.drag);
 			config.draw = input.tag.get_property("DRAW", config.draw);
 			config.fill = input.tag.get_property("FILL", config.fill);
+			config.feather = input.tag.get_property("FEATHER", config.feather);
 			config.radius = input.tag.get_property("RADIUS", config.radius);
-			config.scale = input.tag.get_property("SCALE", config.scale);
+			config.invert = input.tag.get_property("INVERT", config.invert);
 			config.selected = input.tag.get_property("SELECTED", 0);
 			config.limits();
 		}
@@ -221,8 +225,6 @@ void Tracer::read_data(KeyFrame *keyframe)
 			config.add_point(x, y);
 		}
 	}
-
-	if( !config.points.size() ) new_point();
 }
 
 void Tracer::update_gui()
@@ -538,15 +540,18 @@ void FillRegion::run()
 
 void Tracer::feather(int r, double s)
 {
-	if( !r || !s ) return;
-	int dir = r<0 ? (r=-r, -1) : 1;
-	if( dir < 0 ) s = 1./s;
+	if( !r ) return;
+	int dir = r < 0 ? (r=-r, -1) : 1;
 	int rr = r * r;
 	int psf[rr];  // pt spot fn
-	int k = dir>=0 ? 0 : rr-1;
-	for( int i=0; i<rr; ++i,k+=dir )
-		psf[k] = 255*exp(-s*((double)i/rr));
-	int mx = dir > 0 ? 0xff : 0;
+	float p = powf(10.f, s/2);
+	for( int i=0; i<rr; ++i ) {
+		float v = powf((float)i/rr,p);
+		if( dir < 0 ) v = 1-v;
+		int vv = v*256;
+		if( vv > 255 ) vv = 255;
+		psf[i] = vv;
+	}
 	for( int i=0,n=points.size(); i<n; ++i ) {
 		TracePoint *pt = &points[i];
 		int xs = pt->x-r, xn=pt->x+r;
@@ -557,12 +562,11 @@ void Tracer::feather(int r, double s)
 		bclamp(yn, 0, h);
 		for( int y=ys ; y<yn; ++y ) {
 			for( int x=xs; x<xn; ++x ) {
-				if( msk_rows[y][x] == mx ) continue;
 				int dx = x-pt->x, dy = y-pt->y;
 				int dd = dx*dx + dy*dy;
 				if( dd >= rr ) continue;
-				int pix = msk_rows[y][x], v = psf[dd];
-				msk_rows[y][x] = dir >= 0 ? pix+v-(pix*v)/255 : (pix*v)/255;
+				int v = psf[dd], px = msk_rows[y][x];
+				if( dir < 0 ? px<v : px>v ) msk_rows[y][x] = v;
 			}
 		}
 	}
@@ -576,8 +580,7 @@ void Tracer::draw_mask()
 			uint8_t *mp = msk_rows[y];
 			uint8_t *rp = frm_rows[y];
 			for( int x=0; x<w; rp+=bpp,++x ) {
-				if( !mp[x] ) continue;
-				int a = 0xff - mp[x];
+				int a = !config.invert ? 0xff-mp[x] : mp[x];
 				rp[0] = a*rp[0] / 0xff;
 				rp[1] = a*rp[1] / 0xff;
 				rp[2] = a*rp[2] / 0xff;
@@ -589,8 +592,7 @@ void Tracer::draw_mask()
 			uint8_t *mp = msk_rows[y];
 			uint8_t *rp = frm_rows[y];
 			for( int x=0; x<w; rp+=bpp,++x ) {
-				if( !mp[x] ) continue;
-				int a = 0xff - mp[x];
+				int a = !config.invert ? 0xff-mp[x] : mp[x];
 				rp[0] = a*rp[0] / 0xff;
 				rp[1] = a*(rp[1]-0x80)/0xff + 0x80;
 				rp[2] = a*(rp[2]-0x80)/0xff + 0x80;
@@ -602,8 +604,7 @@ void Tracer::draw_mask()
 			uint8_t *mp = msk_rows[y];
 			uint8_t *rp = frm_rows[y];
 			for( int x=0; x<w; rp+=bpp,++x ) {
-				if( !mp[x] ) continue;
-				float a = 1 - mp[x]/255.f;
+				float a = !config.invert ? 1-mp[x]/255.f : mp[x]/255.f;
 				float *fp = (float*)rp;
 				fp[0] *= a;  fp[1] *= a;  fp[2] *= a;
 			}
@@ -615,7 +616,7 @@ void Tracer::draw_mask()
 			uint8_t *mp = msk_rows[y];
 			uint8_t *rp = frm_rows[y];
 			for( int x=0; x<w; rp+=bpp,++x ) {
-				rp[3] = 0xff - mp[x];
+				rp[3] = !config.invert ? 0xff-mp[x] : mp[x];
 			}
 		}
 		break;
@@ -625,7 +626,7 @@ void Tracer::draw_mask()
 			uint8_t *rp = frm_rows[y];
 			for( int x=0; x<w; rp+=bpp,++x ) {
 				float *fp = (float*)rp;
-				fp[3] = 1 - mp[x]/255.f;
+				fp[3] = !config.invert ? 1-mp[x]/255.f : mp[x]/255.f;
 			}
 		}
 		break;
@@ -673,12 +674,12 @@ int Tracer::process_buffer(VFrame *frame, int64_t start_position, double frame_r
 			fill_region.fill(cx, cy);
 			fill_region.run();
 
-			feather(config.radius, config.scale);
+			feather(config.feather, config.radius);
 		}
 	}
-	if( config.fill )
+	if( config.fill && msk )
 		draw_mask();
-	if( config.draw )
+	if( config.draw && edg )
 		draw_edge();
 	if( config.drag )
 		draw_points();

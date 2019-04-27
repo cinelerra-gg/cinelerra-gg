@@ -11,6 +11,7 @@ alias make=gmake
     --disable-static-build --with-lv2=auto --disable-lame --disable-twolame \
     --with-oss --without-alsa --without-firewire --without-dv --without-dvb \
     --without-video4linux2 --without-xxf86vm --without-ladspa-build \
-    --without-libzmpeg --without-commercial --without-thirdparty
+    --without-libzmpeg --without-commercial --without-thirdparty \
+    --disable-vaapi --disable-vdpau
   gmake
   gmake install ) 2>&1 | tee log
