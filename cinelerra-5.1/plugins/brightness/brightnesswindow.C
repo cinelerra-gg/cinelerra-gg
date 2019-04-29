@@ -32,12 +32,7 @@
 
 
 BrightnessWindow::BrightnessWindow(BrightnessMain *client)
- : PluginClientWindow(client,
-	330,
-	160,
-	330,
-	160,
-	0)
+ : PluginClientWindow(client, 370, 155, 370, 155, 0)
 {
 	this->client = client;
 }
@@ -48,22 +43,28 @@ BrightnessWindow::~BrightnessWindow()
 
 void BrightnessWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = 10, y = 10, x1 = x + 90;
+	int x2 = 0; int clrBtn_w = 50;
+
 	add_tool(new BC_Title(x, y, _("Brightness/Contrast")));
 	y += 25;
 	add_tool(new BC_Title(x, y,_("Brightness:")));
 	add_tool(brightness = new BrightnessSlider(client,
 		&(client->config.brightness),
-		x + 80,
+		x1,
 		y,
 		1));
+	x2 = x1 + brightness->get_w() + 10;
+	add_subwindow(brightnessClr = new BrightnessSliderClr(client, this, x2, y, clrBtn_w, 1));
 	y += 25;
 	add_tool(new BC_Title(x, y, _("Contrast:")));
 	add_tool(contrast = new BrightnessSlider(client,
 		&(client->config.contrast),
-		x + 80,
+		x1,
 		y,
 		0));
+
+	add_subwindow(contrastClr = new BrightnessSliderClr(client, this, x2, y, clrBtn_w, 0));
 	y += 30;
 	add_tool(luma = new BrightnessLuma(client,
 		x,
@@ -77,11 +78,20 @@ void BrightnessWindow::create_objects()
 }
 
 // for Reset button
-void BrightnessWindow::update()
+void BrightnessWindow::update_gui(int clear)
 {
-	brightness->update(client->config.brightness);
-	contrast->update(client->config.contrast);
-	luma->update(client->config.luma);
+	switch(clear) {
+		case RESET_CONTRAST : contrast->update(client->config.contrast);
+			break;
+		case RESET_BRIGHTNESS: brightness->update(client->config.brightness);
+			break;
+		case RESET_ALL :
+		default:
+			brightness->update(client->config.brightness);
+			contrast->update(client->config.contrast);
+			luma->update(client->config.luma);
+			break;
+	}
 }
 
 BrightnessSlider::BrightnessSlider(BrightnessMain *client,
@@ -162,8 +172,28 @@ BrightnessReset::~BrightnessReset()
 }
 int BrightnessReset::handle_event()
 {
-	client->config.reset();
-	window->update();
+	client->config.reset(RESET_ALL); // clear=0 ==> reset all
+	window->update_gui(RESET_ALL);
+	client->send_configure_change();
+	return 1;
+}
+
+BrightnessSliderClr::BrightnessSliderClr(BrightnessMain *client, BrightnessWindow *window, int x, int y, int w, int is_brightness)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->client = client;
+	this->window = window;
+	this->is_brightness = is_brightness;
+}
+BrightnessSliderClr::~BrightnessSliderClr()
+{
+}
+int BrightnessSliderClr::handle_event()
+{
+	// is_brightness==0 means Contrast slider   ==> "clear=1"
+	// is_brightness==1 means Brightness slider ==> "clear=2"
+	client->config.reset(is_brightness + 1);
+	window->update_gui(is_brightness + 1);
 	client->send_configure_change();
 	return 1;
 }

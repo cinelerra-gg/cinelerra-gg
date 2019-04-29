@@ -108,10 +108,9 @@ public:
 	Asset *asset;
 	ProxyRender *proxy_render;
 
-	int new_scale;
-	int orig_scale;
-	int use_scaler;
-	int auto_scale;
+	int orig_scale, new_scale;
+	int use_scaler, auto_scale;
+	int orig_w, orig_h;
 	int beep;
 	char *size_text[MAX_SIZES];
 	int size_factors[MAX_SIZES];

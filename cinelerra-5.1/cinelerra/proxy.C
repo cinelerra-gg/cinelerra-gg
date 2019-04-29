@@ -137,9 +137,6 @@ void ProxyDialog::calculate_sizes()
 	}
 	total_sizes = 1;
 
-	int orig_w = mwindow->edl->session->output_w * orig_scale;
-	int orig_h = mwindow->edl->session->output_h * orig_scale;
-
 	if( !use_scaler ) {
 // w,h should stay even for yuv
 		int ow = orig_w, oh = orig_h;
@@ -340,7 +337,7 @@ int ProxyRender::create_needed_proxies(int new_scale)
 
 	ProxyFarm engine(mwindow, this, &needed_idxbls, &needed_proxies);
 	engine.process_packages();
-printf("failed=%d canceled=%d\n", failed, progress->is_cancelled());
+printf("proxy: failed=%d canceled=%d\n", failed, progress->is_cancelled());
 
 // stop progress bar
 	canceled = progress->is_cancelled();
@@ -381,6 +378,12 @@ void ProxyWindow::create_objects()
 	dialog->auto_scale = mwindow->edl->session->proxy_auto_scale;
 	dialog->beep = mwindow->edl->session->proxy_beep;
 	dialog->new_scale = dialog->orig_scale;
+	dialog->orig_w = mwindow->edl->session->output_w;
+	dialog->orig_h = mwindow->edl->session->output_h;
+	if( !dialog->use_scaler ) {
+		dialog->orig_w *= dialog->orig_scale;
+		dialog->orig_h *= dialog->orig_scale;
+	}
 
 	int x = margin;
 	int y = margin+10;
@@ -391,7 +394,7 @@ void ProxyWindow::create_objects()
 	add_subwindow(text = new BC_Title(x, y, _("Scale factor:")));
 	x += text->get_w() + margin;
 
-	int popupmenu_w = BC_PopupMenu::calculate_w(get_text_width(MEDIUMFONT, dialog->size_text[0]));
+	int popupmenu_w = BC_PopupMenu::calculate_w(get_text_width(MEDIUMFONT, dialog->size_text[0])+15);
 	add_subwindow(scale_factor = new ProxyMenu(mwindow, this, x, y, popupmenu_w, ""));
 	scale_factor->update_sizes();
 	x += scale_factor->get_w() + margin;
@@ -446,11 +449,9 @@ void ProxyFormatTools::update_format()
 void ProxyWindow::update()
 {
 	char string[BCSTRLEN];
-	int orig_w = mwindow->edl->session->output_w * dialog->orig_scale;
-	int orig_h = mwindow->edl->session->output_h * dialog->orig_scale;
-	int new_w = orig_w / dialog->new_scale;
+	int new_w = dialog->orig_w / dialog->new_scale;
 	if( new_w & 1 ) ++new_w;
-	int new_h = orig_h / dialog->new_scale;
+	int new_h = dialog->orig_h / dialog->new_scale;
 	if( new_h & 1 ) ++new_h;
 	sprintf(string, "%dx%d", new_w, new_h);
 	new_dimensions->update(string);
@@ -550,7 +551,6 @@ int ProxyMenu::handle_event()
 	for( int i = 0; i < dialog->total_sizes; i++ ) {
 		if( !strcmp(get_text(), pwindow->dialog->size_text[i]) ) {
 			dialog->new_scale = pwindow->dialog->size_factors[i];
-			if( dialog->new_scale == 1 ) dialog->use_scaler = 0;
 			pwindow->update();
 			break;
 		}

@@ -36,7 +36,6 @@ $(OBJECTS) $(OBJDIR)/xsch.o $(OBJDIR)/tst.o:
 
 $(OBJDIR)/db.a:	$(OBJECTS)
 	ar rcs $@ $(OBJECTS)
-	ctags -R .
 
 s.C:	$(OBJDIR)/xsch sch.txt
 	$(OBJDIR)/xsch < sch.txt

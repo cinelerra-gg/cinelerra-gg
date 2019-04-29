@@ -35,10 +35,18 @@
 #include <stdint.h>
 #include <string.h>
 
+#define RESET_ALL  0
+#define RESET_Y_DX 1
+#define RESET_Y_DY 2
+#define RESET_U_DX 3
+#define RESET_U_DY 4
+#define RESET_V_DX 5
+#define RESET_V_DY 6
 
 class YUVShiftEffect;
 class YUVShiftWindow;
 class YUVShiftReset;
+class YUVShiftSliderClr;
 
 
 class YUVShiftConfig
@@ -46,7 +54,7 @@ class YUVShiftConfig
 public:
 	YUVShiftConfig();
 
-	void reset();
+	void reset(int clear);
 	void copy_from(YUVShiftConfig &src);
 	int equivalent(YUVShiftConfig &src);
 	void interpolate(YUVShiftConfig &prev,
@@ -77,15 +85,29 @@ public:
 	YUVShiftWindow *window;
 };
 
+class YUVShiftSliderClr : public BC_GenericButton
+{
+public:
+	YUVShiftSliderClr(YUVShiftEffect *plugin, YUVShiftWindow *window, int x, int y, int w, int clear);
+	~YUVShiftSliderClr();
+	int handle_event();
+	YUVShiftEffect *plugin;
+	YUVShiftWindow *window;
+	int clear;
+};
+
 class YUVShiftWindow : public PluginClientWindow
 {
 public:
 	YUVShiftWindow(YUVShiftEffect *plugin);
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 	YUVShiftLevel *y_dx, *y_dy, *u_dx, *u_dy, *v_dx, *v_dy;
 	YUVShiftEffect *plugin;
 	YUVShiftReset *reset;
+	YUVShiftSliderClr *y_dxClr, *y_dyClr;
+	YUVShiftSliderClr *u_dxClr, *u_dyClr;
+	YUVShiftSliderClr *v_dxClr, *v_dyClr;
 };
 
 

@@ -33,7 +33,7 @@
 
 
 SharpenWindow::SharpenWindow(SharpenMain *client)
- : PluginClientWindow(client, 230, 195, 230, 195, 0) //195 was 150
+ : PluginClientWindow(client, 280, 190, 280, 190, 0) //195 was 150
 {
 	this->client = client;
 }
@@ -45,9 +45,15 @@ SharpenWindow::~SharpenWindow()
 void SharpenWindow::create_objects()
 {
 	int x = 10, y = 10;
+	int x1 = 0; int clrBtn_w = 50;
+	int defaultBtn_w = 100;
+
 	add_tool(new BC_Title(x, y, _("Sharpness")));
 	y += 20;
 	add_tool(sharpen_slider = new SharpenSlider(client, &(client->config.sharpness), x, y));
+	x1 = x + sharpen_slider->get_w() + 10;
+	add_subwindow(sharpen_sliderClr = new SharpenSliderClr(client, this, x1, y, clrBtn_w));
+
 	y += 30;
 	add_tool(sharpen_interlace = new SharpenInterlace(client, x, y));
 	y += 30;
@@ -56,16 +62,28 @@ void SharpenWindow::create_objects()
 	add_tool(sharpen_luminance = new SharpenLuminance(client, x, y));
 	y += 40;
 	add_tool(reset = new SharpenReset(client, this, x, y));
+	add_subwindow(default_settings = new SharpenDefaultSettings(client, this,
+		(280 - 10 - defaultBtn_w), y, defaultBtn_w));
+
 	show_window();
 	flush();
 }
 
-void SharpenWindow::update()
+void SharpenWindow::update_gui(int clear)
 {
-	sharpen_slider->update(client->config.sharpness);
-	sharpen_interlace->update(client->config.interlace);
-	sharpen_horizontal->update(client->config.horizontal);
-	sharpen_luminance->update(client->config.luminance);
+	switch(clear) {
+		case RESET_SHARPEN_SLIDER :
+			sharpen_slider->update(client->config.sharpness);
+			break;
+		case RESET_ALL :
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			sharpen_slider->update(client->config.sharpness);
+			sharpen_interlace->update(client->config.interlace);
+			sharpen_horizontal->update(client->config.horizontal);
+			sharpen_luminance->update(client->config.luminance);
+			break;
+	}
 }
 
 SharpenSlider::SharpenSlider(SharpenMain *client, float *output, int x, int y)
@@ -154,8 +172,44 @@ SharpenReset::~SharpenReset()
 }
 int SharpenReset::handle_event()
 {
-	client->config.reset();
-	gui->update();
+	client->config.reset(RESET_ALL);
+	gui->update_gui(RESET_ALL);
+	client->send_configure_change();
+	return 1;
+}
+
+
+SharpenDefaultSettings::SharpenDefaultSettings(SharpenMain *client, SharpenWindow *gui, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("Default"))
+{
+	this->client = client;
+	this->gui = gui;
+}
+SharpenDefaultSettings::~SharpenDefaultSettings()
+{
+}
+int SharpenDefaultSettings::handle_event()
+{
+	client->config.reset(RESET_DEFAULT_SETTINGS);
+	gui->update_gui(RESET_DEFAULT_SETTINGS);
+	client->send_configure_change();
+	return 1;
+}
+
+
+SharpenSliderClr::SharpenSliderClr(SharpenMain *client, SharpenWindow *gui, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->client = client;
+	this->gui = gui;
+}
+SharpenSliderClr::~SharpenSliderClr()
+{
+}
+int SharpenSliderClr::handle_event()
+{
+	client->config.reset(RESET_SHARPEN_SLIDER);
+	gui->update_gui(RESET_SHARPEN_SLIDER);
 	client->send_configure_change();
 	return 1;
 }

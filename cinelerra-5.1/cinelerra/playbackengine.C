@@ -130,7 +130,11 @@ int PlaybackEngine::create_render_engine()
 void PlaybackEngine::delete_render_engine()
 {
 	renderengine_lock->lock("PlaybackEngine::delete_render_engine");
-	delete render_engine;  render_engine = 0;
+	if( render_engine ) {
+		render_engine->interrupt_playback();
+		render_engine->wait_done();
+		delete render_engine;  render_engine = 0;
+	}
 	renderengine_lock->unlock();
 }
 

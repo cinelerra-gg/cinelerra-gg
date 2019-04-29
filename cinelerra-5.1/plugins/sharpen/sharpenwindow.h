@@ -23,23 +23,22 @@
 #define SHARPENWINDOW_H
 
 #include "guicast.h"
-
-class SharpenWindow;
-class SharpenInterlace;
-
 #include "filexml.h"
 #include "mutex.h"
 #include "sharpen.h"
 
+#define RESET_DEFAULT_SETTINGS 10
+#define RESET_ALL 0
+#define RESET_SHARPEN_SLIDER 1
 
-
-
-
-
+class SharpenWindow;
+class SharpenInterlace;
 class SharpenSlider;
 class SharpenHorizontal;
 class SharpenLuminance;
 class SharpenReset;
+class SharpenDefaultSettings;
+class SharpenSliderClr;
 
 class SharpenWindow : public PluginClientWindow
 {
@@ -48,7 +47,7 @@ public:
 	~SharpenWindow();
 
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 
 	SharpenMain *client;
 	SharpenSlider *sharpen_slider;
@@ -56,6 +55,8 @@ public:
 	SharpenHorizontal *sharpen_horizontal;
 	SharpenLuminance *sharpen_luminance;
 	SharpenReset *reset;
+	SharpenDefaultSettings *default_settings;
+	SharpenSliderClr *sharpen_sliderClr;
 };
 
 class SharpenSlider : public BC_ISlider
@@ -104,6 +105,26 @@ class SharpenReset : public BC_GenericButton
 public:
 	SharpenReset(SharpenMain *client, SharpenWindow *gui, int x, int y);
 	~SharpenReset();
+	int handle_event();
+	SharpenMain *client;
+	SharpenWindow *gui;
+};
+
+class SharpenDefaultSettings : public BC_GenericButton
+{
+public:
+	SharpenDefaultSettings(SharpenMain *client, SharpenWindow *gui, int x, int y, int w);
+	~SharpenDefaultSettings();
+	int handle_event();
+	SharpenMain *client;
+	SharpenWindow *gui;
+};
+
+class SharpenSliderClr : public BC_GenericButton
+{
+public:
+	SharpenSliderClr(SharpenMain *client, SharpenWindow *gui, int x, int y, int w);
+	~SharpenSliderClr();
 	int handle_event();
 	SharpenMain *client;
 	SharpenWindow *gui;

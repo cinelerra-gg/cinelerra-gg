@@ -42,6 +42,7 @@
 class HueEffect;
 class HueWindow;
 class HueReset;
+class HueSliderClr;
 
 #define MINHUE -180
 #define MAXHUE 180
@@ -50,9 +51,10 @@ class HueReset;
 #define MINVALUE -100
 #define MAXVALUE 100
 
-
-
-
+#define RESET_ALL 0
+#define RESET_HUV 1
+#define RESET_SAT 2
+#define RESET_VAL 3
 
 
 class HueConfig
@@ -62,7 +64,7 @@ public:
 
 	void copy_from(HueConfig &src);
 	int equivalent(HueConfig &src);
-	void reset();
+	void reset(int clear);
 	void interpolate(HueConfig &prev,
 		HueConfig &next,
 		long prev_frame,
@@ -109,17 +111,31 @@ public:
 	HueWindow *gui;
 };
 
+class HueSliderClr : public BC_GenericButton
+{
+public:
+	HueSliderClr(HueEffect *plugin, HueWindow *gui, int x, int y, int w, int clear);
+	~HueSliderClr();
+	int handle_event();
+	HueEffect *plugin;
+	HueWindow *gui;
+	int clear;
+};
+
 class HueWindow : public PluginClientWindow
 {
 public:
 	HueWindow(HueEffect *plugin);
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 	HueEffect *plugin;
 	HueSlider *hue;
 	SaturationSlider *saturation;
 	ValueSlider *value;
 	HueReset *reset;
+	HueSliderClr *hueClr;
+	HueSliderClr *satClr;
+	HueSliderClr *valClr;
 };
 
 

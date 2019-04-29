@@ -45,7 +45,7 @@ void Motion51Window::create_objects()
 {
 	int x = 10, y = 20;
 	int x0 = x, x1 = get_w()/2;
-	add_subwindow(sample_steps = new Motion51SampleSteps(plugin, x0=x, y, 72));
+	add_subwindow(sample_steps = new Motion51SampleSteps(plugin, x0=x, y, 120));
 	BC_Title *title = new BC_Title(x0+=sample_steps->get_w()+10, y, _("Samples"));
 	add_subwindow(title);
 	sample_steps->create_objects();

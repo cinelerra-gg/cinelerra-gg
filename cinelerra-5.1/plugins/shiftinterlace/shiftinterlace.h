@@ -37,9 +37,9 @@
 #include <string.h>
 
 
-
-
-
+#define RESET_ALL 0
+#define RESET_ODD_OFFSET  1
+#define RESET_EVEN_OFFSET 2
 
 
 class ShiftInterlaceWindow;
@@ -50,7 +50,7 @@ class ShiftInterlaceConfig
 public:
 	ShiftInterlaceConfig();
 
-	void reset();
+	void reset(int clear);
 	int equivalent(ShiftInterlaceConfig &that);
 	void copy_from(ShiftInterlaceConfig &that);
 	void interpolate(ShiftInterlaceConfig &prev,
@@ -91,18 +91,30 @@ public:
 	ShiftInterlaceWindow *gui;
 };
 
+class ShiftInterlaceSliderClr : public BC_GenericButton
+{
+public:
+	ShiftInterlaceSliderClr(ShiftInterlaceMain *plugin, ShiftInterlaceWindow *gui, int x, int y, int w, int clear);
+	~ShiftInterlaceSliderClr();
+	int handle_event();
+	ShiftInterlaceMain *plugin;
+	ShiftInterlaceWindow *gui;
+	int clear;
+};
+
 class ShiftInterlaceWindow : public PluginClientWindow
 {
 public:
 	ShiftInterlaceWindow(ShiftInterlaceMain *plugin);
 
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 
 	ShiftInterlaceOdd *odd_offset;
 	ShiftInterlaceEven *even_offset;
 	ShiftInterlaceMain *plugin;
 	ShiftInterlaceReset *reset;
+	ShiftInterlaceSliderClr *odd_offsetClr, *even_offsetClr;
 };
 
 

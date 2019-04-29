@@ -631,11 +631,12 @@ void BC_WindowBase::draw_triangle_down_flat(int x, int y, int w, int h)
 	int x1, y1, x2, y2, x3;
 	XPoint point[3];
 
-	x1 = x; x2 = x + w / 2; x3 = x + w - 1;
-	y1 = y; y2 = y + h - 1;
+	x1 = x+1; x2 = x + w/2; x3 = x+w-1;
+	y1 = y; y2 = y+h-1;
 
-	point[0].x = x2; point[0].y = y2; point[1].x = x3;
-	point[1].y = y1; point[2].x = x1; point[2].y = y1;
+	point[0].x = x2; point[0].y = y2;
+	point[1].x = x3; point[1].y = y1;
+	point[2].x = x1; point[2].y = y1;
 
 	XFillPolygon(top_level->display,
 		pixmap->opaque_pixmap,
@@ -644,6 +645,7 @@ void BC_WindowBase::draw_triangle_down_flat(int x, int y, int w, int h)
 		3,
 		Nonconvex,
 		CoordModeOrigin);
+	draw_line(x1,y1, x3,y1);
 }
 
 void BC_WindowBase::draw_triangle_up(int x, int y, int w, int h,

@@ -36,10 +36,18 @@
 #include <stdint.h>
 #include <string.h>
 
+#define RESET_ALL  0
+#define RESET_R_DX 1
+#define RESET_R_DY 2
+#define RESET_G_DX 3
+#define RESET_G_DY 4
+#define RESET_B_DX 5
+#define RESET_B_DY 6
 
 class RGBShiftEffect;
 class RGBShiftWindow;
 class RGBShiftReset;
+class RGBShiftSliderClr;
 
 
 class RGBShiftConfig
@@ -47,7 +55,7 @@ class RGBShiftConfig
 public:
 	RGBShiftConfig();
 
-	void reset();
+	void reset(int clear);
 	void copy_from(RGBShiftConfig &src);
 	int equivalent(RGBShiftConfig &src);
 	void interpolate(RGBShiftConfig &prev,
@@ -78,15 +86,29 @@ public:
 	RGBShiftWindow *window;
 };
 
+class RGBShiftSliderClr : public BC_GenericButton
+{
+public:
+	RGBShiftSliderClr(RGBShiftEffect *plugin, RGBShiftWindow *window, int x, int y, int w, int clear);
+	~RGBShiftSliderClr();
+	int handle_event();
+	RGBShiftEffect *plugin;
+	RGBShiftWindow *window;
+	int clear;
+};
+
 class RGBShiftWindow : public PluginClientWindow
 {
 public:
 	RGBShiftWindow(RGBShiftEffect *plugin);
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 	RGBShiftLevel *r_dx, *r_dy, *g_dx, *g_dy, *b_dx, *b_dy;
 	RGBShiftEffect *plugin;
 	RGBShiftReset *reset;
+	RGBShiftSliderClr *r_dxClr, *r_dyClr;
+	RGBShiftSliderClr *g_dxClr, *g_dyClr;
+	RGBShiftSliderClr *b_dxClr, *b_dyClr;
 };
 
 

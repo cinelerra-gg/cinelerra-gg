@@ -79,7 +79,7 @@ int SketcherCurvePenItem::handle_event()
 }
 
 SketcherCurvePen::SketcherCurvePen(SketcherWindow *gui, int x, int y, int pen)
- : BC_PopupMenu(x,y,72,_(cv_pen[pen]))
+ : BC_PopupMenu(x,y,100,_(cv_pen[pen]))
 {
 	this->gui = gui;
 	this->pen = pen;
@@ -435,7 +435,7 @@ void SketcherWindow::create_objects()
 		   "Shift=\n"
 		   "None=\n"
 		   "Ctrl=\n"
-		   "Alt=\n"
+		   "Ctrl+Alt=\n"
 		   "Ctrl+Shift=")));	dy = bmax(dy, notes0->get_h());
 	add_subwindow(notes1 = new BC_Title(x+100, y,
 		 _("     LMB\n"
@@ -611,7 +611,7 @@ int SketcherWindow::grab_button_press(XEvent *event)
 			point_list->update(pi);
 			break;
 		}
-		if( (state & AltMask) ) { // create new curve
+		if( (state & ControlMask) && (state & AltMask) ) { // create new curve
 			ci = plugin->new_curve(cv->pen, cv->width, curve_color->color);
 			curve_list->update(ci);
 			point_list->update(-1);
@@ -666,7 +666,7 @@ int SketcherWindow::grab_cursor_motion()
 		return 1;
 	}
 	if( (state & Button1Mask) ) {
-		if( (state & ControlMask) ) { // drag selected point
+		if( (state & ControlMask) && !(state & AltMask) ) { // drag selected point
 			SketcherPoint *pt = pi >= 0 && pi < points.size() ? points[pi] : 0;
 			if( pt ) {
 				point_list->set_point(pi, PT_X, pt->x = output_x);
@@ -677,7 +677,7 @@ int SketcherWindow::grab_cursor_motion()
 			}
 			return 1;
 		}
-		if( (state & AltMask) ) { // drag all curves
+		if( (state & ControlMask) && (state & AltMask) ) { // drag all curves
 			int dx = round(output_x - last_x);
 			int dy = round(output_y - last_y);
 			for( int i=0; i<curves.size(); ++i ) {
@@ -974,7 +974,7 @@ int SketcherPointTypeItem::handle_event()
 }
 
 SketcherPointType::SketcherPointType(SketcherWindow *gui, int x, int y, int arc)
- : BC_PopupMenu(x,y,64,_(pt_type[arc]))
+ : BC_PopupMenu(x,y,100,_(pt_type[arc]))
 {
 	this->gui = gui;
 	this->type = arc;

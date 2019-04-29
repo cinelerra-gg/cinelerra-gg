@@ -40,15 +40,28 @@ REGISTER_PLUGIN(SharpenMain)
 
 SharpenConfig::SharpenConfig()
 {
-	reset();
+	reset(RESET_ALL);
 }
 
-void SharpenConfig::reset()
+void SharpenConfig::reset(int clear)
 {
-	horizontal = 0;
-	interlace = 0;
-	sharpness = 50;
-	luminance = 0;
+	switch(clear) {
+		case RESET_ALL :
+			sharpness = 0;
+			interlace = 0;
+			horizontal = 0;
+			luminance = 0;
+			break;
+		case RESET_SHARPEN_SLIDER : sharpness = 0;
+			break;
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			sharpness = 50;
+			interlace = 0;
+			horizontal = 0;
+			luminance = 0;
+			break;
+	}
 }
 
 void SharpenConfig::copy_from(SharpenConfig &that)

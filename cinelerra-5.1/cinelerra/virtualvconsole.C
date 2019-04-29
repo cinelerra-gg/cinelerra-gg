@@ -48,10 +48,7 @@ VirtualVConsole::VirtualVConsole(RenderEngine *renderengine, VRender *vrender)
 
 VirtualVConsole::~VirtualVConsole()
 {
-	if(output_temp)
-	{
-		delete output_temp;
-	}
+	delete output_temp;
 }
 
 VDeviceBase* VirtualVConsole::get_vdriver()

@@ -39,12 +39,19 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
+#define RESET_DEFAULT_SETTINGS 10
+#define RESET_ALL     0
+#define RESET_XSLIDER 1
+#define RESET_YSLIDER 2
+#define RESET_ANGLE   3
+#define RESET_STEPS   4
 
 class RadialBlurMain;
 class RadialBlurWindow;
 class RadialBlurEngine;
 class RadialBlurReset;
-
+class RadialBlurDefaultSettings;
+class RadialBlurSliderClr;
 
 
 
@@ -53,7 +60,7 @@ class RadialBlurConfig
 public:
 	RadialBlurConfig();
 
-	void reset();
+	void reset(int clear);
 	int equivalent(RadialBlurConfig &that);
 	void copy_from(RadialBlurConfig &that);
 	void interpolate(RadialBlurConfig &prev,
@@ -111,6 +118,27 @@ public:
 	RadialBlurWindow *gui;
 };
 
+class RadialBlurDefaultSettings : public BC_GenericButton
+{
+public:
+	RadialBlurDefaultSettings(RadialBlurMain *plugin, RadialBlurWindow *gui, int x, int y, int w);
+	~RadialBlurDefaultSettings();
+	int handle_event();
+	RadialBlurMain *plugin;
+	RadialBlurWindow *gui;
+};
+
+class RadialBlurSliderClr : public BC_GenericButton
+{
+public:
+	RadialBlurSliderClr(RadialBlurMain *plugin, RadialBlurWindow *gui, int x, int y, int w, int clear);
+	~RadialBlurSliderClr();
+	int handle_event();
+	RadialBlurMain *plugin;
+	RadialBlurWindow *gui;
+	int clear;
+};
+
 class RadialBlurWindow : public PluginClientWindow
 {
 public:
@@ -118,12 +146,17 @@ public:
 	~RadialBlurWindow();
 
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 
 	RadialBlurSize *x, *y, *steps, *angle;
 	RadialBlurToggle *r, *g, *b, *a;
 	RadialBlurMain *plugin;
 	RadialBlurReset *reset;
+	RadialBlurDefaultSettings *default_settings;
+	RadialBlurSliderClr *xClr;
+	RadialBlurSliderClr *yClr;
+	RadialBlurSliderClr *angleClr;
+	RadialBlurSliderClr *stepsClr;
 };
 
 

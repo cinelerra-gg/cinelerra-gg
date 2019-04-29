@@ -1131,7 +1131,17 @@ void CWindowCanvas::draw_refresh(int flush)
 			get_canvas()->unlock_window();
 			get_canvas()->flush();
 			get_canvas()->sync_display();
-			mwindow->playback_3d->finish_output();
+// this code is to idle rendering before drawing overlays on refresh frame
+// if this is not done, occationally opengl finishs late, and overwrites
+// the x11 refresh frame and the overlay is not visible.  Rarely happens.
+// bug in gl libs may segv if glfinish is called, workaround is no finish
+			static int cin_finish = -1;
+			if( cin_finish < 0 ) {
+				const char *cp = getenv("CIN_FINISH");
+				cin_finish = !cp ? 1 : atoi(cp);
+			}
+			if( cin_finish )
+				mwindow->playback_3d->finish_output();
 			get_canvas()->lock_window("CWindowCanvas::draw_refresh");
 		}
 		if( refresh_frame && refresh_frame->get_w()>0 && refresh_frame->get_h()>0 ) {

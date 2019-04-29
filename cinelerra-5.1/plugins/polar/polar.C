@@ -38,11 +38,15 @@
 
 #define WITHIN(a, b, c) ((((a) <= (b)) && ((b) <= (c))) ? 1 : 0)
 
+#define RESET_ALL   0
+#define RESET_DEPTH 1
+#define RESET_ANGLE 2
 
 class PolarEffect;
 class PolarEngine;
 class PolarWindow;
 class PolarReset;
+class PolarSliderClr;
 
 
 class PolarConfig
@@ -50,7 +54,7 @@ class PolarConfig
 public:
 	PolarConfig();
 
-	void reset();
+	void reset(int clear);
 	void copy_from(PolarConfig &src);
 	int equivalent(PolarConfig &src);
 	void interpolate(PolarConfig &prev,
@@ -94,16 +98,29 @@ public:
 	PolarWindow *window;
 };
 
+class PolarSliderClr : public BC_GenericButton
+{
+public:
+	PolarSliderClr(PolarEffect *plugin, PolarWindow *window, int x, int y, int w, int clear);
+	~PolarSliderClr();
+	int handle_event();
+	PolarEffect *plugin;
+	PolarWindow *window;
+	int clear;
+};
+
 class PolarWindow : public PluginClientWindow
 {
 public:
 	PolarWindow(PolarEffect *plugin);
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 	PolarEffect *plugin;
 	PolarDepth *depth;
 	PolarAngle *angle;
 	PolarReset *reset;
+	PolarSliderClr *depthClr;
+	PolarSliderClr *angleClr;
 };
 
 
@@ -162,16 +179,25 @@ REGISTER_PLUGIN(PolarEffect)
 
 PolarConfig::PolarConfig()
 {
-	reset();
+	reset(RESET_ALL);
 }
 
-void PolarConfig::reset()
+void PolarConfig::reset(int clear)
 {
-	angle = 1.0;	// 0.0;
-	depth = 1.0;	// 0.0;
-	backwards = 0;
-	invert = 0;
-	polar_to_rectangular = 1;
+	switch(clear) {
+		case RESET_DEPTH : depth = 1.0;
+			break;
+		case RESET_ANGLE : angle = 1.0;
+			break;
+		case RESET_ALL :
+		default:
+			angle = 1.0;
+			depth = 1.0;
+			backwards = 0;
+			invert = 0;
+			polar_to_rectangular = 1;
+			break;
+	}
 }
 
 void PolarConfig::copy_from(PolarConfig &src)
@@ -208,9 +234,9 @@ void PolarConfig::interpolate(PolarConfig &prev,
 
 PolarWindow::PolarWindow(PolarEffect *plugin)
  : PluginClientWindow(plugin,
-	270,
+	330,
 	122,
-	270,
+	330,
 	122,
 	0)
 {
@@ -219,12 +245,18 @@ PolarWindow::PolarWindow(PolarEffect *plugin)
 
 void PolarWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = 10, y = 10, x1 = x + 50;
+	int x2 = 0; int clrBtn_w = 50;
+
 	add_subwindow(new BC_Title(x, y, _("Depth:")));
-	add_subwindow(depth = new PolarDepth(plugin, x + 50, y));
+	add_subwindow(depth = new PolarDepth(plugin, x1, y));
+	x2 = x1 + depth->get_w() + 10;
+	add_subwindow(depthClr = new PolarSliderClr(plugin, this, x2, y, clrBtn_w, RESET_DEPTH));
+
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Angle:")));
-	add_subwindow(angle = new PolarAngle(plugin, x + 50, y));
+	add_subwindow(angle = new PolarAngle(plugin, x1, y));
+	add_subwindow(angleClr = new PolarSliderClr(plugin, this, x2, y, clrBtn_w, RESET_ANGLE));
 	y += 40;
 	add_subwindow(reset = new PolarReset(plugin, this, x, y));
 
@@ -233,10 +265,19 @@ void PolarWindow::create_objects()
 }
 
 // for Reset button
-void PolarWindow::update()
+void PolarWindow::update_gui(int clear)
 {
-	depth->update(plugin->config.depth);
-	angle->update(plugin->config.angle);
+	switch(clear) {
+		case RESET_DEPTH : depth->update(plugin->config.depth);
+			break;
+		case RESET_ANGLE : angle->update(plugin->config.angle);
+			break;
+		case RESET_ALL :
+		default:
+			depth->update(plugin->config.depth);
+			angle->update(plugin->config.angle);
+			break;
+	}
 }
 
 
@@ -298,8 +339,29 @@ PolarReset::~PolarReset()
 }
 int PolarReset::handle_event()
 {
-	plugin->config.reset();
-	window->update();
+	plugin->config.reset(RESET_ALL);
+	window->update_gui(RESET_ALL);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+PolarSliderClr::PolarSliderClr(PolarEffect *plugin, PolarWindow *window, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->window = window;
+	this->clear = clear;
+}
+PolarSliderClr::~PolarSliderClr()
+{
+}
+int PolarSliderClr::handle_event()
+{
+	// clear==1 ==> Depth slider
+	// clear==2 ==> Angle slider
+	plugin->config.reset(clear);
+	window->update_gui(clear);
 	plugin->send_configure_change();
 	return 1;
 }

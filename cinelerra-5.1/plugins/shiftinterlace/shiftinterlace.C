@@ -35,13 +35,22 @@ PluginClient* new_plugin(PluginServer *server)
 
 ShiftInterlaceConfig::ShiftInterlaceConfig()
 {
-	reset();
+	reset(RESET_ALL);
 }
 
-void ShiftInterlaceConfig::reset()
+void ShiftInterlaceConfig::reset(int clear)
 {
-	odd_offset = 0;
-	even_offset = 0;
+	switch(clear) {
+		case RESET_ODD_OFFSET : odd_offset = 0;
+			break;
+		case RESET_EVEN_OFFSET : even_offset = 0;
+			break;
+		case RESET_ALL :
+		default:
+			odd_offset = 0;
+			even_offset = 0;
+			break;
+	}
 }
 
 
@@ -77,9 +86,9 @@ void ShiftInterlaceConfig::interpolate(ShiftInterlaceConfig &prev,
 
 ShiftInterlaceWindow::ShiftInterlaceWindow(ShiftInterlaceMain *plugin)
  : PluginClientWindow(plugin,
-	310,
+	370,
 	110,
-	310,
+	370,
 	110,
 	0)
 {
@@ -91,12 +100,18 @@ void ShiftInterlaceWindow::create_objects()
 {
 	int x = 10, y = 10;
 	int margin = 30;
+	int x1 = 0; int clrBtn_w = 50;
 
 	add_subwindow(new BC_Title(x, y, _("Odd offset:")));
 	add_subwindow(odd_offset = new ShiftInterlaceOdd(plugin, x + 90, y));
+	x1 = x + 90 + odd_offset->get_w() + 10;
+	add_subwindow(odd_offsetClr = new ShiftInterlaceSliderClr(plugin, this, x1, y, clrBtn_w, RESET_ODD_OFFSET));
+
 	y += margin;
 	add_subwindow(new BC_Title(x, y, _("Even offset:")));
 	add_subwindow(even_offset = new ShiftInterlaceEven(plugin, x + 90, y));
+	add_subwindow(even_offsetClr = new ShiftInterlaceSliderClr(plugin, this, x1, y, clrBtn_w, RESET_EVEN_OFFSET));
+
 	y += 40;
 	add_subwindow(reset = new ShiftInterlaceReset(plugin, this, x, y));
 	show_window();
@@ -104,10 +119,19 @@ void ShiftInterlaceWindow::create_objects()
 }
 
 // for Reset button
-void ShiftInterlaceWindow::update()
+void ShiftInterlaceWindow::update_gui(int clear)
 {
-	odd_offset->update(plugin->config.odd_offset);
-	even_offset->update(plugin->config.even_offset);
+	switch(clear) {
+		case RESET_ODD_OFFSET : odd_offset->update(plugin->config.odd_offset);
+			break;
+		case RESET_EVEN_OFFSET : even_offset->update(plugin->config.even_offset);
+			break;
+		case RESET_ALL :
+		default:
+			odd_offset->update(plugin->config.odd_offset);
+			even_offset->update(plugin->config.even_offset);
+			break;
+	}
 }
 
 
@@ -169,12 +193,32 @@ ShiftInterlaceReset::~ShiftInterlaceReset()
 }
 int ShiftInterlaceReset::handle_event()
 {
-	plugin->config.reset();
-	gui->update();
+	plugin->config.reset(RESET_ALL);
+	gui->update_gui(RESET_ALL);
 	plugin->send_configure_change();
 	return 1;
 }
 
+
+ShiftInterlaceSliderClr::ShiftInterlaceSliderClr(ShiftInterlaceMain *plugin, ShiftInterlaceWindow *gui, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+	this->clear = clear;
+}
+ShiftInterlaceSliderClr::~ShiftInterlaceSliderClr()
+{
+}
+int ShiftInterlaceSliderClr::handle_event()
+{
+	// clear==1 ==> Odd slider
+	// clear==2 ==> Even slider
+	plugin->config.reset(clear);
+	gui->update_gui(clear);
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 

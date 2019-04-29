@@ -47,18 +47,38 @@ REGISTER_PLUGIN(LinearBlurMain)
 
 LinearBlurConfig::LinearBlurConfig()
 {
-	reset();
+	reset(RESET_DEFAULT_SETTINGS);
 }
 
-void LinearBlurConfig::reset()
+void LinearBlurConfig::reset(int clear)
 {
-	radius = 10;
-	angle = 0;
-	steps = 10;
-	r = 1;
-	g = 1;
-	b = 1;
-	a = 1;
+	switch(clear) {
+		case RESET_ALL :
+			radius = 0;
+			angle = 0;
+			steps = 1;
+			r = 1;
+			g = 1;
+			b = 1;
+			a = 1;
+			break;
+		case RESET_RADIUS : radius = 0;
+			break;
+		case RESET_ANGLE : angle = 0;
+			break;
+		case RESET_STEPS : steps = 1;
+			break;
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			radius = 10;
+			angle = 0;
+			steps = 10;
+			r = 1;
+			g = 1;
+			b = 1;
+			a = 1;
+			break;
+	}
 }
 
 int LinearBlurConfig::equivalent(LinearBlurConfig &that)
@@ -114,9 +134,9 @@ void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
 
 LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin)
  : PluginClientWindow(plugin,
-	230,
+	280,
 	320,
-	230,
+	280,
 	320,
 	0)
 {
@@ -130,18 +150,27 @@ LinearBlurWindow::~LinearBlurWindow()
 void LinearBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
+	int x1 = 0; int clrBtn_w = 50;
+	int defaultBtn_w = 100;
 
 	add_subwindow(new BC_Title(x, y, _("Length:")));
 	y += 20;
 	add_subwindow(radius = new LinearBlurSize(plugin, x, y, &plugin->config.radius, 0, 100));
+	x1 = x + radius->get_w() + 10;
+	add_subwindow(radiusClr = new LinearBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_RADIUS));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Angle:")));
 	y += 20;
 	add_subwindow(angle = new LinearBlurSize(plugin, x, y, &plugin->config.angle, -180, 180));
+	add_subwindow(angleClr = new LinearBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_ANGLE));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Steps:")));
 	y += 20;
 	add_subwindow(steps = new LinearBlurSize(plugin, x, y, &plugin->config.steps, 1, 200));
+	add_subwindow(stepsClr = new LinearBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_STEPS));
+
 	y += 30;
 	add_subwindow(r = new LinearBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
 	y += 30;
@@ -152,6 +181,8 @@ void LinearBlurWindow::create_objects()
 	add_subwindow(a = new LinearBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
 	y += 40;
 	add_subwindow(reset = new LinearBlurReset(plugin, this, x, y));
+	add_subwindow(default_settings = new LinearBlurDefaultSettings(plugin, this,
+		(280 - 10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
@@ -159,15 +190,27 @@ void LinearBlurWindow::create_objects()
 
 
 // for Reset button
-void LinearBlurWindow::update()
+void LinearBlurWindow::update_gui(int clear)
 {
-	radius->update(plugin->config.radius);
-	angle->update(plugin->config.angle);
-	steps->update(plugin->config.steps);
-	r->update(plugin->config.r);
-	g->update(plugin->config.g);
-	b->update(plugin->config.b);
-	a->update(plugin->config.a);
+	switch(clear) {
+		case RESET_RADIUS : radius->update(plugin->config.radius);
+			break;
+		case RESET_ANGLE : angle->update(plugin->config.angle);
+			break;
+		case RESET_STEPS : steps->update(plugin->config.steps);
+			break;
+		case RESET_ALL :
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			radius->update(plugin->config.radius);
+			angle->update(plugin->config.angle);
+			steps->update(plugin->config.steps);
+			r->update(plugin->config.r);
+			g->update(plugin->config.g);
+			b->update(plugin->config.b);
+			a->update(plugin->config.a);
+			break;
+	}
 }
 
 
@@ -233,8 +276,48 @@ LinearBlurReset::~LinearBlurReset()
 }
 int LinearBlurReset::handle_event()
 {
-	plugin->config.reset();
-	gui->update();
+	plugin->config.reset(RESET_ALL);
+	gui->update_gui(RESET_ALL);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+LinearBlurDefaultSettings::LinearBlurDefaultSettings(LinearBlurMain *plugin, LinearBlurWindow *gui, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("Default"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+LinearBlurDefaultSettings::~LinearBlurDefaultSettings()
+{
+}
+int LinearBlurDefaultSettings::handle_event()
+{
+	plugin->config.reset(RESET_DEFAULT_SETTINGS);
+	gui->update_gui(RESET_DEFAULT_SETTINGS);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+LinearBlurSliderClr::LinearBlurSliderClr(LinearBlurMain *plugin, LinearBlurWindow *gui, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+	this->clear = clear;
+}
+LinearBlurSliderClr::~LinearBlurSliderClr()
+{
+}
+int LinearBlurSliderClr::handle_event()
+{
+	// clear==1 ==> Radius slider
+	// clear==2 ==> Angle slider
+	// clear==3 ==> Steps slider
+	plugin->config.reset(clear);
+	gui->update_gui(clear);
 	plugin->send_configure_change();
 	return 1;
 }

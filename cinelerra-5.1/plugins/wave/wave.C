@@ -30,17 +30,35 @@
 
 WaveConfig::WaveConfig()
 {
-	reset();
+	reset(RESET_ALL);
 }
 
 
-void WaveConfig::reset()
+void WaveConfig::reset(int clear)
 {
-	mode = SMEAR;
-	reflective = 0;
-	amplitude = 10;
-	phase = 0;
-	wavelength = 10;
+	switch(clear) {
+		case RESET_ALL :
+			mode = SMEAR;
+			reflective = 0;
+			amplitude = 0;
+			phase = 0;
+			wavelength = 0;
+			break;
+		case RESET_AMPLITUDE : amplitude = 0;
+			break;
+		case RESET_PHASE : phase = 0;
+			break;
+		case RESET_WAVELENGTH : wavelength = 0;
+			break;
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			mode = SMEAR;
+			reflective = 0;
+			amplitude = 10;
+			phase = 0;
+			wavelength = 10;
+			break;
+	}
 }
 
 void WaveConfig::copy_from(WaveConfig &src)
@@ -204,8 +222,46 @@ WaveReset::~WaveReset()
 }
 int WaveReset::handle_event()
 {
-	plugin->config.reset();
-	gui->update();
+	plugin->config.reset(RESET_ALL);
+	gui->update_gui(RESET_ALL);
+	plugin->send_configure_change();
+	return 1;
+}
+
+WaveDefaultSettings::WaveDefaultSettings(WaveEffect *plugin, WaveWindow *gui, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("Default"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+WaveDefaultSettings::~WaveDefaultSettings()
+{
+}
+int WaveDefaultSettings::handle_event()
+{
+	plugin->config.reset(RESET_DEFAULT_SETTINGS);
+	gui->update_gui(RESET_DEFAULT_SETTINGS);
+	plugin->send_configure_change();
+	return 1;
+}
+
+WaveSliderClr::WaveSliderClr(WaveEffect *plugin, WaveWindow *gui, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+	this->clear = clear;
+}
+WaveSliderClr::~WaveSliderClr()
+{
+}
+int WaveSliderClr::handle_event()
+{
+	// clear==1 ==> Amplitude slider
+	// clear==2 ==> Phase slider
+	// clear==3 ==> Steps slider
+	plugin->config.reset(clear);
+	gui->update_gui(clear);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -213,11 +269,8 @@ int WaveReset::handle_event()
 
 
 
-
-
-
 WaveWindow::WaveWindow(WaveEffect *plugin)
- : PluginClientWindow(plugin, 335, 140, 335, 140, 0)
+ : PluginClientWindow(plugin, 385, 140, 385, 140, 0)
 {
 	this->plugin = plugin;
 }
@@ -229,6 +282,8 @@ WaveWindow::~WaveWindow()
 void WaveWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 115;
+	int x2 = 0; int clrBtn_w = 50;
+	int defaultBtn_w = 100;
 
 //	add_subwindow(new BC_Title(x, y, _("Mode:")));
 //	add_subwindow(smear = new WaveSmear(plugin, this, x1, y));
@@ -239,14 +294,23 @@ void WaveWindow::create_objects()
 //	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Amplitude:")));
 	add_subwindow(amplitude = new WaveAmplitude(plugin, x1, y));
+	x2 = x1 + amplitude->get_w() + 10;
+	add_subwindow(amplitudeClr = new WaveSliderClr(plugin, this, x2, y, clrBtn_w, RESET_AMPLITUDE));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Phase:")));
 	add_subwindow(phase = new WavePhase(plugin, x1, y));
+	add_subwindow(phaseClr = new WaveSliderClr(plugin, this, x2, y, clrBtn_w, RESET_PHASE));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Wavelength:")));
 	add_subwindow(wavelength = new WaveLength(plugin, x1, y));
+	add_subwindow(wavelengthClr = new WaveSliderClr(plugin, this, x2, y, clrBtn_w, RESET_WAVELENGTH));
+
 	y += 40;
 	add_subwindow(reset = new WaveReset(plugin, this, x, y));
+	add_subwindow(default_settings = new WaveDefaultSettings(plugin, this,
+		(385 - 10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
@@ -259,11 +323,23 @@ void WaveWindow::update_mode()
 }
 
 // for Reset button
-void WaveWindow::update()
+void WaveWindow::update_gui(int clear)
 {
-	amplitude->update(plugin->config.amplitude);
-	phase->update(plugin->config.phase);
-	wavelength->update(plugin->config.wavelength);
+	switch(clear) {
+		case RESET_AMPLITUDE : amplitude->update(plugin->config.amplitude);
+			break;
+		case RESET_PHASE : phase->update(plugin->config.phase);
+			break;
+		case RESET_WAVELENGTH : wavelength->update(plugin->config.wavelength);
+			break;
+		case RESET_ALL :
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			amplitude->update(plugin->config.amplitude);
+			phase->update(plugin->config.phase);
+			wavelength->update(plugin->config.wavelength);
+			break;
+	}
 }
 
 

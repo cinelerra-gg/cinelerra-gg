@@ -95,7 +95,7 @@ private:
 		int use_opengl);
 
 	float alpha;
-	FadeEngine *fader;
+//	FadeEngine *fader;
 	MaskEngine *masker;
 };
 

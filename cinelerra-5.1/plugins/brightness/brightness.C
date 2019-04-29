@@ -37,15 +37,23 @@ REGISTER_PLUGIN(BrightnessMain)
 
 BrightnessConfig::BrightnessConfig()
 {
-	reset();
+	reset(0);
 }
 
-void BrightnessConfig::reset()
-
+void BrightnessConfig::reset(int clear)
 {
-	brightness = 0;
-	contrast = 0;
-	luma = 1;
+	switch(clear) {
+		case RESET_CONTRAST : contrast = 0;
+			break;
+		case RESET_BRIGHTNESS : brightness = 0;
+			break;
+		case RESET_ALL :
+		default:
+			brightness = 0;
+			contrast = 0;
+			luma = 1;
+			break;
+	}
 }
 
 int BrightnessConfig::equivalent(BrightnessConfig &that)

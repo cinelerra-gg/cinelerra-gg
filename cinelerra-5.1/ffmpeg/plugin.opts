@@ -158,7 +158,7 @@ hue
 idet
 il
 inflate
-interlace
+#interlace  ###Operation not permitted, use tinterlace
 #interleave ###Operation not permitted
 #join
 kerndeint

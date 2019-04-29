@@ -39,6 +39,7 @@ class ColorBalanceConfig
 {
 public:
 	ColorBalanceConfig();
+	void reset(int clear);
 
 	int equivalent(ColorBalanceConfig &that);
 	void copy_from(ColorBalanceConfig &that);

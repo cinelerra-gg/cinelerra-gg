@@ -2839,7 +2839,8 @@ int AWindowAssets::selection_changed()
 			case AW_CLIP_FOLDER:
 				if( get_buttonpress() == LEFT_BUTTON ) {
 					AssetVIcon *vicon = 0;
-					if( !gui->vicon_thread->vicon )
+					AssetVIconThread *avt = gui->vicon_thread;
+					if( !avt->vicon && gui->vicon_drawing != AVICON_NO_PLAY )
 						vicon = item->vicon;
 					gui->vicon_thread->set_view_popup(vicon, ASSET_VIEW_ICON);
 				}

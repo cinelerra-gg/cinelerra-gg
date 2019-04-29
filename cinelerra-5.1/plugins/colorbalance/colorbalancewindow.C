@@ -34,12 +34,7 @@
 
 
 ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *client)
- : PluginClientWindow(client,
-	330,
-	250,
-	330,
-	250,
-	0)
+ : PluginClientWindow(client, 400, 210, 400, 210, 0)
 {
 	this->client = client;
 }
@@ -51,37 +46,60 @@ ColorBalanceWindow::~ColorBalanceWindow()
 void ColorBalanceWindow::create_objects()
 {
 	int x = 10, y = 10;
+	int clrBtn_w = 50;
+	int x1 = 400 - clrBtn_w - 10; // (window_width - clrBtn_width - margin_rx)
+
 	add_tool(new BC_Title(x, y, _("Color Balance")));
 	y += 25;
 	add_tool(new BC_Title(x, y, _("Cyan")));
 	add_tool(cyan = new ColorBalanceSlider(client, &(client->config.cyan), x + 70, y));
-	add_tool(new BC_Title(x + 270, y, _("Red")));
+	add_tool(new BC_Title(x + 280, y, _("Red")));
+	add_subwindow(cyanClr = new ColorBalanceSliderClr(client, this, x1, y, clrBtn_w, 1));
+
 	y += 25;
 	add_tool(new BC_Title(x, y, _("Magenta")));
 	add_tool(magenta = new ColorBalanceSlider(client, &(client->config.magenta), x + 70, y));
-	add_tool(new BC_Title(x + 270, y, _("Green")));
+	add_tool(new BC_Title(x + 280, y, _("Green")));
+	add_subwindow(magentaClr = new ColorBalanceSliderClr(client, this, x1, y, clrBtn_w, 2));
+
 	y += 25;
 	add_tool(new BC_Title(x, y, _("Yellow")));
 	add_tool(yellow = new ColorBalanceSlider(client, &(client->config.yellow), x + 70, y));
-	add_tool(new BC_Title(x + 270, y, _("Blue")));
+	add_tool(new BC_Title(x + 280, y, _("Blue")));
+	add_subwindow(yellowClr = new ColorBalanceSliderClr(client, this, x1, y, clrBtn_w, 3));
+
 	y += 25;
-	add_tool(preserve = new ColorBalancePreserve(client, x + 70, y));
+	add_tool(preserve = new ColorBalancePreserve(client, x, y));
 	y += preserve->get_h() + 10;
-	add_tool(lock_params = new ColorBalanceLock(client, x + 70, y));
-	y += lock_params->get_h() + 10;
-	add_tool(new ColorBalanceWhite(client, this, x, y));
-	y += lock_params->get_h() + 10;
+	add_tool(lock_params = new ColorBalanceLock(client, x, y));
+
+	y += lock_params->get_h() + 15;
 	add_tool(new ColorBalanceReset(client, this, x, y));
+	add_tool(new ColorBalanceWhite(client, this, int(400 / 2), y));
 
 	show_window();
 	flush();
 }
 
-void ColorBalanceWindow::update()
+void ColorBalanceWindow::update_gui(int clear)
 {
-	cyan->update((int64_t)client->config.cyan);
-	magenta->update((int64_t)client->config.magenta);
-	yellow->update((int64_t)client->config.yellow);
+	switch(clear) {
+		case RESET_CYAN : cyan->update((int64_t)client->config.cyan);
+			break;
+		case RESET_MAGENTA : magenta->update((int64_t)client->config.magenta);
+			break;
+		case RESET_YELLOW : yellow->update((int64_t)client->config.yellow);
+			break;
+		case RESET_ALL :
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			cyan->update((int64_t)client->config.cyan);
+			magenta->update((int64_t)client->config.magenta);
+			yellow->update((int64_t)client->config.yellow);
+			preserve->update(client->config.preserve);
+			lock_params->update(client->config.lock_params);
+			break;
+	}
 }
 
 
@@ -195,7 +213,7 @@ int ColorBalanceWhite::handle_event()
 	plugin->config.cyan = plugin->calculate_slider(r_factor);
 	plugin->config.magenta = plugin->calculate_slider(g_factor);
 	plugin->config.yellow = plugin->calculate_slider(b_factor);
-	gui->update();
+	gui->update_gui(RESET_DEFAULT_SETTINGS);
 
 	plugin->send_configure_change();
 	return 1;
@@ -214,12 +232,29 @@ ColorBalanceReset::ColorBalanceReset(ColorBalanceMain *plugin,
 
 int ColorBalanceReset::handle_event()
 {
-	plugin->config.cyan = 0;
-	plugin->config.magenta = 0;
-	plugin->config.yellow = 0;
-	gui->update();
+	plugin->config.reset(RESET_ALL);
+	gui->update_gui(RESET_ALL);
 	plugin->send_configure_change();
 	return 1;
 }
 
+
+ColorBalanceSliderClr::ColorBalanceSliderClr(ColorBalanceMain *plugin,
+	ColorBalanceWindow *gui, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+	this->clear = clear;
+}
+ColorBalanceSliderClr::~ColorBalanceSliderClr()
+{
+}
+int ColorBalanceSliderClr::handle_event()
+{
+	plugin->config.reset(clear);
+	gui->update_gui(clear);
+	plugin->send_configure_change();
+	return 1;
+}
 

@@ -74,9 +74,10 @@ VRender::VRender(RenderEngine *renderengine)
 
 VRender::~VRender()
 {
-	if(input_temp) delete input_temp;
-	if(transition_temp) delete transition_temp;
-	if(overlayer) delete overlayer;
+	renderengine->wait_done();
+	delete overlayer;
+	delete input_temp;
+	delete transition_temp;
 }
 
 

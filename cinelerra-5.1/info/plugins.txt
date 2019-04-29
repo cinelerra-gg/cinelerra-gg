@@ -200,6 +200,7 @@ Title:		Add text/timestamp/background pngs to video along with
 		. color, font, alpha, size, png, bold, italic, blink,
 		. ul, caps, sup(super/sub script), fixed, nudge.
 		Special characters are  <, >, \, /, # (see manual).
+Tracer:		Trace an outline of an object for a mask like operation.
 Translate:	Allows displacing, cropping and/or scaling video
 		horizontally/vertically.
 Unsharp:	Applies a traditional darkroom technique, unsharp

@@ -37,13 +37,18 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
-
+#define RESET_DEFAULT_SETTINGS 10
+#define RESET_ALL    0
+#define RESET_RADIUS 1
+#define RESET_ANGLE  2
+#define RESET_STEPS  3
 
 class LinearBlurMain;
 class LinearBlurWindow;
 class LinearBlurEngine;
 class LinearBlurReset;
-
+class LinearBlurDefaultSettings;
+class LinearBlurSliderClr;
 
 
 
@@ -52,7 +57,7 @@ class LinearBlurConfig
 public:
 	LinearBlurConfig();
 
-	void reset();
+	void reset(int clear);
 	int equivalent(LinearBlurConfig &that);
 	void copy_from(LinearBlurConfig &that);
 	void interpolate(LinearBlurConfig &prev,
@@ -109,6 +114,27 @@ public:
 	LinearBlurWindow *gui;
 };
 
+class LinearBlurDefaultSettings : public BC_GenericButton
+{
+public:
+	LinearBlurDefaultSettings(LinearBlurMain *plugin, LinearBlurWindow *gui, int x, int y, int w);
+	~LinearBlurDefaultSettings();
+	int handle_event();
+	LinearBlurMain *plugin;
+	LinearBlurWindow *gui;
+};
+
+class LinearBlurSliderClr : public BC_GenericButton
+{
+public:
+	LinearBlurSliderClr(LinearBlurMain *plugin, LinearBlurWindow *gui, int x, int y, int w, int clear);
+	~LinearBlurSliderClr();
+	int handle_event();
+	LinearBlurMain *plugin;
+	LinearBlurWindow *gui;
+	int clear;
+};
+
 class LinearBlurWindow : public PluginClientWindow
 {
 public:
@@ -116,12 +142,16 @@ public:
 	~LinearBlurWindow();
 
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 
 	LinearBlurSize *angle, *steps, *radius;
 	LinearBlurToggle *r, *g, *b, *a;
 	LinearBlurMain *plugin;
 	LinearBlurReset *reset;
+	LinearBlurDefaultSettings *default_settings;
+	LinearBlurSliderClr *radiusClr;
+	LinearBlurSliderClr *angleClr;
+	LinearBlurSliderClr *stepsClr;
 };
 
 

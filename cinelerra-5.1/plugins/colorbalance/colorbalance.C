@@ -43,11 +43,28 @@ REGISTER_PLUGIN(ColorBalanceMain)
 
 ColorBalanceConfig::ColorBalanceConfig()
 {
-	cyan = 0;
-	magenta = 0;
-	yellow = 0;
-	lock_params = 0;
-    preserve = 0;
+	reset(RESET_ALL);
+}
+
+void ColorBalanceConfig::reset(int clear)
+{
+	switch(clear) {
+		case RESET_CYAN : cyan = 0;
+			break;
+		case RESET_MAGENTA : magenta = 0;
+			break;
+		case RESET_YELLOW : yellow = 0;
+			break;
+		case RESET_ALL :
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			cyan = 0;
+			magenta = 0;
+			yellow = 0;
+			lock_params = 0;
+			preserve = 0;
+			break;
+	}
 }
 
 int ColorBalanceConfig::equivalent(ColorBalanceConfig &that)

@@ -46,32 +46,52 @@ UnsharpWindow::~UnsharpWindow()
 void UnsharpWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 90;
+	int x2 = 0; int clrBtn_w = 50;
+	int defaultBtn_w = 100;
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x, y + 10, _("Radius:")));
 	add_subwindow(radius = new UnsharpRadius(plugin, x + x1, y));
+	x2 = 285 - 10 - clrBtn_w;
+	add_subwindow(radiusClr = new UnsharpSliderClr(plugin, this, x2, y + 10, clrBtn_w, RESET_RADIUS));
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Amount:")));
 	add_subwindow(amount = new UnsharpAmount(plugin, x + x1, y));
+	add_subwindow(amountClr = new UnsharpSliderClr(plugin, this, x2, y + 10, clrBtn_w, RESET_AMOUNT));
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Threshold:")));
 	add_subwindow(threshold = new UnsharpThreshold(plugin, x + x1, y));
+	add_subwindow(thresholdClr = new UnsharpSliderClr(plugin, this, x2, y + 10, clrBtn_w, RESET_THRESHOLD));
 
 	y += 50;
 	add_subwindow(reset = new UnsharpReset(plugin, this, x, y));
+	add_subwindow(default_settings = new UnsharpDefaultSettings(plugin, this,
+		(285 - 10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
 }
 
 
-void UnsharpWindow::update()
+void UnsharpWindow::update_gui(int clear)
 {
-	radius->update(plugin->config.radius);
-	amount->update(plugin->config.amount);
-	threshold->update(plugin->config.threshold);
+	switch(clear) {
+		case RESET_RADIUS : radius->update(plugin->config.radius);
+			break;
+		case RESET_AMOUNT : amount->update(plugin->config.amount);
+			break;
+		case RESET_THRESHOLD : threshold->update(plugin->config.threshold);
+			break;
+		case RESET_ALL :
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			radius->update(plugin->config.radius);
+			amount->update(plugin->config.amount);
+			threshold->update(plugin->config.threshold);
+			break;
+	}
 }
 
 
@@ -130,10 +150,46 @@ UnsharpReset::~UnsharpReset()
 }
 int UnsharpReset::handle_event()
 {
-	plugin->config.reset();
-	window->update();
+	plugin->config.reset(RESET_ALL);
+	window->update_gui(RESET_ALL);
 	plugin->send_configure_change();
 	return 1;
 }
 
+UnsharpDefaultSettings::UnsharpDefaultSettings(UnsharpMain *plugin, UnsharpWindow *window, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("Default"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+UnsharpDefaultSettings::~UnsharpDefaultSettings()
+{
+}
+int UnsharpDefaultSettings::handle_event()
+{
+	plugin->config.reset(RESET_DEFAULT_SETTINGS);
+	window->update_gui(RESET_DEFAULT_SETTINGS);
+	plugin->send_configure_change();
+	return 1;
+}
 
+UnsharpSliderClr::UnsharpSliderClr(UnsharpMain *plugin, UnsharpWindow *window, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->window = window;
+	this->clear = clear;
+}
+UnsharpSliderClr::~UnsharpSliderClr()
+{
+}
+int UnsharpSliderClr::handle_event()
+{
+	// clear==1 ==> Radius slider
+	// clear==2 ==> Amount slider
+	// clear==3 ==> Threshold slider
+	plugin->config.reset(clear);
+	window->update_gui(clear);
+	plugin->send_configure_change();
+	return 1;
+}

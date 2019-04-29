@@ -1182,8 +1182,12 @@ ZWindow *MWindow::get_mixer(Mixer *&mixer)
 	zwindows_lock->lock("MWindow::get_mixer");
 	if( !mixer ) mixer = edl->mixers.new_mixer();
 	ZWindow *zwindow = 0;
-	for( int i=0; !zwindow && i<zwindows.size(); ++i )
-		if( zwindows[i]->idx < 0 ) zwindow = zwindows[i];
+	for( int i=0; !zwindow && i<zwindows.size(); ++i ) {
+		ZWindow *zwdw = zwindows[i];
+		if( zwdw->running() ) continue;
+		if( zwdw->idx >= 0 ) continue;
+		zwindow = zwindows[i];
+	}
 	if( !zwindow )
 		zwindows.append(zwindow = new ZWindow(this));
 	zwindow->idx = mixer->idx;
@@ -1313,6 +1317,7 @@ void MWindow::close_mixers(int destroy)
 	for( int i=zwindows.size(); --i>=0; ) {
 		ZWindow *zwindow = zwindows[i];
 		if( zwindow->idx < 0 ) continue;
+		zwindow->idx = -1;
 		zwindow->destroy = destroy;
 		ZWindowGUI *zgui = zwindow->zgui;
 		zgui->lock_window("MWindow::select_zwindow 0");
@@ -2194,6 +2199,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 		edl->local_session->loop_playback = 0;
 		edl->local_session->set_selectionstart(0);
 		edl->local_session->set_selectionend(0);
+		edl->local_session->unset_inpoint();
+		edl->local_session-> unset_outpoint();
 		set_brender_active(0, 0);
 		fit_selection();
 		goto_start();

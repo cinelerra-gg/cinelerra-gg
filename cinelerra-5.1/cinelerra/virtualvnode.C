@@ -64,14 +64,14 @@ VirtualVNode::VirtualVNode(RenderEngine *renderengine,
 		track, parent_node)
 {
 	//VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
-	fader = new FadeEngine(renderengine->preferences->processors);
+	//fader = new FadeEngine(renderengine->preferences->processors);
 	masker = new MaskEngine(renderengine->preferences->processors);
 	alpha = 1;
 }
 
 VirtualVNode::~VirtualVNode()
 {
-	delete fader;
+	//delete fader;
 	delete masker;
 }
 

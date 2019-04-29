@@ -207,9 +207,10 @@ BC_Window* ZWindow::new_gui()
 
 void ZWindow::handle_done_event(int result)
 {
+	idx = -1;
+	stop_playback(1);
 	if( destroy )
 		mwindow->del_mixer(this);
-	idx = -1;
 }
 void ZWindow::handle_close_event(int result)
 {

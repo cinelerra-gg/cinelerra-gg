@@ -34,13 +34,19 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
-
+#define RESET_DEFAULT_SETTINGS 10
+#define RESET_ALL     0
+#define RESET_XSLIDER 1
+#define RESET_YSLIDER 2
+#define RESET_RADIUS  3
+#define RESET_STEPS   4
 
 class ZoomBlurMain;
 class ZoomBlurWindow;
 class ZoomBlurEngine;
 class ZoomBlurReset;
-
+class ZoomBlurDefaultSettings;
+class ZoomBlurSliderClr;
 
 
 
@@ -49,7 +55,7 @@ class ZoomBlurConfig
 public:
 	ZoomBlurConfig();
 
-	void reset();
+	void reset(int clear);
 	int equivalent(ZoomBlurConfig &that);
 	void copy_from(ZoomBlurConfig &that);
 	void interpolate(ZoomBlurConfig &prev,
@@ -104,12 +110,14 @@ public:
 	~ZoomBlurWindow();
 
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 
 	ZoomBlurSize *x, *y, *radius, *steps;
 	ZoomBlurToggle *r, *g, *b, *a;
 	ZoomBlurMain *plugin;
 	ZoomBlurReset *reset;
+	ZoomBlurDefaultSettings *default_settings;
+	ZoomBlurSliderClr *xClr, *yClr, *radiusClr, *stepsClr;
 };
 
 class ZoomBlurReset : public BC_GenericButton
@@ -122,6 +130,27 @@ public:
 	ZoomBlurWindow *window;
 };
 
+class ZoomBlurDefaultSettings : public BC_GenericButton
+{
+public:
+	ZoomBlurDefaultSettings(ZoomBlurMain *plugin, ZoomBlurWindow *window, int x, int y, int w);
+	~ZoomBlurDefaultSettings();
+	int handle_event();
+	ZoomBlurMain *plugin;
+	ZoomBlurWindow *window;
+};
+
+
+class ZoomBlurSliderClr : public BC_GenericButton
+{
+public:
+	ZoomBlurSliderClr(ZoomBlurMain *plugin, ZoomBlurWindow *window, int x, int y, int w, int clear);
+	~ZoomBlurSliderClr();
+	int handle_event();
+	ZoomBlurMain *plugin;
+	ZoomBlurWindow *window;
+	int clear;
+};
 
 
 

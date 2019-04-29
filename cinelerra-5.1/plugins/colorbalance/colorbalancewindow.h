@@ -22,6 +22,11 @@
 #ifndef COLORBALANCEWINDOW_H
 #define COLORBALANCEWINDOW_H
 
+#define RESET_DEFAULT_SETTINGS 10
+#define RESET_ALL     0
+#define RESET_CYAN    1
+#define RESET_MAGENTA 2
+#define RESET_YELLOW  3
 
 class ColorBalanceThread;
 class ColorBalanceWindow;
@@ -30,6 +35,7 @@ class ColorBalancePreserve;
 class ColorBalanceLock;
 class ColorBalanceWhite;
 class ColorBalanceReset;
+class ColorBalanceSliderClr;
 
 #include "filexml.h"
 #include "guicast.h"
@@ -46,16 +52,19 @@ public:
 	~ColorBalanceWindow();
 
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 
 	ColorBalanceMain *client;
 	ColorBalanceSlider *cyan;
 	ColorBalanceSlider *magenta;
 	ColorBalanceSlider *yellow;
-    ColorBalanceLock *lock_params;
-    ColorBalancePreserve *preserve;
+	ColorBalanceLock *lock_params;
+	ColorBalancePreserve *preserve;
 	ColorBalanceWhite *use_eyedrop;
 	ColorBalanceReset *reset;
+	ColorBalanceSliderClr *cyanClr;
+	ColorBalanceSliderClr *magentaClr;
+	ColorBalanceSliderClr *yellowClr;
 };
 
 class ColorBalanceSlider : public BC_ISlider
@@ -68,7 +77,7 @@ public:
 
 	ColorBalanceMain *client;
 	float *output;
-    float old_value;
+	float old_value;
 	char string[BCTEXTLEN];
 };
 
@@ -108,6 +117,17 @@ public:
 	int handle_event();
 	ColorBalanceMain *plugin;
 	ColorBalanceWindow *gui;
+};
+
+class ColorBalanceSliderClr : public BC_GenericButton
+{
+public:
+	ColorBalanceSliderClr(ColorBalanceMain *plugin, ColorBalanceWindow *gui, int x, int y, int w, int clear);
+	~ColorBalanceSliderClr();
+	int handle_event();
+	ColorBalanceMain *plugin;
+	ColorBalanceWindow *gui;
+	int clear;
 };
 
 #endif

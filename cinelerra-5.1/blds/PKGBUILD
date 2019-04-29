@@ -15,7 +15,7 @@ DEPENDS=( 'alsa-lib' 'atk' 'bzip2' 'cairo' 'expat' 'fftw' 'flac'
  'libvpx' 'libx11' 'libxau' 'libxcb' 'libxcomposite' 'libxcursor'
  'libxdamage' 'libxdmcp' 'libxext' 'libxfixes' 'libxft' 'libxi'
  'libxinerama' 'libxrandr' 'libxrender' 'libxv' 'numactl' 'opus'
- 'pango' 'pcre' 'pixman' 'xz' 'zlib' 'xorg-server' 'libva'
+ 'pango' 'pcre' 'pixman' 'xz' 'zlib' 'xorg-server'
  'xorg-fonts-misc' 'ttf-dejavu' 'inkscape' 'dvdauthor' 'udftools' )
 
 makedepends=( 'autoconf' 'automake' 'yasm' 'nasm' 'cmake' 'libtool'

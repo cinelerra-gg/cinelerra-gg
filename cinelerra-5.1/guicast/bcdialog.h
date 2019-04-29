@@ -68,18 +68,12 @@ public:
 
 // Called by user to close the GUI from outside the thread
 	void close_window();
-
+	void join();
 private:
 	BC_Window *gui;
 	Condition *startup_lock;
 	Mutex *window_lock;
+	Mutex *active_lock;
 };
-
-
-
-
-
-
-
 
 #endif

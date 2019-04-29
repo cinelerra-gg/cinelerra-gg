@@ -39,14 +39,30 @@ REGISTER_PLUGIN(UnsharpMain)
 
 UnsharpConfig::UnsharpConfig()
 {
-	reset();
+	reset(RESET_DEFAULT_SETTINGS);
 }
 
-void UnsharpConfig::reset()
+void UnsharpConfig::reset(int clear)
 {
-	radius = 5;
-	amount = 0.5;
-	threshold = 0;
+	switch(clear) {
+		case RESET_ALL :
+			radius = 0.1;
+			amount = 0.0;
+			threshold = 0;
+			break;
+		case RESET_RADIUS : radius = 0.1;
+			break;
+		case RESET_AMOUNT : amount = 0.0;
+			break;
+		case RESET_THRESHOLD : threshold = 0;
+			break;
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			radius = 5;
+			amount = 0.5;
+			threshold = 0;
+			break;
+	}
 }
 
 int UnsharpConfig::equivalent(UnsharpConfig &that)
@@ -124,7 +140,7 @@ void UnsharpMain::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("UnsharpMain::update_gui");
-			((UnsharpWindow*)thread->window)->update();
+			((UnsharpWindow*)thread->window)->update_gui(RESET_DEFAULT_SETTINGS);
 			thread->window->unlock_window();
 		}
 	}

@@ -653,6 +653,11 @@ CHECK_WANT([ESOUND], [no], [use esd], [
  CHECK_LIB([audiofile], [audiofile], [afOpenFile])
  CHECK_HEADERS([audiofile], [audiofile headers], [audiofile.h])])
 
+CHECK_WANT([SHUTTLE], [yes], [shuttle dev support], [
+ CHECK_HEADERS([keysyms], [x11 keysym defs], [X11/keysymdef.h])])
+if test "x$WANT_SHUTTLE" = "xno"; then
+ WANT_SHUTTLE_USB="no"
+fi
 CHECK_WANT([SHUTTLE_USB], [yes], [use libusb-1.0], [
  CHECK_LIB([libusbx], [usb-1.0], [libusb_init])
  CHECK_HEADERS([libusbx], [libusb headers], [libusb-1.0/libusb.h])])

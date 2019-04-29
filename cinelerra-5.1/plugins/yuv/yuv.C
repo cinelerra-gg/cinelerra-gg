@@ -32,17 +32,22 @@
 #include <stdint.h>
 #include <string.h>
 
+#define RESET_ALL 0
+#define RESET_Y_SLIDER 1
+#define RESET_U_SLIDER 2
+#define RESET_V_SLIDER 3
 
 class YUVEffect;
 class YUVWindow;
 class YUVReset;
+class YUVSliderClr;
 
 
 class YUVConfig
 {
 public:
 	YUVConfig();
-	void reset();
+	void reset(int clear);
 
 	void copy_from(YUVConfig &src);
 	int equivalent(YUVConfig &src);
@@ -74,15 +79,27 @@ public:
 	YUVWindow *window;
 };
 
+class YUVSliderClr : public BC_GenericButton
+{
+public:
+	YUVSliderClr(YUVEffect *plugin, YUVWindow *window, int x, int y, int w, int clear);
+	~YUVSliderClr();
+	int handle_event();
+	YUVEffect *plugin;
+	YUVWindow *window;
+	int clear;
+};
+
 class YUVWindow : public PluginClientWindow
 {
 public:
 	YUVWindow(YUVEffect *plugin);
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 	YUVLevel *y, *u, *v;
 	YUVEffect *plugin;
 	YUVReset *reset;
+	YUVSliderClr *yClr, *uClr, *vClr;
 };
 
 
@@ -116,14 +133,23 @@ REGISTER_PLUGIN(YUVEffect)
 
 YUVConfig::YUVConfig()
 {
-	reset();
+	reset(RESET_ALL);
 }
 
-void YUVConfig::reset()
+void YUVConfig::reset(int clear)
 {
-	y = 0;
-	u = 0;
-	v = 0;
+	switch(clear) {
+		case RESET_Y_SLIDER : y = 0;
+			break;
+		case RESET_U_SLIDER : u = 0;
+			break;
+		case RESET_V_SLIDER : v = 0;
+			break;
+		case RESET_ALL :
+		default:
+			y = u = v = 0;
+			break;
+	}
 }
 
 void YUVConfig::copy_from(YUVConfig &src)
@@ -192,20 +218,37 @@ YUVReset::~YUVReset()
 }
 int YUVReset::handle_event()
 {
-	plugin->config.reset();
-	window->update();
+	plugin->config.reset(RESET_ALL);
+	window->update_gui(RESET_ALL);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+YUVSliderClr::YUVSliderClr(YUVEffect *plugin, YUVWindow *window, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->window = window;
+	this->clear = clear;
+}
+YUVSliderClr::~YUVSliderClr()
+{
+}
+int YUVSliderClr::handle_event()
+{
+	// clear==1 ==> Y slider
+	// clear==2 ==> U slider
+	// clear==3 ==> V slider
+	plugin->config.reset(clear);
+	window->update_gui(clear);
 	plugin->send_configure_change();
 	return 1;
 }
 
 
 YUVWindow::YUVWindow(YUVEffect *plugin)
- : PluginClientWindow(plugin,
-	260,
-	135,
-	260,
-	135,
-	0)
+ : PluginClientWindow(plugin, 310, 135, 310, 135, 0)
 {
 	this->plugin = plugin;
 }
@@ -213,14 +256,23 @@ YUVWindow::YUVWindow(YUVEffect *plugin)
 void YUVWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 40;
+	int x2 = 0; int clrBtn_w = 50;
+
 	add_subwindow(new BC_Title(x, y, _("Y:")));
 	add_subwindow(this->y = new YUVLevel(plugin, &plugin->config.y, x1, y));
+	x2 = x1 + this->y->get_w() + 10;
+	add_subwindow(yClr = new YUVSliderClr(plugin, this, x2, y, clrBtn_w, RESET_Y_SLIDER));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("U:")));
 	add_subwindow(u = new YUVLevel(plugin, &plugin->config.u, x1, y));
+	add_subwindow(uClr = new YUVSliderClr(plugin, this, x2, y, clrBtn_w, RESET_U_SLIDER));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("V:")));
 	add_subwindow(v = new YUVLevel(plugin, &plugin->config.v, x1, y));
+	add_subwindow(vClr = new YUVSliderClr(plugin, this, x2, y, clrBtn_w, RESET_V_SLIDER));
+
 	y += 35;
 	add_subwindow(reset = new YUVReset(plugin, this, x, y));
 
@@ -230,11 +282,22 @@ void YUVWindow::create_objects()
 
 
 // for Reset button
-void YUVWindow::update()
+void YUVWindow::update_gui(int clear)
 {
-	this->y->update(plugin->config.y);
-	u->update(plugin->config.u);
-	v->update(plugin->config.v);
+	switch(clear) {
+		case RESET_Y_SLIDER : this->y->update(plugin->config.y);
+			break;
+		case RESET_U_SLIDER : u->update(plugin->config.u);
+			break;
+		case RESET_V_SLIDER : v->update(plugin->config.v);
+			break;
+		case RESET_ALL :
+		default:
+			this->y->update(plugin->config.y);
+			u->update(plugin->config.u);
+			v->update(plugin->config.v);
+			break;
+	}
 }
 
 

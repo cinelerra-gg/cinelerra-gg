@@ -122,7 +122,7 @@ OverlayKernel::OverlayKernel(int interpolation_type)
 
 OverlayKernel::~OverlayKernel()
 {
-	if(lookup) delete [] lookup;
+	delete [] lookup;
 }
 
 OverlayFrame::OverlayFrame(int cpus)
@@ -137,16 +137,14 @@ OverlayFrame::OverlayFrame(int cpus)
 
 OverlayFrame::~OverlayFrame()
 {
-	if(temp_frame) delete temp_frame;
-
-	if(direct_engine) delete direct_engine;
-	if(nn_engine) delete nn_engine;
-	if(sample_engine) delete sample_engine;
-
-	if(kernel[NEAREST_NEIGHBOR]) delete kernel[NEAREST_NEIGHBOR];
-	if(kernel[BILINEAR]) delete kernel[BILINEAR];
-	if(kernel[BICUBIC]) delete kernel[BICUBIC];
-	if(kernel[LANCZOS]) delete kernel[LANCZOS];
+	delete direct_engine;
+	delete nn_engine;
+	delete sample_engine;
+	delete temp_frame;
+	delete kernel[NEAREST_NEIGHBOR];
+	delete kernel[BILINEAR];
+	delete kernel[BICUBIC];
+	delete kernel[LANCZOS];
 }
 
 static float epsilon_snap(float f)

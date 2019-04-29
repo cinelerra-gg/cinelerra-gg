@@ -22,18 +22,22 @@
 #ifndef BRIGHTNESSWINDOW_H
 #define BRIGHTNESSWINDOW_H
 
+#include "brightness.h"
+#include "guicast.h"
+#include "mutex.h"
+#include "pluginvclient.h"
+#include "thread.h"
+
+#define RESET_ALL 0
+#define RESET_CONTRAST   1
+#define RESET_BRIGHTNESS 2
 
 class BrightnessThread;
 class BrightnessWindow;
 class BrightnessSlider;
 class BrightnessLuma;
 class BrightnessReset;
-
-#include "brightness.h"
-#include "guicast.h"
-#include "mutex.h"
-#include "pluginvclient.h"
-#include "thread.h"
+class BrightnessSliderClr;
 
 
 class BrightnessWindow : public PluginClientWindow
@@ -41,7 +45,7 @@ class BrightnessWindow : public PluginClientWindow
 public:
 	BrightnessWindow(BrightnessMain *client);
 	~BrightnessWindow();
-	void update();
+	void update_gui(int clear);
 	void create_objects();
 
 	BrightnessMain *client;
@@ -49,6 +53,8 @@ public:
 	BrightnessSlider *contrast;
 	BrightnessLuma *luma;
 	BrightnessReset *reset;
+	BrightnessSliderClr *brightnessClr;
+	BrightnessSliderClr *contrastClr;
 };
 
 class BrightnessSlider : public BC_FSlider
@@ -83,6 +89,17 @@ public:
 	int handle_event();
 	BrightnessMain *client;
 	BrightnessWindow *window;
+};
+
+class BrightnessSliderClr : public BC_GenericButton
+{
+public:
+	BrightnessSliderClr(BrightnessMain *client, BrightnessWindow *window, int x, int y, int w, int is_brightness);
+	~BrightnessSliderClr();
+	int handle_event();
+	BrightnessMain *client;
+	BrightnessWindow *window;
+	int is_brightness;
 };
 
 #endif

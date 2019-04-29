@@ -32,14 +32,31 @@ REGISTER_PLUGIN(YUVShiftEffect)
 
 YUVShiftConfig::YUVShiftConfig()
 {
-	reset();
+	reset(RESET_ALL);
 }
 
-void YUVShiftConfig::reset()
+void YUVShiftConfig::reset(int clear)
 {
-	y_dx = y_dy = 0;
-	u_dx = u_dy = 0;
-	v_dx = v_dy = 0;
+	switch(clear) {
+		case RESET_Y_DX : y_dx = 0;
+			break;
+		case RESET_Y_DY : y_dy = 0;
+			break;
+		case RESET_U_DX : u_dx = 0;
+			break;
+		case RESET_U_DY : u_dy = 0;
+			break;
+		case RESET_V_DX : v_dx = 0;
+			break;
+		case RESET_V_DY : v_dy = 0;
+			break;
+		case RESET_ALL :
+		default:
+			y_dx = y_dy = 0;
+			u_dx = u_dy = 0;
+			v_dx = v_dy = 0;
+			break;
+	}
 }
 
 void YUVShiftConfig::copy_from(YUVShiftConfig &src)
@@ -105,15 +122,37 @@ YUVShiftReset::~YUVShiftReset()
 }
 int YUVShiftReset::handle_event()
 {
-	plugin->config.reset();
-	window->update();
+	plugin->config.reset(RESET_ALL);
+	window->update_gui(RESET_ALL);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+YUVShiftSliderClr::YUVShiftSliderClr(YUVShiftEffect *plugin, YUVShiftWindow *window, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->window = window;
+	this->clear = clear;
+}
+YUVShiftSliderClr::~YUVShiftSliderClr()
+{
+}
+int YUVShiftSliderClr::handle_event()
+{
+	// clear==1 ==> y_dx slider --- clear==2 ==> y_dy slider
+	// clear==3 ==> u_dx slider --- clear==4 ==> u_dy slider
+	// clear==5 ==> v_dx slider --- clear==6 ==> v_dy slider
+	plugin->config.reset(clear);
+	window->update_gui(clear);
 	plugin->send_configure_change();
 	return 1;
 }
 
 
 YUVShiftWindow::YUVShiftWindow(YUVShiftEffect *plugin)
- : PluginClientWindow(plugin, 300, 230, 300, 230, 0)
+ : PluginClientWindow(plugin, 320, 230, 320, 230, 0)
 {
 	this->plugin = plugin;
 }
@@ -121,23 +160,37 @@ YUVShiftWindow::YUVShiftWindow(YUVShiftEffect *plugin)
 void YUVShiftWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 50;
+	int x2 = 0; int clrBtn_w = 50;
+
 	add_subwindow(new BC_Title(x, y, _("Y_dx:")));
 	add_subwindow(y_dx = new YUVShiftLevel(plugin, &plugin->config.y_dx, x1, y));
+	x2 = x1 + y_dx->get_w() + 10;
+	add_subwindow(y_dxClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_Y_DX));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Y_dy:")));
 	add_subwindow(y_dy = new YUVShiftLevel(plugin, &plugin->config.y_dy, x1, y));
+	add_subwindow(y_dyClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_Y_DY));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("U_dx:")));
 	add_subwindow(u_dx = new YUVShiftLevel(plugin, &plugin->config.u_dx, x1, y));
+	add_subwindow(u_dxClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_U_DX));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("U_dy:")));
 	add_subwindow(u_dy = new YUVShiftLevel(plugin, &plugin->config.u_dy, x1, y));
+	add_subwindow(u_dyClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_U_DY));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("V_dx:")));
 	add_subwindow(v_dx = new YUVShiftLevel(plugin, &plugin->config.v_dx, x1, y));
+	add_subwindow(v_dxClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_V_DX));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("V_dy:")));
 	add_subwindow(v_dy = new YUVShiftLevel(plugin, &plugin->config.v_dy, x1, y));
+	add_subwindow(v_dyClr = new YUVShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_V_DY));
 
 	y += 40;
 	add_subwindow(reset = new YUVShiftReset(plugin, this, x, y));
@@ -148,14 +201,31 @@ void YUVShiftWindow::create_objects()
 
 
 // for Reset button
-void YUVShiftWindow::update()
+void YUVShiftWindow::update_gui(int clear)
 {
-	y_dx->update(plugin->config.y_dx);
-	y_dy->update(plugin->config.y_dy);
-	u_dx->update(plugin->config.u_dx);
-	u_dy->update(plugin->config.u_dy);
-	v_dx->update(plugin->config.v_dx);
-	v_dy->update(plugin->config.v_dy);
+	switch(clear) {
+		case RESET_Y_DX : y_dx->update(plugin->config.y_dx);
+			break;
+		case RESET_Y_DY : y_dy->update(plugin->config.y_dy);
+			break;
+		case RESET_U_DX : u_dx->update(plugin->config.u_dx);
+			break;
+		case RESET_U_DY : u_dy->update(plugin->config.u_dy);
+			break;
+		case RESET_V_DX : v_dx->update(plugin->config.v_dx);
+			break;
+		case RESET_V_DY : v_dy->update(plugin->config.v_dy);
+			break;
+		case RESET_ALL :
+		default:
+			y_dx->update(plugin->config.y_dx);
+			y_dy->update(plugin->config.y_dy);
+			u_dx->update(plugin->config.u_dx);
+			u_dy->update(plugin->config.u_dy);
+			v_dx->update(plugin->config.v_dx);
+			v_dy->update(plugin->config.v_dy);
+			break;
+	}
 }
 
 

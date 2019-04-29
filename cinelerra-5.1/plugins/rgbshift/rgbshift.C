@@ -32,14 +32,31 @@ REGISTER_PLUGIN(RGBShiftEffect)
 
 RGBShiftConfig::RGBShiftConfig()
 {
-	reset();
+	reset(RESET_ALL);
 }
 
-void RGBShiftConfig::reset()
+void RGBShiftConfig::reset(int clear)
 {
-	r_dx = r_dy = 0;
-	g_dx = g_dy = 0;
-	b_dx = b_dy = 0;
+	switch(clear) {
+		case RESET_R_DX : r_dx = 0;
+			break;
+		case RESET_R_DY : r_dy = 0;
+			break;
+		case RESET_G_DX : g_dx = 0;
+			break;
+		case RESET_G_DY : g_dy = 0;
+			break;
+		case RESET_B_DX : b_dx = 0;
+			break;
+		case RESET_B_DY : b_dy = 0;
+			break;
+		case RESET_ALL :
+		default:
+			r_dx = r_dy = 0;
+			g_dx = g_dy = 0;
+			b_dx = b_dy = 0;
+			break;
+	}
 }
 
 void RGBShiftConfig::copy_from(RGBShiftConfig &src)
@@ -105,15 +122,37 @@ RGBShiftReset::~RGBShiftReset()
 }
 int RGBShiftReset::handle_event()
 {
-	plugin->config.reset();
-	window->update();
+	plugin->config.reset(RESET_ALL);
+	window->update_gui(RESET_ALL);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+RGBShiftSliderClr::RGBShiftSliderClr(RGBShiftEffect *plugin, RGBShiftWindow *window, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->window = window;
+	this->clear = clear;
+}
+RGBShiftSliderClr::~RGBShiftSliderClr()
+{
+}
+int RGBShiftSliderClr::handle_event()
+{
+	// clear==1 ==> r_dx slider --- clear==2 ==> r_dy slider
+	// clear==3 ==> g_dx slider --- clear==4 ==> g_dy slider
+	// clear==5 ==> b_dx slider --- clear==6 ==> b_dy slider
+	plugin->config.reset(clear);
+	window->update_gui(clear);
 	plugin->send_configure_change();
 	return 1;
 }
 
 
 RGBShiftWindow::RGBShiftWindow(RGBShiftEffect *plugin)
- : PluginClientWindow(plugin, 300, 230, 300, 230, 0)
+ : PluginClientWindow(plugin, 320, 230, 320, 230, 0)
 {
 	this->plugin = plugin;
 }
@@ -121,23 +160,37 @@ RGBShiftWindow::RGBShiftWindow(RGBShiftEffect *plugin)
 void RGBShiftWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 50;
+	int x2 = 0; int clrBtn_w = 50;
+
 	add_subwindow(new BC_Title(x, y, _("R_dx:")));
 	add_subwindow(r_dx = new RGBShiftLevel(plugin, &plugin->config.r_dx, x1, y));
+	x2 = x1 + r_dx->get_w() + 10;
+	add_subwindow(r_dxClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_R_DX));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("R_dy:")));
 	add_subwindow(r_dy = new RGBShiftLevel(plugin, &plugin->config.r_dy, x1, y));
+	add_subwindow(r_dyClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_R_DY));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("G_dx:")));
 	add_subwindow(g_dx = new RGBShiftLevel(plugin, &plugin->config.g_dx, x1, y));
+	add_subwindow(g_dxClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_G_DX));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("G_dy:")));
 	add_subwindow(g_dy = new RGBShiftLevel(plugin, &plugin->config.g_dy, x1, y));
+	add_subwindow(g_dyClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_G_DY));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("B_dx:")));
 	add_subwindow(b_dx = new RGBShiftLevel(plugin, &plugin->config.b_dx, x1, y));
+	add_subwindow(b_dxClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_B_DX));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("B_dy:")));
 	add_subwindow(b_dy = new RGBShiftLevel(plugin, &plugin->config.b_dy, x1, y));
+	add_subwindow(b_dyClr = new RGBShiftSliderClr(plugin, this, x2, y, clrBtn_w, RESET_B_DY));
 
 	y += 40;
 	add_subwindow(reset = new RGBShiftReset(plugin, this, x, y));
@@ -148,14 +201,31 @@ void RGBShiftWindow::create_objects()
 
 
 // for Reset button
-void RGBShiftWindow::update()
+void RGBShiftWindow::update_gui(int clear)
 {
-	r_dx->update(plugin->config.r_dx);
-	r_dy->update(plugin->config.r_dy);
-	g_dx->update(plugin->config.g_dx);
-	g_dy->update(plugin->config.g_dy);
-	b_dx->update(plugin->config.b_dx);
-	b_dy->update(plugin->config.b_dy);
+	switch(clear) {
+		case RESET_R_DX : r_dx->update(plugin->config.r_dx);
+			break;
+		case RESET_R_DY : r_dy->update(plugin->config.r_dy);
+			break;
+		case RESET_G_DX : g_dx->update(plugin->config.g_dx);
+			break;
+		case RESET_G_DY : g_dy->update(plugin->config.g_dy);
+			break;
+		case RESET_B_DX : b_dx->update(plugin->config.b_dx);
+			break;
+		case RESET_B_DY : b_dy->update(plugin->config.b_dy);
+			break;
+		case RESET_ALL :
+		default:
+			r_dx->update(plugin->config.r_dx);
+			r_dy->update(plugin->config.r_dy);
+			g_dx->update(plugin->config.g_dx);
+			g_dy->update(plugin->config.g_dy);
+			b_dx->update(plugin->config.b_dx);
+			b_dy->update(plugin->config.b_dy);
+			break;
+	}
 }
 
 

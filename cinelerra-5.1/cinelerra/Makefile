@@ -592,9 +592,8 @@ shudmp:	shudmp.C
 	@g++ $(CFLAGS) shudmp.C -o $@ -lusb-1.0
 
 clean:
-	rm -rf $(OBJDIR)
+	rm -rf $(OBJDIR) tags
 	rm -f shuttle_keys.h
-
 
 tags:
 	ctags -R -h default --langmap=c:+.inc . ../guicast/ ../libzmpeg3 ../plugins ../thirdparty/ffmpeg-*
@@ -616,10 +615,6 @@ $(OBJDIR)/lv2ui.o:	lv2ui.C
 $(OBJDIR)/pluginlv2ui.o $(OBJDIR)/lv2ui.o:
 	$(CXX) `cat $(OBJDIR)/c_flags` $(GTK2_INCS) -DMSGQUAL=$* -c $< -o $@
 
-$(OBJDIR)/shuttle.o:	shuttle.C shuttle_keys.h
-shuttle_keys.h: /usr/include/X11/keysymdef.h
-	sed -n < /usr/include/X11/keysymdef.h > shuttle_keys.h -f shuttle.sed
-
 $(OBJDIR)/lv2ui: $(LV2OBJS)
 	@echo $(CXX) \`cat $(OBJDIR)/c_flags\` $^ -o $@
 	@$(CXX) `cat $(OBJDIR)/c_flags` $^ -o $@ $(LIBS) $(GTK2_LIBS)
@@ -633,6 +628,12 @@ install-lv2ui:
 	cp -av $(LV2UI) $(BINDIR)/.
 
 install:	install-lv2ui
+endif
+
+ifneq ($(WANT_SHUTTLE),no)
+$(OBJDIR)/shuttle.o:	shuttle.C shuttle_keys.h
+shuttle_keys.h: /usr/include/X11/keysymdef.h
+	sed -n < /usr/include/X11/keysymdef.h > shuttle_keys.h -f shuttle.sed
 endif
 
 $(OBJDIR)/pluginlv2gui.o:	pluginlv2gui.C

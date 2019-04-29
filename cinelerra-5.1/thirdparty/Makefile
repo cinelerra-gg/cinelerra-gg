@@ -231,7 +231,7 @@ $(1).cfg_vars+=./waf --version; find .waf* -type f -name "*.py" | \
  echo 'exec ./waf configure "$(DS)@"' > ./configure; chmod +x \
  ./configure;  PKG_CONFIG_PATH=$(LV2_PKGCFG) LD_LIBRARY_PATH=$(LV2_LIBPATH) 
 $(1).cfg_params+=\
- CFLAGS="-I$(call bld_path,lv2) $(foreach f,$(2), $(call inc_path,$(f))) -fPIC "\
+ CFLAGS="-I$(call bld_path,lv2) $(foreach f,$(2), $(call inc_path,$(f))) -fPIC -std=c99"\
  LDFLAGS="-lm $(foreach f,$(2), $(call ld_path,$(f),usr/local/lib)) "
 $(1).mak_vars=(echo "all:"; echo "	./waf -v build") > $(call bld_path,$(1),Makefile); 
 $(1).mak_params+=; ( cd $(1)*; ./waf install --destdir=$(call bld_path,$(1)) )

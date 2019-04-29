@@ -46,12 +46,23 @@ REGISTER_PLUGIN(HueEffect)
 
 HueConfig::HueConfig()
 {
-	reset();
+	reset(RESET_ALL);
 }
 
-void HueConfig::reset()
+void HueConfig::reset(int clear)
 {
-	hue = saturation = value = 0;
+	switch(clear) {
+		case RESET_HUV : hue = 0;
+			break;
+		case RESET_SAT : saturation = 0;
+			break;
+		case RESET_VAL : value = 0;
+			break;
+		case RESET_ALL :
+		default:
+			hue = saturation = value = 0;
+			break;
+	}
 }
 
 void HueConfig::copy_from(HueConfig &src)
@@ -183,8 +194,30 @@ HueReset::~HueReset()
 }
 int HueReset::handle_event()
 {
-	plugin->config.reset();
-	gui->update();
+	plugin->config.reset(RESET_ALL); // clear=0 ==> reset all
+	gui->update_gui(RESET_ALL);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+HueSliderClr::HueSliderClr(HueEffect *plugin, HueWindow *gui, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+	this->clear = clear;
+}
+HueSliderClr::~HueSliderClr()
+{
+}
+int HueSliderClr::handle_event()
+{
+	// clear==1 ==> Hue slider
+	// clear==2 ==> Saturation slider
+	// clear==3 ==> Value slider
+	plugin->config.reset(clear);
+	gui->update_gui(clear);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -193,21 +226,30 @@ int HueReset::handle_event()
 
 
 HueWindow::HueWindow(HueEffect *plugin)
- : PluginClientWindow(plugin, 345, 145, 345, 145, 0)
+ : PluginClientWindow(plugin, 370, 140, 370, 140, 0)
 {
 	this->plugin = plugin;
 }
 void HueWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 100;
+	int x2 = 0; int clrBtn_w = 50;
+
 	add_subwindow(new BC_Title(x, y, _("Hue:")));
 	add_subwindow(hue = new HueSlider(plugin, x1, y, 200));
+	x2 = x1 + hue->get_w() + 10;
+	add_subwindow(hueClr = new HueSliderClr(plugin, this, x2, y, clrBtn_w, RESET_HUV));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Saturation:")));
 	add_subwindow(saturation = new SaturationSlider(plugin, x1, y, 200));
+	add_subwindow(satClr = new HueSliderClr(plugin, this, x2, y, clrBtn_w, RESET_SAT));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Value:")));
 	add_subwindow(value = new ValueSlider(plugin, x1, y, 200));
+	add_subwindow(valClr = new HueSliderClr(plugin, this, x2, y, clrBtn_w, RESET_VAL));
+
 	y += 40;
 	add_subwindow(reset = new HueReset(plugin, this, x, y));
 	show_window();
@@ -216,11 +258,22 @@ void HueWindow::create_objects()
 
 
 // for Reset button
-void HueWindow::update()
+void HueWindow::update_gui(int clear)
 {
-	hue->update(plugin->config.hue);
-	saturation->update(plugin->config.saturation);
-	value->update(plugin->config.value);
+	switch(clear) {
+		case RESET_HUV : hue->update(plugin->config.hue);
+			break;
+		case RESET_SAT : saturation->update(plugin->config.saturation);
+			break;
+		case RESET_VAL : value->update(plugin->config.value);
+			break;
+		case RESET_ALL :
+		default:
+			hue->update(plugin->config.hue);
+			saturation->update(plugin->config.saturation);
+			value->update(plugin->config.value);
+			break;
+	}
 }
 
 

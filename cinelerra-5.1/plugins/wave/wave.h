@@ -44,18 +44,24 @@
 #define SMEAR 0
 #define BLACKEN 1
 
-
+#define RESET_DEFAULT_SETTINGS 10
+#define RESET_ALL        0
+#define RESET_AMPLITUDE	 1
+#define RESET_PHASE      2
+#define RESET_WAVELENGTH 3
 
 class WaveEffect;
 class WaveWindow;
 class WaveReset;
+class WaveDefaultSettings;
+class WaveSliderClr;
 
 class WaveConfig
 {
 public:
 	WaveConfig();
 
-	void reset();
+	void reset(int clear);
 	void copy_from(WaveConfig &src);
 	int equivalent(WaveConfig &src);
 	void interpolate(WaveConfig &prev,
@@ -131,7 +137,26 @@ public:
 	WaveWindow *gui;
 };
 
+class WaveDefaultSettings : public BC_GenericButton
+{
+public:
+	WaveDefaultSettings(WaveEffect *plugin, WaveWindow *gui, int x, int y, int w);
+	~WaveDefaultSettings();
+	int handle_event();
+	WaveEffect *plugin;
+	WaveWindow *gui;
+};
 
+class WaveSliderClr : public BC_GenericButton
+{
+public:
+	WaveSliderClr(WaveEffect *plugin, WaveWindow *gui, int x, int y, int w, int clear);
+	~WaveSliderClr();
+	int handle_event();
+	WaveEffect *plugin;
+	WaveWindow *gui;
+	int clear;
+};
 
 
 
@@ -144,7 +169,7 @@ public:
 	~WaveWindow();
 	void create_objects();
 	void update_mode();
-	void update();
+	void update_gui(int clear);
 
 	WaveEffect *plugin;
 //	WaveSmear *smear;
@@ -154,6 +179,10 @@ public:
 	WavePhase *phase;
 	WaveLength *wavelength;
 	WaveReset *reset;
+	WaveDefaultSettings *default_settings;
+	WaveSliderClr *amplitudeClr;
+	WaveSliderClr *phaseClr;
+	WaveSliderClr *wavelengthClr;
 };
 
 

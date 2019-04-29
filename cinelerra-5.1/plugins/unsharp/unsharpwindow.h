@@ -26,6 +26,13 @@
 #include "unsharp.inc"
 #include "unsharpwindow.inc"
 
+#define RESET_DEFAULT_SETTINGS 10
+#define RESET_ALL       0
+#define RESET_RADIUS	1
+#define RESET_AMOUNT    2
+#define RESET_THRESHOLD 3
+
+
 class UnsharpRadius : public BC_FPot
 {
 public:
@@ -60,6 +67,27 @@ public:
 	UnsharpWindow *window;
 };
 
+class UnsharpDefaultSettings : public BC_GenericButton
+{
+public:
+	UnsharpDefaultSettings(UnsharpMain *plugin, UnsharpWindow *window, int x, int y, int w);
+	~UnsharpDefaultSettings();
+	int handle_event();
+	UnsharpMain *plugin;
+	UnsharpWindow *window;
+};
+
+class UnsharpSliderClr : public BC_GenericButton
+{
+public:
+	UnsharpSliderClr(UnsharpMain *plugin, UnsharpWindow *window, int x, int y, int w, int clear);
+	~UnsharpSliderClr();
+	int handle_event();
+	UnsharpMain *plugin;
+	UnsharpWindow *window;
+	int clear;
+};
+
 class UnsharpWindow : public PluginClientWindow
 {
 public:
@@ -67,13 +95,17 @@ public:
 	~UnsharpWindow();
 
 	void create_objects();
-	void update();
+	void update_gui(int clear);
 
 	UnsharpRadius *radius;
 	UnsharpAmount *amount;
 	UnsharpThreshold *threshold;
 	UnsharpMain *plugin;
 	UnsharpReset *reset;
+	UnsharpDefaultSettings *default_settings;
+	UnsharpSliderClr *radiusClr;
+	UnsharpSliderClr *amountClr;
+	UnsharpSliderClr *thresholdClr;
 };
 
 

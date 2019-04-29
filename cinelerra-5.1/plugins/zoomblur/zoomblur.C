@@ -30,19 +30,42 @@ REGISTER_PLUGIN(ZoomBlurMain)
 
 ZoomBlurConfig::ZoomBlurConfig()
 {
-	reset();
+	reset(RESET_DEFAULT_SETTINGS);
 }
 
-void ZoomBlurConfig::reset()
+void ZoomBlurConfig::reset(int clear)
 {
-	x = 50;
-	y = 50;
-	radius = 10;
-	steps = 10;
-	r = 1;
-	g = 1;
-	b = 1;
-	a = 1;
+	switch(clear) {
+		case RESET_ALL :
+			x = 50;
+			y = 50;
+			radius = 0;
+			steps = 1;
+			r = 1;
+			g = 1;
+			b = 1;
+			a = 1;
+			break;
+		case RESET_XSLIDER : x = 50;
+			break;
+		case RESET_YSLIDER : y = 50;
+			break;
+		case RESET_RADIUS : radius = 0;
+			break;
+		case RESET_STEPS : steps = 1;
+			break;
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			x = 50;
+			y = 50;
+			radius = 10;
+			steps = 10;
+			r = 1;
+			g = 1;
+			b = 1;
+			a = 1;
+			break;
+	}
 }
 
 int ZoomBlurConfig::equivalent(ZoomBlurConfig &that)
@@ -101,9 +124,9 @@ void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
 
 ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin)
  : PluginClientWindow(plugin,
-	230,
+	280,
 	370,
-	230,
+	280,
 	370,
 	0)
 {
@@ -117,22 +140,33 @@ ZoomBlurWindow::~ZoomBlurWindow()
 void ZoomBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
+	int x1 = 0; int clrBtn_w = 50;
+	int defaultBtn_w = 100;
 
 	add_subwindow(new BC_Title(x, y, _("X:")));
 	y += 20;
 	add_subwindow(this->x = new ZoomBlurSize(plugin, x, y, &plugin->config.x, 0, 100));
+	x1 = x + this->x->get_w() + 10;
+	add_subwindow(xClr = new ZoomBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_XSLIDER));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Y:")));
 	y += 20;
 	add_subwindow(this->y = new ZoomBlurSize(plugin, x, y, &plugin->config.y, 0, 100));
+	add_subwindow(yClr = new ZoomBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_YSLIDER));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Radius:")));
 	y += 20;
 	add_subwindow(radius = new ZoomBlurSize(plugin, x, y, &plugin->config.radius, -100, 100));
+	add_subwindow(radiusClr = new ZoomBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_RADIUS));
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Steps:")));
 	y += 20;
 	add_subwindow(steps = new ZoomBlurSize(plugin, x, y, &plugin->config.steps, 1, 100));
+	add_subwindow(stepsClr = new ZoomBlurSliderClr(plugin, this, x1, y, clrBtn_w, RESET_STEPS));
+
 	y += 30;
 	add_subwindow(r = new ZoomBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
 	y += 30;
@@ -143,22 +177,38 @@ void ZoomBlurWindow::create_objects()
 	add_subwindow(a = new ZoomBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
 	y += 40;
 	add_subwindow(reset = new ZoomBlurReset(plugin, this, x, y));
+	add_subwindow(default_settings = new ZoomBlurDefaultSettings(plugin, this,
+		(280 - 10 - defaultBtn_w), y, defaultBtn_w));
 
 	show_window();
 	flush();
 }
 
 // for Reset button
-void ZoomBlurWindow::update()
+void ZoomBlurWindow::update_gui(int clear)
 {
-	this->x->update(plugin->config.x);
-	this->y->update(plugin->config.x);
-	radius->update(plugin->config.radius);
-	steps->update(plugin->config.steps);
-	r->update(plugin->config.r);
-	g->update(plugin->config.g);
-	b->update(plugin->config.b);
-	a->update(plugin->config.a);
+	switch(clear) {
+		case RESET_XSLIDER : this->x->update(plugin->config.x);
+			break;
+		case RESET_YSLIDER : this->y->update(plugin->config.y);
+			break;
+		case RESET_RADIUS : radius->update(plugin->config.radius);
+			break;
+		case RESET_STEPS : steps->update(plugin->config.steps);
+			break;
+		case RESET_ALL :
+		case RESET_DEFAULT_SETTINGS :
+		default:
+			this->x->update(plugin->config.x);
+			this->y->update(plugin->config.x);
+			radius->update(plugin->config.radius);
+			steps->update(plugin->config.steps);
+			r->update(plugin->config.r);
+			g->update(plugin->config.g);
+			b->update(plugin->config.b);
+			a->update(plugin->config.a);
+			break;
+	}
 }
 
 
@@ -224,13 +274,52 @@ ZoomBlurReset::~ZoomBlurReset()
 }
 int ZoomBlurReset::handle_event()
 {
-	plugin->config.reset();
-	window->update();
+	plugin->config.reset(RESET_ALL);
+	window->update_gui(RESET_ALL);
 	plugin->send_configure_change();
 	return 1;
 }
 
 
+ZoomBlurDefaultSettings::ZoomBlurDefaultSettings(ZoomBlurMain *plugin, ZoomBlurWindow *window, int x, int y, int w)
+ : BC_GenericButton(x, y, w, _("Default"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+ZoomBlurDefaultSettings::~ZoomBlurDefaultSettings()
+{
+}
+int ZoomBlurDefaultSettings::handle_event()
+{
+	plugin->config.reset(RESET_DEFAULT_SETTINGS);
+	window->update_gui(RESET_DEFAULT_SETTINGS);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+ZoomBlurSliderClr::ZoomBlurSliderClr(ZoomBlurMain *plugin, ZoomBlurWindow *window, int x, int y, int w, int clear)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->window = window;
+	this->clear = clear;
+}
+ZoomBlurSliderClr::~ZoomBlurSliderClr()
+{
+}
+int ZoomBlurSliderClr::handle_event()
+{
+	// clear==1 ==> X slider
+	// clear==2 ==> Y slider
+	// clear==3 ==> Radius slider
+	// clear==4 ==> Steps slider
+	plugin->config.reset(clear);
+	window->update_gui(clear);
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 
