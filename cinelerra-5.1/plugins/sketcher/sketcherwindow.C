@@ -460,6 +460,7 @@ void SketcherWindow::create_objects()
 
 void SketcherWindow::done_event(int result)
 {
+	curve_color->close_picker();
 	ungrab(plugin->server->mwindow->cwindow->gui);
 }
 
@@ -778,6 +779,7 @@ int SketcherCurveList::handle_event()
 
 int SketcherCurveList::selection_changed()
 {
+	gui->curve_color->close_picker();
 	handle_event();
 	return 1;
 }

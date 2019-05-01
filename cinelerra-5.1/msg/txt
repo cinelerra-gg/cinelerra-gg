@@ -8,6 +8,12 @@ Cinfinity icons selected in Preferences Sam (CC BY 3.0,
 Neophyte theme selected in Preferences by Olaf Wolff (CC BY 4.0,
   https://creativecommons.org/licenses/by/4.0/)
 .
+April 2019 New Features of note:
+  GPU usage for MPEG/H.264 formats with vdpau/vaapi for decode.
+  New Tracer plugin to outline objects available.
+  A Clear button for 15 plugins sliders eases usage.
+  Camera and Projector slight improvements with yellow line.
+  Enhanced ffmpeg error reporting.
 March 2019 New Features of note:
   Mixers, multiple cameras, now has Audio Alignment.
   Additional options for Preview mode in Resources window.

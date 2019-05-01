@@ -1,4 +1,4 @@
-%define ver 20190331
+%define ver 20190430
 %define cin cinelerra
 Summary: Multimedia Editing and construction
 
@@ -50,8 +50,8 @@ BuildRequires: ncurses-devel
 BuildRequires: texinfo
 BuildRequires: udftools
 BuildRequires: gtk2-devel
-BuildRequires: va-devel
-BuildRequires: vdpau-devel
+BuildRequires: libva-devel
+BuildRequires: libvdpau-devel
 %{?rhat:BuildRequires: alsa-lib-devel}
 %{?rhat:BuildRequires: bzip2-devel}
 %{?rhat:BuildRequires: xorg-x11-fonts-cyrillic}

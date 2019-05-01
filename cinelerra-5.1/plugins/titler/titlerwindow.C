@@ -118,6 +118,8 @@ TitleWindow::TitleWindow(TitleMain *client)
 
 void TitleWindow::done_event(int result)
 {
+	color_button->close_picker();
+	outline_button->close_picker();
 	drag->drag_deactivate();
 	delete color_popup;	color_popup = 0;
 	delete png_popup;	png_popup = 0;
