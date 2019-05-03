@@ -144,8 +144,11 @@ int VDeviceX11::close_all()
 		if( output_frame ) {
 			output->update_refresh(device, output_frame);
 // if the last frame is good, don't draw over it
-			if( !video_on || output->need_overlays() )
+			if( !video_on || output->need_overlays() ) {
+				output->unlock_canvas();
 				output->draw_refresh(1);
+				output->lock_canvas("VDeviceX11::close_all 2");
+			}
 		}
 	}
 

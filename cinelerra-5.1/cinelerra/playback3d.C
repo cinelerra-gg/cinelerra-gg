@@ -769,16 +769,24 @@ void Playback3D::init_frame(Playback3DCommand *command, int is_yuv)
 }
 
 
-void Playback3D::finish_output()
+void Playback3D::finish_output(Canvas *canvas)
 {
 	Playback3DCommand command;
+	command.canvas = canvas;
 	command.command = Playback3DCommand::FINISH_OUTPUT;
 	send_command(&command);
 }
 
 void Playback3D::finish_output_sync(Playback3DCommand *command)
 {
-	glFinish();
+#ifdef HAVE_GL
+	command->canvas->lock_canvas("Playback3D::clear_output_sync");
+	if( command->canvas->get_canvas() ) {
+		command->canvas->get_canvas()->enable_opengl();
+		glFinish();
+	}
+	command->canvas->unlock_canvas();
+#endif
 }
 
 

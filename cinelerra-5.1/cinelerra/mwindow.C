@@ -3629,9 +3629,7 @@ void MWindow::update_project(int load_mode)
 	gui->unlock_window();
 	init_brender();
 
-	cwindow->gui->lock_window("MWindow::update_project 1");
 	cwindow->update(0, 0, 1, 1, 1);
-	cwindow->gui->unlock_window();
 
 	if(debug) PRINT_TRACE
 

@@ -1982,8 +1982,8 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 1);
 	gui->update_proxy_toggle();
 	gui->unlock_window();
-	cwindow->update(1, 1, 1, 1, 1);
 	cwindow->gui->unlock_window();
+	cwindow->update(1, 1, 1, 1, 1);
 
 	for( int i=0; i < vwindows.size(); ++i ) {
 		if( vwindows.get(i)->is_running() ) {
@@ -2257,8 +2257,8 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 	gui->update(1, FORCE_REDRAW, 1, 1, 1, 1, 1);
 	gui->update_proxy_toggle();
 	gui->unlock_window();
-	cwindow->update(1, 1, 1, 1, 1);
 	cwindow->gui->unlock_window();
+	cwindow->update(1, 1, 1, 1, 1);
 
 	for( int i=0; i<vwindows.size(); ++i ) {
 		if( vwindows.get(i)->is_running() ) {

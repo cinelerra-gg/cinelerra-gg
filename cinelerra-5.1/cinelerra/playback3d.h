@@ -280,7 +280,7 @@ public:
 	void clear_output(Canvas *canvas, VFrame *output);
 
 // Finish all active opengl requests
-	void finish_output();
+	void finish_output(Canvas *canvas);
 
 	void do_fade(Canvas *canvas, VFrame *frame, float fade);
 	void convert_cmodel(Canvas *canvas, VFrame *output, int dst_cmodel);

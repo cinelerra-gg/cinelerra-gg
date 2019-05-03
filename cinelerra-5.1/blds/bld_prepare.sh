@@ -35,6 +35,9 @@ case "$dir" in
     yum -y install /tmp/$yasm
     rm -f /tmp/$yasm
   ;;
+#"fedora30")
+#  dnf group install "Development Tools"
+#  ... lzma-sdk-devel ...
 "fedora")
   dnf install groups "Development Tools"
   dnf -y --best --allowerasing \
@@ -51,7 +54,7 @@ case "$dir" in
     ivtv-firmware libvorbis-devel texinfo xz-devel lzma-devel cmake git \
     ctags patch gcc-c++ perl-XML-XPath libtiff-devel python dvdauthor \
     gettext-devel inkscape udftools autoconf automake numactl-devel \
-    jbigkit-devel libvdpau-devel libva-devel gtk2-devel
+    jbigkit-devel libvdpau-devel libva-devel gtk2-devel mesa-vdpau-drivers
   ;;
 "suse" | "leap")
   zypper -n install nasm gcc gcc-c++ zlib-devel texinfo libpng16-devel \

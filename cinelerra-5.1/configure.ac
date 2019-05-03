@@ -11,7 +11,9 @@ AC_PROG_CXX
 CFG_CFLAGS+=" -fno-omit-frame-pointer -fno-math-errno -fno-signed-zeros"
 CFG_CFLAGS+=" -pthread -Wall"
 # misguided pedantic warnings
+#  this is extra work, not a gain...
 CFG_CFLAGS+=" -Wno-unknown-warning"
+CFG_CFLAGS+=" -Wno-attributes"
 CFG_CFLAGS+=" -Wno-unused-result"
 CFG_CFLAGS+=" -Wno-stringop-overflow"
 CFG_CFLAGS+=" -Wno-format-truncation"

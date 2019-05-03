@@ -3880,7 +3880,6 @@ int TrackCanvas::render_handle_frame(EDL *edl, int64_t pos, int mode)
 		delete video_cache;
 		mwindow->cwindow->gui->lock_window("TrackCanvas::render_handle_frame 0");
 		Canvas *canvas = mwindow->cwindow->gui->canvas;
-		canvas->lock_canvas("TrackCanvas::render_handle_frame 1");
 		int w = canvas->w, h = canvas->h, w2 = w/2, h2 = h/2;
 		int lx = 0, ly = h2/2, rx = w2, ry = h2/2;
 		BC_WindowBase *window = canvas->get_canvas();
@@ -3889,7 +3888,6 @@ int TrackCanvas::render_handle_frame(EDL *edl, int64_t pos, int mode)
 		window->draw_vframe(&vlt, lx,ly, w2,h2, 0,0,vlt.get_w(),vlt.get_h());
 		window->draw_vframe(&vrt, rx,ry, w2,h2, 0,0,vrt.get_w(),vrt.get_h());
 		window->flash(1);
-		canvas->unlock_canvas();
 		mwindow->cwindow->gui->unlock_window();
 		break; }
 	case 1:

@@ -731,7 +731,6 @@ void Canvas::create_canvas()
 	int video_on = 0;
 	lock_canvas("Canvas::create_canvas");
 
-
 	if(!get_fullscreen())
 // Enter windowed
 	{
@@ -891,7 +890,6 @@ void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 	if( use_opengl ) {
 		get_canvas()->unlock_window();
 		unlock_canvas();
-
 		mwindow->playback_3d->copy_from(this, refresh_frame, output_frame, 0);
 		lock_canvas(" Canvas::output_refresh");
 		get_canvas()->lock_window(" Canvas::output_refresh");
