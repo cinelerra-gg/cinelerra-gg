@@ -132,7 +132,6 @@ public:
 	int reading, writing;
 	int seeked, eof;
 
-	const char *hw_dev;
 	int hw_pixfmt;
 	AVBufferRef *hw_device_ctx;
 
@@ -326,6 +325,7 @@ public:
 	double opt_duration;
 	char *opt_video_filter;
 	char *opt_audio_filter;
+	char *opt_hw_dev;
 	char file_format[BCTEXTLEN];
 	int fflags;
 
@@ -388,6 +388,7 @@ public:
 	int ff_video_mpeg_color_range(int stream);
 
 	int ff_cpus();
+	const char *ff_hw_dev();
 	void dump_context(AVCodecContext *ctx);
 };
 

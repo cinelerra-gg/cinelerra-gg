@@ -46,6 +46,7 @@ public:
 	int hot_node;
 
 	CICacheSize *cache_size;
+	PerfsUseHWDev *use_hw_dev;
 
 	enum
 	{
@@ -335,6 +336,18 @@ public:
 	int handle_event();
 
 	PreferencesWindow *pwindow;
+};
+
+class PrefsUseHWDev : public BC_PopupTextBox
+{
+public:
+	PrefsUseHWDev(PreferencesWindow *pwindow,
+		PerformancePrefs *subwindow, int x, int y);
+	void create_objects();
+	int handle_event();
+
+	PreferencesWindow *pwindow;
+	ArrayList<BC_ListBoxItem *> hw_dev_names;
 };
 
 

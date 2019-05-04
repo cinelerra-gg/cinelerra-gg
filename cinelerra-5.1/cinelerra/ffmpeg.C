@@ -33,6 +33,7 @@
 #include "libmjpeg.h"
 #include "mainerror.h"
 #include "mwindow.h"
+#include "preferences.h"
 #include "vframe.h"
 
 #ifdef FFMPEG3
@@ -263,7 +264,6 @@ FFStream::FFStream(FFMPEG *ffmpeg, AVStream *st, int fidx)
 	seek_pos = curr_pos = 0;
 	seeked = 1;  eof = 0;
 	reading = writing = 0;
-	hw_dev = 0;
 	hw_pixfmt = AV_PIX_FMT_NONE;
 	hw_device_ctx = 0;
 	flushed = 0;
@@ -1001,8 +1001,10 @@ FFVideoStream::~FFVideoStream()
 AVHWDeviceType FFVideoStream::decode_hw_activate()
 {
 	AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
-	const char *hw_dev = getenv("CIN_HW_DEV");
-	if( hw_dev ) {
+	const char *hw_dev = ffmpeg->opt_hw_dev;
+	if( !hw_dev ) hw_dev = getenv("CIN_HW_DEV");
+	if( !hw_dev ) hw_dev = ffmpeg->ff_hw_dev();
+	if( hw_dev && *hw_dev && strcmp(_("none"), hw_dev) ) {
 		type = av_hwdevice_find_type_by_name(hw_dev);
 		if( type == AV_HWDEVICE_TYPE_NONE ) {
 			fprintf(stderr, "Device type %s is not supported.\n", hw_dev);
@@ -1243,7 +1245,8 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
 	}
 
 	AVPixelFormat pix_fmt = (AVPixelFormat)ip->format;
-	if( pix_fmt == ((FFVideoStream *)this)->hw_pixfmt ) {
+	FFVideoStream *vid =(FFVideoStream *)this;
+	if( pix_fmt == vid->hw_pixfmt ) {
 		int ret = 0;
 		if( !sw_frame && !(sw_frame=av_frame_alloc()) )
 			ret = AVERROR(ENOMEM);
@@ -1253,7 +1256,8 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
 			pix_fmt = (AVPixelFormat)ip->format;
 		}
 		if( ret < 0 ) {
-			ff_err(ret, "Error retrieving data from GPU to CPU\n");
+			eprintf(_("Error retrieving data from GPU to CPU\nfile: %s\n"),
+				vid->ffmpeg->fmt_ctx->url);
 			return -1;
 		}
 	}
@@ -1267,7 +1271,8 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
 	int ret = sws_scale(convert_ctx, ip->data, ip->linesize, 0, ip->height,
 	    ipic->data, ipic->linesize);
 	if( ret < 0 ) {
-		ff_err(ret, "FFVideoConvert::convert_picture_frame: sws_scale() failed\n");
+		ff_err(ret, "FFVideoConvert::convert_picture_frame: sws_scale() failed\nfile: %s\n",
+			vid->ffmpeg->fmt_ctx->url);
 		return -1;
 	}
 	return 0;
@@ -1446,6 +1451,7 @@ FFMPEG::FFMPEG(FileBase *file_base)
 	opt_duration = -1;
 	opt_video_filter = 0;
 	opt_audio_filter = 0;
+	opt_hw_dev = 0;
 	fflags = 0;
 	char option_path[BCTEXTLEN];
 	set_option_path(option_path, "%s", "ffmpeg.opts");
@@ -1465,6 +1471,7 @@ FFMPEG::~FFMPEG()
 	av_dict_free(&opts);
 	delete [] opt_video_filter;
 	delete [] opt_audio_filter;
+	delete [] opt_hw_dev;
 }
 
 int FFMPEG::check_sample_rate(AVCodec *codec, int sample_rate)
@@ -1910,6 +1917,8 @@ int FFMPEG::read_options(FILE *fp, const char *options, AVDictionary *&opts)
 				opt_video_filter = cstrdup(val);
 			else if( !strcmp(key, "audio_filter") )
 				opt_audio_filter = cstrdup(val);
+			else if( !strcmp(key, "cin_hw_dev") )
+				opt_hw_dev = cstrdup(val);
 			else if( !strcmp(key, "loglevel") )
 				set_loglevel(val);
 			else
@@ -3000,6 +3009,11 @@ int FFMPEG::ff_video_mpeg_color_range(int stream)
 int FFMPEG::ff_cpus()
 {
 	return file_base->file->cpus;
+}
+
+const char *FFMPEG::ff_hw_dev()
+{
+	return &file_base->file->preferences->use_hw_dev[0];
 }
 
 int FFVideoStream::create_filter(const char *filter_spec, AVCodecParameters *avpar)

@@ -86,6 +86,7 @@ Preferences::Preferences()
 	project_smp = processors = calculate_processors(0);
 	real_processors = calculate_processors(1);
 	ffmpeg_marker_indexes = 1;
+	memset(&use_hw_dev, 0, sizeof(use_hw_dev));
 	warn_indexes = 1;
 	warn_version = 1;
 	bd_warn_root = 1;
@@ -205,6 +206,7 @@ void Preferences::copy_from(Preferences *that)
 	processors = that->processors;
 	real_processors = that->real_processors;
 	ffmpeg_marker_indexes = that->ffmpeg_marker_indexes;
+	strcpy(use_hw_dev, &that->use_hw_dev[0]);
 	warn_indexes = that->warn_indexes;
 	warn_version = that->warn_version;
 	bd_warn_root = that->bd_warn_root;
@@ -346,6 +348,8 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	project_smp = defaults->get("PROJECT_SMP", project_smp);
 	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", force_uniprocessor);
 	ffmpeg_marker_indexes = defaults->get("FFMPEG_MARKER_INDEXES", ffmpeg_marker_indexes);
+	memset(&use_hw_dev, 0, sizeof(use_hw_dev));
+	defaults->get("USE_HW_DEV", use_hw_dev);
 	warn_indexes = defaults->get("WARN_INDEXES", warn_indexes);
 	warn_version = defaults->get("WARN_VERSION", warn_version);
 	bd_warn_root = defaults->get("BD_WARN_ROOT", bd_warn_root);
@@ -487,6 +491,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("PROJECT_SMP", project_smp);
 	defaults->update("FORCE_UNIPROCESSOR", force_uniprocessor);
 	defaults->update("FFMPEG_MARKER_INDEXES", ffmpeg_marker_indexes);
+	defaults->update("USE_HW_DEV", use_hw_dev);
 	defaults->update("WARN_INDEXES", warn_indexes);
 	defaults->update("WARN_VERSION", warn_version);
 	defaults->update("BD_WARN_ROOT", bd_warn_root);

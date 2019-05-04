@@ -73,6 +73,11 @@ void PerformancePrefs::create_objects()
 	int y0 = y;
 	win = add_subwindow(new BC_Title(x, y + 5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
 	maxw = win->get_w();
+	int x1 = x + xmargin4;
+	win = add_subwindow(new BC_Title(x1, y + 5, _("Use HW Device:")));
+	x1 += win->get_w() + 5;
+	PrefsUseHWDev *use_hw_dev = new PrefsUseHWDev(pwindow, this, x1, y);
+	use_hw_dev->create_objects();
 
 	int y1 = y += 30;
 	win = add_subwindow(new BC_Title(x, y + 5, _("Seconds to preroll renders:")));
@@ -88,11 +93,11 @@ void PerformancePrefs::create_objects()
 	preroll->create_objects();
 	y += 30;
 
-	int x1 = x + xmargin4;
+	x1 = x + xmargin4;
 	BC_Title *smp_title = new BC_Title(x1, y + 5, _("Project SMP cpus:"));
 	add_subwindow(smp_title);
-	int x2 = x1 + smp_title->get_w() + 5;
-	PrefsProjectSMP *proj_smp = new PrefsProjectSMP(pwindow, this, x2, y);
+	x1 += smp_title->get_w() + 5;
+	PrefsProjectSMP *proj_smp = new PrefsProjectSMP(pwindow, this, x1, y);
 	proj_smp->create_objects();
 
 	PrefsForceUniprocessor *force_1cpu = new PrefsForceUniprocessor(pwindow, x, y);
@@ -316,6 +321,31 @@ int CICacheSize::handle_event()
 	return 0;
 }
 
+
+PrefsUseHWDev::PrefsUseHWDev(PreferencesWindow *pwindow,
+		PerformancePrefs *subwindow, int x, int y)
+ : BC_PopupTextBox(subwindow,0,0,x,y,100,80,LISTBOX_TEXT)
+{
+	this->pwindow = pwindow;
+}
+
+void PrefsUseHWDev::create_objects()
+{
+	BC_PopupTextBox::create_objects();
+	hw_dev_names.append(new BC_ListBoxItem(_("none")));
+	hw_dev_names.append(new BC_ListBoxItem("vaapi"));
+	hw_dev_names.append(new BC_ListBoxItem("vdpau"));
+	hw_dev_names.append(new BC_ListBoxItem(""));
+	update_list(&hw_dev_names);
+	update(&pwindow->thread->preferences->use_hw_dev[0]);
+}
+
+int PrefsUseHWDev::handle_event()
+{
+	strncpy(&pwindow->thread->preferences->use_hw_dev[0],
+		get_text(), sizeof(pwindow->thread->preferences->use_hw_dev));
+	return 1;
+}
 
 PrefsRenderPreroll::PrefsRenderPreroll(PreferencesWindow *pwindow,
 		PerformancePrefs *subwindow,

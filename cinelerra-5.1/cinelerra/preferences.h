@@ -112,6 +112,8 @@ public:
 	int real_processors;
 // ffmpeg builds marker indexes as it builds idx files
 	int ffmpeg_marker_indexes;
+// ffmpeg hw_dev driver probe name
+	char use_hw_dev[BCSTRLEN];
 // warning
 	int warn_indexes;
 	int warn_version;
