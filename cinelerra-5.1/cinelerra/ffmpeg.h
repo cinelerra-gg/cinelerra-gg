@@ -68,6 +68,7 @@ public:
 	int initted() { return init; }
 	void queue(int64_t pos);
 	void dequeue();
+	void set_hw_frame(AVFrame *frame);
 };
 
 class FFStream {
@@ -235,6 +236,8 @@ public:
 	int decode_frame(AVFrame *frame);
 	AVHWDeviceType decode_hw_activate();
 	void decode_hw_format(AVCodec *decoder, AVHWDeviceType type);
+	AVHWDeviceType encode_hw_activate(const char *hw_dev);
+	int encode_hw_write(FFrame *picture);
 	int encode_frame(AVFrame *frame);
 	int create_filter(const char *filter_spec, AVCodecParameters *avpar);
 	void load_markers();

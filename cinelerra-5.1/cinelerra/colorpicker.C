@@ -1405,7 +1405,7 @@ void ColorCircleButton::create_objects()
 void ColorCircleButton::set_color(int color)
 {
 	this->color = (color & 0xffffff);
-	this->alpha = (~color>>24);
+	this->alpha = (~color>>24) & 0xff;
 	int r = (color>>16) & 0xff;
 	int g = (color>>8) & 0xff;
 	int b = (color>>0) & 0xff;

@@ -1,0 +1,3 @@
+mp4 h264_vaapi
+cin_hw_dev=vaapi
+profile=high

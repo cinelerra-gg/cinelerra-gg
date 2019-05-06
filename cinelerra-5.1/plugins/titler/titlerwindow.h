@@ -332,7 +332,8 @@ public:
 class TitleTimecodeFormat : public BC_PopupMenu
 {
 public:
-	TitleTimecodeFormat(TitleMain *client, TitleWindow *window, int x, int y, const char *text);
+	TitleTimecodeFormat(TitleMain *client, TitleWindow *window,
+		int x, int y, int tw, const char *text);
 	void create_objects();
 	int update(int timecode_format);
 	int handle_event();

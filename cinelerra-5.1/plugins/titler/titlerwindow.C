@@ -367,10 +367,16 @@ void TitleWindow::create_objects()
 	stroker->create_objects();
 	x += stroker->get_w() + margin;
 #endif
-	y += outline_title->get_h() + margin;
-	add_tool(timecode = new TitleTimecode(client, this, x1=x, y));
-	x += timecode->get_w() + margin;
-	add_tool(timecode_format = new TitleTimecodeFormat(client, this, x, y,
+	add_tool(timecode = new TitleTimecode(client, this, x, y));
+	y += timecode->get_h() + margin;
+	int tw = 0;
+	for( int i=0; i<lengthof(timeunit_formats); ++i ) {
+		char text[BCSTRLEN];
+		Units::print_time_format(timeunit_formats[i], text);
+		int w = get_text_width(MEDIUMFONT, text);
+		if( tw < w ) tw = w;
+	}
+	add_tool(timecode_format = new TitleTimecodeFormat(client, this, x, y, tw,
 		Units::print_time_format(client->config.timecode_format, string)));
 	timecode_format->create_objects();
 	y += timecode_format->get_h() + margin;
@@ -806,7 +812,9 @@ void TitleOutlineColorButton::handle_done_event(int result)
 {
 	if( result ) {
 		handle_new_color(orig_color, orig_alpha);
+		window->lock_window("TitleColorButton::handle_done_event");
 		update_gui(orig_color);
+		window->unlock_window();
 	}
 }
 
@@ -852,8 +860,8 @@ int TitleTimecode::handle_event()
 }
 
 TitleTimecodeFormat::TitleTimecodeFormat(TitleMain *client, TitleWindow *window,
-		int x, int y, const char *text)
- : BC_PopupMenu(x, y, 100, text, 1)
+		int x, int y, int tw, const char *text)
+ : BC_PopupMenu(x, y, BC_PopupMenu::calculate_w(tw)+10, text, 1)
 {
 	this->client = client;
 	this->window = window;

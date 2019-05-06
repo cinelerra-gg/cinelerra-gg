@@ -99,6 +99,12 @@ void FFrame::dequeue()
 	fst->dequeue(this);
 }
 
+void FFrame::set_hw_frame(AVFrame *frame)
+{
+	av_frame_free(&frm);
+	frm = frame;
+}
+
 int FFAudioStream::read(float *fp, long len)
 {
 	long n = len * nch;
@@ -383,10 +389,12 @@ int FFStream::decode_activate()
 				ret = avcodec_open2(avctx, decoder, &copts);
 			}
 			if( ret >= 0 && hw_type != AV_HWDEVICE_TYPE_NONE ) {
-				ret = read_packet();
+				if( need_packet ) {
+					need_packet = 0;
+					ret = read_packet();
+				}
 				if( ret >= 0 ) {
 					AVPacket *pkt = (AVPacket*)ipkt;
-					need_packet = 0;
 					ret = avcodec_send_packet(avctx, pkt);
 					if( ret < 0 || hw_pix_fmt == AV_PIX_FMT_NONE ) {
 						ff_err(ret, "HW device init failed, using SW decode.\nfile:%s\n",
@@ -396,9 +404,11 @@ int FFStream::decode_activate()
 						av_buffer_unref(&hw_device_ctx);
 						hw_device_ctx = 0;
 						hw_type = AV_HWDEVICE_TYPE_NONE;
-						flushed = 0;
-						st_eof(0);
-						need_packet = 1;
+						int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY;
+						int idx = st->index;
+						av_seek_frame(fmt_ctx, idx, INT64_MIN, flags);
+						need_packet = 1;  flushed = 0;
+						seeked = 1;  st_eof(0);
 						ret = 0;
 						continue;
 					}
@@ -1045,6 +1055,75 @@ void FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
 	}
 }
 
+AVHWDeviceType FFVideoStream::encode_hw_activate(const char *hw_dev)
+{
+	AVBufferRef *hw_device_ctx = 0;
+	AVBufferRef *hw_frames_ref = 0;
+	AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
+	if( strcmp(_("none"), hw_dev) ) {
+		type = av_hwdevice_find_type_by_name(hw_dev);
+		if( type != AV_HWDEVICE_TYPE_VAAPI ) {
+			fprintf(stderr, "currently, only vaapi hw encode is supported\n");
+			type = AV_HWDEVICE_TYPE_NONE;
+		}
+	}
+	if( type != AV_HWDEVICE_TYPE_NONE ) {
+		int ret = av_hwdevice_ctx_create(&hw_device_ctx, AV_HWDEVICE_TYPE_VAAPI, 0, 0, 0);
+		if( ret < 0 ) {
+			ff_err(ret, "Failed to create a HW device.\n");
+			type = AV_HWDEVICE_TYPE_NONE;
+		}
+	}
+	if( type != AV_HWDEVICE_TYPE_NONE ) {
+		hw_frames_ref = av_hwframe_ctx_alloc(hw_device_ctx);
+		if( !hw_frames_ref ) {
+			fprintf(stderr, "Failed to create HW frame context.\n");
+			type = AV_HWDEVICE_TYPE_NONE;
+		}
+	}
+	if( type != AV_HWDEVICE_TYPE_NONE ) {
+		AVHWFramesContext *frames_ctx = (AVHWFramesContext *)(hw_frames_ref->data);
+		frames_ctx->format = AV_PIX_FMT_VAAPI;
+		frames_ctx->sw_format = AV_PIX_FMT_NV12;
+		frames_ctx->width = width;
+		frames_ctx->height = height;
+		frames_ctx->initial_pool_size = 0; // 200;
+		int ret = av_hwframe_ctx_init(hw_frames_ref);
+		if( ret >= 0 ) {
+			avctx->hw_frames_ctx = av_buffer_ref(hw_frames_ref);
+			if( !avctx->hw_frames_ctx ) ret = AVERROR(ENOMEM);
+		}
+		if( ret < 0 ) {
+			ff_err(ret, "Failed to initialize HW frame context.\n");
+			type = AV_HWDEVICE_TYPE_NONE;
+		}
+		av_buffer_unref(&hw_frames_ref);
+	}
+	return type;
+}
+
+int FFVideoStream::encode_hw_write(FFrame *picture)
+{
+	int ret = 0;
+	AVFrame *hw_frm = 0;
+	switch( avctx->pix_fmt ) {
+	case AV_PIX_FMT_VAAPI:
+		hw_frm = av_frame_alloc();
+		if( !hw_frm ) { ret = AVERROR(ENOMEM);  break; }
+		ret = av_hwframe_get_buffer(avctx->hw_frames_ctx, hw_frm, 0);
+		if( ret < 0 ) break;
+		ret = av_hwframe_transfer_data(hw_frm, *picture, 0);
+		if( ret < 0 ) break;
+		picture->set_hw_frame(hw_frm);
+		return 0;
+	default:
+		return 0;
+	}
+	av_frame_free(&hw_frm);
+	ff_err(ret, "Error while transferring frame data to GPU.\n");
+	return ret;
+}
+
 int FFVideoStream::decode_frame(AVFrame *frame)
 {
 	int first_frame = seeked;  seeked = 0;
@@ -1103,7 +1182,14 @@ int FFVideoStream::video_seek(int64_t pos)
 
 int FFVideoStream::init_frame(AVFrame *picture)
 {
-	picture->format = avctx->pix_fmt;
+	switch( avctx->pix_fmt ) {
+	case AV_PIX_FMT_VAAPI:
+		picture->format = AV_PIX_FMT_NV12;
+		break;
+	default:
+		picture->format = avctx->pix_fmt;
+		break;
+	}
 	picture->width  = avctx->width;
 	picture->height = avctx->height;
 	int ret = av_frame_get_buffer(picture, 32);
@@ -1121,6 +1207,8 @@ int FFVideoStream::encode(VFrame *vframe)
 		frame->pts = curr_pos;
 		ret = convert_pixfmt(vframe, frame);
 	}
+	if( ret >= 0 && avctx->hw_frames_ctx )
+		encode_hw_write(picture);
 	if( ret >= 0 ) {
 		picture->queue(curr_pos);
 		++curr_pos;
@@ -2393,10 +2481,23 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
 			vid->height = asset->height;
 			vid->frame_rate = asset->frame_rate;
 
-			AVPixelFormat pix_fmt = av_get_pix_fmt(asset->ff_pixel_format);
+			AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
+			if( opt_hw_dev != 0 ) {
+				AVHWDeviceType hw_type = vid->encode_hw_activate(opt_hw_dev);
+				switch( hw_type ) {
+				case AV_HWDEVICE_TYPE_VAAPI:
+					pix_fmt = AV_PIX_FMT_VAAPI;
+					break;
+				case AV_HWDEVICE_TYPE_NONE:
+				default:
+					pix_fmt = av_get_pix_fmt(asset->ff_pixel_format);
+					break;
+				}
+			}
 			if( pix_fmt == AV_PIX_FMT_NONE )
 				pix_fmt = codec->pix_fmts ? codec->pix_fmts[0] : AV_PIX_FMT_YUV420P;
 			ctx->pix_fmt = pix_fmt;
+
 			const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
 			int mask_w = (1<<desc->log2_chroma_w)-1;
 			ctx->width = (vid->width+mask_w) & ~mask_w;
