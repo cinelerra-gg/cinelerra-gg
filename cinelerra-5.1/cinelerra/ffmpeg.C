@@ -349,8 +349,9 @@ AVHWDeviceType FFStream::decode_hw_activate()
 	return AV_HWDEVICE_TYPE_NONE;
 }
 
-void FFStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
+int FFStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
 {
+	return 0;
 }
 
 int FFStream::decode_activate()
@@ -379,9 +380,10 @@ int FFStream::decode_activate()
 				eprintf(_("cant allocate codec context\n"));
 				ret = AVERROR(ENOMEM);
 			}
-			if( ret >= 0 && hw_type != AV_HWDEVICE_TYPE_NONE )
-				decode_hw_format(decoder, hw_type);
-
+			if( ret >= 0 && hw_type != AV_HWDEVICE_TYPE_NONE ) {
+				ret = decode_hw_format(decoder, hw_type);
+				if( !ret ) hw_type = AV_HWDEVICE_TYPE_NONE;
+			}
 			if( ret >= 0 ) {
 				avcodec_parameters_to_context(avctx, st->codecpar);
 				if( !av_dict_get(copts, "threads", NULL, 0) )
@@ -1027,8 +1029,9 @@ AVHWDeviceType FFVideoStream::decode_hw_activate()
 	return type;
 }
 
-void FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
+int FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
 {
+	int ret = 0;
 	hw_pix_fmt = AV_PIX_FMT_NONE;
 	for( int i=0; ; ++i ) {
 		const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
@@ -1046,13 +1049,16 @@ void FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
 	if( hw_pix_fmt >= 0 ) {
 		hw_pixfmt = hw_pix_fmt;
 		avctx->get_format  = get_hw_format;
-		int ret = av_hwdevice_ctx_create(&hw_device_ctx, type, 0, 0, 0);
-		if( ret >= 0 )
+		ret = av_hwdevice_ctx_create(&hw_device_ctx, type, 0, 0, 0);
+		if( ret >= 0 ) {
 			avctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+			ret = 1;
+		}
 		else
 			ff_err(ret, "Failed HW device create.\ndev:%s\n",
 				av_hwdevice_get_type_name(type));
 	}
+	return ret;
 }
 
 AVHWDeviceType FFVideoStream::encode_hw_activate(const char *hw_dev)

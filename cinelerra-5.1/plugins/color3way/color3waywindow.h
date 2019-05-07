@@ -30,6 +30,7 @@ class Color3WayPreserve;
 class Color3WayLock;
 class Color3WayWhite;
 class Color3WayReset;
+class Color3WaySliderClr;
 class Color3WayWindow;
 
 
@@ -40,6 +41,11 @@ class Color3WayWindow;
 #include "color3way.h"
 #include "pluginclient.h"
 
+#define CLEAR_BTN_WIDTH 50
+
+#define RESET_POINT      1
+#define RESET_VALUE      2
+#define RESET_SATURATION 3
 
 class Color3WayPoint : public BC_SubWindow
 {
@@ -135,6 +141,26 @@ public:
 	int section;
 };
 
+
+class Color3WaySliderClrSection : public BC_GenericButton
+{
+public:
+	Color3WaySliderClrSection(Color3WayMain *plugin,
+		Color3WayWindow *gui,
+		int x,
+		int y,
+		int w,
+		int clear,
+		int section);
+	~Color3WaySliderClrSection();
+	int handle_event();
+	Color3WayMain *plugin;
+	Color3WayWindow *gui;
+	int section;
+	int clear;
+};
+
+
 class Color3WayBalanceSection : public BC_GenericButton
 {
 public:
@@ -190,6 +216,7 @@ public:
 	Color3WayResetSection *reset;
 	Color3WayBalanceSection *balance;
 	Color3WayCopySection *copy;
+	Color3WaySliderClrSection *pointClr, *valueClr, *saturationClr;
 };
 
 

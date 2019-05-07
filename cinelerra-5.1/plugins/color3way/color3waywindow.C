@@ -35,12 +35,11 @@
 
 
 
-
 Color3WayWindow::Color3WayWindow(Color3WayMain *plugin)
  : PluginClientWindow(plugin,
 	plugin->w,
 	plugin->h,
-	500,
+	680,
 	370,
 	1)
 {
@@ -137,9 +136,9 @@ void Color3WaySection::create_objects()
 		_("Midtones"),
 		_("Highlights")
 	};
+	int w1 = w - (CLEAR_BTN_WIDTH + margin * 2);
 
-
-	gui->add_tool(title = new BC_Title(x + w / 2 -
+	gui->add_tool(title = new BC_Title(x + w1 / 2 -
 		gui->get_text_width(MEDIUMFONT, titles[section]) / 2,
 		y,
 		titles[section]));
@@ -150,8 +149,10 @@ void Color3WaySection::create_objects()
 		&plugin->config.hue_y[section],
 		x,
 		y,
-		w / 2,
+		w1 / 2,
 		section));
+	gui->add_tool(pointClr = new Color3WaySliderClrSection(plugin, gui,
+		x + w1 + margin, y, CLEAR_BTN_WIDTH, RESET_POINT, section));
 	y += point->get_h() + margin;
 
 	gui->add_tool(value_title = new BC_Title(x, y, _("Value:")));
@@ -161,8 +162,10 @@ void Color3WaySection::create_objects()
 		&plugin->config.value[section],
 		x,
 		y,
-		w,
+		w1,
 		section));
+	gui->add_tool(valueClr = new Color3WaySliderClrSection(plugin, gui,
+		x + w1 + margin, y, CLEAR_BTN_WIDTH, RESET_VALUE, section));
 	y += value->get_h() + margin;
 
 	gui->add_tool(sat_title = new BC_Title(x, y, _("Saturation:")));
@@ -172,8 +175,10 @@ void Color3WaySection::create_objects()
 		&plugin->config.saturation[section],
 		x,
 		y,
-		w,
+		w1,
 		section));
+	gui->add_tool(saturationClr = new Color3WaySliderClrSection(plugin, gui,
+		x + w1 + margin, y, CLEAR_BTN_WIDTH, RESET_SATURATION, section));
 	y += saturation->get_h() + margin;
 
 	gui->add_tool(reset = new Color3WayResetSection(plugin,
@@ -204,23 +209,29 @@ int Color3WaySection::reposition_window(int x, int y, int w, int h)
 	this->y = y;
 	this->w = w;
 	this->h = h;
+	int w1 = w - (CLEAR_BTN_WIDTH + margin * 2);
 
-	title->reposition_window(x + w / 2 -
+	title->reposition_window(x + w1 / 2 -
 		title->get_w() / 2,
 		title->get_y());
-	point->reposition_window(x, point->get_y(), w / 2);
+	point->reposition_window(x, point->get_y(), w1 / 2);
+	pointClr->reposition_window(x + w1 + margin, point->get_y());
 	y = point->get_y() + point->get_h() + margin;
+
 	value_title->reposition_window(x, y);
 	y += value_title->get_h() + margin;
-	value->reposition_window(x, y, w, value->get_h());
-	value->set_pointer_motion_range(w);
+	value->reposition_window(x, y, w1, value->get_h());
+	value->set_pointer_motion_range(w1);
+	valueClr->reposition_window(x + w1 + margin, y);
 	y += value->get_h() + margin;
 
 	sat_title->reposition_window(x, y);
 	y += sat_title->get_h() + margin;
-	saturation->reposition_window(x, y, w, saturation->get_h());
-	saturation->set_pointer_motion_range(w);
+	saturation->reposition_window(x, y, w1, saturation->get_h());
+	saturation->set_pointer_motion_range(w1);
+	saturationClr->reposition_window(x + w1 + margin, y);
 	y += saturation->get_h() + margin;
+
 	reset->reposition_window(x, y);
 	y += reset->get_h() + margin;
 	balance->reposition_window(x, y);
@@ -370,7 +381,7 @@ void Color3WayPoint::draw_face(int flash, int flush)
 
 // 	set_color(BLACK);
 // 	draw_arc(0, 0, radius * 2, radius * 2, 45, 180);
-// 
+//
 // 	set_color(MEGREY);
 // 	draw_arc(0, 0, radius * 2, radius * 2, 45, -180);
 
@@ -654,6 +665,45 @@ int Color3WayResetSection::handle_event()
 	return 1;
 }
 
+
+
+
+
+
+Color3WaySliderClrSection::Color3WaySliderClrSection(Color3WayMain *plugin,
+	Color3WayWindow *gui,
+	int x,
+	int y,
+	int w,
+	int clear,
+	int section)
+ : BC_GenericButton(x, y, w, _("⌂"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+	this->clear = clear;
+	this->section = section;
+}
+Color3WaySliderClrSection::~Color3WaySliderClrSection()
+{
+}
+int Color3WaySliderClrSection::handle_event()
+{
+	switch(clear) {
+		case RESET_POINT :
+			plugin->config.hue_x[section] = 0;
+			plugin->config.hue_y[section] = 0;
+			break;
+		case RESET_VALUE : plugin->config.value[section] = 0;
+			break;
+		case RESET_SATURATION : plugin->config.saturation[section] = 0;
+			break;
+	}
+	if(plugin->copy_to_all[section]) plugin->config.copy_to_all(section);
+	plugin->send_configure_change();
+	gui->update();
+	return 1;
+}
 
 
 

@@ -83,7 +83,7 @@ public:
 	virtual int encode_activate();
 	virtual int decode_activate();
 	virtual AVHWDeviceType decode_hw_activate();
-	virtual void decode_hw_format(AVCodec *decoder, AVHWDeviceType type);
+	virtual int decode_hw_format(AVCodec *decoder, AVHWDeviceType type);
 	virtual int write_packet(FFPacket &pkt);
 	int read_packet();
 	int seek(int64_t no, double rate);
@@ -235,7 +235,7 @@ public:
 	int is_video() { return 1; }
 	int decode_frame(AVFrame *frame);
 	AVHWDeviceType decode_hw_activate();
-	void decode_hw_format(AVCodec *decoder, AVHWDeviceType type);
+	int decode_hw_format(AVCodec *decoder, AVHWDeviceType type);
 	AVHWDeviceType encode_hw_activate(const char *hw_dev);
 	int encode_hw_write(FFrame *picture);
 	int encode_frame(AVFrame *frame);
