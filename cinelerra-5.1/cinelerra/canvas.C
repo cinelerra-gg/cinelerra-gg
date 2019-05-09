@@ -63,7 +63,7 @@ Canvas::Canvas(MWindow *mwindow,
 	this->scr_w0 = subwindow->get_screen_w(0, 0);
 	this->root_w = subwindow->get_root_w(0);
 	this->root_h = subwindow->get_root_h(0);
-	canvas_lock = new Mutex("Canvas::canvas_lock", 1);
+	canvas_lock = new Condition(1, "Canvas::canvas_lock", 1);
 }
 
 Canvas::~Canvas()
@@ -92,21 +92,20 @@ void Canvas::reset()
 	cursor_inside = 0;
 }
 
-void Canvas::lock_canvas(const char *location)
+BC_WindowBase *Canvas::lock_canvas(const char *loc)
 {
-	canvas_lock->lock(location);
+	canvas_lock->lock(loc);
+	BC_WindowBase *wdw = get_canvas();
+	if( wdw ) wdw->lock_window(loc);
+	return wdw;
 }
 
 void Canvas::unlock_canvas()
 {
+	BC_WindowBase *wdw = get_canvas();
+	if( wdw ) wdw->unlock_window();
 	canvas_lock->unlock();
 }
-
-int Canvas::is_locked()
-{
-	return canvas_lock->is_locked();
-}
-
 
 BC_WindowBase* Canvas::get_canvas()
 {
@@ -623,7 +622,28 @@ void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
 			canvas_subwindow->flash(0);
 		}
 	}
-	draw_refresh(0);
+	refresh(0);
+}
+
+// must hold window lock
+int Canvas::refresh(int flush)
+{
+	BC_WindowBase *window = get_canvas();
+	if( !window ) return 0;
+// relock in lock order to prevent deadlock
+	window->unlock_window();
+	lock_canvas("Canvas::refresh");
+	draw_refresh(flush);
+	canvas_lock->unlock();
+	return 1;
+}
+// must not hold locks
+int Canvas::redraw(int flush)
+{
+	lock_canvas("Canvas::redraw");
+	draw_refresh(flush);
+	unlock_canvas();
+	return 1;
 }
 
 void Canvas::set_cursor(int cursor)
@@ -728,44 +748,34 @@ void Canvas::stop_fullscreen()
 
 void Canvas::create_canvas()
 {
+	canvas_lock->lock("Canvas::create_canvas");
 	int video_on = 0;
-	lock_canvas("Canvas::create_canvas");
-
-	if(!get_fullscreen())
+	BC_WindowBase *wdw = 0;
+	if( !get_fullscreen() ) {
 // Enter windowed
-	{
-		if(canvas_fullscreen)
-		{
+		if( canvas_fullscreen ) {
+			canvas_fullscreen->lock_window("Canvas::create_canvas 1");
 			video_on = canvas_fullscreen->get_video_on();
-			canvas_fullscreen->stop_video();
-			canvas_fullscreen->lock_window("Canvas::create_canvas 2");
+			if( video_on ) canvas_fullscreen->stop_video();
 			canvas_fullscreen->hide_window();
 			canvas_fullscreen->unlock_window();
 		}
-
-		if(!canvas_auxwindow && !canvas_subwindow)
-		{
+		if( !canvas_auxwindow && !canvas_subwindow ) {
 			subwindow->add_subwindow(canvas_subwindow = new CanvasOutput(this,
-				view_x,
-				view_y,
-				view_w,
-				view_h));
+				view_x, view_y, view_w, view_h));
 		}
+		wdw = get_canvas();
+		wdw->lock_window("Canvas::create_canvas 2");
 	}
-	else
+	else {
 // Enter fullscreen
-	{
-		BC_WindowBase *wdw = canvas_auxwindow ?
-			canvas_auxwindow : canvas_subwindow;
-		if(wdw)
-		{
-			video_on = wdw->get_video_on();
-			wdw->stop_video();
-		}
-
+		wdw = canvas_auxwindow ? canvas_auxwindow : canvas_subwindow;
+		wdw->lock_window("Canvas::create_canvas 3");
+		video_on = wdw->get_video_on();
+		if( video_on ) wdw->stop_video();
 		int x, y, w, h;
 		wdw->get_fullscreen_geometry(x, y, w, h);
-
+		wdw->unlock_window();
 		if( canvas_fullscreen ) {
 			if( x != canvas_fullscreen->get_x() ||
 			    y != canvas_fullscreen->get_y() ||
@@ -777,25 +787,20 @@ void Canvas::create_canvas()
 		}
 		if( !canvas_fullscreen )
 			canvas_fullscreen = new CanvasFullScreen(this, w, h);
-		canvas_fullscreen->show_window();
-		canvas_fullscreen->sync_display();
-		canvas_fullscreen->reposition_window(x, y);
+		wdw = canvas_fullscreen;
+		wdw->lock_window("Canvas::create_canvas 4");
+		wdw->show_window();
+		wdw->sync_display();
+		wdw->reposition_window(x, y);
 	}
 
-	if( !video_on ) {
-		get_canvas()->lock_window("Canvas::create_canvas 1");
-		draw_refresh();
-		get_canvas()->unlock_window();
-	}
-
-	if( video_on )
-		get_canvas()->start_video();
-
-	get_canvas()->lock_window("Canvas::create_canvas 2");
-	get_canvas()->focus();
-	get_canvas()->unlock_window();
-
-	unlock_canvas();
+	if( !video_on )
+		draw_refresh(1);
+	else
+		wdw->start_video();
+	wdw->focus();
+	wdw->unlock_window();
+	canvas_lock->unlock();
 }
 
 
@@ -888,11 +893,9 @@ void Canvas::update_refresh(VideoDevice *device, VFrame *output_frame)
 	}
 
 	if( use_opengl ) {
-		get_canvas()->unlock_window();
 		unlock_canvas();
 		mwindow->playback_3d->copy_from(this, refresh_frame, output_frame, 0);
-		lock_canvas(" Canvas::output_refresh");
-		get_canvas()->lock_window(" Canvas::output_refresh");
+		lock_canvas("Canvas::update_refresh");
 	}
 	else
 		refresh_frame->transfer_from(output_frame, -1);
@@ -978,10 +981,8 @@ CanvasXScroll::~CanvasXScroll()
 
 int CanvasXScroll::handle_event()
 {
-//printf("CanvasXScroll::handle_event %d %d %d\n", get_length(), get_value(), get_handlelength());
 	canvas->update_zoom(get_value(), canvas->get_yscroll(), canvas->get_zoom());
-	canvas->draw_refresh();
-	return 1;
+	return canvas->refresh(1);
 }
 
 
@@ -998,10 +999,8 @@ CanvasYScroll::~CanvasYScroll()
 
 int CanvasYScroll::handle_event()
 {
-//printf("CanvasYScroll::handle_event %d %d\n", get_value(), get_length());
 	canvas->update_zoom(canvas->get_xscroll(), get_value(), canvas->get_zoom());
-	canvas->draw_refresh();
-	return 1;
+	return canvas->refresh(1);
 }
 
 
@@ -1129,7 +1128,6 @@ int CanvasPopupSize::handle_event()
 	canvas->zoom_resize_window(percentage);
 	return 1;
 }
-
 
 
 CanvasPopupResetCamera::CanvasPopupResetCamera(Canvas *canvas)

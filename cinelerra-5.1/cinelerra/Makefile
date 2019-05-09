@@ -592,7 +592,7 @@ shudmp:	shudmp.C
 	@g++ $(CFLAGS) shudmp.C -o $@ -lusb-1.0
 
 clean:
-	rm -rf $(OBJDIR) tags
+	rm -rf $(OBJDIR)
 	rm -f shuttle_keys.h
 
 tags:

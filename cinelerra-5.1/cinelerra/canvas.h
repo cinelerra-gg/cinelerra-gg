@@ -44,11 +44,9 @@ public:
 	void calculate_sizes(float aspect_ratio,
 		int output_w, int output_h, float zoom,
 		int &w, int &h);
-// Lock access to the canvas pointer.
-// Must be called before get_canvas or locking the canvas.
-	void lock_canvas(const char *location);
+// Lock canvas pointer and window
+	BC_WindowBase *lock_canvas(const char *loc);
 	void unlock_canvas();
-	int is_locked();
 
 	void create_objects(EDL *edl);
 	void set_cursor(int cursor);
@@ -173,6 +171,9 @@ public:
 	int get_buttonpress();
 // Gets whatever video surface is enabled
 	BC_WindowBase* get_canvas();
+// draw_refresh, with/without locks
+	int refresh(int flush);
+	int redraw(int flush);
 
 // The owner of the canvas
 	BC_WindowBase *subwindow;
@@ -215,7 +216,8 @@ public:
 private:
 	void get_scrollbars(EDL *edl,
 		int &canvas_x, int &canvas_y, int &canvas_w, int &canvas_h);
-	Mutex *canvas_lock;
+// Lock access to the canvas pointer.
+	Condition *canvas_lock;
 };
 
 

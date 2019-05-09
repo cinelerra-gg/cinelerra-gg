@@ -86,7 +86,7 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 
 VWindowGUI::~VWindowGUI()
 {
-	vwindow->playback_engine->interrupt_playback(1);
+	vwindow->stop_playback(1);
 	sources.remove_all_objects();
 	labels.remove_all_objects();
 	delete canvas;
@@ -135,7 +135,7 @@ void VWindowGUI::draw_wave()
 	delete cache;
 	delete canvas->refresh_frame;
 	canvas->refresh_frame = vframe;
-	canvas->draw_refresh(1);
+	canvas->refresh(1);
 }
 
 void VWindowGUI::change_source(EDL *edl, const char *title)
@@ -457,7 +457,7 @@ void VWindowGUI::drag_motion()
 	int need_highlight = cursor_above() && get_cursor_over_window() ? 1 : 0;
 	if( highlighted == need_highlight ) return;
 	highlighted = need_highlight;
-	canvas->draw_refresh();
+	canvas->refresh(1);
 }
 
 int VWindowGUI::drag_stop()
@@ -467,7 +467,7 @@ int VWindowGUI::drag_stop()
 	if( highlighted &&
 	    mwindow->session->current_operation == DRAG_ASSET ) {
 		highlighted = 0;
-		canvas->draw_refresh();
+		canvas->refresh(1);
 		unlock_window();
 
 		Indexable *indexable =

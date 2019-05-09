@@ -119,6 +119,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 
 CWindowGUI::~CWindowGUI()
 {
+	cwindow->stop_playback(1);
 	if(tool_panel) delete tool_panel;
  	delete meters;
  	delete composite_panel;
@@ -419,7 +420,7 @@ void CWindowGUI::zoom_canvas(double value, int update_menu)
 	canvas->reposition_window(mwindow->edl,
 		mwindow->theme->ccanvas_x, mwindow->theme->ccanvas_y,
 		mwindow->theme->ccanvas_w, mwindow->theme->ccanvas_h);
-	canvas->draw_refresh();
+	canvas->refresh(0);
 }
 
 void CWindowGUI::set_operation(int value)
@@ -443,7 +444,7 @@ void CWindowGUI::set_operation(int value)
 
 	edit_panel->update();
 	tool_panel->start_tool(value);
-	canvas->draw_refresh();
+	canvas->refresh(0);
 }
 
 void CWindowGUI::update_tool()
@@ -672,7 +673,7 @@ void CWindowGUI::sync_parameters(int change_type, int redraw, int overlay)
 {
 	if( redraw ) {
 		update_tool();
-		canvas->draw_refresh();
+		canvas->refresh(1);
 	}
 	if( change_type < 0 && !overlay ) return;
 	unlock_window();
@@ -698,7 +699,7 @@ void CWindowGUI::drag_motion()
 	int need_highlight = cursor_above() && get_cursor_over_window();
 	if( highlighted == need_highlight ) return;
 	highlighted = need_highlight;
-	canvas->draw_refresh();
+	canvas->refresh(1);
 }
 
 int CWindowGUI::drag_stop()
@@ -710,7 +711,7 @@ int CWindowGUI::drag_stop()
 	    mwindow->session->current_operation != DRAG_VTRANSITION &&
 	    mwindow->session->current_operation != DRAG_VEFFECT) return 0;
 	highlighted = 0;
-	canvas->draw_refresh();
+	canvas->refresh(1);
 	result = 1;
 
 	if(mwindow->session->current_operation == DRAG_ASSET)
@@ -1125,15 +1126,16 @@ float CWindowCanvas::get_zoom()
 
 void CWindowCanvas::draw_refresh(int flush)
 {
-	if( get_canvas() && !get_canvas()->get_video_on() ) {
+	BC_WindowBase *window = get_canvas();
+	if( window && !window->get_video_on() ) {
 		clear(0);
 		if( mwindow->uses_opengl() ) {
 // this code is to idle rendering before drawing overlays on refresh frame
 // if this is not done, occationally opengl finishs late, and overwrites
 // the x11 refresh frame and the overlay is not visible.  Rarely happens.
-			get_canvas()->unlock_window();
+			unlock_canvas();
 			mwindow->playback_3d->finish_output(this);
-			get_canvas()->lock_window("CWindowCanvas::draw_refresh");
+			lock_canvas("CWindowCanvas::draw_refresh");
 		}
 		if( refresh_frame && refresh_frame->get_w()>0 && refresh_frame->get_h()>0 ) {
 			float in_x1, in_y1, in_x2, in_y2;
@@ -1160,7 +1162,7 @@ void CWindowCanvas::draw_refresh(int flush)
 				in_y1 *= ys;  in_y2 *= ys;
 // Can't use OpenGL here because it is called asynchronously of the
 // playback operation.
-				get_canvas()->draw_vframe(refresh_frame,
+				window->draw_vframe(refresh_frame,
 						(int)out_x1, (int)out_y1,
 						(int)(out_x2 - out_x1),
 						(int)(out_y2 - out_y1),
@@ -1172,7 +1174,7 @@ void CWindowCanvas::draw_refresh(int flush)
 		}
 //usleep(10000);
 		draw_overlays();
-		get_canvas()->flash(flush);
+		window->flash(flush);
 	}
 //printf("CWindowCanvas::draw_refresh 10\n");
 }
@@ -1186,10 +1188,6 @@ void CWindowCanvas::draw_crophandle(int x, int y)
 }
 
 
-
-
-
-
 #define CONTROL_W 10
 #define CONTROL_H 10
 #define FIRST_CONTROL_W 20
@@ -1199,8 +1197,6 @@ void CWindowCanvas::draw_crophandle(int x, int y)
 
 #define RULERHANDLE_W 16
 #define RULERHANDLE_H 16
-
-
 
 int CWindowCanvas::do_ruler(int draw,
 	int motion,

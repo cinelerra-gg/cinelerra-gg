@@ -364,8 +364,7 @@ CPanelTitleSafe::~CPanelTitleSafe()
 int CPanelTitleSafe::handle_event()
 {
 	mwindow->edl->session->safe_regions = get_value();
-	gui->subwindow->canvas->draw_refresh();
-	return 1;
+	return gui->subwindow->canvas->refresh(1);
 }
 
 CPanelZoom::CPanelZoom(MWindow *mwindow, CPanel *gui, int x, int y, int h)

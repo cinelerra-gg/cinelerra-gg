@@ -18,7 +18,7 @@ all:
 clean:
 	for dir in $(SUBDIRS); do $(MAKE) -C $$dir clean; done
 	rm -rf thirdparty/opencv*
-	rm -rf bin
+	rm -rf bin cinelerra/tags
 	./autogen.sh clean
 
 install:

@@ -224,7 +224,7 @@ void CWindow::update(int dir, int overlays, int tool_window, int operation, int 
 
 // Updated by video device.
 	if( overlays && !dir )
-		gui->canvas->draw_refresh();
+		gui->canvas->refresh(1);
 
 // Update tool parameters
 // Never updated by someone else

@@ -466,9 +466,7 @@ void CWindowCropGUI::handle_event()
  	mwindow->edl->session->crop_y2 = atol(height->get_text()) +
  		mwindow->edl->session->crop_y1;
 	update();
-	mwindow->cwindow->gui->lock_window("CWindowCropGUI::handle_event");
-	mwindow->cwindow->gui->canvas->draw_refresh();
-	mwindow->cwindow->gui->unlock_window();
+	mwindow->cwindow->gui->canvas->redraw(1);
 }
 
 void CWindowCropGUI::update()
