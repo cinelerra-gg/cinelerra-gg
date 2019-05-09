@@ -56,6 +56,8 @@ CHECK_WITH([libzmpeg],[build libzmpeg],[LIBZMPEG],[yes])
 CHECK_WITH([commercial],[enable commercial capture],[COMMERCIAL],[yes])
 CHECK_WITH([thirdparty],[use thirdparty build],[CIN_3RDPARTY],[yes])
 CHECK_WITH([shuttle],[shuttle device],[SHUTTLE],[yes])
+CHECK_WITH([vaapi],[video acceleration api],[VAAPI],[yes])
+CHECK_WITH([vdpau],[video decode+presentation api for unix],[VDPAU],[yes])
 
 if test "x$WANT_LV2" != "xno"; then
   GTK2_LIBS=`pkg-config --libs gtk+-2.0`
@@ -494,15 +496,19 @@ if test "x$HAVE_$1" != "xno"; then
  if test "x$PKG_$1" = "x" -o "x$WANT_STATIC_BUILD" = "xno" -a "x$PKG_$1" = "xauto"; then
   AC_CHECK_LIB([$2], [$3], [HAVE_$1=yes], [HAVE_$1=no], [$4])
   AC_SUBST([HAVE_$1])
-  if test "x$HAVE_$1" = "xyes"; then
-   if test "x$PKG_$1" = "x"; then
-    SYSTEM_LIBS+=" -l[$2]"
-    for lib in [$4]; do SYSTEM_LIBS+=" $lib"; done
-   else
-    SHARED_$1+=" -l[$2]"
-    for lib in [$4]; do SHARED_LIBS+=" $lib"; done
+  if test "x$WANT_$1" != "xno"; then
+   if test "x$HAVE_$1" = "xyes"; then
+    if test "x$PKG_$1" = "x"; then
+     SYSTEM_LIBS+=" -l[$2]"
+     for lib in [$4]; do SYSTEM_LIBS+=" $lib"; done
+    else
+     SHARED_$1+=" -l[$2]"
+     for lib in [$4]; do SHARED_LIBS+=" $lib"; done
+    fi
+   elif test "x$PKG_$1" = "x"; then
+    RESULT=no
    fi
-  elif test "x$PKG_$1" = "x"; then RESULT=no; fi
+  fi
  fi
 fi
 ])
@@ -575,9 +581,9 @@ CHECK_HEADERS([encore], [encore headers], [encore.h])
 CHECK_LIB([giflib], [gif], [DGifOpen])
 CHECK_HEADERS([giflib], [gif lib headers], [gif_lib.h])
 CHECK_LIB([jbig], [jbig], [jbg_dec_init])
-CHECK_LIB([vdpau], [vdpau], [vdp_device_create_x11])
-CHECK_LIB([vaapi], [va], [vaInitialize])
-if test "x$HAVE_vaapi" = "xyes"; then
+CHECK_LIB([VDPAU], [vdpau], [vdp_device_create_x11])
+CHECK_LIB([VAAPI], [va], [vaInitialize])
+if test "x$WANT_VAAPI" != "xno" -a "x$HAVE_VAAPI" = "xyes"; then
   CHECK_HEADERS([vaapi_x11], [va x11 headers], [va/va_x11.h])
   CHECK_LIB([vaapi_x11], [va-x11], [vaGetDisplay])
   CHECK_HEADERS([vaapi_drm], [va drm headers], [va/va_drm.h])
@@ -876,6 +882,8 @@ echo "  using: with-noelision = $WANT_NOELISION"
 echo "  using: with-booby = $WANT_BOOBY"
 echo "  using: with-libzmpeg = $WANT_LIBZMPEG"
 echo "  using: with-commerical = $WANT_COMMERCIAL"
+echo "  using: with-vaapi = $WANT_VAAPI"
+echo "  using: with-vdpau = $WANT_VDPAU"
 echo ""
 echo "  using: thirdparty build = $WANT_CIN_3RDPARTY"
 echo "  using: single-user  = $WANT_CINBIN_BUILD"
@@ -894,10 +902,10 @@ if test "x$HAVE_NUMA" = "xyes"; then
 fi
 
 FFMPEG_EXTRA_LDFLAGS=""
-if test "x$HAVE_vaapi" = "xyes"; then
+if test "x$WANT_VAAPI" != "xno" -a "x$HAVE_VAAPI" = "xyes"; then
   FFMPEG_EXTRA_LDFLAGS+=' -lva'
   EXTRA_LIBS+=' -lva'
-  WANT_VAAPI='yes'
+  WANT_VAPPI="yes"
   CFG_WANTS+=" VAAPI"
   if test "x$HAVE_vaapi_x11" = "xyes"; then
     FFMPEG_EXTRA_LDFLAGS+=' -lva-x11'
@@ -908,6 +916,11 @@ if test "x$HAVE_vaapi" = "xyes"; then
     EXTRA_LIBS+=' -lva-drm'
   fi
 fi
+if test "x$WANT_VDPAU" != "xno" -a "x$HAVE_VDPAU" = "xyes"; then
+  WANT_VDPAU="yes"
+  CFG_WANTS+=" VDPAU"
+fi
+
 if test "x$HAVE_DL" = "xyes"; then
   EXTRA_LIBS+=' -ldl'
   FFMPEG_EXTRA_LDFLAGS+=' -ldl'

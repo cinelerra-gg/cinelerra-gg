@@ -111,6 +111,7 @@ fftw.cfg_params= --disable-fortran --enable-shared=no
 ffmpeg.cfg_params= \
 	--enable-pthreads --enable-gpl --disable-ffplay \
 	$(if $(WANT_VAAPI),--enable-vaapi,--disable-vaapi) \
+	$(if $(WANT_VDPAU),--enable-vdpau,--disable-vdpau) \
 	$(call if_pkg,twolame,--enable-libtwolame) \
 	$(call if_pkg,openjpeg,--enable-libopenjpeg) \
 	$(call if_pkg,lame,--enable-libmp3lame) \
