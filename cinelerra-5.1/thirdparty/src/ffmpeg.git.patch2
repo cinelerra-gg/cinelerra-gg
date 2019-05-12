@@ -1,10 +1,11 @@
-diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
---- a/libavformat/mpegtsenc.c	2018-04-20 04:02:57.000000000 -0600
-+++ b/libavformat/mpegtsenc.c	2018-04-24 10:27:57.193689213 -0600
-@@ -56,9 +56,8 @@
+diff --git a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
+index fc0ea225c6..c702bc5f07 100644
+--- a/libavformat/mpegtsenc.c
++++ b/libavformat/mpegtsenc.c
+@@ -56,9 +56,8 @@ typedef struct MpegTSService {
      int sid;           /* service ID */
-     char *name;
-     char *provider_name;
+     uint8_t name[256];
+     uint8_t provider_name[256];
 -    int pcr_pid;
 -    int pcr_packet_count;
 -    int pcr_packet_period;
@@ -13,7 +14,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
      AVProgram *program;
  } MpegTSService;
  
-@@ -78,14 +77,12 @@
+@@ -78,14 +77,12 @@ typedef struct MpegTSWrite {
      MpegTSSection pat; /* MPEG-2 PAT table */
      MpegTSSection sdt; /* MPEG-2 SDT table context */
      MpegTSService **services;
@@ -31,7 +32,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
      int mux_rate; ///< set to 1 when VBR
      int pes_payload_size;
  
-@@ -95,12 +92,14 @@
+@@ -95,12 +92,14 @@ typedef struct MpegTSWrite {
      int service_type;
  
      int pmt_start_pid;
@@ -47,7 +48,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
  #define MPEGTS_FLAG_REEMIT_PAT_PMT  0x01
  #define MPEGTS_FLAG_AAC_LATM        0x02
  #define MPEGTS_FLAG_PAT_PMT_AT_FRAMES           0x04
-@@ -111,8 +110,6 @@
+@@ -111,8 +110,6 @@ typedef struct MpegTSWrite {
      int tables_version;
      double pat_period;
      double sdt_period;
@@ -56,7 +57,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
  
      int omit_video_pes_length;
  } MpegTSWrite;
-@@ -222,10 +219,10 @@
+@@ -222,10 +219,10 @@ static int mpegts_write_section1(MpegTSSection *s, int tid, int id,
  #define DEFAULT_PROVIDER_NAME   "FFmpeg"
  #define DEFAULT_SERVICE_NAME    "Service01"
  
@@ -69,15 +70,15 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
  
  typedef struct MpegTSWriteStream {
      struct MpegTSService *service;
-@@ -721,6 +718,7 @@
+@@ -730,6 +727,7 @@ static MpegTSService *mpegts_add_service(AVFormatContext *s, int sid,
      service->pmt.pid       = ts->pmt_start_pid + ts->nb_services;
      service->sid           = sid;
      service->pcr_pid       = 0x1fff;
 +    service->pcr_sid       = 0x1fff;
-     service->provider_name = av_strdup(provider_name);
-     service->name          = av_strdup(name);
-     if (!service->provider_name || !service->name)
-@@ -736,18 +734,11 @@
+     if (encode_str8(service->provider_name, provider_name) < 0 ||
+         encode_str8(service->name, name) < 0) {
+         av_log(s, AV_LOG_ERROR, "Too long service or provider name\n");
+@@ -744,18 +742,11 @@ fail:
      return NULL;
  }
  
@@ -97,7 +98,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
          tp_extra_header = AV_RB32(&tp_extra_header);
          avio_write(s->pb, (unsigned char *) &tp_extra_header,
                     sizeof(tp_extra_header));
-@@ -768,6 +759,7 @@
+@@ -776,6 +767,7 @@ static int mpegts_init(AVFormatContext *s)
      MpegTSService *service;
      AVStream *st, *pcr_st = NULL;
      AVDictionaryEntry *title, *provider;
@@ -105,7 +106,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
      int i, j;
      const char *service_name;
      const char *provider_name;
-@@ -776,6 +768,15 @@
+@@ -784,6 +776,15 @@ static int mpegts_init(AVFormatContext *s)
  
      if (s->max_delay < 0) /* Not set by the caller */
          s->max_delay = 0;
@@ -121,7 +122,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
  
      // round up to a whole number of TS packets
      ts->pes_payload_size = (ts->pes_payload_size + 14 + 183) / 184 * 184 - 14;
-@@ -822,6 +823,8 @@
+@@ -830,6 +831,8 @@ static int mpegts_init(AVFormatContext *s)
              service->program          = program;
          }
      }
@@ -130,7 +131,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
  
      ts->pat.pid          = PAT_PID;
      /* Initialize at 15 so that it wraps and is equal to 0 for the
-@@ -907,10 +910,9 @@
+@@ -915,10 +918,9 @@ static int mpegts_init(AVFormatContext *s)
          ts_st->discontinuity   = ts->flags & MPEGTS_FLAG_DISCONT;
          /* update PCR pid by using the first video stream */
          if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
@@ -143,7 +144,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
          if (st->codecpar->codec_id == AV_CODEC_ID_AAC &&
              st->codecpar->extradata_size > 0) {
              AVStream *ast;
-@@ -946,78 +948,47 @@
+@@ -954,78 +956,47 @@ static int mpegts_init(AVFormatContext *s)
      av_freep(&pids);
  
      /* if no video stream, use the first stream as PCR */
@@ -254,7 +255,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
  
      return 0;
  
-@@ -1032,22 +1003,12 @@
+@@ -1040,22 +1011,12 @@ static void retransmit_si_info(AVFormatContext *s, int force_pat, int64_t dts)
      MpegTSWrite *ts = s->priv_data;
      int i;
  
@@ -281,7 +282,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
          mpegts_write_pat(s);
          for (i = 0; i < ts->nb_services; i++)
              mpegts_write_pmt(s, ts->services[i]);
-@@ -1089,13 +1050,14 @@
+@@ -1097,13 +1058,14 @@ static void mpegts_insert_pcr_only(AVFormatContext *s, AVStream *st)
  {
      MpegTSWrite *ts = s->priv_data;
      MpegTSWriteStream *ts_st = st->priv_data;
@@ -298,7 +299,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
      *q++ = 0x20 | ts_st->cc;   /* Adaptation only */
      /* Continuity Count field does not increment (see 13818-1 section 2.4.3.3) */
      *q++ = TS_PACKET_SIZE - 5; /* Adaptation Field Length */
-@@ -1106,7 +1068,7 @@
+@@ -1114,7 +1076,7 @@ static void mpegts_insert_pcr_only(AVFormatContext *s, AVStream *st)
      }
  
      /* PCR coded into 6 bytes */
@@ -307,7 +308,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
  
      /* stuffing bytes */
      memset(q, 0xFF, TS_PACKET_SIZE - (q - buf));
-@@ -1175,8 +1137,6 @@
+@@ -1183,8 +1145,6 @@ static void mpegts_write_pes(AVFormatContext *s, AVStream *st,
      uint8_t *q;
      int val, is_start, len, header_len, write_pcr, is_dvb_subtitle, is_dvb_teletext, flags;
      int afc_len, stuffing_len;
@@ -316,7 +317,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
      int force_pat = st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && key && !ts_st->prev_payload_key;
  
      av_assert0(ts_st->payload != buf || st->codecpar->codec_type != AVMEDIA_TYPE_VIDEO);
-@@ -1186,28 +1146,33 @@
+@@ -1194,28 +1154,33 @@ static void mpegts_write_pes(AVFormatContext *s, AVStream *st,
  
      is_start = 1;
      while (payload_size > 0) {
@@ -363,7 +364,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
              continue;
          }
  
-@@ -1217,6 +1182,10 @@
+@@ -1225,6 +1190,10 @@ static void mpegts_write_pes(AVFormatContext *s, AVStream *st,
          val  = ts_st->pid >> 8;
          if (is_start)
              val |= 0x40;
@@ -374,7 +375,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
          *q++      = val;
          *q++      = ts_st->pid;
          ts_st->cc = ts_st->cc + 1 & 0xf;
-@@ -1228,7 +1197,7 @@
+@@ -1236,7 +1205,7 @@ static void mpegts_write_pes(AVFormatContext *s, AVStream *st,
          }
          if (key && is_start && pts != AV_NOPTS_VALUE) {
              // set Random Access for key frames
@@ -383,7 +384,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
                  write_pcr = 1;
              set_af_flag(buf, 0x40);
              q = get_ts_payload_start(buf);
-@@ -1236,14 +1205,10 @@
+@@ -1244,14 +1213,10 @@ static void mpegts_write_pes(AVFormatContext *s, AVStream *st,
          if (write_pcr) {
              set_af_flag(buf, 0x10);
              q = get_ts_payload_start(buf);
@@ -400,7 +401,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
              q = get_ts_payload_start(buf);
          }
          if (is_start) {
-@@ -1344,11 +1309,13 @@
+@@ -1352,11 +1317,13 @@ static void mpegts_write_pes(AVFormatContext *s, AVStream *st,
              *q++ = flags;
              *q++ = header_len;
              if (pts != AV_NOPTS_VALUE) {
@@ -416,7 +417,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
                  q += 5;
              }
              if (pes_extension && st->codecpar->codec_id == AV_CODEC_ID_DIRAC) {
-@@ -1519,7 +1486,6 @@
+@@ -1527,7 +1494,6 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
      uint8_t *data = NULL;
      MpegTSWrite *ts = s->priv_data;
      MpegTSWriteStream *ts_st = st->priv_data;
@@ -424,7 +425,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
      int64_t dts = pkt->dts, pts = pkt->pts;
      int opus_samples = 0;
      int side_data_size;
-@@ -1540,16 +1506,15 @@
+@@ -1548,16 +1514,15 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
      }
  
      if (ts->flags & MPEGTS_FLAG_REEMIT_PAT_PMT) {
@@ -444,7 +445,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
      }
  
      if (ts_st->first_pts_check && pts == AV_NOPTS_VALUE) {
-@@ -1737,7 +1702,7 @@
+@@ -1745,7 +1710,7 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
              AVStream *st2 = s->streams[i];
              MpegTSWriteStream *ts_st2 = st2->priv_data;
              if (   ts_st2->payload_size
@@ -453,7 +454,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
                  mpegts_write_pes(s, st2, ts_st2->payload, ts_st2->payload_size,
                                   ts_st2->payload_pts, ts_st2->payload_dts,
                                   ts_st2->payload_flags & AV_PKT_FLAG_KEY, stream_id);
-@@ -1908,12 +1873,18 @@
+@@ -1914,12 +1879,18 @@ static const AVOption options[] = {
      { "mpegts_pmt_start_pid", "Set the first pid of the PMT.",
        offsetof(MpegTSWrite, pmt_start_pid), AV_OPT_TYPE_INT,
        { .i64 = 0x1000 }, 0x0010, 0x1f00, AV_OPT_FLAG_ENCODING_PARAM },
@@ -473,7 +474,7 @@ diff -urN a/libavformat/mpegtsenc.c b/libavformat/mpegtsenc.c
      { "muxrate", NULL,
        offsetof(MpegTSWrite, mux_rate), AV_OPT_TYPE_INT,
        { .i64 = 1 }, 0, INT_MAX, AV_OPT_FLAG_ENCODING_PARAM },
-@@ -1951,15 +1922,15 @@
+@@ -1957,15 +1928,15 @@ static const AVOption options[] = {
      { "omit_video_pes_length", "Omit the PES packet length for video packets",
        offsetof(MpegTSWrite, omit_video_pes_length), AV_OPT_TYPE_BOOL,
        { .i64 = 1 }, 0, 1, AV_OPT_FLAG_ENCODING_PARAM },
