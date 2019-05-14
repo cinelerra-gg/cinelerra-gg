@@ -124,7 +124,7 @@ public:
 	LinearBlurWindow *gui;
 };
 
-class LinearBlurSliderClr : public BC_GenericButton
+class LinearBlurSliderClr : public BC_Button
 {
 public:
 	LinearBlurSliderClr(LinearBlurMain *plugin, LinearBlurWindow *gui, int x, int y, int w, int clear);

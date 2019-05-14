@@ -22,6 +22,7 @@
 #include "bcdisplayinfo.h"
 #include "brightnesswindow.h"
 #include "language.h"
+#include "theme.h"
 
 
 
@@ -179,7 +180,7 @@ int BrightnessReset::handle_event()
 }
 
 BrightnessSliderClr::BrightnessSliderClr(BrightnessMain *client, BrightnessWindow *window, int x, int y, int w, int is_brightness)
- : BC_GenericButton(x, y, w, _("⌂"))
+ : BC_Button(x, y, w, client->get_theme()->get_image_set("reset_button"))
 {
 	this->client = client;
 	this->window = window;

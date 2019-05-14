@@ -41,12 +41,6 @@ MaskPackage::~MaskPackage()
 {
 }
 
-
-
-
-
-
-
 MaskUnit::MaskUnit(MaskEngine *engine)
  : LoadClient(engine)
 {
@@ -54,10 +48,9 @@ MaskUnit::MaskUnit(MaskEngine *engine)
 	this->temp = 0;
 }
 
-
 MaskUnit::~MaskUnit()
 {
-	if(temp) delete temp;
+	if( temp ) delete temp;
 }
 
 
@@ -69,7 +62,7 @@ void MaskUnit::draw_line_clamped(VFrame *frame,
 	int draw_x1, draw_y1;
 	int draw_x2, draw_y2;
 
-	if(y2 < y1) {
+	if( y2 < y1 ) {
 		draw_x1 = x2;  draw_y1 = y2;
 		draw_x2 = x1;  draw_y2 = y1;
 	}
@@ -80,18 +73,18 @@ void MaskUnit::draw_line_clamped(VFrame *frame,
 
 	unsigned char **rows = (unsigned char**)frame->get_rows();
 
-	if(draw_y2 != draw_y1) {
+	if( draw_y2 != draw_y1 ) {
 		float slope = ((float)draw_x2 - draw_x1) / ((float)draw_y2 - draw_y1);
 		int w = frame->get_w() - 1;
 		int h = frame->get_h();
 
-		for(float y = draw_y1; y < draw_y2; y++) {
-			if(y >= 0 && y < h) {
+		for( float y = draw_y1; y < draw_y2; y++ ) {
+			if( y >= 0 && y < h ) {
 				int x = (int)((y - draw_y1) * slope + draw_x1);
 				int y_i = (int)y;
 				int x_i = CLIP(x, 0, w);
 
-				if(rows[y_i][x_i] == k)
+				if( rows[y_i][x_i] == k )
 					rows[y_i][x_i] = 0;
 				else
 					rows[y_i][x_i] = k;
@@ -100,12 +93,8 @@ void MaskUnit::draw_line_clamped(VFrame *frame,
 	}
 }
 
-void MaskUnit::blur_strip(double *val_p,
-	double *val_m,
-	double *dst,
-	double *src,
-	int size,
-	int max)
+void MaskUnit::blur_strip(double *val_p, double *val_m,
+	double *dst, double *src, int size, int max)
 {
 	double *sp_p = src;
 	double *sp_m = src + size - 1;
@@ -115,42 +104,31 @@ void MaskUnit::blur_strip(double *val_p,
 	double initial_m = sp_m[0];
 
 //printf("MaskUnit::blur_strip %d\n", size);
-	for(int k = 0; k < size; k++)
-	{
+	for( int k = 0; k < size; k++ ) {
 		int terms = (k < 4) ? k : 4;
 		int l;
-		for(l = 0; l <= terms; l++)
-		{
+		for( l = 0; l <= terms; l++ ) {
 			*vp += n_p[l] * sp_p[-l] - d_p[l] * vp[-l];
 			*vm += n_m[l] * sp_m[l] - d_m[l] * vm[l];
 		}
 
-		for( ; l <= 4; l++)
-		{
+		for( ; l <= 4; l++) {
 			*vp += (n_p[l] - bd_p[l]) * initial_p;
 			*vm += (n_m[l] - bd_m[l]) * initial_m;
 		}
-		sp_p++;
-		sp_m--;
-		vp++;
-		vm--;
+		sp_p++;  sp_m--;
+		vp++;    vm--;
 	}
 
-	for(int i = 0; i < size; i++)
-	{
+	for( int i = 0; i < size; i++ ) {
 		double sum = val_p[i] + val_m[i];
 		CLAMP(sum, 0, max);
 		dst[i] = sum;
 	}
 }
 
-void MaskUnit::do_feather(VFrame *output,
-	VFrame *input,
-	double feather,
-	int start_y,
-	int end_y,
-	int start_x,
-	int end_x)
+void MaskUnit::do_feather(VFrame *output, VFrame *input, double feather,
+		int start_y, int end_y, int start_x, int end_x)
 {
 //printf("MaskUnit::do_feather %f\n", feather);
 // Get constants
@@ -204,10 +182,10 @@ void MaskUnit::do_feather(VFrame *output,
 
 	d_p[4] = exp(2 * constants[0] + 2 * constants[1]);
 
-	for(int i = 0; i < 5; i++) d_m[i] = d_p[i];
+	for( int i = 0; i < 5; i++ ) d_m[i] = d_p[i];
 
 	n_m[0] = 0.0;
-	for(int i = 1; i <= 4; i++)
+	for( int i = 1; i <= 4; i++ )
 		n_m[i] = n_p[i] - d_p[i] * n_p[0];
 
 	double sum_n_p, sum_n_m, sum_d;
@@ -216,8 +194,7 @@ void MaskUnit::do_feather(VFrame *output,
 	sum_n_p = 0.0;
 	sum_n_m = 0.0;
 	sum_d = 0.0;
-	for(int i = 0; i < 5; i++)
-	{
+	for( int i = 0; i < 5; i++ ) {
 		sum_n_p += n_p[i];
 		sum_n_m += n_m[i];
 		sum_d += d_p[i];
@@ -226,35 +203,11 @@ void MaskUnit::do_feather(VFrame *output,
 	a = sum_n_p / (1 + sum_d);
 	b = sum_n_m / (1 + sum_d);
 
-	for(int i = 0; i < 5; i++)
-	{
+	for( int i = 0; i < 5; i++ ) {
 		bd_p[i] = d_p[i] * a;
 		bd_m[i] = d_m[i] * b;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#define DO_FEATHER(type, max) \
-{ \
+#define DO_FEATHER(type, max) { \
 	int frame_w = input->get_w(); \
 	int frame_h = input->get_h(); \
 	int size = MAX(frame_w, frame_h); \
@@ -267,50 +220,35 @@ void MaskUnit::do_feather(VFrame *output,
 	int j; \
  \
 /* printf("DO_FEATHER 1\n"); */ \
-	if(end_x > start_x) \
-	{ \
-		for(j = start_x; j < end_x; j++) \
-		{ \
+	if( end_x > start_x ) { \
+		for( j = start_x; j < end_x; j++ ) { \
 	/* printf("DO_FEATHER 1.1 %d\n", j); */ \
 			bzero(val_p, sizeof(double) * frame_h); \
 			bzero(val_m, sizeof(double) * frame_h); \
-			for(int k = 0; k < frame_h; k++) \
-			{ \
+			for( int k = 0; k < frame_h; k++ ) { \
 				src[k] = (double)in_rows[k][j]; \
 			} \
-	 \
 			blur_strip(val_p, val_m, dst, src, frame_h, max); \
-	 \
-			for(int k = 0; k < frame_h; k++) \
-			{ \
+			for( int k = 0; k < frame_h; k++ ) { \
 				out_rows[k][j] = (type)dst[k]; \
 			} \
 		} \
 	} \
- \
- 	if(end_y > start_y) \
-	{ \
-		for(j = start_y; j < end_y; j++) \
-		{ \
+ 	if( end_y > start_y ) { \
+		for( j = start_y; j < end_y; j++ ) { \
 	/* printf("DO_FEATHER 2 %d\n", j); */ \
 			bzero(val_p, sizeof(double) * frame_w); \
 			bzero(val_m, sizeof(double) * frame_w); \
-			for(int k = 0; k < frame_w; k++) \
-			{ \
+			for( int k = 0; k < frame_w; k++ ) { \
 				src[k] = (double)out_rows[j][k]; \
 			} \
-	 \
 			blur_strip(val_p, val_m, dst, src, frame_w, max); \
-	 \
-			for(int k = 0; k < frame_w; k++) \
-			{ \
+			for( int k = 0; k < frame_w; k++ ) { \
 				out_rows[j][k] = (type)dst[k]; \
 			} \
 		} \
 	} \
- \
 /* printf("DO_FEATHER 3\n"); */ \
- \
 	delete [] src; \
 	delete [] dst; \
 	delete [] val_p; \
@@ -318,85 +256,51 @@ void MaskUnit::do_feather(VFrame *output,
 /* printf("DO_FEATHER 4\n"); */ \
 }
 
-
-
-
-
-
-
-
 //printf("do_feather %d\n", frame->get_color_model());
-	switch(input->get_color_model())
-	{
-		case BC_A8:
-			DO_FEATHER(unsigned char, 0xff);
-			break;
-
-		case BC_A16:
-			DO_FEATHER(uint16_t, 0xffff);
-			break;
-
-		case BC_A_FLOAT:
-			DO_FEATHER(float, 1);
-			break;
+	switch( input->get_color_model() ) {
+	case BC_A8:
+		DO_FEATHER(unsigned char, 0xff);
+		break;
+	case BC_A16:
+		DO_FEATHER(uint16_t, 0xffff);
+		break;
+	case BC_A_FLOAT:
+		DO_FEATHER(float, 1);
+		break;
 	}
-
-
-
-
 }
 
 void MaskUnit::process_package(LoadPackage *package)
 {
 	MaskPackage *ptr = (MaskPackage*)package;
+	float engine_value = engine->value;
+	int engine_mode = engine->mode;
 
-	if(engine->recalculate &&
-		engine->step == DO_MASK)
-	{
-		VFrame *mask;
-		if(engine->feather > 0)
-			mask = engine->temp_mask;
-		else
-			mask = engine->mask;
-
-SET_TRACE
+	if( engine->recalculate && engine->step == DO_MASK ) {
+		VFrame *mask = engine->feather > 0 ? engine->temp_mask : engine->mask;
 // Generated oversampling frame
 		int mask_w = mask->get_w();
 		//int mask_h = mask->get_h();
 		int oversampled_package_w = mask_w * OVERSAMPLE;
 		int oversampled_package_h = (ptr->end_y - ptr->start_y) * OVERSAMPLE;
-//printf("MaskUnit::process_package 1\n");
-
-SET_TRACE
-		if(temp &&
-			(temp->get_w() != oversampled_package_w ||
-			temp->get_h() != oversampled_package_h)) {
+		if( temp &&
+		    (temp->get_w() != oversampled_package_w ||
+		     temp->get_h() != oversampled_package_h) ) {
 			delete temp;  temp = 0;
 		}
-//printf("MaskUnit::process_package 1\n");
-
-SET_TRACE
-		if(!temp) {
+		if( !temp ) {
 			temp = new VFrame(oversampled_package_w, oversampled_package_h, BC_A8, 0);
 		}
-
-SET_TRACE
 		temp->clear_frame();
-//printf("MaskUnit::process_package 1 %d\n", engine->point_sets.total);
-
-SET_TRACE
-
 // Draw oversampled region of polygons on temp
-		for(int k = 0; k < engine->point_sets.total; k++)
-		{
+		for( int k=0; k<engine->point_sets.total; ++k ) {
 			int old_x, old_y;
 			unsigned char max = k + 1;
 			ArrayList<MaskPoint*> *points = engine->point_sets.values[k];
 
-			if(points->total < 3) continue;
+			if( points->total < 3 ) continue;
 //printf("MaskUnit::process_package 2 %d %d\n", k, points->total);
-			for(int i = 0; i < points->total; i++)
-			{
+			for( int i=0; i<points->total; ++i ) {
 				MaskPoint *point1 = points->values[i];
 				MaskPoint *point2 = (i >= points->total - 1) ?
 					points->values[0] :
@@ -404,10 +308,10 @@ SET_TRACE
 
 				float x, y;
 				int segments = (int)(sqrt(SQR(point1->x - point2->x) + SQR(point1->y - point2->y)));
-				if(point1->control_x2 == 0 &&
+				if( point1->control_x2 == 0 &&
 					point1->control_y2 == 0 &&
 					point2->control_x1 == 0 &&
-					point2->control_y1 == 0)
+					point2->control_y1 == 0 )
 					segments = 1;
 				float x0 = point1->x;
 				float y0 = point1->y;
@@ -418,8 +322,7 @@ SET_TRACE
 				float x3 = point2->x;
 				float y3 = point2->y;
 
-				for(int j = 0; j <= segments; j++)
-				{
+				for( int j = 0; j <= segments; j++ ) {
 					float t = (float)j / segments;
 					float tpow2 = t * t;
 					float tpow3 = t * t * t;
@@ -440,8 +343,7 @@ SET_TRACE
 					x *= OVERSAMPLE;
 					y *= OVERSAMPLE;
 
-					if(j > 0)
-					{
+					if( j > 0 ) {
 						draw_line_clamped(temp, old_x, old_y, (int)x, (int)y, max);
 					}
 
@@ -449,296 +351,143 @@ SET_TRACE
 					old_y = (int)y;
 				}
 			}
-
-SET_TRACE
-//printf("MaskUnit::process_package 1\n");
-
-
-
-
-
 // Fill in the polygon in the horizontal direction
-			for(int i = 0; i < oversampled_package_h; i++)
-			{
+			for( int i=0; i<oversampled_package_h; ++i ) {
 				unsigned char *row = (unsigned char*)temp->get_rows()[i];
-				int value = 0x0;
-				int total = 0;
+				int value = 0, total = 0;
 
- 				for(int j = 0; j < oversampled_package_w; j++)
-					if(row[j] == max) total++;
+ 				for( int j=0; j<oversampled_package_w; ++j )
+					if( row[j] == max ) ++total;
 
- 				if(total > 1)
-				{
-					if(total & 0x1) total--;
-					for(int j = 0; j < oversampled_package_w; j++)
-					{
-						if(row[j] == max && total > 0)
-						{
-							if(value)
-								value = 0x0;
-							else
-								value = max;
-							total--;
+ 				if( total > 1 ) {
+					if( total & 0x1 ) --total;
+					for( int j=0; j<oversampled_package_w; ++j ) {
+						if( row[j]==max && total>0 ) {
+							--total;
+							value = value ? 0 : max;
 						}
-						else
-						{
-							if(value) row[j] = value;
-						}
+						else if( value )
+							row[j] = value;
 					}
 				}
 			}
 		}
-
-
-SET_TRACE
-
-
-
-
-
-#define DOWNSAMPLE(type, temp_type, value) \
-for(int i = 0; i < ptr->end_y - ptr->start_y; i++) \
-{ \
-	type *output_row = (type*)mask->get_rows()[i + ptr->start_y]; \
-	unsigned char **input_rows = (unsigned char**)temp->get_rows() + i * OVERSAMPLE; \
- \
- \
-	for(int j = 0; j < mask_w; j++) \
-	{ \
+#define DOWNSAMPLE(type, temp_type, value, v) do { \
+for( int y=0; y<ptr->end_y-ptr->start_y; ++y ) { \
+	type *output_row = (type*)mask->get_rows()[y + ptr->start_y]; \
+	unsigned char **input_rows = (unsigned char**)temp->get_rows() + y * OVERSAMPLE; \
+	for( int x=0; x<mask_w; ++x ) { \
 		temp_type total = 0; \
- \
 /* Accumulate pixel */ \
-		for(int k = 0; k < OVERSAMPLE; k++) \
-		{ \
-			unsigned char *input_vector = input_rows[k] + j * OVERSAMPLE; \
-			for(int l = 0; l < OVERSAMPLE; l++) \
-			{ \
+		for( int k=0; k<OVERSAMPLE; ++k ) { \
+			unsigned char *input_vector = input_rows[k] + x * OVERSAMPLE; \
+			for( int l=0; l<OVERSAMPLE; ++l ) { \
 				total += (input_vector[l] ? value : 0); \
 			} \
 		} \
- \
 /* Divide pixel */ \
 		total /= OVERSAMPLE * OVERSAMPLE; \
- \
-		output_row[j] = total; \
+		output_row[x] = v; \
 	} \
-}
+} } while(0)
 
-SET_TRACE
-
+		if( engine_value < 0 ) {
+			engine_value = -engine_value;
+			engine_mode = 1-engine_mode;
+		}
 // Downsample polygon
-		switch(mask->get_color_model())
-		{
-			case BC_A8:
-			{
-				unsigned char value;
-				value = (int)((float)engine->value / 100 * 0xff);
-				DOWNSAMPLE(unsigned char, int64_t, value);
-				break;
-			}
+		switch( mask->get_color_model() ) {
+		case BC_A8: {
+			unsigned char value;
+			value = (int)(engine_value / 100 * 0xff);
+			if( engine->value >= 0 )
+				DOWNSAMPLE(unsigned char, int64_t, value, total);
+			else
+				DOWNSAMPLE(unsigned char, int64_t, value, value-total);
+			break; }
 
-			case BC_A16:
-			{
-				uint16_t value;
-				value = (int)((float)engine->value / 100 * 0xffff);
-				DOWNSAMPLE(uint16_t, int64_t, value);
-				break;
-			}
+		case BC_A16: {
+			uint16_t value;
+			value = (int)(engine_value / 100 * 0xffff);
+			if( engine->value >= 0 )
+				DOWNSAMPLE(uint16_t, int64_t, value, total);
+			else
+				DOWNSAMPLE(uint16_t, int64_t, value, value-total);
+			break; }
 
-			case BC_A_FLOAT:
-			{
-				float value;
-				value = (float)engine->value / 100;
-				DOWNSAMPLE(float, double, value);
-				break;
-			}
+		case BC_A_FLOAT: {
+			float value;
+			value = engine_value / 100;
+			if( engine->value >= 0 )
+				DOWNSAMPLE(float, double, value, total);
+			else
+				DOWNSAMPLE(float, double, value, value-total);
+			break; }
 		}
 	}
 
-SET_TRACE
-
-SET_TRACE
-
-	if(engine->step == DO_X_FEATHER)
-	{
-
-		if(engine->recalculate)
-		{
-// Feather polygon
-			if(engine->feather > 0) do_feather(engine->mask,
-				engine->temp_mask,
-				engine->feather,
-				ptr->start_y,
-				ptr->end_y,
-				0,
-				0);
-		}
+	if( engine->step == DO_X_FEATHER && engine->recalculate && // Feather polygon
+	    engine->feather > 0 ) {
+		do_feather(engine->mask,
+			engine->temp_mask, engine->feather,
+			ptr->start_y, ptr->end_y, 0, 0);
 //printf("MaskUnit::process_package 3 %f\n", engine->feather);
 	}
 
-	if(engine->step == DO_Y_FEATHER)
-	{
-		if(engine->recalculate)
-		{
-// Feather polygon
-			if(engine->feather > 0) do_feather(engine->mask,
-				engine->temp_mask,
-				engine->feather,
-				0,
-				0,
-				ptr->start_x,
-				ptr->end_x);
-		}
+	if( engine->step == DO_Y_FEATHER && engine->recalculate && // Feather polygon
+	    engine->feather > 0 ) {
+		do_feather(engine->mask,
+			engine->temp_mask, engine->feather,
+			0, 0, ptr->start_x, ptr->end_x);
 	}
 
-	if(engine->step == DO_APPLY)
-	{
-// Apply mask
-		int mask_w = engine->mask->get_w();
-
-
-#define APPLY_MASK_SUBTRACT_ALPHA(type, max, components, do_yuv) \
-{ \
-	type *output_row = (type*)engine->output->get_rows()[i]; \
-	type *mask_row = (type*)engine->mask->get_rows()[i]; \
+	if( engine->step == DO_APPLY ) { // Apply mask
+#define APPLY_MASK_ALPHA(cmodel, type, max, components, do_yuv, a, b) \
+case cmodel: \
+for( int y=ptr->start_y; y<ptr->end_y; ++y ) { \
+	type *output_row = (type*)engine->output->get_rows()[y]; \
+	type *mask_row = (type*)engine->mask->get_rows()[y]; \
 	int chroma_offset = (int)(max + 1) / 2; \
- \
-	for(int j  = 0; j < mask_w; j++) \
-	{ \
-		if(components == 4) \
-		{ \
-			output_row[j * 4 + 3] = output_row[j * 4 + 3] * (max - mask_row[j]) / max; \
+	for( int x=0; x<mask_w; ++x ) { \
+		int m = mask_row[x], n = max-m; \
+		if( components == 4 ) { \
+			output_row[x*4 + 3] = output_row[x*4 + 3]*a / max; \
 		} \
-		else \
-		{ \
-			output_row[j * 3] = output_row[j * 3] * (max - mask_row[j]) / max; \
- \
-			output_row[j * 3 + 1] = output_row[j * 3 + 1] * (max - mask_row[j]) / max; \
-			output_row[j * 3 + 2] = output_row[j * 3 + 2] * (max - mask_row[j]) / max; \
- \
-			if(do_yuv) \
-			{ \
-				output_row[j * 3 + 1] += chroma_offset * mask_row[j] / max; \
-				output_row[j * 3 + 2] += chroma_offset * mask_row[j] / max; \
+		else { \
+			output_row[x*3 + 0] = output_row[x*3 + 0]*a / max; \
+			output_row[x*3 + 1] = output_row[x*3 + 1]*a / max; \
+			output_row[x*3 + 2] = output_row[x*3 + 2]*a / max; \
+			if( do_yuv ) { \
+				output_row[x*3 + 1] += chroma_offset*b / max; \
+				output_row[x*3 + 2] += chroma_offset*b / max; \
 			} \
 		} \
 	} \
-}
+} break
 
-#define APPLY_MASK_MULTIPLY_ALPHA(type, max, components, do_yuv) \
-{ \
-	type *output_row = (type*)engine->output->get_rows()[i]; \
-	type *mask_row = (type*)engine->mask->get_rows()[i]; \
-	int chroma_offset = (int)(max + 1) / 2; \
- \
-	for(int j  = 0; j < mask_w; j++) \
-	{ \
-		if(components == 4) \
-		{ \
-			output_row[j * 4 + 3] = output_row[j * 4 + 3] * mask_row[j] / max; \
-		} \
-		else \
-		{ \
-			output_row[j * 3] = output_row[j * 3] * mask_row[j] / max; \
- \
-			output_row[j * 3 + 1] = output_row[j * 3 + 1] * mask_row[j] / max; \
-			output_row[j * 3 + 2] = output_row[j * 3 + 2] * mask_row[j] / max; \
- \
-			if(do_yuv) \
-			{ \
-				output_row[j * 3 + 1] += chroma_offset * (max - mask_row[j]) / max; \
-				output_row[j * 3 + 2] += chroma_offset * (max - mask_row[j]) / max; \
-			} \
-		} \
-	} \
-}
-
-
-
+#define MASK_ALPHA(mode, a, b) \
+case mode: \
+	switch( engine->output->get_color_model() ) { \
+	APPLY_MASK_ALPHA(BC_RGB888, unsigned char, 0xff, 3, 0, a, b); \
+	APPLY_MASK_ALPHA(BC_RGB_FLOAT, float, 1.0, 3, 0, a, b); \
+	APPLY_MASK_ALPHA(BC_YUV888, unsigned char, 0xff, 3, 1, a, b); \
+	APPLY_MASK_ALPHA(BC_RGBA_FLOAT, float, 1.0, 4, 0, a, b); \
+	APPLY_MASK_ALPHA(BC_YUVA8888, unsigned char, 0xff, 4, 1, a, b); \
+	APPLY_MASK_ALPHA(BC_RGBA8888, unsigned char, 0xff, 4, 0, a, b); \
+	APPLY_MASK_ALPHA(BC_RGB161616, uint16_t, 0xffff, 3, 0, a, b); \
+	APPLY_MASK_ALPHA(BC_YUV161616, uint16_t, 0xffff, 3, 1, a, b); \
+	APPLY_MASK_ALPHA(BC_YUVA16161616, uint16_t, 0xffff, 4, 1, a, b); \
+	APPLY_MASK_ALPHA(BC_RGBA16161616, uint16_t, 0xffff, 4, 0, a, b); \
+} break
 
 //printf("MaskUnit::process_package 1 %d\n", engine->mode);
-		for(int i = ptr->start_y; i < ptr->end_y; i++)
-		{
-			switch(engine->mode)
-			{
-				case MASK_MULTIPLY_ALPHA:
-					switch(engine->output->get_color_model())
-					{
-						case BC_RGB888:
-							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 3, 0);
-							break;
-						case BC_RGB_FLOAT:
-							APPLY_MASK_MULTIPLY_ALPHA(float, 1.0, 3, 0);
-							break;
-						case BC_YUV888:
-							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 3, 1);
-							break;
-						case BC_RGBA_FLOAT:
-							APPLY_MASK_MULTIPLY_ALPHA(float, 1.0, 4, 0);
-							break;
-						case BC_YUVA8888:
-							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 4, 1);
-							break;
-						case BC_RGBA8888:
-							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 4, 0);
-							break;
-						case BC_RGB161616:
-							APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 3, 0);
-							break;
-						case BC_YUV161616:
-							APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 3, 1);
-							break;
-						case BC_YUVA16161616:
-							APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 4, 1);
-							break;
-						case BC_RGBA16161616:
-							APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 4, 0);
-							break;
-					}
-					break;
-
-				case MASK_SUBTRACT_ALPHA:
-					switch(engine->output->get_color_model())
-					{
-						case BC_RGB888:
-							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 3, 0);
-							break;
-						case BC_RGB_FLOAT:
-							APPLY_MASK_SUBTRACT_ALPHA(float, 1.0, 3, 0);
-							break;
-						case BC_RGBA_FLOAT:
-							APPLY_MASK_SUBTRACT_ALPHA(float, 1.0, 4, 0);
-							break;
-						case BC_RGBA8888:
-							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 4, 0);
-							break;
-						case BC_YUV888:
-							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 3, 1);
-							break;
-						case BC_YUVA8888:
-							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 4, 1);
-							break;
-						case BC_RGB161616:
-							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 3, 0);
-							break;
-						case BC_RGBA16161616:
-							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 4, 0);
-							break;
-						case BC_YUV161616:
-							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 3, 1);
-							break;
-						case BC_YUVA16161616:
-							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 4, 1);
-							break;
-					}
-					break;
-			}
+		int mask_w = engine->mask->get_w();
+		switch( engine_mode ) {
+		MASK_ALPHA(MASK_MULTIPLY_ALPHA, m, n);
+		MASK_ALPHA(MASK_SUBTRACT_ALPHA, n, m);
 		}
 	}
 }
-
-
-
 
 
 MaskEngine::MaskEngine(int cpus)
@@ -750,14 +499,12 @@ MaskEngine::MaskEngine(int cpus)
 
 MaskEngine::~MaskEngine()
 {
-	if(mask)
-	{
+	if( mask ) {
 		delete mask;
 		delete temp_mask;
 	}
 
-	for(int i = 0; i < point_sets.total; i++)
-	{
+	for( int i = 0; i < point_sets.total; i++ ) {
 		ArrayList<MaskPoint*> *points = point_sets.values[i];
 		points->remove_all_objects();
 	}
@@ -768,11 +515,10 @@ int MaskEngine::points_equivalent(ArrayList<MaskPoint*> *new_points,
 	ArrayList<MaskPoint*> *points)
 {
 //printf("MaskEngine::points_equivalent %d %d\n", new_points->total, points->total);
-	if(new_points->total != points->total) return 0;
+	if( new_points->total != points->total ) return 0;
 
-	for(int i = 0; i < new_points->total; i++)
-	{
-		if(!(*new_points->values[i] == *points->values[i])) return 0;
+	for( int i = 0; i < new_points->total; i++ ) {
+		if( !(*new_points->values[i] == *points->values[i]) ) return 0;
 	}
 
 	return 1;
@@ -787,64 +533,55 @@ void MaskEngine::do_mask(VFrame *output,
 	int new_color_model = 0;
 	recalculate = 0;
 
-	switch(output->get_color_model())
-	{
-		case BC_RGB_FLOAT:
-		case BC_RGBA_FLOAT:
-			new_color_model = BC_A_FLOAT;
-			break;
+	switch( output->get_color_model() ) {
+	case BC_RGB_FLOAT:
+	case BC_RGBA_FLOAT:
+		new_color_model = BC_A_FLOAT;
+		break;
 
-		case BC_RGB888:
-		case BC_RGBA8888:
-		case BC_YUV888:
-		case BC_YUVA8888:
-			new_color_model = BC_A8;
-			break;
+	case BC_RGB888:
+	case BC_RGBA8888:
+	case BC_YUV888:
+	case BC_YUVA8888:
+		new_color_model = BC_A8;
+		break;
 
-		case BC_RGB161616:
-		case BC_RGBA16161616:
-		case BC_YUV161616:
-		case BC_YUVA16161616:
-			new_color_model = BC_A16;
-			break;
+	case BC_RGB161616:
+	case BC_RGBA16161616:
+	case BC_YUV161616:
+	case BC_YUVA16161616:
+		new_color_model = BC_A16;
+		break;
 	}
 
 // Determine if recalculation is needed
 SET_TRACE
 
-	if(mask &&
-		(mask->get_w() != output->get_w() ||
-		mask->get_h() != output->get_h() ||
-		mask->get_color_model() != new_color_model))
-	{
+	if( mask &&
+	    (mask->get_w() != output->get_w() ||
+	     mask->get_h() != output->get_h() ||
+	     mask->get_color_model() != new_color_model) ) {
 		delete mask;
 		delete temp_mask;
 		mask = 0;
 		recalculate = 1;
 	}
 
-	if(!recalculate)
-	{
-		if(point_sets.total != keyframe_set->total_submasks(start_position_project,
-			PLAY_FORWARD))
+	if( !recalculate ) {
+		if( point_sets.total != keyframe_set->total_submasks(start_position_project,
+			PLAY_FORWARD) )
 			recalculate = 1;
 	}
 
-	if(!recalculate)
-	{
-		for(int i = 0;
-			i < keyframe_set->total_submasks(start_position_project,
-				PLAY_FORWARD) && !recalculate;
-			i++)
-		{
-			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
-			keyframe_set->get_points(new_points,
-				i,
-				start_position_project,
-				PLAY_FORWARD);
-			if(!points_equivalent(new_points, point_sets.values[i])) recalculate = 1;
-			new_points->remove_all_objects();
-			delete new_points;
+	if( !recalculate ) {
+		for( int i=0,n=keyframe_set->total_submasks(start_position_project, PLAY_FORWARD);
+				i<n && !recalculate; ++i ) {
+			ArrayList<MaskPoint*> new_points;
+			keyframe_set->get_points(&new_points, i,
+				start_position_project, PLAY_FORWARD);
+			if( !points_equivalent(&new_points, point_sets.values[i]) )
+				recalculate = 1;
+			new_points.remove_all_objects();
 		}
 	}
 
@@ -853,35 +590,31 @@ SET_TRACE
 	float new_feather = keyframe_set->get_feather(start_position_project,
 		PLAY_FORWARD);
 
-	if(recalculate ||
+	if( recalculate ||
 		!EQUIV(new_feather, feather) ||
-		!EQUIV(new_value, value))
-	{
+		!EQUIV(new_value, value) ) {
 		recalculate = 1;
-		if(!mask)
-		{
+		if( !mask ) {
 			mask = new VFrame(output->get_w(), output->get_h(),
 					new_color_model, 0);
 			temp_mask = new VFrame(output->get_w(), output->get_h(),
 					new_color_model, 0);
 		}
-		if(new_feather > 0)
+		if( new_feather > 0 )
 			temp_mask->clear_frame();
 		else
 			mask->clear_frame();
 
-		for(int i = 0; i < point_sets.total; i++)
-		{
+		for( int i = 0; i < point_sets.total; i++ ) {
 			ArrayList<MaskPoint*> *points = point_sets.values[i];
 			points->remove_all_objects();
 		}
 		point_sets.remove_all_objects();
 
-		for(int i = 0;
+		for( int i = 0;
 			i < keyframe_set->total_submasks(start_position_project,
 				PLAY_FORWARD);
-			i++)
-		{
+			i++ ) {
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
 			keyframe_set->get_points(new_points,
 				i,

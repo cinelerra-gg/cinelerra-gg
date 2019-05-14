@@ -21,16 +21,9 @@
 
 #include "bcdisplayinfo.h"
 #include "language.h"
+#include "theme.h"
 #include "unsharp.h"
 #include "unsharpwindow.h"
-
-
-
-
-
-
-
-
 
 
 UnsharpWindow::UnsharpWindow(UnsharpMain *plugin)
@@ -174,7 +167,7 @@ int UnsharpDefaultSettings::handle_event()
 }
 
 UnsharpSliderClr::UnsharpSliderClr(UnsharpMain *plugin, UnsharpWindow *window, int x, int y, int w, int clear)
- : BC_GenericButton(x, y, w, _("⌂"))
+ : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->window = window;

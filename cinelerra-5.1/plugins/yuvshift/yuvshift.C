@@ -130,7 +130,7 @@ int YUVShiftReset::handle_event()
 
 
 YUVShiftSliderClr::YUVShiftSliderClr(YUVShiftEffect *plugin, YUVShiftWindow *window, int x, int y, int w, int clear)
- : BC_GenericButton(x, y, w, _("⌂"))
+ : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->window = window;

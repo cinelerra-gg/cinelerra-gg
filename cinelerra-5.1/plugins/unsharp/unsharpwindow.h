@@ -77,7 +77,7 @@ public:
 	UnsharpWindow *window;
 };
 
-class UnsharpSliderClr : public BC_GenericButton
+class UnsharpSliderClr : public BC_Button
 {
 public:
 	UnsharpSliderClr(UnsharpMain *plugin, UnsharpWindow *window, int x, int y, int w, int clear);

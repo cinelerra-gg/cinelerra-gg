@@ -386,17 +386,77 @@ const char* BC_Signals::sig_to_str(int number)
 #if __i386__
 #define IP eip
 #define sigregs_t sigcontext
+
+static void reg_dump(FILE *fp,sigregs_t *rp)
+{
+	fprintf(fp,"REGS:\n");
+	fprintf(fp,"  gs: %04x:%04x\n", rp->gs,rp->__gsh);
+	fprintf(fp,"  fs: %04x:%04x\n", rp->fs,rp->__fsh);
+	fprintf(fp,"  es: %04x:%04x\n", rp->es,rp->__esh);
+	fprintf(fp,"  ds: %04x:%04x\n", rp->ds,rp->__dsh);
+	fprintf(fp," edi: %14p %d\n", (void*)rp->edi,rp->edi);
+	fprintf(fp," esi: %14p %d\n", (void*)rp->esi,rp->esi);
+	fprintf(fp," ebp: %14p %d\n", (void*)rp->ebp,rp->ebp);
+	fprintf(fp," esp: %14p %d\n", (void*)rp->esp,rp->esp);
+	fprintf(fp," ebx: %14p %d\n", (void*)rp->ebx,rp->ebx);
+	fprintf(fp," edx: %14p %d\n", (void*)rp->edx,rp->edx);
+	fprintf(fp," ecx: %14p %d\n", (void*)rp->ecx,rp->ecx);
+	fprintf(fp," eax: %14p %d\n", (void*)rp->eax,rp->eax);
+	fprintf(fp," trapno: %14p %d\n", (void*)rp->trapno,rp->trapno);
+	fprintf(fp," err: %14p %d\n", (void*)rp->err,rp->err);
+	fprintf(fp," eip: %14p %d\n", (void*)rp->eip,rp->eip);
+	fprintf(fp," cs: %04xd : %04x\n", rp->cs,rp->__csh);
+	fprintf(fp," eflags: %14p %d\n", (void*)rp->eflags,rp->eflags);
+	fprintf(fp," esp_at_signal: %p %d\n", (void*)rp->esp_at_signal,rp->esp_at_signal);
+	fprintf(fp," ss: %04xd : %04x\n", rp->ss,rp->__ssh);
+	fprintf(fp," oldmask: %14p %d\n", (void*)rp->oldmask,rp->oldmask);
+	fprintf(fp," cr2: %14p %d\n", (void*)rp->cr2,rp->cr2);
+	fprintf(fp,"\n");
+}
 #endif
 
 #if __x86_64__
 #define IP rip
 #define sigregs_t sigcontext
+
+static void reg_dump(FILE *fp,sigregs_t *rp)
+{
+	fprintf(fp,"REGS:\n");
+	fprintf(fp,"  r8: %20p %jd\n", (void*)rp->r8,rp->r8);
+	fprintf(fp,"  r9: %20p %jd\n", (void*)rp->r9,rp->r9);
+	fprintf(fp," r10: %20p %jd\n", (void*)rp->r10,rp->r10);
+	fprintf(fp," r11: %20p %jd\n", (void*)rp->r11,rp->r11);
+	fprintf(fp," r12: %20p %jd\n", (void*)rp->r12,rp->r12);
+	fprintf(fp," r13: %20p %jd\n", (void*)rp->r13,rp->r13);
+	fprintf(fp," r14: %20p %jd\n", (void*)rp->r14,rp->r14);
+	fprintf(fp," r15: %20p %jd\n", (void*)rp->r15,rp->r15);
+	fprintf(fp," rdi: %20p %jd\n", (void*)rp->rdi,rp->rdi);
+	fprintf(fp," rsi: %20p %jd\n", (void*)rp->rsi,rp->rsi);
+	fprintf(fp," rbp: %20p %jd\n", (void*)rp->rbp,rp->rbp);
+	fprintf(fp," rbx: %20p %jd\n", (void*)rp->rbx,rp->rbx);
+	fprintf(fp," rdx: %20p %jd\n", (void*)rp->rdx,rp->rdx);
+	fprintf(fp," rax: %20p %jd\n", (void*)rp->rax,rp->rax);
+	fprintf(fp," rcx: %20p %jd\n", (void*)rp->rcx,rp->rcx);
+	fprintf(fp," rsp: %20p %jd\n", (void*)rp->rsp,rp->rsp);
+	fprintf(fp," rip: %20p %jd\n", (void*)rp->rip,rp->rip);
+	fprintf(fp," eflags: %14p %jd\n", (void*)rp->eflags,rp->eflags);
+	fprintf(fp,"  cs: %04x\n", rp->cs);
+	fprintf(fp,"  gs: %04x\n", rp->gs);
+	fprintf(fp,"  fs: %04x\n", rp->fs);
+	fprintf(fp," err: %20p %jd\n", (void*)rp->err,rp->err);
+	fprintf(fp," trapno: %20p %jd\n", (void*)rp->trapno,rp->trapno);
+	fprintf(fp," oldmask: %20p %jd\n", (void*)rp->oldmask,rp->oldmask);
+	fprintf(fp," cr2: %20p %jd\n", (void*)rp->cr2,rp->cr2);
+	fprintf(fp,"\n");
+}
+
 #endif
 
 #if __powerpc__ || __powerpc64__ || __powerpc64le__
 #include <asm/ptrace.h>
 #define IP nip
 #define sigregs_t pt_regs
+static void reg_dump(FILE *fp,sigregs_t *rp) {}
 #endif
 
 #ifndef IP
@@ -481,6 +541,7 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
 	else
 		fprintf(fp,"err opening: %s, %m\n", proc_mem);
 
+	reg_dump(fp, c);
 	fprintf(fp,"\n\n");
 	if( fp != stdout ) fclose(fp);
 	char cmd[1024], *cp = cmd;

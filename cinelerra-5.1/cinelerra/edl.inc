@@ -151,6 +151,8 @@ class EDL;
 #define CWINDOW_MASK_CONTROL_IN 0x15
 #define CWINDOW_MASK_CONTROL_OUT 0x16
 #define CWINDOW_MASK_TRANSLATE 0x17
+#define CWINDOW_MASK_ROTATE 0x18
+#define CWINDOW_MASK_SCALE 0x19
 
 // Inclusive limits for zoom panel
 #define MIN_ZOOM_TIME 1

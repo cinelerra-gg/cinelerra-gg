@@ -677,7 +677,7 @@ Color3WaySliderClrSection::Color3WaySliderClrSection(Color3WayMain *plugin,
 	int w,
 	int clear,
 	int section)
- : BC_GenericButton(x, y, w, _("⌂"))
+ : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->gui = gui;

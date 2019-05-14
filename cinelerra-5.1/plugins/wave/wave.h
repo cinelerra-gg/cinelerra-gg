@@ -32,6 +32,7 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
+#include "theme.h"
 #include "vframe.h"
 
 #include <math.h>
@@ -147,7 +148,7 @@ public:
 	WaveWindow *gui;
 };
 
-class WaveSliderClr : public BC_GenericButton
+class WaveSliderClr : public BC_Button
 {
 public:
 	WaveSliderClr(WaveEffect *plugin, WaveWindow *gui, int x, int y, int w, int clear);

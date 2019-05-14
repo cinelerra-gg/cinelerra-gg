@@ -32,6 +32,7 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
+#include "theme.h"
 #include "vframe.h"
 
 #define RESET_DEFAULT_SETTINGS 10
@@ -141,7 +142,7 @@ public:
 };
 
 
-class ZoomBlurSliderClr : public BC_GenericButton
+class ZoomBlurSliderClr : public BC_Button
 {
 public:
 	ZoomBlurSliderClr(ZoomBlurMain *plugin, ZoomBlurWindow *window, int x, int y, int w, int clear);

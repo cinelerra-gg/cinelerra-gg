@@ -37,6 +37,7 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
+#include "theme.h"
 #include "vframe.h"
 
 #define RESET_DEFAULT_SETTINGS 10
@@ -128,7 +129,7 @@ public:
 	RadialBlurWindow *gui;
 };
 
-class RadialBlurSliderClr : public BC_GenericButton
+class RadialBlurSliderClr : public BC_Button
 {
 public:
 	RadialBlurSliderClr(RadialBlurMain *plugin, RadialBlurWindow *gui, int x, int y, int w, int clear);

@@ -24,15 +24,12 @@
 
 #include "condition.inc"
 #include "cwindowgui.inc"
+#include "cwindowtool.inc"
 #include "guicast.h"
+#include "keyframe.inc"
 #include "maskauto.inc"
 #include "maskautos.inc"
 #include "mwindow.inc"
-
-
-class CWindowToolGUI;
-class CWindowCoord;
-class CWindowCurveToggle;
 
 
 // This common thread supports all the tool GUI's.
@@ -128,56 +125,69 @@ public:
 	CWindowCoord *x1, *y1, *width, *height;
 };
 
-class CWindowMaskMode : public BC_PopupMenu
+class CWindowMaskItems : public ArrayList<BC_ListBoxItem*>
 {
 public:
-	CWindowMaskMode(MWindow *mwindow, CWindowToolGUI *gui, int x, int y, const char *text);
-	void create_objects();
-	int handle_event();
-	static char* mode_to_text(int mode);
-	int text_to_mode(char *text);
-	MWindow *mwindow;
-	CWindowToolGUI *gui;
+	CWindowMaskItems() {}
+	~CWindowMaskItems() { remove_all_objects(); }
 };
 
-class CWindowMaskDelete : public BC_GenericButton
+class CWindowMaskName : public BC_PopupTextBox
 {
 public:
-	CWindowMaskDelete(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
-	int handle_event();
-	int keypress_event();
+	CWindowMaskName(MWindow *mwindow, CWindowToolGUI *gui, int x, int y, const char *text);
+	~CWindowMaskName();
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
-};
+	CWindowMaskItems mask_items;
 
-class CWindowMaskCycleNext : public BC_GenericButton
-{
-public:
-	CWindowMaskCycleNext(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
 	int handle_event();
-	MWindow *mwindow;
-	CWindowToolGUI *gui;
+	void update_items(MaskAuto *keyframe);
 };
 
-class CWindowMaskCyclePrev : public BC_GenericButton
+class CWindowMaskFade : public BC_TumbleTextBox
 {
 public:
-	CWindowMaskCyclePrev(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskFade(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	~CWindowMaskFade();
+	int update(float v);
+	int update_value(float v);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
 
-class CWindowMaskNumber : public BC_TumbleTextBox
+class CWindowMaskFadeSlider : public BC_ISlider
 {
 public:
-	CWindowMaskNumber(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
-	~CWindowMaskNumber();
+	CWindowMaskFadeSlider(MWindow *mwindow, CWindowToolGUI *gui,
+		int x, int y, int w);
+	~CWindowMaskFadeSlider();
+	int handle_event();
+	int update(int64_t v);
+	char *get_caption() { return 0; }
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
+class CWindowMaskMode : public BC_Toggle
+{
+public:
+	CWindowMaskMode(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	~CWindowMaskMode();
 	int handle_event();
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
 
+class CWindowMaskDelMask : public BC_GenericButton
+{
+public:
+	CWindowMaskDelMask(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
 
 class CWindowMaskAffectedPoint : public BC_TumbleTextBox
 {
@@ -189,25 +199,61 @@ public:
 	CWindowToolGUI *gui;
 };
 
+class CWindowMaskDelPoint : public BC_GenericButton
+{
+public:
+	CWindowMaskDelPoint(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	int handle_event();
+	int keypress_event();
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
 
 class CWindowMaskFeather : public BC_TumbleTextBox
 {
 public:
 	CWindowMaskFeather(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
 	~CWindowMaskFeather();
+	int update(float v);
+	int update_value(float v);
 	int handle_event();
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
 
-class CWindowMaskValue : public BC_ISlider
+class CWindowMaskFeatherSlider : public BC_FSlider
 {
 public:
-	CWindowMaskValue(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
-	~CWindowMaskValue();
+	CWindowMaskFeatherSlider(MWindow *mwindow, CWindowToolGUI *gui,
+		int x, int y, int w, float v);
+	~CWindowMaskFeatherSlider();
 	int handle_event();
+	int update(float v);
+	char *get_caption() { return 0; }
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
+};
+
+class CWindowMaskClrMask : public BC_Button
+{
+public:
+	CWindowMaskClrMask(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y);
+	~CWindowMaskClrMask();
+	static int calculate_w(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
+};
+
+class CWindowMaskClrPoint : public BC_Button
+{
+public:
+	CWindowMaskClrPoint(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y);
+	~CWindowMaskClrPoint();
+
+	int handle_event();
+	MWindow *mwindow;
+	CWindowMaskGUI *gui;
 };
 
 class CWindowMaskBeforePlugins : public BC_CheckBox
@@ -238,22 +284,23 @@ public:
 		SubMask* &mask, MaskPoint* &point, int create_it);
 	void update_preview();
 
-	CWindowCoord *x, *y;
+	CWindowMaskName *name;
+	CWindowMaskClrMask *clr_mask;
+	CWindowMaskDelMask *del_mask;
+	CWindowMaskFade *fade;
+	CWindowMaskFadeSlider *fade_slider;
 	CWindowMaskMode *mode;
-	CWindowMaskFeather *feather;
-	CWindowMaskDelete *delete_point;
 	CWindowMaskAffectedPoint *active_point;
-// Not necessary if all keyframes have same points
-//	CWindowMaskCycleNext *next_point;
-//	CWindowMaskCyclePrev *prev_point;
-	CWindowMaskNumber *number;
-	CWindowMaskValue *value;
+	CWindowMaskClrPoint *clr_point;
+	CWindowMaskDelPoint *del_point;
+	CWindowCoord *x, *y;
+	CWindowMaskFeather *feather;
+	CWindowMaskFeatherSlider *feather_slider;
 	CWindowMaskBeforePlugins *apply_before_plugins;
 	CWindowDisableOpenGLMasking *disable_opengl_masking;
 };
 
 
-class CWindowEyedropCheckBox;
 class CWindowEyedropGUI : public CWindowToolGUI
 {
 public:

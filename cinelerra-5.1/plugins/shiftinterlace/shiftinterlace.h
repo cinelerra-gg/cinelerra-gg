@@ -29,6 +29,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "pluginvclient.h"
+#include "theme.h"
 #include "vframe.h"
 
 
@@ -91,7 +92,7 @@ public:
 	ShiftInterlaceWindow *gui;
 };
 
-class ShiftInterlaceSliderClr : public BC_GenericButton
+class ShiftInterlaceSliderClr : public BC_Button
 {
 public:
 	ShiftInterlaceSliderClr(ShiftInterlaceMain *plugin, ShiftInterlaceWindow *gui, int x, int y, int w, int clear);

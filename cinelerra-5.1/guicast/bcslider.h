@@ -32,13 +32,8 @@ class BC_PercentageSlider;
 class BC_Slider : public BC_SubWindow
 {
 public:
-	BC_Slider(int x,
-		int y,
-		int pixels,
-		int pointer_motion_range,
-		VFrame **images,
-		int show_number,
-		int vertical,
+	BC_Slider(int x, int y, int pixels, int pointer_motion_range,
+		VFrame **images, int show_number, int vertical,
 		int use_caption);
 	virtual ~BC_Slider();
 
@@ -108,18 +103,9 @@ private:
 class BC_ISlider : public BC_Slider
 {
 public:
-	BC_ISlider(int x,
-			int y,
-			int vertical,
-			int pixels,
-			int pointer_motion_range,
-			int64_t minvalue,
-			int64_t maxvalue,
-			int64_t value,
-			int use_caption = 0,
-			VFrame **data = 0,
-			int *output = 0);
-
+	BC_ISlider(int x, int y, int vertical, int pixels, int pointer_motion_range,
+		int64_t minvalue, int64_t maxvalue, int64_t value,
+		int use_caption = 0, VFrame **data = 0, int *output = 0);
 	int update(int64_t value);
 	int update(int pointer_motion_range, int64_t value, int64_t minvalue, int64_t maxvalue);
 	int64_t get_value();
@@ -142,16 +128,9 @@ private:
 class BC_FSlider : public BC_Slider
 {
 public:
-	BC_FSlider(int x,
-			int y,
-			int vertical,
-			int pixels,
-			int pointer_motion_range,
-			float minvalue,
-			float maxvalue,
-			float value,
-			int use_caption = 0,
-			VFrame **data = 0);
+	BC_FSlider(int x, int y, int vertical, int pixels, int pointer_motion_range,
+		float minvalue, float maxvalue, float value,
+		int use_caption = 0, VFrame **data = 0);
 
 	friend class BC_PercentageSlider;
 
@@ -179,20 +158,11 @@ private:
 class BC_PercentageSlider : public BC_FSlider
 {
 public:
-	BC_PercentageSlider(int x,
-			int y,
-			int vertical,
-			int pixels,
-			int pointer_motion_range,
-			float minvalue,
-			float maxvalue,
-			float value,
-			int use_caption = 0,
-			VFrame **data = 0);
-
+	BC_PercentageSlider(int x, int y, int vertical, int pixels, int pointer_motion_range,
+		float minvalue, float maxvalue, float value,
+		int use_caption = 0, VFrame **data = 0);
 	char* get_caption();
 private:
 };
-
 
 #endif

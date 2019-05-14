@@ -198,7 +198,7 @@ int SharpenDefaultSettings::handle_event()
 
 
 SharpenSliderClr::SharpenSliderClr(SharpenMain *client, SharpenWindow *gui, int x, int y, int w)
- : BC_GenericButton(x, y, w, _("⌂"))
+ : BC_Button(x, y, w, client->get_theme()->get_image_set("reset_button"))
 {
 	this->client = client;
 	this->gui = gui;

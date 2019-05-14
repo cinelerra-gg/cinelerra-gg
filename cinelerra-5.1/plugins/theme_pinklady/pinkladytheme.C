@@ -261,6 +261,12 @@ void PINKLADY::initialize()
 		"new_bigbutton_dn.png",
 		"new_ok_images");
 
+        new_button("reset.png",
+                "reset_up.png",
+                "reset_dn.png",
+                "reset_hi.png",
+                "reset_button");
+
 	resources->cancel_images = new_button("cancel.png",
 		"filebox_bigbutton_up.png",
 		"filebox_bigbutton_hi.png",
@@ -621,6 +627,13 @@ void PINKLADY::initialize()
 		"proxy_s_chkd.png",
 		"proxy_s_down.png",
 		"proxy_s_chkdhi.png");
+
+	mask_mode_toggle = new_image_set(5,
+		"mask_mode_up.png",
+		"mask_mode_hi.png",
+		"mask_mode_chkd.png",
+		"mask_mode_down.png",
+		"mask_mode_chkdhi.png");
 
 	shbtn_data = new_image_set(3,
 		"shbtn_up.png",

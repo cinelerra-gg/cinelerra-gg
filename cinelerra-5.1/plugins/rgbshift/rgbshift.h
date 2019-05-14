@@ -31,6 +31,7 @@
 #include "language.h"
 #include "bccolors.h"
 #include "pluginvclient.h"
+#include "theme.h"
 #include "vframe.h"
 
 #include <stdint.h>
@@ -86,7 +87,7 @@ public:
 	RGBShiftWindow *window;
 };
 
-class RGBShiftSliderClr : public BC_GenericButton
+class RGBShiftSliderClr : public BC_Button
 {
 public:
 	RGBShiftSliderClr(RGBShiftEffect *plugin, RGBShiftWindow *window, int x, int y, int w, int clear);

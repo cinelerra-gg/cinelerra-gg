@@ -64,9 +64,11 @@ int MaskPoint::operator==(MaskPoint& ptr)
 		EQUIV(control_y2, ptr.control_y2);
 }
 
-SubMask::SubMask(MaskAuto *keyframe)
+SubMask::SubMask(MaskAuto *keyframe, int no)
 {
 	this->keyframe = keyframe;
+	memset(name, 0, sizeof(name));
+	sprintf(name, "%d", no);
 }
 
 SubMask::~SubMask()
@@ -95,6 +97,8 @@ int SubMask::operator==(SubMask& ptr)
 
 void SubMask::copy_from(SubMask& ptr)
 {
+	memset(name, 0, sizeof(name));
+	strncpy(name, ptr.name, sizeof(name-1));
 	points.remove_all_objects();
 //printf("SubMask::copy_from 1 %p %d\n", this, ptr.points.total);
 	for(int i = 0; i < ptr.points.total; i++)
@@ -171,6 +175,7 @@ void SubMask::copy(FileXML *file)
 	{
 		file->tag.set_title("MASK");
 		file->tag.set_property("NUMBER", keyframe->masks.number_of(this));
+		file->tag.set_property("NAME", name);
 		file->append_tag();
 		file->append_newline();
 
@@ -230,7 +235,7 @@ MaskAuto::MaskAuto(EDL *edl, MaskAutos *autos)
 // submask matches.
 
 	for(int i = 0; i < SUBMASKS; i++)
-		masks.append(new SubMask(this));
+		masks.append(new SubMask(this, i));
 }
 
 MaskAuto::~MaskAuto()
@@ -312,7 +317,7 @@ void MaskAuto::copy_data(MaskAuto *src)
 	masks.remove_all_objects();
 	for(int i = 0; i < src->masks.size(); i++)
 	{
-		masks.append(new SubMask(this));
+		masks.append(new SubMask(this, i));
 		masks.values[i]->copy_from(*src->masks.values[i]);
 	}
 }
@@ -340,7 +345,7 @@ int MaskAuto::interpolate_from(Auto *a1, Auto *a2, int64_t position, Auto *templ
 		i < mask_auto1->masks.total;
 		i++)
 	{
-		SubMask *new_submask = new SubMask(this);
+		SubMask *new_submask = new SubMask(this, i);
 		masks.append(new_submask);
 		SubMask *mask1 = mask_auto1->masks.values[i];
 		SubMask *mask2 = mask_auto2->masks.values[i];
@@ -408,24 +413,21 @@ void MaskAuto::load(FileXML *file)
 	for(int i = 0; i < masks.size(); i++)
 	{
 		delete masks.values[i];
-		masks.values[i] = new SubMask(this);
+		masks.values[i] = new SubMask(this, i);
 	}
 
 	int result = 0;
-	while(!result)
-	{
-		result = file->read_tag();
-
-		if(!result)
-		{
-			if(file->tag.title_is("/AUTO"))
-				result = 1;
-			else
-			if(file->tag.title_is("MASK"))
-			{
-				SubMask *mask = masks.values[file->tag.get_property("NUMBER", 0)];
-				mask->load(file);
-			}
+	while( !(result = file->read_tag()) ) {
+		if( file->tag.title_is("/AUTO") ) break;
+		if( file->tag.title_is("MASK") ) {
+			int no = file->tag.get_property("NUMBER", 0);
+			char name[BCTEXTLEN];  name[0] = 0;
+			file->tag.get_property("NAME", name);
+			if( !name[0] ) sprintf(name, "%d", no);
+			SubMask *mask = masks.values[no];
+			memset(mask->name, 0, sizeof(mask->name));
+			strncpy(mask->name, name, sizeof(mask->name));
+			mask->load(file);
 		}
 	}
 //	dump();
@@ -454,7 +456,6 @@ void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 //printf("MaskAuto::copy 10\n");
 	}
 
-	file->append_newline();
 	file->tag.set_title("/AUTO");
 	file->append_tag();
 	file->append_newline();

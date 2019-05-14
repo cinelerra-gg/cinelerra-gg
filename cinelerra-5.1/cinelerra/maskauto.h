@@ -47,7 +47,7 @@ public:
 class SubMask
 {
 public:
-	SubMask(MaskAuto *keyframe);
+	SubMask(MaskAuto *keyframe, int no);
 	~SubMask();
 
 // Don't use ==
@@ -58,6 +58,7 @@ public:
 	void copy(FileXML *file);
 	void dump();
 
+	char name[BCSTRLEN];
 	ArrayList<MaskPoint*> points;
 	MaskAuto *keyframe;
 };

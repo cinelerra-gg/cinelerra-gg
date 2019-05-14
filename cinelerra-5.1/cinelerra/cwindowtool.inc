@@ -24,5 +24,39 @@
 
 
 class CWindowTool;
+class CWindowToolGUI;
+class CWindowCoord;
+class CWindowCurveToggle;
+class CWindowCropOK;
+class CWindowCropGUI;
+class CWindowMaskList;
+class CWindowMaskName;
+class CWindowMaskFade;
+class CWindowMaskMode;
+class CWindowMaskDelMask;
+class CWindowMaskAffectedPoint;
+class CWindowMaskDelPoint;
+class CWindowMaskFeather;
+class CWindowMaskFeatherSlider;
+class CWindowMaskBeforePlugins;
+class CWindowDisableOpenGLMasking;
+class CWindowMaskGUI;
+class CWindowEyedropGUI;
+class CWindowEyedropCheckBox;
+class CWindowCameraGUI;
+class CWindowCameraLeft;
+class CWindowCameraCenter;
+class CWindowCameraRight;
+class CWindowCameraTop;
+class CWindowCameraMiddle;
+class CWindowCameraBottom;
+class CWindowProjectorGUI;
+class CWindowProjectorLeft;
+class CWindowProjectorCenter;
+class CWindowProjectorRight;
+class CWindowProjectorTop;
+class CWindowProjectorMiddle;
+class CWindowProjectorBottom;
+class CWindowRulerGUI;
 
 #endif

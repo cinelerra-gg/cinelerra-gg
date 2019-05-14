@@ -28,6 +28,7 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
+#include "theme.h"
 #include "vframe.h"
 
 
@@ -98,7 +99,7 @@ public:
 	PolarWindow *window;
 };
 
-class PolarSliderClr : public BC_GenericButton
+class PolarSliderClr : public BC_Button
 {
 public:
 	PolarSliderClr(PolarEffect *plugin, PolarWindow *window, int x, int y, int w, int clear);
@@ -347,7 +348,7 @@ int PolarReset::handle_event()
 
 
 PolarSliderClr::PolarSliderClr(PolarEffect *plugin, PolarWindow *window, int x, int y, int w, int clear)
- : BC_GenericButton(x, y, w, _("⌂"))
+ : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->window = window;

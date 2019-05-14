@@ -30,6 +30,7 @@
 #include "language.h"
 #include "bccolors.h"
 #include "pluginvclient.h"
+#include "theme.h"
 #include "vframe.h"
 
 #include <stdint.h>
@@ -85,7 +86,7 @@ public:
 	YUVShiftWindow *window;
 };
 
-class YUVShiftSliderClr : public BC_GenericButton
+class YUVShiftSliderClr : public BC_Button
 {
 public:
 	YUVShiftSliderClr(YUVShiftEffect *plugin, YUVShiftWindow *window, int x, int y, int w, int clear);

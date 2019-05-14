@@ -111,7 +111,7 @@ public:
 	HueWindow *gui;
 };
 
-class HueSliderClr : public BC_GenericButton
+class HueSliderClr : public BC_Button
 {
 public:
 	HueSliderClr(HueEffect *plugin, HueWindow *gui, int x, int y, int w, int clear);

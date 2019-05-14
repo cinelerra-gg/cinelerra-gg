@@ -119,7 +119,7 @@ public:
 	ColorBalanceWindow *gui;
 };
 
-class ColorBalanceSliderClr : public BC_GenericButton
+class ColorBalanceSliderClr : public BC_Button
 {
 public:
 	ColorBalanceSliderClr(ColorBalanceMain *plugin, ColorBalanceWindow *gui, int x, int y, int w, int clear);

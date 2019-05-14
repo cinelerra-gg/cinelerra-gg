@@ -131,6 +131,7 @@ Theme::Theme()
 	ffmpeg_toggle = 0;
 	proxy_s_toggle = 0;
 	proxy_p_toggle = 0;
+	mask_mode_toggle = 0;
 	infoasset_data = 0;
 	in_point = 0;
 	insert_data = 0;

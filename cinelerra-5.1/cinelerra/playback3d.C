@@ -1208,19 +1208,29 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 
 // Clear screen
 		glDisable(GL_TEXTURE_2D);
-		if( command->default_auto->mode == MASK_MULTIPLY_ALPHA ) {
-			glClearColor(0.0, 0.0, 0.0, 0.0);
-			glColor4f((float)command->keyframe->value / 100,
-				(float)command->keyframe->value / 100,
-				(float)command->keyframe->value / 100,
-				1.0);
+		float value = command->keyframe->value / 100.f;
+		if( value >= 0 ) {
+			if( command->default_auto->mode == MASK_MULTIPLY_ALPHA ) {
+				glClearColor(0.f, 0.f, 0.f, 0.f);
+				glColor4f(value, value, value, 1.f);
+			}
+			else {
+				glClearColor(1.f, 1.f, 1.f, 1.f);
+				value = 1.f - value;
+				glColor4f(value, value, value, 1.f);
+			}
 		}
 		else {
-			glClearColor(1.0, 1.0, 1.0, 1.0);
-			glColor4f((float)1.0 - (float)command->keyframe->value / 100,
-				(float)1.0 - (float)command->keyframe->value / 100,
-				(float)1.0 - (float)command->keyframe->value / 100,
-				1.0);
+			if( command->default_auto->mode == MASK_MULTIPLY_ALPHA ) {
+				value = -value;
+				glClearColor(value, value, value, 1.f);
+				glColor4f(0.f, 0.f, 0.f, 0.f);
+			}
+			else {
+				value = 1.f + value;
+				glClearColor(value, value, value, 1.f);
+				glColor4f(1.f, 1.f, 1.f, 1.f);
+			}
 		}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

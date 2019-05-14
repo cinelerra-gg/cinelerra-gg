@@ -142,7 +142,7 @@ public:
 };
 
 
-class Color3WaySliderClrSection : public BC_GenericButton
+class Color3WaySliderClrSection : public BC_Button
 {
 public:
 	Color3WaySliderClrSection(Color3WayMain *plugin,

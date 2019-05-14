@@ -190,30 +190,19 @@ int MaskAutos::get_value(int64_t position, int direction)
 
 	int result = (int)((double)((MaskAuto*)begin)->value * (1.0 - weight) +
 		(double)((MaskAuto*)end)->value * weight + 0.5);
-// printf("MaskAutos::get_value %d %d %f %d %f %d\n",
-// __LINE__,
-// ((MaskAuto*)begin)->value,
-// 1.0 - weight,
-// ((MaskAuto*)end)->value,
-// weight,
-// result);
+// printf("MaskAutos::get_value %d %d %f %d %f %d\n", __LINE__,
+// ((MaskAuto*)begin)->value, 1.0 - weight, ((MaskAuto*)end)->value, weight, result);
 	return result;
 }
 
 
-void MaskAutos::avg_points(MaskPoint *output,
-		MaskPoint *input1,
-		MaskPoint *input2,
-		int64_t output_position,
-		int64_t position1,
-		int64_t position2)
+void MaskAutos::avg_points(MaskPoint *output, MaskPoint *input1, MaskPoint *input2,
+		int64_t output_position, int64_t position1, int64_t position2)
 {
-	if(position2 == position1)
-	{
+	if(position2 == position1) {
 		*output = *input1;
 	}
-	else
-	{
+	else {
 		float fraction2 = (float)(output_position - position1) / (position2 - position1);
 		float fraction1 = 1 - fraction2;
 		output->x = input1->x * fraction1 + input2->x * fraction2;

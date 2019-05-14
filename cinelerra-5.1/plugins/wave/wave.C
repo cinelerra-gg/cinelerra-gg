@@ -246,7 +246,7 @@ int WaveDefaultSettings::handle_event()
 }
 
 WaveSliderClr::WaveSliderClr(WaveEffect *plugin, WaveWindow *gui, int x, int y, int w, int clear)
- : BC_GenericButton(x, y, w, _("⌂"))
+ : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->gui = gui;

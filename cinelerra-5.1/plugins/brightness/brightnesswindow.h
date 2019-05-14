@@ -91,7 +91,7 @@ public:
 	BrightnessWindow *window;
 };
 
-class BrightnessSliderClr : public BC_GenericButton
+class BrightnessSliderClr : public BC_Button
 {
 public:
 	BrightnessSliderClr(BrightnessMain *client, BrightnessWindow *window, int x, int y, int w, int is_brightness);

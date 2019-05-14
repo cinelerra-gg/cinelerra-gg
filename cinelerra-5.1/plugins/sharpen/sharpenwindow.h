@@ -26,6 +26,7 @@
 #include "filexml.h"
 #include "mutex.h"
 #include "sharpen.h"
+#include "theme.h"
 
 #define RESET_DEFAULT_SETTINGS 10
 #define RESET_ALL 0
@@ -120,7 +121,7 @@ public:
 	SharpenWindow *gui;
 };
 
-class SharpenSliderClr : public BC_GenericButton
+class SharpenSliderClr : public BC_Button
 {
 public:
 	SharpenSliderClr(SharpenMain *client, SharpenWindow *gui, int x, int y, int w);

@@ -322,6 +322,7 @@ public:
 	VFrame **ffmpeg_toggle;
 	VFrame **proxy_p_toggle;
 	VFrame **proxy_s_toggle;
+	VFrame **mask_mode_toggle;
 	VFrame **infoasset_data;
 	VFrame **in_point;
 	VFrame **insert_data;

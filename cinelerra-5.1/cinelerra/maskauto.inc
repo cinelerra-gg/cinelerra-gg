@@ -28,10 +28,9 @@ class MaskAuto;
 class MaskPoint;
 class SubMask;
 
-enum
-{
+enum {
 	MASK_MULTIPLY_ALPHA,
-	MASK_SUBTRACT_ALPHA
+	MASK_SUBTRACT_ALPHA,
 };
 
 #define SUBMASKS 8

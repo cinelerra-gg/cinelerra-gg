@@ -22,6 +22,7 @@
 #include "bcdisplayinfo.h"
 #include "colorbalancewindow.h"
 #include "language.h"
+#include "theme.h"
 
 
 
@@ -241,7 +242,7 @@ int ColorBalanceReset::handle_event()
 
 ColorBalanceSliderClr::ColorBalanceSliderClr(ColorBalanceMain *plugin,
 	ColorBalanceWindow *gui, int x, int y, int w, int clear)
- : BC_GenericButton(x, y, w, _("⌂"))
+ : BC_Button(x, y, w, plugin->get_theme()->get_image_set("reset_button"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
