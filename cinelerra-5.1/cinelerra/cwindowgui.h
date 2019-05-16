@@ -284,6 +284,7 @@ public:
 		int button_press,
 		int cursor_motion,
 		int draw);
+	int do_mask_focus();
 	void draw_refresh(int flash = 1);
 	int need_overlays();
 	void draw_overlays();

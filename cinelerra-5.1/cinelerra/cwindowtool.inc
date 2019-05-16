@@ -22,22 +22,24 @@
 #ifndef CWINDOWTOOL_INC
 #define CWINDOWTOOL_INC
 
-
 class CWindowTool;
 class CWindowToolGUI;
 class CWindowCoord;
 class CWindowCurveToggle;
 class CWindowCropOK;
 class CWindowCropGUI;
-class CWindowMaskList;
+class CWindowMaskItems;
 class CWindowMaskName;
 class CWindowMaskFade;
+class CWindowMaskFadeSlider;
 class CWindowMaskMode;
 class CWindowMaskDelMask;
 class CWindowMaskAffectedPoint;
 class CWindowMaskDelPoint;
 class CWindowMaskFeather;
 class CWindowMaskFeatherSlider;
+class CWindowMaskClrMask;
+class CWindowMaskClrFeather;
 class CWindowMaskBeforePlugins;
 class CWindowDisableOpenGLMasking;
 class CWindowMaskGUI;

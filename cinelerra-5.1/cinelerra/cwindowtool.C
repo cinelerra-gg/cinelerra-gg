@@ -23,6 +23,7 @@
 
 #include "automation.h"
 #include "bccolors.h"
+#include "bctimer.h"
 #include "clip.h"
 #include "condition.h"
 #include "cpanel.h"
@@ -1561,6 +1562,7 @@ int CWindowMaskDelMask::handle_event()
 	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
+	int total_points;
 
 // Get existing keyframe
 	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe, mask, point, 0);
@@ -1572,19 +1574,24 @@ int CWindowMaskDelMask::handle_event()
 // Create temp keyframe
 		MaskAuto temp_keyframe(mwindow->edl, autos);
 		temp_keyframe.copy_data(keyframe);
-// Update parameter
 		SubMask *submask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
 		submask->points.remove_all_objects();
+		total_points = 0;
 // Commit change to span of keyframes
 		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->update_parameter(&temp_keyframe);
 #else
 		for(MaskAuto *current = (MaskAuto*)autos->default_auto; current; ) {
 			SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
-			submask->points.remove_all_objects();
+			submask->points.clear();
 			current = current == (MaskAuto*)autos->default_auto ?
 				(MaskAuto*)autos->first : (MaskAuto*)NEXT;
 		}
+		total_points = 0;
 #endif
+		if( mwindow->cwindow->gui->affected_point >= total_points )
+			mwindow->cwindow->gui->affected_point =
+				total_points > 0 ? total_points-1 : 0;
+
 		gui->update();
 		gui->update_preview();
 		mwindow->undo->update_undo_after(_("mask delete"), LOAD_AUTOMATION);
@@ -1712,6 +1719,25 @@ int CWindowMaskAffectedPoint::handle_event()
 	return 1;
 }
 
+
+CWindowMaskFocus::CWindowMaskFocus(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
+ : BC_CheckBox(x, y, ((CWindowMaskGUI*)gui)->focused, _("Focus"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+}
+
+CWindowMaskFocus::~CWindowMaskFocus()
+{
+}
+
+int CWindowMaskFocus::handle_event()
+{
+ 	((CWindowMaskGUI*)gui)->focused = get_value();
+	gui->update();
+	gui->update_preview();
+	return 1;
+}
 
 CWindowMaskFeather::CWindowMaskFeather(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
  : BC_TumbleTextBox(gui, 0, 0, 0xff, x, y, 64, 2)
@@ -1871,15 +1897,31 @@ CWindowMaskFadeSlider::CWindowMaskFadeSlider(MWindow *mwindow, CWindowToolGUI *g
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	timer = new Timer();
+	stick = 0;
 }
 
 CWindowMaskFadeSlider::~CWindowMaskFadeSlider()
 {
+	delete timer;
 }
 
 int CWindowMaskFadeSlider::handle_event()
 {
 	float v = 100*get_value()/200;
+	if( !v && !stick )
+		stick = 16;
+	else if( stick > 0 ) {
+		int64_t ms = timer->get_difference();
+		if( ms < 1000 ) {
+			--stick;
+			if( get_value() == 0 ) return 1;
+			update(v = 0);
+		}
+		else
+			stick = 0;
+	}
+	timer->update();
 	CWindowMaskGUI *mask_gui = (CWindowMaskGUI*)gui;
 	mask_gui->fade->BC_TumbleTextBox::update(v);
 	return mask_gui->fade->update_value(v);
@@ -1896,7 +1938,7 @@ CWindowMaskMode::CWindowMaskMode(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Mode"));
+	set_tooltip(_("Subtract/Multiply Alpha"));
 }
 
 CWindowMaskMode::~CWindowMaskMode()
@@ -1932,7 +1974,6 @@ int CWindowMaskMode::handle_event()
 	gui->update_preview();
 	return 1;
 }
-
 
 CWindowMaskBeforePlugins::CWindowMaskBeforePlugins(CWindowToolGUI *gui, int x, int y)
  : BC_CheckBox(x,
@@ -2024,73 +2065,38 @@ int CWindowMaskClrMask::handle_event()
 	return 1;
 }
 
-CWindowMaskClrPoint::CWindowMaskClrPoint(MWindow *mwindow,
+CWindowMaskClrFeather::CWindowMaskClrFeather(MWindow *mwindow,
 		CWindowMaskGUI *gui, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("reset_button"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip(_("Delete all points"));
+	set_tooltip(_("Zero Feather"));
 }
-
-CWindowMaskClrPoint::~CWindowMaskClrPoint()
+CWindowMaskClrFeather::~CWindowMaskClrFeather()
 {
 }
 
-int CWindowMaskClrPoint::handle_event()
+int CWindowMaskClrFeather::handle_event()
 {
-	MaskAutos *autos;
-	MaskAuto *keyframe;
-	Track *track;
-	MaskPoint *point;
-	SubMask *mask;
-	int total_points;
-
-// Get existing keyframe
-	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe, mask, point, 0);
-	if( track ) {
-		mwindow->undo->update_undo_before(_("clr points"), 0);
-#ifdef USE_KEYFRAME_SPANNING
-// Create temp keyframe
-		MaskAuto temp_keyframe(mwindow->edl, autos);
-		temp_keyframe.copy_data(keyframe);
-		SubMask *submask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
-		submask->points.remove_all_objects();
-		total_points = 0;
-// Commit change to span of keyframes
-		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->update_parameter(&temp_keyframe);
-#else
-		MaskAuto *current = (MaskAuto*)autos->default_auto;
-		while( current ) {
-			SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
-			submask->points.clear();
-			current = current == (MaskAuto*)autos->default_auto ?
-				(MaskAuto*)autos->first : (MaskAuto*)NEXT;
-		}
-		total_points = 0;
-#endif
-		if( mwindow->cwindow->gui->affected_point >= total_points )
-			mwindow->cwindow->gui->affected_point =
-				total_points > 0 ? total_points-1 : 0;
-
-		gui->update();
-		gui->update_preview();
-		mwindow->undo->update_undo_after(_("clr points"), LOAD_AUTOMATION);
-	}
-
-	return 1;
+	float v = 0;
+	CWindowMaskGUI * mask_gui = (CWindowMaskGUI*)gui;
+	mask_gui->feather->update(v);
+	mask_gui->feather_slider->update(v);
+	return mask_gui->feather->update_value(v);
 }
 
 
 CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, thread,
-	_(PROGRAM_NAME ": Mask"), 340, 350)
+	_(PROGRAM_NAME ": Mask"), 360, 440)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
 	active_point = 0;
 	fade = 0;
 	feather = 0;
+	focused = 0;
 }
 CWindowMaskGUI::~CWindowMaskGUI()
 {
@@ -2114,62 +2120,72 @@ void CWindowMaskGUI::create_objects()
 	lock_window("CWindowMaskGUI::create_objects");
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Mask:")));
-	int x1 = x + title->get_w() + margin;
-	name = new CWindowMaskName(mwindow, this, x + title->get_w() + margin, y, "");
+	int x1 = x + 70;
+	name = new CWindowMaskName(mwindow, this, x1, y, "");
 	name->create_objects();
-	x1 = x + name->get_w() + 2*margin;
 	add_subwindow(clr_mask = new CWindowMaskClrMask(mwindow, this, clr_x, y));
 	add_subwindow(del_mask = new CWindowMaskDelMask(mwindow, this, del_x, y));
 	y += name->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, _("Fade:")));
-	x1 = x + title->get_w() + margin;
 	fade = new CWindowMaskFade(mwindow, this, x1, y);
 	fade->create_objects();
-	x1 += fade->get_w() + 2*margin;
-	int w1 = clr_x-2*margin - x1;
-	add_subwindow(fade_slider = new CWindowMaskFadeSlider(mwindow, this, x1, y, w1));
-	x1 += fade_slider->get_w() + 2*margin;
+	int x2 = x1 + fade->get_w() + 2*margin;
+	int w2 = clr_x-2*margin - x2;
+	add_subwindow(fade_slider = new CWindowMaskFadeSlider(mwindow, this, x2, y, w2));
 	add_subwindow(mode = new CWindowMaskMode(mwindow, this, clr_x, y));
-	y += fade->get_h() + 3*margin;
+	y += fade->get_h() + margin;
+	add_subwindow(title = new BC_Title(x, y, _("Feather:")));
+	feather = new CWindowMaskFeather(mwindow, this, x1, y);
+	feather->create_objects();
+	x2 = x1 + feather->get_w() + margin;
+	w2 = clr_x - 2*margin - x2;
+	feather_slider = new CWindowMaskFeatherSlider(mwindow, this, x2, y, w2, 0);
+	add_subwindow(feather_slider);
+	add_subwindow(new CWindowMaskClrFeather(mwindow, this, clr_x, y));
+	y += feather->get_h() + 3*margin;
+
 	add_subwindow(title = new BC_Title(x, y, _("Point:")));
-	x1 = x + title->get_w() + margin;
 	active_point = new CWindowMaskAffectedPoint(mwindow, this, x1, y);
 	active_point->create_objects();
-	x1 += active_point->get_w() + margin;
-	add_subwindow(clr_point = new CWindowMaskClrPoint(mwindow, this, clr_x, y));
 	add_subwindow(del_point = new CWindowMaskDelPoint(mwindow, this, del_x, y));
 	y += active_point->get_h() + margin;
 	add_subwindow(title = new BC_Title(x, y, "X:"));
-	x1 = x + title->get_w() + margin;
 	this->x = new CWindowCoord(this, x1, y, (float)0.0);
 	this->x->create_objects();
-	x1 += this->x->get_w() + 3*margin;
-	add_subwindow(title = new BC_Title(x1, y, "Y:"));
-	x1 += title->get_w() + margin;
+	y += this->x->get_h() + margin;
+	add_subwindow(title = new BC_Title(x, y, "Y:"));
 	this->y = new CWindowCoord(this, x1, y, (float)0.0);
 	this->y->create_objects();
-	y += this->x->get_h() + 3*margin;
-	add_subwindow(title = new BC_Title(x, y, _("Feather:")));
-	x1 = x + title->get_w() + margin;
-	feather = new CWindowMaskFeather(mwindow, this, x1, y);
-	feather->create_objects();
-	x1 += feather->get_w() + margin;
-	feather_slider = new CWindowMaskFeatherSlider(mwindow, this, x1, y, 140, 0);
-	add_subwindow(feather_slider);
-	y += feather->get_h() + margin;
+	y += this->y->get_h() + margin;
+	BC_Bar *bar;
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += bar->get_h() + margin;
+
+	add_subwindow(title = new BC_Title(x, y, "X:"));
+	focus_x = new CWindowCoord(this, x1, y, (float)0.0);
+	focus_x->create_objects();
+	add_subwindow(focus = new CWindowMaskFocus(mwindow, this, del_x, y));
+	y += focus_x->get_h() + margin;
+	add_subwindow(title = new BC_Title(x, y, "Y:"));
+	focus_y = new CWindowCoord(this, x1, y, (float)0.0);
+	focus_y->create_objects();
+	y += focus_x->get_h() + margin;
 	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 10, y));
-	y += this->apply_before_plugins->get_h() + margin;
+	y += this->apply_before_plugins->get_h();
 	add_subwindow(this->disable_opengl_masking = new CWindowDisableOpenGLMasking(this, 10, y));
-	y += this->disable_opengl_masking->get_h() + 3*margin;
-	add_subwindow(new BC_Bar(x, y, get_w()-2*x));
-	y += 2*margin;
+	y += this->disable_opengl_masking->get_h() + margin;
+	add_subwindow(bar = new BC_Bar(x, y, get_w()-2*x));
+	y += bar->get_h() + margin;
+
+	y += margin;
 	add_subwindow(title = new BC_Title(x, y, _(
 		"Shift+LMB: move an end point\n"
 		"Ctrl+LMB: move a control point\n"
+		"Alt+LMB: to drag translate the mask\n"
+		"Shift+Key Delete to delete the mask\n"
 		"Wheel Up/Dn: rotate around pointer\n"
 		"Shift+Wheel Up/Dn: scale around pointer\n"
-		"Alt+LMB: to drag translate the mask\n"
-		"Shift+Key Delete to delete the mask")));
+		"Shift+MMB: Toggle focus center at pointer")));
 	update();
 	unlock_window();
 }
@@ -2242,10 +2258,13 @@ void CWindowMaskGUI::update()
 
 //printf("CWindowMaskGUI::update 1\n");
 	active_point->update((int64_t)mwindow->cwindow->gui->affected_point);
-	name->update_items(keyframe);
-	int k = mwindow->edl->session->cwindow_mask;
-	const char *text = k >= 0 && k < keyframe->masks.size() ?
-		keyframe->masks[k]->name : "";
+	const char *text = "";
+	if( keyframe ) {
+		name->update_items(keyframe);
+		int k = mwindow->edl->session->cwindow_mask;
+		if( k >= 0 && k < keyframe->masks.size() )
+			text = keyframe->masks[k]->name;
+	}
 	name->update(text);
 
 //printf("CWindowMaskGUI::update 1\n");
@@ -2311,6 +2330,12 @@ void CWindowMaskGUI::update_preview()
 	lock_window("CWindowMaskGUI::update_preview");
 }
 
+void CWindowMaskGUI::set_focused(int v, float cx, float cy)
+{
+	focus_x->update(cx);
+	focus_y->update(cy);
+	focus->update(focused = v);
+}
 
 CWindowRulerGUI::CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow,

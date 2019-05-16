@@ -168,6 +168,8 @@ public:
 	char *get_caption() { return 0; }
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
+	int stick;
+	Timer *timer;
 };
 
 class CWindowMaskMode : public BC_Toggle
@@ -194,6 +196,16 @@ class CWindowMaskAffectedPoint : public BC_TumbleTextBox
 public:
 	CWindowMaskAffectedPoint(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
 	~CWindowMaskAffectedPoint();
+	int handle_event();
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
+};
+
+class CWindowMaskFocus : public BC_CheckBox
+{
+public:
+	CWindowMaskFocus(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	~CWindowMaskFocus();
 	int handle_event();
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
@@ -245,12 +257,11 @@ public:
 	CWindowMaskGUI *gui;
 };
 
-class CWindowMaskClrPoint : public BC_Button
+class CWindowMaskClrFeather : public BC_Button
 {
 public:
-	CWindowMaskClrPoint(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y);
-	~CWindowMaskClrPoint();
-
+	CWindowMaskClrFeather(MWindow *mwindow, CWindowMaskGUI *gui, int x, int y);
+	~CWindowMaskClrFeather();
 	int handle_event();
 	MWindow *mwindow;
 	CWindowMaskGUI *gui;
@@ -279,6 +290,7 @@ public:
 	~CWindowMaskGUI();
 	void create_objects();
 	void update();
+	void set_focused(int v, float cx, float cy);
 	void handle_event();
 	void get_keyframe(Track* &track, MaskAutos* &autos, MaskAuto* &keyframe,
 		SubMask* &mask, MaskPoint* &point, int create_it);
@@ -291,9 +303,11 @@ public:
 	CWindowMaskFadeSlider *fade_slider;
 	CWindowMaskMode *mode;
 	CWindowMaskAffectedPoint *active_point;
-	CWindowMaskClrPoint *clr_point;
 	CWindowMaskDelPoint *del_point;
 	CWindowCoord *x, *y;
+	CWindowMaskFocus *focus;
+	int focused;
+	CWindowCoord *focus_x, *focus_y;
 	CWindowMaskFeather *feather;
 	CWindowMaskFeatherSlider *feather_slider;
 	CWindowMaskBeforePlugins *apply_before_plugins;

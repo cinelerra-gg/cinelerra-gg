@@ -1792,9 +1792,26 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 		}
 //printf("CWindowCanvas::do_mask 1\n");
 
+		BC_WindowBase *cvs_win = get_canvas();
 		if(draw) {
-			get_canvas()->draw_polygon(&x_points, &y_points);
-			get_canvas()->set_opaque();
+			cvs_win->draw_polygon(&x_points, &y_points);
+			cvs_win->set_opaque();
+		}
+		if( draw && gui->tool_panel ) {
+			CWindowMaskGUI *mask_gui = (CWindowMaskGUI*)gui->tool_panel->tool_gui;
+			if( mask_gui && mask_gui->focused ) {
+				float fx = atof(mask_gui->focus_x->get_text());
+				float fy = atof(mask_gui->focus_y->get_text());
+				output_to_canvas(mwindow->edl, 0, fx, fy);
+				float r = bmax(cvs_win->get_w(), cvs_win->get_h());
+				float d = 0.005*r;
+				cvs_win->set_line_width((int)(0.0025*r) + 1);
+				cvs_win->set_color(BLUE);
+				cvs_win->draw_line(fx-d,fy-d, fx+d, fy+d);
+				cvs_win->draw_line(fx-d,fy+d, fx+d, fy-d);
+				cvs_win->set_line_width(0);
+				cvs_win->set_color(WHITE);
+			}
 		}
 //printf("CWindowCanvas::do_mask 1\n");
 	}
@@ -2086,14 +2103,21 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 				float st = sin(theta), ct = cos(theta);
 				gui->x_origin = mask_cursor_x;
 				gui->y_origin = mask_cursor_y;
+				if( gui->tool_panel ) {
+					CWindowMaskGUI *mask_gui = (CWindowMaskGUI*)gui->tool_panel->tool_gui;
+					if( mask_gui && mask_gui->focused ) {
+						gui->x_origin = atof(mask_gui->focus_x->get_text());
+						gui->y_origin = atof(mask_gui->focus_y->get_text());
+					}
+				}
 				for( int i=0; i<mask_points.size(); ++i ) {
 					MaskPoint *point = mask_points.values[i];
-					float px = point->x - mask_cursor_x;
-					float py = point->y - mask_cursor_y;
+					float px = point->x - gui->x_origin;
+					float py = point->y - gui->y_origin;
 					float nx = !rotate ? px*scale : px*ct + py*st;
 					float ny = !rotate ? py*scale : py*ct - px*st;
-					point->x = nx + mask_cursor_x;
-					point->y = ny + mask_cursor_y;
+					point->x = nx + gui->x_origin;
+					point->y = ny + gui->y_origin;
 				}
 				break; }
 			}
@@ -2171,6 +2195,20 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 	points.remove_all_objects();
 //printf("CWindowCanvas::do_mask 20\n");
 	return result;
+}
+
+int CWindowCanvas::do_mask_focus()
+{
+	CWindowMaskGUI *mask_gui = (CWindowMaskGUI*) gui->tool_panel->tool_gui;
+	float cx = get_cursor_x(), cy = get_cursor_y();
+	canvas_to_output(mwindow->edl, 0, cx, cy);
+	int v = mask_gui->focused ? 0 : 1;
+	get_canvas()->unlock_window();
+	mask_gui->lock_window("CWindowCanvas::do_mask_focus");
+	mask_gui->set_focused(v, cx, cy);
+	mask_gui->unlock_window();
+	get_canvas()->lock_window("CWindowCanvas::do_mask_focus");
+	return 1;
 }
 
 int CWindowCanvas::do_eyedrop(int &rerender, int button_press, int draw)
@@ -3283,7 +3321,7 @@ int CWindowCanvas::button_press_event()
 
 // Scroll view
 	if( mwindow->edl->session->cwindow_operation != CWINDOW_PROTECT &&
-	    get_buttonpress() == 2 )
+	    get_buttonpress() == MIDDLE_BUTTON && !get_canvas()->shift_down() )
 	{
 		gui->current_operation = CWINDOW_SCROLL;
 		result = 1;
@@ -3318,6 +3356,11 @@ int CWindowCanvas::button_press_event()
 				case LEFT_BUTTON:
 					result = do_mask(redraw, rerender, 1, 0, 0);
 					break;
+				case MIDDLE_BUTTON: {  // && shift_down()
+					result = do_mask_focus();
+					redraw = 1;
+					redraw_canvas = 1;
+					break; }
 				case WHEEL_UP:
 				case WHEEL_DOWN:
 					result = do_mask(redraw, rerender, 1, 1, 0);
