@@ -1786,7 +1786,6 @@ int CWindowMaskFeather::update_value(float v)
 #else
 		keyframe->feather = v;
 #endif
-
 		gui->update_preview();
 	}
 
@@ -1994,7 +1993,15 @@ int CWindowMaskBeforePlugins::handle_event()
 	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe, mask, point, 1);
 
 	if (keyframe) {
-		keyframe->apply_before_plugins = get_value();
+		int v = get_value();
+#ifdef USE_KEYFRAME_SPANNING
+		MaskAuto temp_keyframe(gui->mwindow->edl, autos);
+		temp_keyframe.copy_data(keyframe);
+		temp_keyframe.apply_before_plugins = v;
+		autos->update_parameter(&temp_keyframe);
+#else
+		keyframe->apply_before_plugins = v;
+#endif
 		gui->update_preview();
 	}
 	return 1;
@@ -2016,8 +2023,16 @@ int CWindowDisableOpenGLMasking::handle_event()
 	MaskPoint *point;
 	((CWindowMaskGUI*)gui)->get_keyframe(track, autos, keyframe, mask, point, 1);
 
-	if (keyframe) {
-		keyframe->disable_opengl_masking = get_value();
+	if( keyframe ) {
+		int v = get_value();
+#ifdef USE_KEYFRAME_SPANNING
+		MaskAuto temp_keyframe(gui->mwindow->edl, autos);
+		temp_keyframe.copy_data(keyframe);
+		temp_keyframe.disable_opengl_masking = v;
+		autos->update_parameter(&temp_keyframe);
+#else
+		keyframe->disable_opengl_masking = v;
+#endif
 		gui->update_preview();
 	}
 	return 1;

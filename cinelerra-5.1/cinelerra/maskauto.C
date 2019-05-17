@@ -274,22 +274,17 @@ int MaskAuto::identical(MaskAuto *src)
 void MaskAuto::update_parameter(MaskAuto *ref, MaskAuto *src)
 {
 	if(src->value != ref->value)
-	{
 		this->value = src->value;
-	}
-
 	if(src->mode != ref->mode)
-	{
 		this->mode = src->mode;
-	}
-
+	if(src->apply_before_plugins != ref->apply_before_plugins)
+		this->apply_before_plugins = src->apply_before_plugins;
+	if(src->disable_opengl_masking != ref->disable_opengl_masking)
+		this->disable_opengl_masking = src->disable_opengl_masking;
 	if(!EQUIV(src->feather, ref->feather))
-	{
 		this->feather = src->feather;
-	}
 
-	for(int i = 0; i < masks.size(); i++)
-	{
+	for( int i=0; i<masks.size(); ++i ) {
 		if(!src->get_submask(i)->equivalent(*ref->get_submask(i)))
 			this->get_submask(i)->copy_from(*src->get_submask(i));
 	}
