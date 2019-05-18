@@ -16,7 +16,7 @@
    width="24"
    height="24"
    sodipodi:docname="waveform.svg"
-   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/waveform.png"
+   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte-olaf/data/waveform.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
   <title
@@ -36,7 +36,8 @@
             <dc:title>Olaf</dc:title>
           </cc:Agent>
         </dc:creator>
-        <dc:description>2018-08-16: new. </dc:description>
+        <dc:description>2018-11-25: überarbeitet in Aussehen und Größe.
+2018-08-16: new. </dc:description>
         <dc:relation>cpanel_*</dc:relation>
       </cc:Work>
     </rdf:RDF>
@@ -138,15 +139,15 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1280"
-     inkscape:window-height="749"
+     inkscape:window-width="2494"
+     inkscape:window-height="1407"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="17.913411"
-     inkscape:cx="8.7105192"
-     inkscape:cy="9.3659467"
+     inkscape:zoom="50.541667"
+     inkscape:cx="12"
+     inkscape:cy="12"
      inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2"
      inkscape:showpageshadow="false" />
@@ -154,20 +155,54 @@
      y="-0.039641999"
      x="-32.367062"
      id="image871"
-     xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A
-/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sJDQUWH9wMhikAAAAddEVYdENv
-bW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAG1JREFUSMftU0EKwCAMM2Ufy8v7NHca
-DJlS2w48NMdok0pMa4XjoapdVbt3HivhkSOJXQOxiq/41Tl2RWaveeZGXiLZWJa6oh/AlUEmyuBw
-A5LwtNdk8BaOmIilpVaTrzvIKtdsAWQ0OJpT4V/cgV0zWZsx/acAAAAASUVORK5CYII=
-"
+     xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A /wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sJDQUWH9wMhikAAAAddEVYdENv bW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAG1JREFUSMftU0EKwCAMM2Ufy8v7NHca DJlS2w48NMdok0pMa4XjoapdVbt3HivhkSOJXQOxiq/41Tl2RWaveeZGXiLZWJa6oh/AlUEmyuBw A5LwtNdk8BaOmIilpVaTrzvIKtdsAWQ0OJpT4V/cgV0zWZsx/acAAAAASUVORK5CYII= "
      style="image-rendering:optimizeQuality"
      preserveAspectRatio="none"
      height="24"
      width="24" />
   <path
-     style="fill:#e6e4dd;stroke:#e6e4dd;stroke-width:1.41490674px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
-     d="M 0.7074536,20.253372 V 5.9312085 c 0,0 4.1150859,-5.26900738 7.0686169,-5.22337653 C 11.984885,0.7728605 13.396799,8.6131984 17.60317,8.4586493 20.203327,8.3631134 23.292546,3.2352728 23.292546,3.2352728 V 18.568412 c 0,0 -4.718561,4.90695 -7.758239,4.717889 -3.994956,-0.248477 -5.306849,-7.4111 -9.3098843,-7.413825 -2.3694837,-0.0017 -5.5169691,4.380896 -5.5169691,4.380896 z"
+     style="fill:#e6e4dd;fill-opacity:1;stroke:#e6e4dd;stroke-width:1.1492095px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="M 2.574603,18.52334 V 7.203368 c 0,0 3.4346813,-4.1645238 5.899863,-4.1284576 3.512913,0.051399 4.691376,6.2482579 8.202238,6.1261049 2.170242,-0.07549 4.748688,-4.1284632 4.748688,-4.1284632 V 17.191584 c 0,0 -3.938396,3.878355 -6.47546,3.728932 -3.33443,-0.196402 -4.429399,-5.857615 -7.770558,-5.859746 -1.9777026,-0.0017 -4.604771,3.46257 -4.604771,3.46257 z"
      id="path910"
      inkscape:connector-curvature="0"
      sodipodi:nodetypes="ccasccasc" />
+  <path
+     style="fill:#efede3;fill-opacity:1;stroke:#efede3;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -2.2255887,44.549603 c 0.979052,-4.55396 2.02840923,-8.964973 4.4451422,-12.244056 2.4167329,-3.279084 6.8707308,-5.537886 7.0111629,-4.001053 0.4149496,4.541047 -2.3820113,8.052235 -2.0202014,10.943666 0.3618098,2.89143 2.5362285,5.069409 5.896774,5.211527 z"
+     id="path821"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cssscc" />
+  <rect
+     style="opacity:1;fill:#ffcc00;fill-opacity:1;fill-rule:evenodd;stroke:#efede3;stroke-width:0.6076749;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect823"
+     width="0.3923251"
+     height="19.392324"
+     x="-4.3370485"
+     y="26.138586" />
+  <rect
+     style="opacity:1;fill:#efede3;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.98525429;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect823-5"
+     width="1"
+     height="20"
+     x="44.834721"
+     y="-15.359113"
+     transform="rotate(90)" />
+  <rect
+     style="opacity:1;fill:#808080;fill-opacity:1;stroke:none;stroke-width:0.00942501;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+     id="rect1082"
+     width="0.5"
+     height="22.748209"
+     x="1.4999982"
+     y="0.6258955"
+     inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte-olaf/data/waveform.png"
+     inkscape:export-xdpi="96"
+     inkscape:export-ydpi="96" />
+  <use
+     x="0"
+     y="0"
+     xlink:href="#rect1082"
+     id="use1625"
+     transform="translate(20.499999)"
+     width="100%"
+     height="100%" />
 </svg>

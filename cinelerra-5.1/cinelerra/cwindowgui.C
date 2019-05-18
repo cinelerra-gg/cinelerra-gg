@@ -2118,6 +2118,12 @@ int CWindowCanvas::do_mask(int &redraw, int &rerender,
 					float ny = !rotate ? py*scale : py*ct - px*st;
 					point->x = nx + gui->x_origin;
 					point->y = ny + gui->y_origin;
+					px = point->control_x1;  py = point->control_y1;
+					point->control_x1 = !rotate ? px*scale : px*ct + py*st;
+					point->control_y1 = !rotate ? py*scale : py*ct - px*st;
+					px = point->control_x2;  py = point->control_y2;
+					point->control_x2 = !rotate ? px*scale : px*ct + py*st;
+					point->control_y2 = !rotate ? py*scale : py*ct - px*st;
 				}
 				break; }
 			}

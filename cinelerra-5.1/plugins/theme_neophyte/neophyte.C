@@ -354,11 +354,12 @@ void NEOPHYTETHEME::initialize()
 		"new_bigbutton_hi.png",
 		"new_bigbutton_dn.png",
 		"new_ok_images");
-	new_button("reset.png",
-		"reset_up.png",
-		"reset_hi.png",
-		"reset_dn.png",
-		"reset_button");
+        new_button(
+		"reset.png",
+                "reset_up.png",
+                "reset_dn.png",
+                "reset_hi.png",
+                "reset_button");
 	resources->cancel_images = new_button(
 		"cancel.png",
 		"filebox_bigbutton_up.png",

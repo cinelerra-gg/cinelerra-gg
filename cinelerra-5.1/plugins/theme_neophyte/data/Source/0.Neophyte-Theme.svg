@@ -15,7 +15,7 @@
    viewBox="0 0 594.00001 419.99999"
    version="1.1"
    id="svg4112"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="0.Neophyte-Theme.svg">
   <title
      id="title4679">Theme: Neophyte</title>
@@ -892,7 +892,7 @@
        x2="44.737286"
        y2="18.728813"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(0.24401774,0,0,0.37320354,438.43571,151.2676)" />
+       gradientTransform="matrix(0.24401774,0,0,0.37320354,310.54217,168.92909)" />
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient1861"
@@ -902,7 +902,7 @@
        x2="44.737286"
        y2="18.728813"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(0.24401776,0,0,0.37320354,-460.45935,-166.17871)" />
+       gradientTransform="matrix(0.24401776,0,0,0.37320354,-332.56581,-183.8402)" />
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient1817"
@@ -1296,9 +1296,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="8.8908386"
-     inkscape:cx="243.16599"
-     inkscape:cy="1545.4532"
+     inkscape:zoom="1.2287914"
+     inkscape:cx="712.69216"
+     inkscape:cy="1181.8423"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -1327,7 +1327,8 @@
             <dc:title>Olaf</dc:title>
           </cc:Agent>
         </dc:creator>
-        <dc:description>Theme: Neophyte</dc:description>
+        <dc:description>Theme: Neophyte
+2019-05-16: Update.</dc:description>
         <dc:subject>
           <rdf:Bag>
             <rdf:li>Cinelera</rdf:li>
@@ -1337,6 +1338,11 @@
         <dc:source>UnFlat</dc:source>
         <cc:license
            rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
+        <dc:contributor>
+          <cc:Agent>
+            <dc:title></dc:title>
+          </cc:Agent>
+        </dc:contributor>
       </cc:Work>
       <cc:License
          rdf:about="http://creativecommons.org/licenses/by/4.0/">
@@ -3560,7 +3566,7 @@
          y="-106.56412"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">arrows see: play</tspan></text>
     <g
-       transform="translate(446.14024,-146.43298)"
+       transform="translate(318.2467,-128.77149)"
        id="g2237">
       <rect
          y="290.52045"
@@ -3588,11 +3594,11 @@
        id="rect3597-9-8-3-6-9"
        width="6.3444614"
        height="6.3444614"
-       x="446.27527"
-       y="151.75146" />
+       x="318.38174"
+       y="169.41295" />
     <rect
-       y="152.01617"
-       x="446.40765"
+       y="169.67766"
+       x="318.51413"
        height="5.8150773"
        width="6.0796599"
        id="rect3597-5-7-9-4-8-9-8-0-2-7-9-1-0"
@@ -3602,19 +3608,19 @@
        id="rect3597-9-1-0-2"
        width="6.3444614"
        height="6.3444614"
-       x="-452.61972"
-       y="-165.69482"
+       x="-324.7262"
+       y="-183.35631"
        transform="scale(-1)" />
     <rect
-       y="-165.49615"
-       x="-452.55338"
+       y="-183.15764"
+       x="-324.65985"
        height="5.947197"
        width="6.2117801"
        id="rect3597-5-7-9-4-8-9-8-3-1-8"
        style="fill:none;fill-opacity:1;stroke:#262626;stroke-width:0.1382197;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        transform="scale(-1)" />
     <g
-       transform="translate(446.14024,-138.77318)"
+       transform="translate(318.2467,-121.11169)"
        id="g2176-8">
       <path
          d="m 2.3949937,291.69738 -0.2529036,0.25292 1.5356645,1.53566 -1.5356645,1.53566 0.2529036,0.2529 1.7885681,-1.78856 -0.2529035,-0.2529 z"
@@ -3628,7 +3634,7 @@
          d="m 2.3960669,295.27452 1.7145213,1.71453 h 2.503995 v -1.07313 l -2.4299483,-2.42996 z" />
     </g>
     <g
-       transform="translate(446.14024,-131.16366)"
+       transform="translate(318.2467,-113.50217)"
        id="g2176-2">
       <path
          d="m 2.3949937,291.69738 -0.2529036,0.25292 1.5356645,1.53566 -1.5356645,1.53566 0.2529036,0.2529 1.7885681,-1.78856 -0.2529035,-0.2529 z"
@@ -3644,35 +3650,35 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;line-height:6.61458349px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="431.26813"
-       y="155.18207"
+       x="303.3746"
+       y="172.84355"
        id="text2249"><tspan
          sodipodi:role="line"
          id="tspan2247"
-         x="431.26813"
-         y="155.18207"
+         x="303.3746"
+         y="172.84355"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">shbtn_hi</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;line-height:6.61458349px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="431.26813"
-       y="162.43817"
+       x="303.3746"
+       y="180.09966"
        id="text2253"><tspan
          sodipodi:role="line"
          id="tspan2251"
-         x="431.26813"
-         y="162.43817"
+         x="303.3746"
+         y="180.09966"
          style="stroke-width:0.26458332">shbtn_dn</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;line-height:6.61458349px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="431.26813"
-       y="147.80884"
+       x="303.3746"
+       y="165.47032"
        id="text2257"><tspan
          sodipodi:role="line"
          id="tspan2255"
-         x="431.26813"
-         y="147.80884"
+         x="303.3746"
+         y="165.47032"
          style="stroke-width:0.26458332">shbtn_up</tspan></text>
     <text
        xml:space="preserve"
@@ -3819,19 +3825,14 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;line-height:6.61458349px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="455.70493"
-       y="148.49854"
+       x="326.5195"
+       y="169.33598"
        id="text2623"><tspan
          sodipodi:role="line"
-         id="tspan2621"
-         x="455.70493"
-         y="148.49854"
-         style="stroke-width:0.26458332">does nort work</tspan><tspan
-         sodipodi:role="line"
-         x="455.70493"
-         y="155.11311"
+         x="326.5195"
+         y="169.33598"
          id="tspan2625"
-         style="stroke-width:0.26458332">see shbtn_up.</tspan></text>
+         style="stroke-width:0.26458332">2018: does nort work.</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;line-height:6.61458349px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -5518,13 +5519,13 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;line-height:6.61458302px;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="444.29111"
-       y="140.71252"
+       x="326.73294"
+       y="164.18765"
        id="text3873"><tspan
          sodipodi:role="line"
          id="tspan3871"
-         x="444.29111"
-         y="140.71252"
+         x="326.73294"
+         y="164.18765"
          style="stroke-width:0.26458332">draft</tspan></text>
     <text
        xml:space="preserve"
@@ -5549,5 +5550,23 @@
          x="199.7773"
          y="82.825714"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">lok</tspan></text>
+    <rect
+       style="opacity:0.689;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.05833328;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect1768"
+       width="56.198509"
+       height="25.838396"
+       x="302.52457"
+       y="160.05649" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222222px;line-height:1.25;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:-0.015875px;word-spacing:-0.01322917px;writing-mode:lr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;"
+       x="303.44623"
+       y="159.03896"
+       id="text1766"><tspan
+         sodipodi:role="line"
+         id="tspan1764"
+         x="303.44623"
+         y="159.03896"
+         style="stroke-width:0.26458332;-inkscape-font-specification:'Myriad Pro, Normal';font-family:'Myriad Pro';font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:2.82222222px;text-anchor:start;text-align:start;writing-mode:lr;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;">2019: see shbtn_up</tspan></text>
   </g>
 </svg>

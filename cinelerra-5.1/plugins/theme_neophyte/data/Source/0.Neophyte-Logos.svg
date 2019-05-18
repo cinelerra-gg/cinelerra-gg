@@ -15,7 +15,7 @@
    viewBox="0 0 297 210"
    version="1.1"
    id="svg963"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="0.Neophyte-Logos.svg"
    inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/about_bg.png"
    inkscape:export-xdpi="96"
@@ -223,11 +223,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.67873324"
-     inkscape:cx="598.93795"
-     inkscape:cy="645.39015"
+     inkscape:zoom="1.4503087"
+     inkscape:cx="490.31331"
+     inkscape:cy="396.8504"
      inkscape:document-units="px"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer10"
      showgrid="false"
      inkscape:showpageshadow="false"
      showguides="true"
@@ -271,7 +271,8 @@
             <dc:title>Olaf</dc:title>
           </cc:Agent>
         </dc:creator>
-        <dc:description>Neu angelegt. </dc:description>
+        <dc:description>Neu angelegt. 
+2019-05-16: update.</dc:description>
         <dc:language>deu</dc:language>
         <dc:subject>
           <rdf:Bag>
@@ -1109,6 +1110,33 @@
            d="m 174.56014,153.94446 c -0.90958,1e-5 -0.90946,1e-5 -1.49319,0.80638 l -8.44615,12.42279 h 0.94494 l 8.9944,-13.22917"
            style="fill:#ffcc00;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
       </g>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0.00529167px;word-spacing:-0.01322917px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         x="52.793488"
+         y="145.02042"
+         id="text3308"><tspan
+           sodipodi:role="line"
+           x="52.793488"
+           y="145.02042"
+           style="fill:#ffffff;stroke-width:0.26458332"
+           id="tspan3318">Das Erstellen des Unify Logos hat letztendlich so viel Zeit</tspan><tspan
+           sodipodi:role="line"
+           x="52.793488"
+           y="150.31209"
+           style="fill:#ffffff;stroke-width:0.26458332"
+           id="tspan3322">beansprucht, wie die Dauer seiner Verwendung.</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Myriad Pro';-inkscape-font-specification:'Myriad Pro, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:-0.015875px;word-spacing:-0.01322917px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         x="53.087837"
+         y="161.27028"
+         id="text1012"><tspan
+           sodipodi:role="line"
+           id="tspan1010"
+           x="53.087837"
+           y="161.27028"
+           style="fill:#ffffff;stroke-width:0.26458332">2019: Infinity (Kreis) wird nur für about_bg verwendet. </tspan></text>
     </g>
     <text
        xml:space="preserve"

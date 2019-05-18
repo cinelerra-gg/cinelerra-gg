@@ -12,11 +12,11 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    width="104"
    height="17"
    sodipodi:docname="hscroll_handle_hi.svg"
-   inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/hscroll_handle_hi.png"
+   inkscape:export-filename="/home/olaf/Wiki/src/cinelerra-gg.org/cinelerra/cinelerra-5.1/plugins/theme_neophyte-olaf/data/hscroll_handle_hi.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
   <metadata
@@ -27,12 +27,34 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <defs
-     id="defs6" />
+     id="defs6">
+    <linearGradient
+       id="linearGradient1817">
+      <stop
+         id="stop1852"
+         offset="0"
+         style="stop-color:#404040;stop-opacity:1" />
+      <stop
+         id="stop1854"
+         offset="1"
+         style="stop-color:#151515;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient1817"
+       id="linearGradient2105"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(3.9999996,0,0,0.49999986,-24.655084,73.883704)"
+       x1="44.737286"
+       y1="1.0084742"
+       x2="44.737286"
+       y2="18.728813" />
+  </defs>
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -42,26 +64,26 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1280"
-     inkscape:window-height="721"
+     inkscape:window-width="2494"
+     inkscape:window-height="1407"
      id="namedview4"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:zoom="3.7572115"
-     inkscape:cx="-56.700403"
+     inkscape:zoom="5.5276712"
+     inkscape:cx="52.000001"
      inkscape:cy="8.5"
      inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer4" />
+     inkscape:current-layer="layer1" />
   <g
      inkscape:groupmode="layer"
      id="layer4"
      inkscape:label="dotss high "
-     style="display:inline">
+     style="display:none">
     <g
-       transform="translate(-2.1270303,25.06159)"
+       transform="translate(-123.22748,127.5312)"
        id="g1328">
       <text
          xml:space="preserve"
@@ -271,5 +293,115 @@
            x="0" />
       </g>
     </g>
+    <rect
+       transform="scale(-1)"
+       style="display:inline;fill:url(#linearGradient2091);fill-opacity:1;stroke:none;stroke-width:0.31214634;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="use2099-9"
+       width="104"
+       height="8.6000004"
+       x="-227.39603"
+       y="-33.064522"
+       inkscape:transform-center-x="20.710648"
+       inkscape:transform-center-y="-16.217135" />
+    <g
+       transform="translate(-104.11047,-99.414108)"
+       style="display:inline"
+       id="g2249">
+      <g
+         transform="translate(0.25584256,27.886839)"
+         id="g2101">
+        <rect
+           style="display:inline;fill:url(#linearGradient2105);fill-opacity:1;stroke:none;stroke-width:0.31032622;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2097"
+           width="104"
+           height="8.5"
+           x="103.85463"
+           y="74.532036"
+           inkscape:transform-center-x="20.710648"
+           inkscape:transform-center-y="-16.217135" />
+        <rect
+           inkscape:transform-center-y="-16.217135"
+           inkscape:transform-center-x="20.710648"
+           y="-74.622498"
+           x="-207.85463"
+           height="8.6000004"
+           width="104"
+           id="use2099"
+           style="display:inline;fill:url(#linearGradient2091);fill-opacity:1;stroke:none;stroke-width:0.31214634;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           transform="scale(-1)" />
+      </g>
+      <rect
+         ry="3"
+         style="fill:#5f8dd3;fill-opacity:1;stroke:none;stroke-width:0.32924807"
+         id="rect2103"
+         width="104"
+         height="6"
+         x="-208.11047"
+         y="-105.41411"
+         transform="scale(-1)" />
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="high">
+    <text
+       id="text1251"
+       y="8.9675751"
+       x="122.01846"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.66666698px;line-height:24.99999809px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1"
+       xml:space="preserve"><tspan
+         style="stroke-width:1"
+         y="8.9675751"
+         x="122.01846"
+         id="tspan1249"
+         sodipodi:role="line">hscroll_handle_hi</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.66666698px;line-height:25px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1"
+       x="-0.74981356"
+       y="-10.501921"
+       id="text2430-1"><tspan
+         sodipodi:role="line"
+         id="tspan2428-3"
+         x="-0.74981356"
+         y="-10.501921"
+         style="stroke-width:1">see vscroll_handle_up</tspan></text>
+    <rect
+       ry="0"
+       y="0"
+       x="-104"
+       height="17"
+       width="104"
+       id="rect2357"
+       style="display:inline;fill:#050505;fill-opacity:1;stroke:none;stroke-width:0.77534258"
+       transform="scale(-1,1)" />
+    <rect
+       transform="scale(-1)"
+       y="-9.9999962"
+       x="-104"
+       height="3"
+       width="104"
+       id="rect2359"
+       style="display:inline;fill:#5f8dd3;fill-opacity:1;stroke:none;stroke-width:0.23281354"
+       ry="1.5" />
+    <rect
+       transform="scale(-1,1)"
+       style="display:inline;fill:#262626;fill-opacity:1;stroke:none;stroke-width:0.1880482"
+       id="rect2361"
+       width="104"
+       height="1"
+       x="-104"
+       y="16"
+       ry="0" />
+    <rect
+       ry="0"
+       y="0"
+       x="-104"
+       height="1"
+       width="104"
+       id="rect2363"
+       style="display:inline;fill:#262626;fill-opacity:1;stroke:none;stroke-width:0.1880482"
+       transform="scale(-1,1)" />
   </g>
 </svg>

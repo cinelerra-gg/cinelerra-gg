@@ -19,6 +19,8 @@
    inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/patchbay_bg.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
+  <title
+     id="title849">patchbay_bg</title>
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -27,15 +29,23 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title>patchbay_bg</dc:title>
         <dc:date>2018-08-01</dc:date>
         <dc:creator>
           <cc:Agent>
             <dc:title>Olaf</dc:title>
           </cc:Agent>
         </dc:creator>
-        <dc:description>2018-08-01: adapted
-See: setformat_bg</dc:description>
+        <dc:description>2018-11-09: Funktioniert NICHT: Trenn-Leiste (der Aufbau der Patchbay ist und bleibt verwirrend unübersichtlich).
+2018-08-01: adapted
+See: setformat_bg
+</dc:description>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>CInelerra-GG</rdf:li>
+            <rdf:li>Mainwindow</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -128,7 +138,7 @@ See: setformat_bg</dc:description>
        x2="-6.6730468e-06"
        y2="157"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(0.22829446,24.198505)" />
+       gradientTransform="translate(1.1601829,78.713981)" />
   </defs>
   <sodipodi:namedview
      pagecolor="#ffffff"
@@ -139,15 +149,15 @@ See: setformat_bg</dc:description>
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1280"
-     inkscape:window-height="773"
+     inkscape:window-width="2494"
+     inkscape:window-height="1407"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="4.3804359"
-     inkscape:cx="66.198262"
-     inkscape:cy="133.78539"
+     inkscape:zoom="4.2923591"
+     inkscape:cx="93.141415"
+     inkscape:cy="131.55067"
      inkscape:window-x="0"
-     inkscape:window-y="1"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer5"
      showborder="true"
@@ -208,25 +218,89 @@ See: setformat_bg</dc:description>
        y="0" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.66666698px;line-height:25px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
-       x="8.7168875"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.66666698px;line-height:14px;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+       x="-0.18229167"
        y="-59.726822"
        id="text832"><tspan
          sodipodi:role="line"
          id="tspan830"
-         x="8.7168875"
-         y="-59.726822">Hintergrund Patchbay (Hauptfenster links).</tspan><tspan
+         x="-0.18229167"
+         y="-59.726822">Hintergrund Patchbay (Hauptfenster links,</tspan><tspan
          sodipodi:role="line"
-         x="8.7168875"
-         y="-34.726822"
+         x="-0.18229167"
+         y="-45.726822"
+         id="tspan863"
+         dx="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -0.059999999"
+         dy="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+         rotate="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0">skaliert in der Höhe über den gesamten Bereich).</tspan><tspan
+         sodipodi:role="line"
+         x="-0.18229167"
+         y="-31.726822"
          id="tspan834">Verlauf, dunkel rechts. </tspan></text>
     <rect
        transform="rotate(-90)"
-       y="181.1985"
-       x="-194.77171"
+       y="235.71397"
+       x="-193.83983"
        height="3"
        width="195"
        id="rect2820-8"
        style="display:inline;fill:url(#linearGradient870);fill-opacity:1;stroke:none" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="Leisten"
+     style="display:none"
+     sodipodi:insensitive="true">
+    <rect
+       inkscape:export-ydpi="96"
+       inkscape:export-xdpi="96"
+       inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/mbutton_bg.png"
+       y="0"
+       x="-54.297451"
+       height="1"
+       width="256"
+       id="rect2818-1"
+       style="display:inline;fill:#ffcc00;fill-opacity:1;stroke:none" />
+    <rect
+       inkscape:export-ydpi="96"
+       inkscape:export-xdpi="96"
+       inkscape:export-filename="/home/olaf/src/cinelerra-gg/cin5/cinelerra-5.1/plugins/theme_neophyte/data/mbutton_bg.png"
+       y="194"
+       x="-29.092819"
+       height="1"
+       width="256"
+       id="rect2818-1-5"
+       style="display:inline;fill:#ccff00;fill-opacity:1;stroke:none" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:1.25;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0.02px;word-spacing:-0.05px;writing-mode:lr-tb;text-anchor:start;fill:#f4e3d7;fill-opacity:1;stroke:none"
+       x="71.861977"
+       y="19.270832"
+       id="text853"><tspan
+         sodipodi:role="line"
+         id="tspan851"
+         x="71.861977"
+         y="19.270832">1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:1.25;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0.02px;word-spacing:-0.05px;writing-mode:lr-tb;text-anchor:start;fill:#fff6d5;fill-opacity:1;stroke:none"
+       x="72.1875"
+       y="194.67448"
+       id="text857"><tspan
+         sodipodi:role="line"
+         id="tspan855"
+         x="72.1875"
+         y="194.67448">3</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:1.25;font-family:Andika;-inkscape-font-specification:'Andika, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0.02px;word-spacing:-0.05px;writing-mode:lr-tb;text-anchor:start;fill:#fff6d5;fill-opacity:1;stroke:none"
+       x="72.1875"
+       y="107.16797"
+       id="text861"><tspan
+         sodipodi:role="line"
+         id="tspan859"
+         x="72.1875"
+         y="107.16797">2</tspan></text>
   </g>
 </svg>
