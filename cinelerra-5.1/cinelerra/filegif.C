@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <ctype.h>
 
 FileGIF::FileGIF(Asset *asset, File *file)
  : FileBase(asset, file)
