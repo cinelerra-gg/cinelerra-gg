@@ -488,6 +488,64 @@ int FileGIFList::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	return ret;
 }
 
+int FileGIFList::verify_file_list()
+{
+	// go through all .gif files in the list and
+	// verify their sizes match or not.
+	//printf("\nAsset Path: %s\n", asset->path);
+	FILE *stream = fopen(asset->path, "rb");
+	if (stream) {
+		char string[BCTEXTLEN];
+		int width, height, prev_width=-1, prev_height=-1;
+		// build the path prefix
+		char prefix[BCTEXTLEN], *bp = prefix, *cp = strrchr(asset->path, '/');
+		for( int i=0, n=!cp ? 0 : cp-asset->path; i<n; ++i ) *bp++ = asset->path[i];
+		*bp = 0;
+		// read entire input file
+		while( !feof(stream) && fgets(string, BCTEXTLEN, stream) ) {
+			int len = strlen(string);
+			if(!len || string[0] == '#' || string[0] == ' ' || isalnum(string[0])) continue;
+			if( string[len-1] == '\n' ) string[len-1] = 0;
+			// a possible .gif file path? fetch it
+			char path[BCTEXTLEN], *pp = path, *ep = pp + sizeof(path)-1;
+			if( string[0] == '.' && string[1] == '/' && prefix[0] )
+				pp += snprintf(pp, ep-pp, "%s/", prefix);
+			snprintf(pp, ep-pp, "%s", string);
+			// check if a valid file exists
+			if(!access(path, R_OK)) {
+				// check file header for size
+				FILE *gif_file_temp = fopen(path, "rb");
+				if (gif_file_temp) {
+					unsigned char test[16];
+					int ret = fread(test, 16, 1, gif_file_temp);
+					fclose(gif_file_temp);
+					if( ret < 1 ) continue;
+					// get height and width of gif file
+					width = test[6] | (test[7] << 8);
+					height = test[8] | (test[9] << 8);
+					// test with previous
+					if ( (prev_width == -1) && (prev_height == -1) ) {
+						prev_width = width;
+						prev_height = height;
+						continue;
+					}
+					else if ( (prev_width != width) || (prev_height != height) ) {
+						// this is the error case we are trying to avoid
+						fclose(stream);
+						return 0;
+					}
+				}
+
+			}
+		}
+		fclose(stream);
+		return 1;
+	}
+	// not sure if our function should be the one to raise not found error
+	perror(asset->path);
+	return 0;
+}
+
 FrameWriterUnit* FileGIFList::new_writer_unit(FrameWriter *writer)
 {
 	return new GIFUnit(this, writer);

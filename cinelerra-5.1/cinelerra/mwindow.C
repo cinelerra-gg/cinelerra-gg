@@ -1932,6 +1932,14 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 			result = 0;
 			break;
 
+// File is a list and size of listed files don't match
+		case FILE_SIZE_DONT_MATCH: {
+			eprintf(_("File sizes don't match"));
+			sprintf(string, _("File sizes don't match"));
+			gui->show_message(string, theme->message_error);
+			gui->update_default_message();
+			break; }
+
 // File not found
 		case FILE_NOT_FOUND:
 			sprintf(string, _("Failed to open %s"), new_asset->path);

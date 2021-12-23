@@ -53,6 +53,7 @@
 #define FILE_NOT_FOUND 1
 #define FILE_UNRECOGNIZED_CODEC 2
 #define FILE_IS_XML 3
+#define FILE_SIZE_DONT_MATCH 4
 
 // Numeric codes for each file format
 // They're stored in XML files, so they have to be fixed.

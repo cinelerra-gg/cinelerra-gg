@@ -81,6 +81,8 @@ public:
 	int read_frame(VFrame *output, char *path);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
+// Need to override this method from FILEBASE class
+	int verify_file_list();
 };
 
 class GIFUnit : public FrameWriterUnit

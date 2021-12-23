@@ -591,6 +591,17 @@ int File::open_file(Preferences *preferences,
 	}
 
 
+// If file type is a list verify that all files match in dimensions.
+// Should be done only after the file open function has been performed
+// Reason: although this function checks if file exists or not but
+// it has no way of relaying this information back and if this function
+// is called before open_file the program may accidently interpret file
+// not found as file size don't match
+	if( !file->verify_file_list() ) {
+		delete file;  file = 0;
+		return FILE_SIZE_DONT_MATCH;
+	}
+
 
 // Set extra writing parameters to mandatory settings.
 	if( wr ) {

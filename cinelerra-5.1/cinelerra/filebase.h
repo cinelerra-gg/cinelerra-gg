@@ -132,6 +132,10 @@ public:
 		int channel,
 		int64_t len);
 	void allocate_history(int len);
+// thie function will be used to verify if all files in a given
+// list are of same size or not. Each list type object should 
+// override this method with its own definition.
+        virtual int verify_file_list() { return 1; }
 
 // For static functions to access it
 	Asset *asset;
